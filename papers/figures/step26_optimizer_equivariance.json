@@ -1,0 +1,61 @@
+{
+  "mode": "FULL",
+  "config": {
+    "EPOCHS_A": 8,
+    "STEPS_B": 3000,
+    "BATCH_B": 64,
+    "floor_a": 0.0001,
+    "break_a": 0.01,
+    "floor_b": 1e-06,
+    "break_b": 0.001
+  },
+  "panel_a": {
+    "muon_adamw": {
+      "init": 3.215124338568076e-06,
+      "post": 3.2197188114535535e-06
+    },
+    "adam": {
+      "init": 1.614689301931982e-06,
+      "post": 1.6296603146392918e-06
+    },
+    "sgd": {
+      "init": 1.614689301931982e-06,
+      "post": 8.914715013685903e-07
+    },
+    "mlp_adam": {
+      "init": NaN,
+      "post": 0.6653473562967686
+    }
+  },
+  "panel_b": {
+    "extrinsic_adam": {
+      "init_resid": 0.0,
+      "final_resid": 0.014256229111861085,
+      "offcommutant": 0.015063292008816521,
+      "fit_loss": 3.8479194729224365e-05
+    },
+    "extrinsic_sgd": {
+      "init_resid": 0.0,
+      "final_resid": 0.003995452722139414,
+      "offcommutant": 0.005240348642021676,
+      "fit_loss": 5.205899956367812e-06
+    },
+    "intrinsic_adam": {
+      "init_resid": 0.0,
+      "final_resid": 0.0,
+      "offcommutant": 0.0,
+      "fit_loss": 4.7267213523529675e-06
+    },
+    "intrinsic_sgd": {
+      "init_resid": 0.0,
+      "final_resid": 0.0,
+      "offcommutant": 0.0,
+      "fit_loss": 4.0429757683777105e-07
+    }
+  },
+  "verdict": {
+    "passed": true,
+    "ok_a": true,
+    "ok_b": true
+  }
+}

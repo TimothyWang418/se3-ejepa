@@ -1,0 +1,103 @@
+{
+  "G_values": [
+    0.0,
+    0.8
+  ],
+  "N_grid": [
+    256,
+    512
+  ],
+  "seeds": [
+    0
+  ],
+  "epochs": 30,
+  "n_test": 80,
+  "noneq_fraction": {
+    "0.0": 2.545711800172583e-13,
+    "0.8": 1.3073568323500162
+  },
+  "grid": {
+    "0.0": {
+      "256": {
+        "vn_seen": 1.3992451429367065,
+        "vn_ood": 1.4603897333145142,
+        "mlp_seen": 43.35885238647461,
+        "mlp_ood": 198.40560913085938,
+        "gap_mean": -41.9596072435379,
+        "gap_std": 0.0,
+        "epochs": 30,
+        "updates": 60
+      },
+      "512": {
+        "vn_seen": 0.837285578250885,
+        "vn_ood": 0.9317966103553772,
+        "mlp_seen": 25.150386810302734,
+        "mlp_ood": 81.27812194824219,
+        "gap_mean": -24.31310123205185,
+        "gap_std": 0.0,
+        "epochs": 30,
+        "updates": 120
+      }
+    },
+    "0.8": {
+      "256": {
+        "vn_seen": 0.9336877465248108,
+        "vn_ood": 0.8292371034622192,
+        "mlp_seen": 26.236915588378906,
+        "mlp_ood": 101.74900817871094,
+        "gap_mean": -25.303227841854095,
+        "gap_std": 0.0,
+        "epochs": 30,
+        "updates": 60
+      },
+      "512": {
+        "vn_seen": 0.5701678991317749,
+        "vn_ood": 0.8674999475479126,
+        "mlp_seen": 10.6980619430542,
+        "mlp_ood": 40.5293083190918,
+        "gap_mean": -10.127894043922424,
+        "gap_std": 0.0,
+        "epochs": 30,
+        "updates": 120
+      }
+    }
+  },
+  "params": {
+    "VN": 16856,
+    "MLP": 124512
+  },
+  "indist_gap_mean": {
+    "0.0": [
+      -41.9596072435379,
+      -24.31310123205185
+    ],
+    "0.8": [
+      -25.303227841854095,
+      -10.127894043922424
+    ]
+  },
+  "widening_over_N": [
+    16.656379401683807,
+    14.185207188129425
+  ],
+  "widen_increasing": false,
+  "widen_lo_N": 16.656379401683807,
+  "widen_hi_N": 14.185207188129425,
+  "pooled_seed_std_hiN": 0.0,
+  "reconciled": false,
+  "mlp_converged": false,
+  "mlp_seen_g0_hiN": 25.150386810302734,
+  "vn_wins_indist_g0_per_N": [
+    true,
+    true
+  ],
+  "any_vn_indist_g0": true,
+  "guards": {
+    "mlp_converges": false,
+    "vn_fits": true,
+    "vn_smaller": true,
+    "ood_wall_dataproof": true,
+    "knob_ok": true,
+    "passed": false
+  }
+}

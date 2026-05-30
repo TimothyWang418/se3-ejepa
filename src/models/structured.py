@@ -37,8 +37,10 @@ from torch import nn
 __all__ = [
     "VNLinear",
     "VNReLU",
+    "VNTensorProduct",
     "StructuredStateEncoder",
     "VNPredictor",
+    "VNTPPredictor",
     "extract_pusht_vectors",
 ]
 
@@ -80,6 +82,55 @@ class VNReLU(nn.Module):
         q_hat = q / (q.norm(dim=-1, keepdim=True) + self.eps)
         dot = (x * q_hat).sum(dim=-1, keepdim=True)  # (B, C, 1) invariant scalar
         return torch.where(dot >= 0, x, x - dot * q_hat)
+
+
+class VNTensorProduct(nn.Module):
+    r"""Equivariant **bilinear** (degree-2) layer via the SO(3) cross product. ``(B, C_in, 3) -> (B, C_out, 3)``.
+
+    The vanilla VN layers (:class:`VNLinear`, :class:`VNReLU`) are **degree-1 homogeneous**:
+    a composition only ever takes *linear combinations* of the input vectors, so it can never
+    form a **product** of two distinct input vectors. The torque coupling in an interacting
+    SO(3) world (Step 24), $\omega=\hat r\times a$, is exactly such a product, which is why a
+    degree-1 VN predictor hits a hard cross-product ceiling and a plain MLP fits the interaction
+    better in-distribution. This layer supplies the missing primitive.
+
+    Group theory. For two type-1 (vector, $\ell=1$) features the tensor product decomposes as
+    $$ \mathbf 1 \otimes \mathbf 1 \;=\; \mathbf 0 \,\oplus\, \mathbf 1 \,\oplus\, \mathbf 2 , $$
+    a scalar (dot product), a vector (the **antisymmetric** part $=$ cross product), and a
+    symmetric-traceless $\ell{=}2$ part. We realise the $\mathbf 1$ channel: project the input to
+    two learned channel-mixes $U=W_uX$, $V=W_vX$ (each :class:`VNLinear`, so still equivariant) and
+    return their channel-wise cross product
+    $$ \mathrm{out}_o \;=\; U_o \times V_o , \qquad U_o,V_o\in\mathbb R^3 . $$
+
+    Equivariance is exact for **proper** rotations $R\in\mathrm{SO}(3)$:
+    $(RU)\times(RV)=R\,(U\times V)$. Under an *improper* $R$ ($\det R=-1$) the cross product is a
+    **pseudovector**, $(RU)\times(RV)=\det(R)\,R(U\times V)=-R(U\times V)$ — so this layer is
+    $\mathrm{SO}(3)$-equivariant but **not** $\mathrm{O}(3)$-equivariant. That is the correct and
+    intended scope: the Step-24 teacher's torque is itself built from cross products and is likewise
+    only $\mathrm{SO}(3)$- (not $\mathrm{O}(3)$-) equivariant, and the project tests generalisation
+    over proper rotations throughout. There is no bias and no nonlinearity here — the bilinear map is
+    its own (degree-2) nonlinearity.
+
+    Only defined for ``dim == 3`` (in 2D the cross product $u\times v$ is a pseudo-*scalar*, the
+    $\mathfrak{so}(2)$ generator coefficient — a different representation that would need a separate
+    type-0 channel). Cf. Deng et al., *Vector Neurons* (ICCV 2021), which omits this $\ell{=}1$
+    bilinear; the construction here is the SO(3) cross-product instance of an e3nn-style
+    tensor-product layer (Geiger & Smidt, *e3nn*, 2022).
+    """
+
+    def __init__(self, in_channels: int, out_channels: int):
+        super().__init__()
+        self.wu = VNLinear(in_channels, out_channels)
+        self.wv = VNLinear(in_channels, out_channels)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        # x: (B, C_in, 3) -> (B, C_out, 3); both factors are equivariant channel-mixes, and the
+        # cross product of two type-1 vectors is the equivariant (antisymmetric) 1⊗1->1 part.
+        if x.shape[-1] != 3:
+            raise ValueError(f"VNTensorProduct is SO(3)-only: expected last dim 3, got {x.shape[-1]}.")
+        u = self.wu(x)
+        v = self.wv(x)
+        return torch.cross(u, v, dim=-1)
 
 
 class StructuredStateEncoder(nn.Module):
@@ -161,6 +212,86 @@ class VNPredictor(nn.Module):
         a_vec = a.reshape(b, self.n_act, self.dim)
         x = torch.cat([z_vec, a_vec], dim=1)  # (B, n_lat + n_act, dim)
         delta = self.l3(self.a2(self.l2(self.a1(self.l1(x)))))
+        return (z_vec + delta).reshape(b, -1)  # residual, equivariant
+
+
+class VNTPPredictor(nn.Module):
+    r"""SO(3)-equivariant latent dynamics with **tensor-product (bilinear) messages**.
+
+    Identical interface and residual structure to :class:`VNPredictor`
+    (``forward: (B, latent_dim), (B, action_dim) -> (B, latent_dim)``), but each hidden
+    block carries a :class:`VNTensorProduct` branch alongside the usual :class:`VNLinear`
+    branch. This lifts the predictor from **degree-1** (linear combinations only) to a
+    polynomial of the input vectors, which is what the interacting SO(3) teacher requires.
+
+    Why two tensor-product compositions. The Step-24 object-interaction teacher applies a
+    **torque-on-points** update
+    $$ \Delta \tilde x_k \;=\; \kappa\,\big(\omega_i \times \tilde x_k\big), \qquad
+       \omega_i \;=\; \hat r_{ij}\times a_i , $$
+    i.e. the target is the **trilinear** quantity $(\hat r_{ij}\times a_i)\times\tilde x_k$ —
+    degree-3 in the input vectors. A degree-1 VN predictor cannot even form the inner product
+    $\hat r_{ij}\times a_i$ (a degree-2 term), which is the ceiling diagnosed in Step 24. Here:
+
+    * **block 1** mixes a linear pass-through ``lin1`` (keeps degree-1 copies of positions /
+      action available downstream) with a tensor-product branch ``tp1`` that forms the degree-2
+      cross products $\hat r_{ij}\times a_i$;
+    * **block 2** crosses block-1's degree-2 channels against the surviving degree-1 channels
+      (``tp2``), yielding the degree-3 torque $(\hat r_{ij}\times a_i)\times\tilde x_k$.
+
+    Concatenating ``[lin, tp]`` at each block is what keeps **both** degrees alive, so the second
+    cross product has a degree-1 factor to multiply. :class:`VNReLU` is degree-1 positively
+    homogeneous, so it preserves these degrees while adding capacity.
+
+    Equivariance. Every branch — :class:`VNLinear`, :class:`VNReLU`, :class:`VNTensorProduct` —
+    is $\mathrm{SO}(3)$-equivariant, and a residual sum of equivariant tensors is equivariant, so
+    $$ f_\phi\big(\rho(g)\,z,\; R(g)\,a\big) \;=\; \rho(g)\, f_\phi(z, a), \qquad g\in\mathrm{SO}(3). $$
+    Because the cross product is a **pseudovector**, the predictor is $\mathrm{SO}(3)$- but not
+    $\mathrm{O}(3)$-equivariant — matching the teacher, which is built from the same cross products.
+    ``dim`` must be ``3`` (the cross product is the $\ell{=}1$ piece of $\mathbf 1\otimes\mathbf 1$
+    in 3D; see :class:`VNTensorProduct`). Cf. Deng et al., *Vector Neurons* (ICCV 2021) for the
+    linear/nonlinear primitives and Geiger & Smidt, *e3nn* (2022) for the tensor-product view.
+    """
+
+    def __init__(
+        self,
+        latent_dim: int = 48,
+        action_dim: int = 6,
+        hidden: int = 64,
+        dim: int = 3,
+        tp_channels: int | None = None,
+    ):
+        super().__init__()
+        if dim != 3:
+            raise ValueError(f"VNTPPredictor uses the SO(3) cross product; dim must be 3, got {dim}.")
+        if latent_dim % dim != 0 or action_dim % dim != 0:
+            raise ValueError(f"latent_dim and action_dim must be divisible by dim={dim}.")
+        self.dim = dim
+        self.n_lat = latent_dim // dim
+        self.n_act = action_dim // dim
+        n_in = self.n_lat + self.n_act
+        tp = tp_channels if tp_channels is not None else hidden
+        # block 1: degree-1 pass-through ++ degree-2 cross products of the raw [z, a] channels
+        self.lin1 = VNLinear(n_in, hidden)
+        self.tp1 = VNTensorProduct(n_in, tp)
+        self.act1 = VNReLU(hidden + tp)
+        # block 2: a second tensor product -> reaches the degree-3 (trilinear) torque
+        self.lin2 = VNLinear(hidden + tp, hidden)
+        self.tp2 = VNTensorProduct(hidden + tp, tp)
+        self.act2 = VNReLU(hidden + tp)
+        # project the degree-{1,2,3} feature stack down to the latent residual
+        self.out = VNLinear(hidden + tp, self.n_lat)
+
+    def forward(self, z: torch.Tensor, a: torch.Tensor) -> torch.Tensor:
+        # z: (B, latent_dim), a: (B, action_dim) -> (B, latent_dim)
+        b = z.shape[0]
+        z_vec = z.reshape(b, self.n_lat, self.dim)
+        a_vec = a.reshape(b, self.n_act, self.dim)
+        x = torch.cat([z_vec, a_vec], dim=1)  # (B, n_lat + n_act, 3)
+        h = torch.cat([self.lin1(x), self.tp1(x)], dim=1)  # (B, hidden + tp, 3): degree-{1, 2}
+        h = self.act1(h)
+        h = torch.cat([self.lin2(h), self.tp2(h)], dim=1)  # second TP -> includes degree-3
+        h = self.act2(h)
+        delta = self.out(h)
         return (z_vec + delta).reshape(b, -1)  # residual, equivariant
 
 

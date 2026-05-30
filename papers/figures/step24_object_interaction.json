@@ -1,0 +1,88 @@
+{
+  "mode": "FULL",
+  "config": {
+    "N_OBJ": 2,
+    "P": 24,
+    "D_SCENE": 96,
+    "A_SCENE": 6,
+    "A_SCENE_AUG": 12,
+    "C_INT": 0.8,
+    "N_TRAIN": 1500,
+    "N_TEST": 400,
+    "EPOCHS": 60,
+    "K_OOD": 6,
+    "VAR_COEF": 0.1
+  },
+  "params": {
+    "VN-MP": 16920,
+    "VN-Set": 16856,
+    "MLP-MP": 62304
+  },
+  "latent_std": {
+    "VN-MP": 0.4771336019039154,
+    "VN-Set": 0.4454890191555023,
+    "MLP-MP": 1.1521501541137695
+  },
+  "equiv_posttrain": {
+    "VN-MP": {
+      "se3_comp": 3.504753112792969e-05,
+      "perm_comp": 0.0
+    },
+    "VN-Set": {
+      "se3_comp": 4.780292510986328e-05,
+      "perm_comp": NaN
+    },
+    "MLP-MP": {
+      "se3_comp": 8.845396041870117,
+      "perm_comp": 0.0
+    }
+  },
+  "indist": {
+    "VN-MP": 0.33113333582878113,
+    "VN-Set": 0.4499129354953766,
+    "MLP-MP": 0.06656986474990845
+  },
+  "channel_factor": 1.358706257614645,
+  "global_ood": {
+    "VN-MP": {
+      "seen": 0.33113333582878113,
+      "ood": 0.3311333159605662,
+      "ratio": 0.9999999399993514
+    },
+    "VN-Set": {
+      "seen": 0.4499129354953766,
+      "ood": 0.44991296033064526,
+      "ratio": 1.000000055200166
+    },
+    "MLP-MP": {
+      "seen": 0.06656986474990845,
+      "ood": 1.133076439301173,
+      "ratio": 17.02086136959939
+    }
+  },
+  "rel_arrange_ood": {
+    "VN-MP": {
+      "seen": 0.33113333582878113,
+      "ood": 0.47680583596229553,
+      "ratio": 1.4399209755457456
+    },
+    "VN-Set": {
+      "seen": 0.4499129354953766,
+      "ood": 0.7437813878059387,
+      "ratio": 1.6531673777883231
+    },
+    "MLP-MP": {
+      "seen": 0.06656986474990845,
+      "ood": 0.8776980042457581,
+      "ratio": 13.18461450302053
+    }
+  },
+  "verdict": {
+    "passed": true,
+    "ok_vnmp_equiv": true,
+    "ok_vnmp_fits": true,
+    "ok_channel": true,
+    "ok_global": true,
+    "ok_mlp_no_equiv": true
+  }
+}

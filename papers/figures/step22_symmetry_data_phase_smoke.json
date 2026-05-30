@@ -57,11 +57,12 @@
   },
   "guards": {
     "ood_g0_wall": true,
-    "ood_break_robust": true,
+    "ood_break_located": true,
     "ood_wall_dataproof": true,
     "seen_capacity_wins": false,
-    "seen_gap_widens": true,
+    "seen_capacity_early": false,
     "knob_ok": true,
     "passed": false
-  }
+  },
+  "ood_break_located_corner": null
 }

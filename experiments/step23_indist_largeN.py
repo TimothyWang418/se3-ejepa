@@ -172,7 +172,7 @@ def main() -> None:
     # Same knobs as Step 22 (g=0 is exactly SO(3)); N pushed PAST 512 into the Step-16 regime.
     G_VALUES = [0.0, 0.8] if SMOKE else [0.0, 0.4, 0.8]
     N_GRID = [256, 512] if SMOKE else [512, 1024, 2048]
-    SEEDS = [0] if SMOKE else [0, 1]
+    SEEDS = [0] if SMOKE else [0, 1, 2, 3, 4]   # hardened 2026-05-30: 5 seeds so the no-widening std is a credible error bar
     EPOCHS = 30 if SMOKE else 150   # FIXED epochs (convergence), not fixed total updates -- see docstring
     N_TEST = 80 if SMOKE else 400
     VAR_COEF = 0.1
