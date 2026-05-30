@@ -1,0 +1,42 @@
+# Citation File Format — https://citation-file-format.github.io
+# Author + repo are filled in. Remaining: the arXiv ID (uncomment preferred-citation once posted).
+cff-version: 1.2.0
+message: "If you use this software or its results, please cite it as below."
+title: "Exact equivariance, kept through training, buys zero-shot generalisation across the symmetry group"
+abstract: >-
+  A latent world model built from an equivariant encoder and an equivariant predictor inherits a
+  provable symmetry of its training loss: when the world's dynamics carries a group G acting on
+  latents by an orthogonal representation, one-step prediction error is exactly invariant across the
+  whole group, so fitting on a thin slice of orientations mathematically determines the model on the
+  entire orbit (zero-shot generalisation across the group). Verified end-to-end at laptop scale
+  (CPU/MPS, fully seeded) in both 2D SO(2) on real PushT and 3D SE(3) on point clouds.
+type: software
+authors:
+  - given-names: "Hongbo"
+    family-names: "Wang"
+    affiliation: "Department of Mathematics, Stony Brook University, Stony Brook, NY 11794, USA"
+date-released: "2026-05-30"
+license: Apache-2.0
+repository-code: "https://github.com/TimothyWang418/se3-ejepa"
+keywords:
+  - equivariance
+  - "SE(3)"
+  - "SO(3)"
+  - JEPA
+  - world model
+  - geometric deep learning
+  - active inference
+  - sample efficiency
+# Once the preprint is posted, point citations at the arXiv article:
+# preferred-citation:
+#   type: article
+#   title: "Exact equivariance, kept through training, buys zero-shot generalisation across the symmetry group"
+#   authors:
+#     - given-names: "Hongbo"
+#       family-names: "Wang"
+#       affiliation: "Department of Mathematics, Stony Brook University, Stony Brook, NY 11794, USA"
+#   year: 2026
+#   identifiers:
+#     - type: other
+#       value: "arXiv:XXXX.XXXXX"
+#       description: arXiv preprint

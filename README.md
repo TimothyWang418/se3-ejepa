@@ -153,4 +153,38 @@ This is a focused empirical claim, not a scaling result. Deliberately **out of s
 
 ---
 
+## Citation
+
+If you use this work, please cite it. (The arXiv `eprint` ID will be filled in once the preprint is
+posted; a Zenodo DOI for the code archive will be added at the first tagged release.)
+
+```bibtex
+@misc{se3ejepa2026,
+  title         = {Exact equivariance, kept through training, buys zero-shot
+                   generalisation across the symmetry group},
+  author        = {Wang, Hongbo},
+  year          = {2026},
+  eprint        = {XXXX.XXXXX},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG},
+  howpublished  = {\url{https://github.com/TimothyWang418/se3-ejepa}}
+}
+```
+
+Machine-readable citation metadata is in [`CITATION.cff`](CITATION.cff).
+
+---
+
+## License
+
+A deliberate split — permissive on both sides, the right instrument for each artifact:
+
+- **Code** — [Apache License 2.0](LICENSE) (permissive + an explicit patent grant).
+- **Paper & figures** (everything under [`papers/`](papers/)) — **CC BY 4.0** (reuse freely; just
+  credit the author).
+
+Copyright © 2026 Hongbo Wang.
+
+---
+
 *Laptop-scale (CPU/MPS), fully seeded and deterministic. Last updated: 2026-05-30.*

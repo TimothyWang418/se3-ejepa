@@ -1,20 +1,28 @@
 # arXiv submission prep
 
-Working notes + ready-to-use metadata for putting this work on arXiv. **Nothing here is
-submitted automatically** — the items under "Decisions needed" require your input.
+Working notes + ready-to-use metadata for putting this work on arXiv. The structural decisions are
+now **made** (recorded below); only **two free-text inputs** remain (author block + repo URL), after
+which the Markdown -> LaTeX conversion can run.
 
 ---
 
-## Recommendation: submit the *core* paper
+## Plan (decided): submit *both papers as one document*
 
-Submit **`equivariance_generalization_core.md`** (the focused [A]+[B]+[C] write-up), **not**
-`geometric_payoff.md` (the 27-step internal results log — too long and log-shaped for a venue/arXiv
-paper). The payoff log can live in the repo and be cited as "full results log" / supplementary.
+One arXiv submission, one PDF:
 
-The core paper is conversion-friendly: 1067 lines, 21 sections, **3 figures** (`killer_figure`,
-`where_the_bet_pays`, `step23_indist_largeN` — all in `papers/figures/`, the first two also as PDF),
-and only **2 wikilinks** (both pointing to `geometric_payoff.md`). All math is standard `$...$` /
-`$$...$$`, which pandoc converts natively.
+- **Main body** = `equivariance_generalization_core.md` — the focused [A]+[B]+[C] write-up (the
+  reviewable claim).
+- **Appendix** = `geometric_payoff.md` — the 27-step full results log, attached under `\appendix` (the
+  complete evidence trail).
+
+Why one document and not core-only-with-a-supplement: the appendix then lives *inside* the timestamped
+arXiv record (better for priority), while a reader still meets the core claim first and only descends
+into the 27-step log if they want the receipts.
+
+Combined size: core 1067 lines / 3 figures + 2 cross-references; payoff 2121 lines / 4 figures / 0
+wikilinks. **Four unique figure files total** (`killer_figure`, `where_the_bet_pays`,
+`step23_indist_largeN`, `step24_object_interaction` — all in `papers/figures/`; the first two also as
+PDF). All math is standard `$...$` / `$$...$$`, which pandoc converts natively.
 
 ---
 
@@ -46,18 +54,48 @@ field, which truncates around 1920 characters.)
 
 - **Title:** *Exact equivariance, kept through training, buys zero-shot generalisation across the
   symmetry group* (matches the paper's H1; consider a shorter variant if a venue caps title length).
+- **Authors:** Hongbo Wang (Department of Mathematics, Stony Brook University, Stony Brook, NY 11794, USA).
 - **Primary category:** `cs.LG` (Machine Learning).
 - **Cross-list:** `cs.AI`, `cs.RO` (closed-loop PushT control), `stat.ML`. Optionally `cs.CV` (3D
   point clouds).
-- **Comments:** e.g. `Laptop-scale (CPU/MPS), fully seeded and deterministic; 3 figures. Code: <repo URL>. Full 27-step results log included as supplementary.`
+- **License:** **CC BY 4.0** (decided — see "Licensing").
+- **Comments:** e.g. `Laptop-scale (CPU/MPS), fully seeded and deterministic; 4 figures. Full 27-step results log included as an appendix. Code (Apache-2.0): https://github.com/TimothyWang418/se3-ejepa`
 - **MSC / ACM (optional):** ACM `I.2.6` (Learning), `I.2.9` (Robotics); MSC `68T07`.
 
 ---
 
-## Conversion path (Markdown -> LaTeX -> arXiv)
+## Licensing (decided)
 
-Neither `pandoc` nor a LaTeX engine is currently installed. arXiv compiles submitted **LaTeX source**
-on its end, so a local LaTeX engine is only needed to proof-compile.
+A deliberate split — permissive on both sides, but the right instrument for each artifact:
+
+| Artifact | License | Why |
+|---|---|---|
+| **Paper** (this arXiv PDF + figures) | **CC BY 4.0** | Most open for prose/figures; only obligation on reusers is to credit you. Selected on the arXiv license screen. |
+| **Code** (the repo) | **Apache 2.0** | Permissive like MIT but adds an explicit patent grant + contributor terms — a bit more protection. `LICENSE` (canonical Apache 2.0 text) is already in the repo root. |
+
+---
+
+## Priority / credit strategy (decided)
+
+The principle: **maximise spread with permissive licenses, establish priority with a timestamped
+public record, and convert that spread into credit via an attribution requirement.** Concretely:
+
+1. **arXiv submission** — itself a dated, citable record; this is the primary priority anchor.
+2. **Zenodo DOI** — archive the repo at a tagged release (`v0.1`) to mint a DOI, so the *software* is
+   independently citable. (Connect the GitHub repo to Zenodo, then cut a release; Zenodo captures the
+   tarball + assigns the DOI automatically.)
+3. **Public commit history** — the repo goes public with its full history intact: an independent,
+   third-party-timestamped trail of when each result landed.
+4. **BibTeX in the README** — an explicit citation block (+ `CITATION.cff`) so anyone building on the
+   work has a one-click way to cite it. Attribution-by-default is what turns reach into credit.
+
+---
+
+## Conversion path (Markdown -> LaTeX -> arXiv), via pandoc
+
+arXiv compiles the submitted **LaTeX source** on its end, so a local LaTeX engine is only needed to
+proof-compile. For "both as one" we convert each Markdown file to a LaTeX *fragment* (no preamble) and
+stitch them with a thin wrapper that puts the payoff log under `\appendix`.
 
 ```bash
 # 1. install the converter (one-time)
@@ -65,38 +103,66 @@ brew install pandoc
 #    optional, to proof-compile locally before submitting:
 brew install tectonic            # lightweight, or: brew install --cask mactex-no-gui
 
-# 2. convert the core paper to standalone LaTeX
+# 2. convert each paper to a LaTeX *fragment* (body only, no \documentclass)
 cd ~/Workspace/se3-ejepa/papers
-pandoc equivariance_generalization_core.md \
-  -o arxiv/main.tex --standalone \
-  --metadata title="Exact equivariance, kept through training, buys zero-shot generalisation across the symmetry group"
+mkdir -p arxiv && cp figures/killer_figure.png figures/where_the_bet_pays.png \
+  figures/step23_indist_largeN.png figures/step24_object_interaction.png arxiv/
+pandoc equivariance_generalization_core.md -o arxiv/core_body.tex
+pandoc geometric_payoff.md                 -o arxiv/payoff_body.tex
 
-# 3. proof-compile (optional)
+# 3. write a thin arxiv/main.tex wrapper:
+#    \documentclass{article}
+#    \usepackage{amsmath,amssymb,graphicx,hyperref,cleveref}
+#    \graphicspath{{./}}            % figures copied next to main.tex in step 2
+#    \title{Exact equivariance, kept through training, buys zero-shot
+#           generalisation across the symmetry group}
+#    \author{Hongbo Wang \\ Department of Mathematics, Stony Brook University}
+#    \date{}
+#    \begin{document}\maketitle
+#    \input{core_body}
+#    \appendix
+#    \section{Full 27-step results log}\label{app:payoff}
+#    \input{payoff_body}
+#    \end{document}
+
+# 4. proof-compile (optional)
 cd arxiv && tectonic main.tex      # or: pdflatex main.tex
 
-# 4. submit main.tex + the 3 figures from papers/figures/ to arXiv
+# 5. submit main.tex + core_body.tex + payoff_body.tex + the 4 figures to arXiv
 #    (arxiv accepts PNG; killer_figure.pdf / where_the_bet_pays.pdf also exist)
 ```
 
-**Hand-cleanup after pandoc (small, ~15 min):**
-- The 2 `[[geometric_payoff.md]]` wikilinks -> plain text "the full results log" or a footnote (pandoc
-  leaves them as literal `[[...]]`).
-- Confirm the 3 `\includegraphics` paths resolve (copy the 3 figures next to `main.tex`).
-- Spot-check that dense inline math (e.g. `$\mathrm{SE}(3)\rtimes S_O$`, `$\rho(g)$`) survived.
-- Add `\author{...}` and `\date{}` (pandoc leaves these empty).
+**Hand-cleanup after pandoc (still small — the appendix is cleaner than expected):**
+- The 2 `[[geometric_payoff.md]]` cross-references in the core body (now pointing *at the appendix*) ->
+  `\Cref{app:payoff}` / "see the full results log in the appendix" (pandoc leaves them literal
+  `[[...]]`).
+- The payoff log has **0 wikilinks** and **4 figure embeds**; the core has **3**. `killer_figure`
+  appears in both -> it will render twice (body intro + appendix intro); leave it, or drop one.
+- Confirm all `\includegraphics` paths resolve (step 2 copies the 4 figures next to `main.tex`).
+- Spot-check that dense inline math (e.g. `$\mathrm{SE}(3)\rtimes S_O$`, `$\rho(g)$`,
+  `$\mathbf 1\otimes\mathbf 1\to\mathbf 1$`) survived.
+- `\author{...}` and `\date{}` are filled in the wrapper (pandoc would leave them empty).
 
 ---
 
-## Decisions needed (yours)
+## Inputs (now resolved)
 
-1. **Which paper** — core paper as the submission, payoff log as supplementary? (recommended)
-2. **Authorship** — name(s) + affiliation as you want them listed on arXiv.
-3. **Primary category** — `cs.LG` recommended; confirm cross-lists.
-4. **Conversion path** — install pandoc and convert to LaTeX (arXiv-preferred), or submit a PDF?
-5. **License** — arXiv default (perpetual, non-exclusive) vs. CC BY 4.0 (more open).
-6. **Code release** — is the repo going public (so the "Code:" URL in Comments resolves)? Add a
-   `LICENSE` file if so.
+Both free-text values are filled in across this doc, the README, `LICENSE`/copyright, and
+`CITATION.cff`:
+
+1. **Author block** — Hongbo Wang, Department of Mathematics, Stony Brook University, Stony Brook, NY
+   11794, USA.
+2. **Repo URL** — `https://github.com/TimothyWang418/se3-ejepa` (created **private + empty** to lock the
+   address; flip to **public** at submission time, since arXiv's "Code:" link must resolve when v1 goes
+   live).
+
+The only value still outstanding is the **arXiv ID itself** — it doesn't exist until the moment you
+submit, and it back-fills the BibTeX `eprint` (currently `XXXX.XXXXX`) and the `CITATION.cff`
+`preferred-citation`.
+
+**One-time blocker before converting:** `brew install pandoc` (not currently installed).
 
 ---
 
-*Prepared 2026-05-30. Update the repo URL / author block before submitting.*
+*Prepared 2026-05-30. Decisions locked: both-papers-as-one, pandoc->LaTeX, paper CC BY 4.0, code
+Apache 2.0, repo public. Author + repo URL filled. Install pandoc, then convert.*
