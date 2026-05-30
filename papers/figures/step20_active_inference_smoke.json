@@ -1,0 +1,84 @@
+{
+  "mode": "SMOKE",
+  "config": {
+    "K": 5,
+    "N_TRAIN": 200,
+    "EPOCHS": 3,
+    "BETAS": [
+      0.0,
+      4.0
+    ],
+    "N_TASKS": 2
+  },
+  "params": {
+    "VN": 74456,
+    "MLP": 494368
+  },
+  "latent_std": {
+    "VN": 0.11313562840223312,
+    "MLP": 0.03156113997101784
+  },
+  "invariance_init": {
+    "VN": {
+      "disagree": 4.842877388000488e-08,
+      "entropy": 1.52587890625e-05
+    },
+    "MLP": {
+      "disagree": 0.717686653137207,
+      "entropy": 0.23851776123046875
+    }
+  },
+  "invariance_post": {
+    "VN": {
+      "disagree": 3.818422555923462e-08,
+      "entropy": 1.52587890625e-05
+    },
+    "MLP": {
+      "disagree": 0.20116505026817322,
+      "entropy": 0.846710205078125
+    }
+  },
+  "total_efe_invariance": {
+    "VN": 9.5367431640625e-07,
+    "MLP": 0.22027206420898438
+  },
+  "calibration": {
+    "VN": {
+      "seen": 0.011978154070675373,
+      "cov": 0.20652014017105103,
+      "reorient": 0.011978153139352798,
+      "reorient_ratio": 0.9999999222482389,
+      "novel": 0.014788382686674595,
+      "novel_ratio": 1.2346128292738492,
+      "novel_rot_inv": 6.297663472386793e-08
+    },
+    "MLP": {
+      "seen": 0.3221026062965393,
+      "cov": 0.22966505587100983,
+      "reorient": 0.5133904814720154,
+      "reorient_ratio": 1.5938724848422043,
+      "novel": 0.448124498128891,
+      "novel_ratio": 1.391247662604541,
+      "novel_rot_inv": 0.0018346612852950504
+    }
+  },
+  "beta_sweep": {
+    "0.0": {
+      "prag": 2.33839613199234,
+      "epi": 3.087727665901184
+    },
+    "4.0": {
+      "prag": 5.688597202301025,
+      "epi": 4.255750417709351
+    }
+  },
+  "plan_equivariance": 1.1920928955078125e-07,
+  "verdict": {
+    "passed": true,
+    "ok_vn_inv": true,
+    "ok_mlp_breaks": true,
+    "ok_calib": true,
+    "ok_knob": true,
+    "ok_plan_equiv": true
+  }
+}

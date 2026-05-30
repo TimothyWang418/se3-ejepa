@@ -1,0 +1,92 @@
+{
+  "mode": "FULL",
+  "config": {
+    "N_OBJ": 2,
+    "P": 24,
+    "D_SCENE": 96,
+    "A_SCENE": 6,
+    "N_TRAIN": 1500,
+    "N_TEST": 400,
+    "EPOCHS": 60,
+    "K_OOD": 6,
+    "VAR_COEF": 0.1,
+    "T_ARR": 3.0
+  },
+  "params": {
+    "VN-Set": 16856,
+    "MLP-Slot": 61920,
+    "MLP-Global": 245440
+  },
+  "latent_std": {
+    "VN-Set": 0.578785240650177,
+    "MLP-Slot": 1.1567462682724,
+    "MLP-Global": 1.4251503944396973
+  },
+  "equiv_posttrain": {
+    "VN-Set": {
+      "trans_inv": 2.276897430419922e-05,
+      "perm_enc": 0.0,
+      "se3_comp": 3.635883331298828e-05,
+      "perm_comp": 0.0
+    },
+    "MLP-Slot": {
+      "trans_inv": 9.5367431640625e-07,
+      "perm_enc": 0.0,
+      "se3_comp": 4.928170204162598,
+      "perm_comp": 0.0
+    },
+    "MLP-Global": {
+      "trans_inv": 3.654949426651001,
+      "perm_enc": 6.66553258895874,
+      "se3_comp": 6.040952205657959,
+      "perm_comp": 6.4169206619262695
+    }
+  },
+  "leakage": {
+    "VN-Set": 0.0,
+    "MLP-Slot": 0.0,
+    "MLP-Global": 0.9350019693374634
+  },
+  "orient_ood": {
+    "VN-Set": {
+      "seen": 0.2951771914958954,
+      "ood": 0.2951770673195521,
+      "ratio": 0.9999995793159266
+    },
+    "MLP-Slot": {
+      "seen": 0.09707862883806229,
+      "ood": 1.7239586214224498,
+      "ratio": 17.758374238043682
+    },
+    "MLP-Global": {
+      "seen": 0.15219257771968842,
+      "ood": 1.8911722004413605,
+      "ratio": 12.426178916060955
+    }
+  },
+  "arrange_ood": {
+    "VN-Set": {
+      "seen": 0.2951771914958954,
+      "ood": 0.29517710705598194,
+      "ratio": 0.99999971393483
+    },
+    "MLP-Slot": {
+      "seen": 0.09707862883806229,
+      "ood": 0.09707862635453542,
+      "ratio": 0.9999999744173677
+    },
+    "MLP-Global": {
+      "seen": 0.15219257771968842,
+      "ood": 0.9596178034941355,
+      "ratio": 6.305286485531379
+    }
+  },
+  "verdict": {
+    "passed": true,
+    "ok_vn_equiv": true,
+    "ok_factor_perm": true,
+    "ok_leak": true,
+    "ok_orient": true,
+    "ok_arrange": true
+  }
+}

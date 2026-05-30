@@ -1,0 +1,67 @@
+{
+  "G_values": [
+    0.0,
+    0.4
+  ],
+  "N_grid": [
+    64,
+    256
+  ],
+  "seeds": [
+    0
+  ],
+  "updates": 150,
+  "n_test": 80,
+  "noneq_fraction": {
+    "0.0": 2.545711800172583e-13,
+    "0.4": 0.9236073866367939
+  },
+  "grid": {
+    "0.0": {
+      "64": {
+        "vn_seen": 1.1944700479507446,
+        "vn_ood": 1.0569266080856323,
+        "mlp_seen": 13.333139419555664,
+        "mlp_ood": 43.48322296142578
+      },
+      "256": {
+        "vn_seen": 0.7477726340293884,
+        "vn_ood": 0.8281024694442749,
+        "mlp_seen": 12.922829627990723,
+        "mlp_ood": 42.367252349853516
+      }
+    },
+    "0.4": {
+      "64": {
+        "vn_seen": 0.8646208047866821,
+        "vn_ood": 0.8457927703857422,
+        "mlp_seen": 12.345709800720215,
+        "mlp_ood": 29.982999801635742
+      },
+      "256": {
+        "vn_seen": 0.6234310865402222,
+        "vn_ood": 0.8374297022819519,
+        "mlp_seen": 11.208893775939941,
+        "mlp_ood": 31.87251091003418
+      }
+    }
+  },
+  "params": {
+    "VN": 16856,
+    "MLP": 124512
+  },
+  "ood_vn_win_fraction": 1.0,
+  "seen_crossover_N_star": {
+    "0.0": null,
+    "0.4": null
+  },
+  "guards": {
+    "ood_g0_wall": true,
+    "ood_break_robust": true,
+    "ood_wall_dataproof": true,
+    "seen_capacity_wins": false,
+    "seen_gap_widens": true,
+    "knob_ok": true,
+    "passed": false
+  }
+}
