@@ -1,0 +1,41 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# --- Virtual environments ---
+.venv/
+venv/
+env/
+
+# --- Vendored / third-party (large, cloned separately; see requirements.txt) ---
+third_party/
+
+# --- Test / tooling caches ---
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+
+# --- Experiment outputs we do NOT version ---
+# (checkpoints, wandb runs, raw rollouts). The small reproducible artifacts under
+# papers/figures/ — the *.json result dumps and the figure PNG/PDF — ARE tracked.
+wandb/
+outputs/
+multirun/
+checkpoints/
+*.ckpt
+*.pt
+*.pth
+
+# --- OS / editor cruft ---
+.DS_Store
+*.swp
+.idea/
+.vscode/
