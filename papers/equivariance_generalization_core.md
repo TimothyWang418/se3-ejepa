@@ -1,5 +1,29 @@
 # Exact equivariance, kept through training, buys zero-shot generalisation across the symmetry group
 
+## Abstract
+
+A latent world model built from an equivariant encoder $E$ and an equivariant predictor $f$
+inherits a provable symmetry of its training loss: when the world's dynamics genuinely carries a
+group $G$ acting on latents by an *orthogonal* representation $\rho(g)$, the one-step prediction
+relMSE is **exactly invariant** across the whole group, so fitting the dynamics on a restricted
+slice of orientations *mathematically determines* it on the entire orbit (举一反三). We verify this
+end-to-end at laptop scale (CPU/MPS, fully seeded). The symmetry **survives a real Muon/AdamW $+$
+EMA $+$ VICReg training run** — composed encode→predict residual $\sim\!10^{-6}$ after optimisation,
+not just at initialisation ([A]) — and one-step error is **flat to five digits across the group**
+while a same-hypothesis-class non-equivariant baseline fits the slice but breaks out-of-distribution
+([B]: VN ×1.00 vs baseline ×13.8 in 2D latent, ×17.2 in 3D, ×157 over the full $\mathrm{SE}(3)$
+ladder), with the equivariant model **$4.5$–$7.4\times$ smaller** and frequently *better*
+in-distribution. The same isometry argument lifts to a **closed-loop corollary** ([C]): under a
+*matching* equivariant planner the realised control trajectory at orientation $g$ is exactly
+$\rho(g)$ applied to the seen trajectory, so closed-loop control error is invariant across the
+group — **float-floor-exact in 2D/$\mathrm{SO}(2)$** on real PushT (paired $K{=}48$: VN seen-vs-OOD
+block-angle change $=0$; the baseline degrades with a 95% CI excluding $0$) and **statistically
+flat in 3D/$\mathrm{SE}(3)$** ($[0.977,0.999]$, disjoint from the baseline's $[1.049,1.234]$). We
+are explicit about what stays **out of scope** (§12): binary task-success sweeps, planner-free
+closed-loop invariance, and scaling — the standing caveat being Sutton's Bitter Lesson.
+
+---
+
 > A focused write-up of the project's most robust result — the **prediction/representation-level**
 > core ("[A] + [B]"), distilled from the full results log
 > [[geometric_payoff.md]] and demonstrated in **both** $\mathrm{SO}(2)$ (real PushT)
@@ -559,8 +583,15 @@ $g$ — equivariance buys nothing in-distribution, exactly as §9 found at $g=0$
 every break. The sharper, and *refuted*, question was whether the in-distribution gap **widens** as
 the world breaks the symmetry (Step 16 saw widening at $N=1200$). On this grid it does **not**: the
 $N=512$ in-wedge gap is flat at $\approx +0.2$ ($+0.285$ at $g{=}0$ versus $+0.218$ at $g{=}0.8$ —
-flat-to-*narrowing*). The Step-16 widening was an $N=1200$ phenomenon; at $N\le512$ both models
-simply fit the wedge and the capacity gap is roughly $g$-independent.
+flat-to-*narrowing*). Step 23 then closes the obvious escape — that the widening is merely a larger-$N$
+effect this grid never reached — by extending to $N\in\{512,1024,2048\}$ (past Step 16's $N{=}1200$)
+under a **fixed-epochs** budget so the $124$K baseline is fully converged at every $N$ (in-wedge relMSE
+falls to $0.059$ at $g{=}0,N{=}2048$, and $N{=}512$ reproduces Step 22's $600$-update gap as a built-in
+cross-check). The break-induced change in the in-wedge gap — gap at $g{=}0.8$ minus gap at $g{=}0$ — is
+$[-0.067,+0.062,-0.005]$ across $N{=}512/1024/2048$: non-monotone and inside the seed std $0.048$
+(Figure 3). So the no-widening is **not** a small-$N$ artifact; it survives to $N{=}2048$, and the lone
+Step-16 $N{=}1200$ widening was a single-slice fluctuation, not a capacity gap that grows with the
+break.
 
 **Verdict — two pre-registered predictions, both refuted, and the result is sharper for it.** We
 pre-registered (i) "the prior wins the *literal whole box*" and (ii) "the in-distribution gap
@@ -573,8 +604,30 @@ Question #1's "does equivariance help?" gets the two-sided map it deserves, and 
 boundary (§12) is *drawn at one corner* rather than asserted. Confidence ≈ **0.85** (the
 across-group near-total win and the data-proof wall, guarded in
 `experiments/step22_symmetry_data_phase.py`) / ≈ **0.6** (that the lone corner-crack and the
-no-widening generalise beyond this teacher, two seeds, and $N\le512$). The frontier and both phase
-panels are `figures/where_the_bet_pays.{png,pdf}`.
+no-widening generalise beyond this teacher, two seeds, and $N\le512$). The frontier (§9) and both
+$(g,N)$ phase panels (§10) are shown together in Figure 2.
+
+![Where the geometric bet pays off](figures/where_the_bet_pays.png)
+
+> **Figure 2.** Where the geometric bet pays off — a near-total, data-proof win *across the group*,
+> a wash-to-loss *in-distribution*. **(left)** The Step-21 sample-efficiency frontier under an exactly
+> $\mathrm{SO}(3)$ teacher: latent 1-step relMSE vs training-set size $N$, the VN's whole-group curve
+> descending while the baseline's is a wall. **(middle)** The Step-22 symmetry-break $g$ × data $N$
+> plane, scored on the **across-group** metric — the prior wins $24/25$ cells, cracking only at the
+> joint-extreme corner $(g{=}0.8,N{=}512)$. **(right)** The same plane scored **in-distribution**:
+> the higher-capacity baseline wins early at every $g$ ($N^\star\le64$). Regenerate with
+> `experiments/make_bet_figures.py`.
+
+![In-distribution gap does not widen with the break, even at large N](figures/step23_indist_largeN.png)
+
+> **Figure 3.** The in-distribution gap does *not* widen with the symmetry break — tested directly at
+> large data. Step 23 plots the in-wedge VN$-$MLP gap (mean $\pm$ seed std) against $\log_2 N$ for
+> $N\in\{512,1024,2048\}$, one line per break strength $g\in\{0,0.4,0.8\}$, under a **fixed-epochs**
+> ($150$) budget so the $124$K baseline is fully converged at every $N$ (more total updates at larger
+> $N$, $N{=}512$ reproducing Step 22's $600$). The lines stay overlapping: breaking the symmetry does
+> not open an in-distribution capacity gap that grows with data, refuting the conjecture that Step 16's
+> $N{=}1200$ widening was simply a larger-$N$ effect. Regenerate with
+> `experiments/step23_indist_largeN.py`.
 
 ---
 
@@ -677,18 +730,37 @@ mechanism* (the curiosity invariance and its $\beta$-knob), **not** a claimed ex
   wedge-only data plus the prior buys *whole-group* competence the baseline cannot reach at any $N$;
   it does **not** claim fewer samples to fit the training distribution.
 - **The across-group win (§10) is *near-total*, not the literal whole box, and the in-distribution
-  gap does *not* widen.** Step 22's $(g,N)$ plane refuted two pre-registered predictions: the prior
-  wins $24/25$ cells, **not** all $25$ — the data-proof wall cracks at the single joint-extreme
-  corner $(g{=}0.8,\,N{=}512)$, where the heavily-broken lab-axis term is orientation-free enough
-  for the high-capacity baseline to fit it ($\mathrm{VN}\,0.798$ vs $\mathrm{MLP}\,0.760$); and the
-  in-wedge capacity gap is flat-to-*narrowing* in $g$ ($+0.285$ at $g{=}0$ vs $+0.218$ at $g{=}0.8$
-  at $N{=}512$), **not** widening as the Step-16 $N{=}1200$ sweep had suggested. The honest headline
-  is *located*: a near-total, data-proof across-group win that fails only at the joint extreme, and a
-  wash-to-loss in-distribution — over two seeds and $N\le512$ only.
+  gap does *not* widen — now confirmed to $N{=}2048$.** Step 22's $(g,N)$ plane refuted two
+  pre-registered predictions: the prior wins $24/25$ cells, **not** all $25$ — the data-proof wall
+  cracks at the single joint-extreme corner $(g{=}0.8,\,N{=}512)$, where the heavily-broken lab-axis
+  term is orientation-free enough for the high-capacity baseline to fit it ($\mathrm{VN}\,0.798$ vs
+  $\mathrm{MLP}\,0.760$); and the in-wedge capacity gap is flat-to-*narrowing* in $g$ ($+0.285$ at
+  $g{=}0$ vs $+0.218$ at $g{=}0.8$ at $N{=}512$), **not** widening as the lone Step-16 $N{=}1200$ slice
+  had suggested. Step 23 then ruled out the large-$N$ escape directly: under a fixed-epochs
+  (fully-converged) budget to $N{=}2048$, the break-induced gap change stays inside the seed noise
+  ($[-0.067,+0.062,-0.005]$ across $N{=}512/1024/2048$, std $0.048$), so the no-widening is robust to
+  data, not a small-$N$ artifact. The honest headline is *located*: a near-total, data-proof
+  across-group win that fails only at the joint extreme, and a wash-to-loss in-distribution — over two
+  seeds, now spanning $N$ up to $2048$.
 
 ---
 
 ## Reproduce
+
+**Reproducibility checklist.**
+
+- **Environment.** Python 3.11, PyTorch 2.12, `e3nn` 0.6.0, NumPy 2.4, Matplotlib; dependencies
+  managed with `uv` (`uv sync` from `pyproject.toml`). No CUDA — everything runs on a laptop CPU/MPS.
+- **Determinism.** Every experiment sets explicit seeds (data, init, planner); re-running reproduces
+  the tables here. The `[A]`/`[B]` claims are *theorems* (§2), so they hold at init and post-training
+  regardless of seed; the closed-loop `[C]` CIs are over fixed task/CEM seeds (paired design, §6).
+- **Hardware / runtime.** All commands below finish in minutes-to-tens-of-minutes on a single CPU;
+  pass `STEP{n}_SMOKE=1` for a fast wiring check of the heavier 3D steps.
+- **Outputs.** Numeric dumps and figures land in `papers/figures/*.json` / `*.png`; the headline
+  figures are regenerated (no training) by `make_bet_figures.py`.
+- **Guards.** Each structural claim has a matching `tests/test_*.py` that checks equivariance/
+  invariance **at init and after training** and fails the non-equivariant control — listed per claim
+  below.
 
 ```bash
 cd ~/Workspace/se3-ejepa
@@ -708,6 +780,7 @@ $PRE .venv/bin/python experiments/step19_object_centric.py        # scene group 
 $PRE .venv/bin/python experiments/step20_active_inference.py       # active inference: EFE curiosity invariance in the equivariant latent (§8; STEP20_SMOKE=1)
 $PRE .venv/bin/python experiments/step21_sample_efficiency_frontier.py # sample-efficiency frontier: VN whole-group curve == in-wedge curve, MLP wall (§9; STEP21_SMOKE=1)
 $PRE .venv/bin/python experiments/step22_symmetry_data_phase.py    # (g x N) symmetry-break x data plane: prior wins across-group 24/25, data-proof wall, in-dist wash (§10)
+$PRE .venv/bin/python experiments/step23_indist_largeN.py          # large-N fixed-epochs in-dist gap: no widening to N=2048, refutes the large-N escape (§10 [C], Figure 3; STEP23_SMOKE=1)
 $PRE .venv/bin/python experiments/make_bet_figures.py             # render the headline figures: step21_frontier.png + where_the_bet_pays.{png,pdf} (§9-§10)
 $PRE .venv/bin/python tests/test_planner_equivariance.py          # the clean single-plan SE(3) theorem: plan(g.x)=g.plan(x) to 1.2e-7
 $PRE .venv/bin/python tests/test_set_equivariance.py              # scene-group SE(3)^O |x| S_O equivariance, init + post-train (§7)

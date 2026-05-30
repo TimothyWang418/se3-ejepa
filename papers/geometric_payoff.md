@@ -1,5 +1,32 @@
 # The geometric payoff: does SO(2)-equivariance buy sample efficiency and 举一反三?
 
+## Abstract
+
+Full results log for a contrarian bet (CLAUDE.md, Open Question #1): if the world carries a symmetry
+group, does *hard-wiring* that symmetry into a latent world model let it learn from fewer interactions
+and generalise zero-shot to configurations it never saw — 举一反三 — rather than relying on scale?
+Across $23$ steps on a laptop (CPU/MPS, no CUDA) we build a latent JEPA with an equivariant encoder
+(Vector Neurons in 2D, `e3nn` in 3D) and a jointly-equivariant predictor, and pit it against a
+$4.5$–$7.4\times$ parameter-richer non-equivariant baseline of the *same* hypothesis class. Three facts
+recur, each guarded by an equivariance unit test at init **and** after training. **[A]** The learned
+model stays equivariant to $\sim\!10^{-6}$ post-training, not merely at initialisation. **[B]** One-step
+prediction error is *exactly flat* across the whole group — a theorem, since orthogonal $\rho(R)$
+cancels in the relMSE ratio — giving an OOD/seen factor of $\times1.00$ versus the baseline's
+$\times13.8$ (2D latent), $\times17.2$ (3D SO(3)) and $\times157$ (full SE(3)). **[C]** Under a matching
+equivariant planner the closed-loop pose-control error is *orientation-invariant*: float-floor-exact in
+2D (paired $K{=}48$, seen-vs-OOD angle change $=0$) and statistically flat in 3D SE(3) (VN ratio
+$[0.977,0.999]$, disjoint from the MLP's $[1.049,1.234]$). The later steps *locate the boundary* of the
+bet rather than oversell it: a sample-efficiency frontier (Step 21) shows the payoff is a descending
+whole-group curve against a baseline *wall*; a symmetry-break $\times$ data phase diagram (Step 22) shows
+the prior wins $24/25$ cells — near-total and **data-proof** across the group — yet is a **wash-to-loss
+in-distribution** and cracks at exactly one joint-extreme corner; and a large-$N$ fixed-epochs test
+(Step 23) confirms the in-distribution gap does *not* widen with the break even at $N{=}2048$. Honest
+scope: everything is laptop-scale and silent on whether scale eventually beats the prior (Sutton's
+Bitter Lesson); the guarantee is exact only where the world's symmetry is real, and the across-group
+payoff is **not** an in-distribution sample-efficiency edge.
+
+---
+
 > Results log for the contrarian thesis (CLAUDE.md, open question #1): *if the
 > world has a symmetry, does building that symmetry into a latent world model let
 > it learn from fewer interactions and generalise to configurations it never saw?*
@@ -1246,10 +1273,10 @@ On its own training wedge the $7.4\times$-larger MLP takes over by the **second 
 symmetry level** ($N^\star\le64$): the capacity win Sutton predicts, immediate and near-total. But the
 Step-16 prediction that the in-distribution gap should **widen** with $g$ (the VN unable to fit the lab
 term in-wedge either) **does not hold at these data sizes**: the VN$-$MLP `seen` gap at $N{=}512$ is
-$+0.285$ at $g{=}0$ and $+0.218$ at $g{=}0.8$ — roughly flat, slightly *narrowing*. The Step-16
-widening was a higher-data ($N{=}1200$) phenomenon; at $N\le512$ both models are still data-limited and
-the fixed-axis term, being orientation-free, is easy for **both**, so the VN's in-wedge floor has not
-yet blown up. An honest correction to the single-slice story, not a hidden one.
+$+0.285$ at $g{=}0$ and $+0.218$ at $g{=}0.8$ — roughly flat, slightly *narrowing*. The natural
+objection is that $N\le512$ is simply below the $N{=}1200$ at which Step 16 saw widening — that the gap
+would open up given more data and a converged baseline. **Step 23 (subsection [D] below) tests exactly
+that and finds it does not.** This is an honest correction to the single-slice story, not a hidden one.
 
 **Step 22 verdict.** The $g\times N$ plane *locates* the geometric payoff rather than asserting it.
 Across the group it is a **data-proof, near-total win** (VN 24/25; the lone loss the joint extreme of
@@ -1259,13 +1286,61 @@ maximal break × maximal data); in-distribution, capacity wins early at every $g
 cannot buy until the world is both maximally asymmetric and data-rich; where you only need to fit what
 you have already seen, capacity wins. Two *pre-registered* predictions did **not** survive contact with
 the plane — "the VN wins the literal whole box" (it wins 24/25; the wall cracks at the corner) and "the
-in-distribution gap widens with $g$" (flat-to-narrowing at $N\le512$) — and I report both as refuted:
-*locating* the boundary is more informative than a clean sweep would have been. The robust facts that
-replaced them (near-total located across-group win, data-proof wall, early in-wedge crossover at every
-$g$, monotone honest knob) are guarded in `tests/test_symmetry_data_phase.py`; see
-`figures/where_the_bet_pays.png` for the frontier + two-metric phase panels. Confidence ≈ **0.85** on
-the located across-group win and the data-proof wall; ≈ **0.6** that the precise corner of the crossover
-generalises beyond this teacher/capacity/compute regime.
+in-distribution gap widens with $g$" (flat-to-narrowing, and Step 23 confirms it to $N{=}2048$) — and I
+report both as refuted: *locating* the boundary is more informative than a clean sweep would have been.
+The robust facts that replaced them (near-total located across-group win, data-proof wall, early
+in-wedge crossover at every $g$, monotone honest knob) are guarded in
+`tests/test_symmetry_data_phase.py`; see Figure 2 for the frontier + two-metric phase panels. Confidence
+≈ **0.85** on the located across-group win and the data-proof wall; ≈ **0.6** that the precise corner of
+the crossover generalises beyond this teacher/capacity/compute regime.
+
+### [D] Step 23 — the large-$N$ in-distribution test: the gap still does not widen
+
+[C] left one escape open: maybe the in-distribution gap *would* widen with $g$ if $N$ went past the
+$512$ this grid stopped at — Step 16 saw widening at $N{=}1200$, after all. Step 23 closes it. Two
+design changes make the test fair to the high-capacity baseline at scale: (i) extend to
+$N\in\{512,1024,2048\}$ (past $N{=}1200$), and (ii) switch from Step 22's **fixed-compute** budget
+($600$ updates) to a **fixed-epochs** budget ($150$ passes), so the $124$K MLP gets *more* total
+updates at larger $N$ ($600/1200/2400$) and is at least as converged as at $N{=}512$. This matters:
+a fixed-update budget would *starve* the larger MLP at large $N$ and confound an undertraining artifact
+with a capacity gap — the wrong instrument for a converged-capacity question. The $N{=}512$ cell
+reproduces Step 22's $600$-update gap ($+0.285$ vs Step 22's $+0.286$) as a built-in cross-check, and
+the MLP does converge in-wedge (relMSE $0.202\!\to\!0.126\!\to\!0.059$ at $g{=}0$ as $N:512\to2048$).
+
+The verdict is **no widening, robust to data**. The break-induced change in the in-wedge gap (gap at
+$g{=}0.8$ minus gap at $g{=}0$) across $N{=}512/1024/2048$ is $[-0.067,+0.062,-0.005]$ — non-monotone
+and entirely inside the seed std $0.048$. The VN never wins in-wedge at $g{=}0$ at any $N$ (capacity
+owns the training distribution throughout). So the lone Step-16 $N{=}1200$ widening was a single-slice
+fluctuation, not a capacity gap that grows with the break: extending *past* it does not reproduce it.
+This **strengthens** the in-distribution claim — it is now directly tested at large $N$, not conjectured
+away as a small-$N$ artifact. Guarded with the per-$(g,N)$ JSON in
+`papers/figures/step23_indist_largeN.json`.
+
+> **Honesty note on the across-group column.** Under fixed-epochs, the MLP's *across-group* (`ood`)
+> error at $g{=}0$ falls with $N$ ($2.34\!\to\!1.04\!\to\!0.78$), which might look like it softens the
+> §16 "data-proof wall." It does **not**, and this is *not* what Step 23 measures: fixed-epochs hands
+> $N{=}2048$ more total compute ($2400$ updates) than the fixed-$600$-update frontier, so it varies data
+> *and* compute together — confounded by construction. The data-proof-wall claim is explicitly a
+> **fixed-compute** statement (Steps 21–22); Step 23's `ood` numbers live off that axis and do not bear
+> on it. Step 23 isolates exactly one thing — the in-distribution gap vs $g$ at converged capacity — and
+> on that one thing the answer is no widening.
+
+![Where the geometric bet pays off](figures/where_the_bet_pays.png)
+
+> **Figure 2.** Where the geometric bet pays off (Steps 21–22). **(left)** the sample-efficiency
+> frontier under an exact-SO(3) teacher — the VN's whole-group curve descends while the baseline's is a
+> wall; **(middle)** the $g\times N$ plane on the **across-group** metric — the prior wins $24/25$
+> cells, cracking only at the joint-extreme corner $(g{=}0.8,N{=}512)$; **(right)** the same plane
+> **in-distribution** — the higher-capacity baseline wins early at every $g$ ($N^\star\le64$). Regenerate
+> with `experiments/make_bet_figures.py`.
+
+![In-distribution gap does not widen with the break, even at large N](figures/step23_indist_largeN.png)
+
+> **Figure 3.** Step 23: the in-wedge VN$-$MLP gap (mean $\pm$ seed std) vs $\log_2 N$ for
+> $N\in\{512,1024,2048\}$, one line per break strength $g\in\{0,0.4,0.8\}$, under a fixed-epochs
+> (fully-converged) budget. The lines stay overlapping — breaking the symmetry opens no in-distribution
+> capacity gap that grows with data, even past Step 16's $N{=}1200$. Regenerate with
+> `experiments/step23_indist_largeN.py`.
 
 ---
 
@@ -1452,13 +1527,15 @@ the way it is.
   *orientation-free* lab term lets capacity finally edge across the group (VN $0.798$ vs MLP $0.760$)
   as the VN's own across-group floor rises ($0.50\!\to\!0.80$) and the MLP wall descends
   ($2.34\!\to\!0.76$). *In-distribution* capacity wins early at every $g$ (crossover $N^\star\le64$),
-  but — correcting Step 16's single $N{=}1200$ slice — the gap does **not** widen with $g$ at $N\le512$
-  ($+0.285\!\to\!+0.218$, flat-to-narrowing): both nets are still data-limited and the fixed-axis term
-  is easy for both. Two pre-registered predictions ("VN wins the literal whole box"; "the in-wedge gap
-  widens with $g$") were **refuted** and reported as such — locating the Bitter-Lesson boundary beats a
-  clean sweep. Robust facts guarded in `tests/test_symmetry_data_phase.py`; figure
-  `figures/where_the_bet_pays.png`. Confidence ≈ **0.85** across-group, ≈ **0.6** on the corner's
-  generality.
+  and the in-wedge gap does **not** widen with $g$ ($+0.285\!\to\!+0.218$ at $N{=}512$,
+  flat-to-narrowing) — correcting Step 16's single $N{=}1200$ slice. **Step 23 then rules out the
+  obvious large-$N$ escape**: extending to $N\in\{512,1024,2048\}$ (past $N{=}1200$) under a fixed-epochs
+  (fully-converged) budget, the break-induced gap change is $[-0.067,+0.062,-0.005]$, inside the seed std
+  $0.048$ — the no-widening is robust to data, not a small-$N$ artifact. Two pre-registered predictions
+  ("VN wins the literal whole box"; "the in-wedge gap widens with $g$") were **refuted** and reported as
+  such — locating the Bitter-Lesson boundary beats a clean sweep. Robust facts guarded in
+  `tests/test_symmetry_data_phase.py`; Figures 2–3. Confidence ≈ **0.85** across-group, ≈ **0.6** on the
+  corner's generality; the no-widening is now ≈ **0.8** (directly tested to $N{=}2048$, two seeds).
 
 ### Caveat against over-claiming
 
@@ -1498,6 +1575,22 @@ it scales. Those are the next tests — not foregone conclusions.
 
 ## Reproduce
 
+**Reproducibility checklist.**
+
+- **Environment.** Python 3.11, PyTorch 2.12, `e3nn` 0.6.0, NumPy 2.4, Matplotlib; dependencies managed
+  with `uv` (`uv sync` from `pyproject.toml`). No CUDA — every step runs on a laptop CPU/MPS.
+- **Determinism.** Each experiment sets explicit data/init/planner seeds; re-running reproduces the
+  numbers above. The exactness facts ([A] post-training equivariance, [B] across-group relMSE flatness)
+  are *theorems* (§0), so they hold at init and post-training independent of seed; the closed-loop CIs
+  are over fixed task/CEM seeds (paired designs, Steps 14/18).
+- **Hardware / runtime.** Everything below finishes in minutes-to-tens-of-minutes on a single CPU; pass
+  `STEP{n}_SMOKE=1` for a fast wiring check of the heavier 3D / sweep steps.
+- **Outputs.** Numeric dumps and figures land in `papers/figures/*.json` / `*.png`; the headline figures
+  (Figures 1–3) are regenerated without retraining by `make_figures.py` / `make_bet_figures.py`
+  (Figures 1–2) and `step23_indist_largeN.py` (Figure 3).
+- **Guards.** Every structural claim has a matching `tests/test_*.py` that checks equivariance /
+  invariance **at init and after training** and fails the non-equivariant control.
+
 ```bash
 cd ~/Workspace/se3-ejepa
 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
@@ -1530,6 +1623,8 @@ SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
     .venv/bin/python experiments/step21_sample_efficiency_frontier.py # sample-efficiency frontier: VN whole-group == in-wedge, MLP wall (STEP21_SMOKE=1 for fast)
 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
     .venv/bin/python experiments/step22_symmetry_data_phase.py # g×N phase diagram: prior wins 24/25 across the group, capacity wins in-wedge (STEP22_SMOKE=1 for fast)
+SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
+    .venv/bin/python experiments/step23_indist_largeN.py      # large-N fixed-epochs in-dist test: gap does NOT widen to N=2048 (Figure 3; STEP23_SMOKE=1 for fast)
 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
     .venv/bin/python experiments/make_bet_figures.py          # renders step21_frontier.png + where_the_bet_pays.{png,pdf} from the Step-21/22 JSON dumps
 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
