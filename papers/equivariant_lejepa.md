@@ -1,9 +1,10 @@
 # Equivariant LeJEPA: symmetry-structured identifiability for latent world models
 
-> **Status:** research note / Direction-1 plan (2026-05-31). One result is **proved** here (Prop. 1,
-> block-isotropy). Two are stated as **propositions-to-finish** (C2, C3) with proof sketches and an
-> existing experiment that already instantiates each. The empirical validation (block-SIGReg on our
-> VN/e3nn latent) is scoped in §7 but **not yet run**.
+> **Status:** research note / Direction-1 plan (2026-05-31). Two results are now **proved + instantiated**
+> with seeded, falsifiable experiments: Prop. 1 (C1, block-isotropy; Step 39, extended to the product
+> group $S_O\times SO(3)$ in Step 40) and Prop. 2 (C2, equivariant latent dynamics; Step 41 — the world
+> model resolves the gauge pure SSL leaves free). One remains a **proposition-to-finish** (C3, planning
+> under $G$-invariant cost) with a proof sketch and an existing experiment (Step 38) that instantiates it.
 >
 > **The one-paragraph pitch.** LeCun, Balestriero & Klindt now have a *theory* of when a JEPA recovers
 > the world's latent variables: LeJEPA's embeddings are **linearly identifiable up to a global rotation
@@ -168,25 +169,126 @@ expose the blocks — equal scales degenerate the spectrum and re-inflate the ga
 
 ---
 
-## 4. C2 — Equivariance transports their world-condition across orbits
+## 4. C2 — Equivariant latent dynamics: the world model resolves the gauge SSL leaves free (Step 41)
 
-Their guarantee requires the world to lie in the stationary additive-noise (OU) class. Our **flatness
-theorem** (core paper §4) says: for a $G$-equivariant encoder *and* $G$-equivariant predictor, the
-one-step prediction error is **exactly orbit-constant**, $\mathcal E(\rho(g)\!\cdot\! x)=\mathcal E(x)\
-\forall g\in G$, to $\sim\!10^{-6}$ through a real training run.
+Their guarantee requires the world to lie in the stationary additive-noise (OU) class, and identifies
+the latent only up to the *static* nuisance $Q\in O(n)$. §3 sharpened the static picture but found the
+per-irrep scales **underdetermined in pure SSL** (§7): with equal scales $\Sigma_\infty=\sigma^2\mathbf
+I$, the static spectrum is degenerate and the gauge stays stuck at $O(n)$. C2 puts a *world* on top — a
+$G$-equivariant transition — and shows the **dynamics** carry the identifiability the static covariance
+cannot. (As elsewhere, the AR/OU coefficient is written $r$ to avoid clashing with $\rho$.)
 
-**Proposition 2 (orbit transport, sketch).** Suppose the true transition kernel commutes with $G$,
-$T(\rho(g)z'\mid\rho(g)z)=T(z'\mid z)$ (the world dynamics are $G$-equivariant — the physical case).
-Then stationarity and the additive-noise form of §3.1 need only be **verified on a fundamental domain**
-$\mathcal F$ (one representative per $G$-orbit); equivariance transports them to all of $\mathbb R^n$.
-Consequently the LeJEPA identifiability hypotheses, *checked on a slice*, hold on the whole space, and
-the flatness theorem is the empirical certificate that the transport is exact.
+**Proposition 2 (equivariant OU: Schur dynamics, gauge resolution, orbit transport).** Let
+$\rho:G\to O(n)$ with real isotypic decomposition $\mathbb R^n=\bigoplus_i V_i^{\oplus m_i}$ ($d_i=\dim
+V_i$). Let the latent evolve by a linear-Gaussian OU $z_{t+1}=Az_t+\varepsilon_t$,
+$\varepsilon_t\sim\mathcal N(\mathbf 0,Q)$, whose kernel is **$G$-equivariant**,
+$T(\rho(g)z'\mid\rho(g)z)=T(z'\mid z)$ — equivalently $A\rho(g)=\rho(g)A$ and $\rho(g)Q\rho(g)^\top=Q$ for
+all $g$. Then:
 
-*Why this is honest, not magic:* equivariance does **not** make an arbitrary world satisfy the OU
-condition — it reduces the *verification* of an already-$G$-symmetric world from $\mathbb R^n$ to
-$\mathcal F$, and certifies (via flatness) that predictability is genuinely orbit-invariant rather than
-approximately so. Confidence 0.65 (a constructive corollary + a clean statement of when their theory's
-hypotheses are cheap to certify).
+(a) **Schur block dynamics.** $A=\bigoplus_i\mathbf I_{d_i}\otimes A_i$,
+$Q=\bigoplus_i\mathbf I_{d_i}\otimes Q_i$, and the stationary covariance (the unique PSD solution of the
+discrete Lyapunov equation $\Sigma_\infty=A\Sigma_\infty A^\top+Q$) is
+$\Sigma_\infty=\bigoplus_i\mathbf I_{d_i}\otimes S_i$ with $S_i=A_iS_iA_i^\top+Q_i$ — the dynamical
+analogue of Prop. 1.
+
+(b) **The dynamics resolves the static gauge.** Take $A_i=r_i\mathbf I_{m_i}$ and choose
+$Q_i=\sigma^2(1-r_i^2)\mathbf I_{m_i}$, so $S_i=\sigma^2\mathbf I_{m_i}$: **distinct dynamics, equal
+stationary scale.** Then the *static* spectrum is degenerate — $\Sigma_\infty=\sigma^2\mathbf I_n$, gauge
+$\mathrm{Stab}_{O(n)}(\Sigma_\infty)=O(n)$ — exactly §7's underdetermined regime; yet the *dynamical*
+(drift) operator has spectrum $\operatorname{spec}A=\{r_i\}$ with each $r_i$ of multiplicity $d_im_i$, and when the $r_i$ are **distinct**
+its eigenspaces are precisely the isotypic blocks, so the gauge that commutes with $A$ drops to
+$\prod_i O(d_im_i)\subsetneq O(n)$. The world model's transition therefore identifies strictly more than
+its stationary law.
+
+(c) **Orbit transport (C2 proper) + refined forward bound.** The one-step Bayes-optimal predictor is the
+conditional mean $z\mapsto Az$ (linear, equivariant), and its Bayes error is **orbit-constant**: for every $g$,
+$$\mathbb E\big\|\rho(g)z'-A\,\rho(g)z\big\|^2=\mathbb E\big\|\rho(g)(z'-Az)\big\|^2=\mathbb E\|z'-Az\|^2=\operatorname{tr}Q=\sum_i d_im_i\,\sigma^2(1-r_i^2),$$
+using $A\rho(g)=\rho(g)A$, kernel-equivariance of the target, and orthogonality of $\rho(g)$. Thus
+stationarity $+$ additive noise, verified on a fundamental domain $\mathcal F$, transport to all of
+$\mathbb R^n$; the last equality is the **per-irrep refinement** of KLB's forward bound (Thm 5.1's scalar
+$2(1-r)n$ resolves into $\sum_i d_im_i\sigma^2(1-r_i^2)$, each irrep contributing its own $1-r_i^2$).
+
+*Proof.* (a) $G$-equivariance of $A,Q$ is Schur exactly as Prop. 1; the commutant
+$\{\bigoplus_i\mathbf I_{d_i}\otimes M_i\}$ is a subalgebra closed under $M\mapsto AMA^\top+Q$, and the
+Lyapunov solution is the limit of its iterates from $0$, hence block-diagonal with $S_i$ solving the
+per-block equation. (b) For $A_i=r_i\mathbf I$, $S_i=Q_i/(1-r_i^2)$; the choice
+$Q_i=\sigma^2(1-r_i^2)\mathbf I$ gives $S_i=\sigma^2\mathbf I$, so $\Sigma_\infty=\sigma^2\mathbf I_n$
+(eigenvalue $\sigma^2$, multiplicity $n$ — full $O(n)$), while $A=\bigoplus_i r_i\mathbf I_{d_im_i}$ has
+eigenvalue $r_i$ on $V_i^{\oplus m_i}$; distinct $r_i$ make these the eigenspaces, and an orthogonal
+commuting with $A$ must preserve each, giving $\prod_iO(d_im_i)$. (c) Immediate from the three stated
+facts. $\qquad\blacksquare$
+
+The honesty clause from the earlier sketch survives intact: equivariance does **not** force an arbitrary
+world into the OU class — it reduces *verification* of an already-$G$-symmetric world from $\mathbb R^n$
+to $\mathcal F$, and the flatness identity (c) certifies the transport is exact. What is new beyond the
+sketch is (b): the dynamics supply, *for free*, the per-irrep scale separation pure SSL leaves
+underdetermined (§7) — the predictor **is** the "scale-sensitive task" Step 40 [E2] had to install by
+hand, here handed over by the world itself.
+
+### 4.1 Minimal experiment — built and run (Step 41, laptop CPU, seeded)
+
+`experiments/step41_equivariant_dynamics.py` (+ `tests/test_step41_equivariant_dynamics.py`, 9 gates)
+instantiates Prop. 2 on the same mixed-type latent as §7: $n=22$,
+$\rho(R)=\mathbf I_4\oplus(\mathbf I_6\otimes R)$, with the headline OU $A=0.2\,\mathbf I_4\oplus0.9\,\mathbf
+I_{18}$, $Q=\operatorname{diag}\big(\sigma^2(1-r_i^2)\big)$, $\Sigma_\infty=\mathbf I_{22}$ — distinct
+dynamics $r_0=0.2\neq r_1=0.9$ but equal stationary scale. Two halves with separate guards; **all pass**
+(full run, seeded; smoke via `STEP41_SMOKE=1`).
+
+**[A] Objective level (deterministic — the rigorous core).** [A1] the commutant-projected drift commutes
+with $\rho(R)$ to the float floor ($0.0$) while a generic dense drift does not ($2.94$), and the
+projection is faithful on the headline $A$ ($\|P_C(A)-A\|_\infty=6\times10^{-8}$). [A2] **the headline
+gauge ladder:** the static spectrum of $\Sigma_\infty=\mathbf I$ is one $22$-fold cluster → $\dim
+O(22)=231$, while the *drift* spectrum splits into the $[18,4]$ isotypic eigenspaces → $\dim O(18)\times
+O(4)=159$ — robust across `gap_factor`$\in\{1.5,2,3,4\}$ (analytic ladder $231\xrightarrow{\text{distinct
+}r}159\xrightarrow{\text{known }\rho}21$). [A3] **C2 flatness, made discriminating:** on the anisotropic
+$z_t$ law the commuting drift's one-step Bayes error is orbit-constant ($7.378$ vs predicted
+$\operatorname{tr}Q=7.260$; spread $4.5\times10^{-7}$) while a spatially-anisotropic, non-commuting drift
+varies along the orbit (spread $0.448$). (On the *isotropic* law $\mathbb E\|\cdot\|^2$ collapses to a
+rotation-invariant Frobenius norm, so even a wrong drift looks flat in expectation; the test transports
+on the anisotropic law, where a non-equivariant world genuinely varies — a principled fix, not a loosened
+threshold.)
+
+**[B/A′] Predictor equivariance, init and post-training.** A mixed-type equivariant predictor (a
+Vector-Neuron channel-mix gated by invariant features, with cross-type *capacity*) is exactly equivariant
+at init ($3.6\times10^{-7}$) and **stays so after 30 epochs** of one-step-MSE training
+($7.2\times10^{-7}$); the MLP control misses by $\sim0.63$ at init and $1.15$ after training.
+
+**[C] Prop. 2 on the *learned* transition.** On the $G$-invariant law the equivariant predictor's
+cross-time second moment $C_1=\mathbb E[f(z)z^\top]$ is Schur block-diagonal (cross $=0.070$, each $1o$
+block $3\times3$-isotropic at $1.06$) and recovers the true per-irrep AR coefficients $\hat
+r=(0.208,0.902)$ vs truth $(0.2,0.9)$. **Honest nuance:** the MLP *also* fits a near-block-diagonal $C_1$
+and recovers $\hat r=(0.204,0.885)$ — the linear OU drift is an easy target, so [C] on the invariant law
+is **not** where eq and MLP part ways (the gate is on the eq predictor's exact recovery, not on an MLP
+failure here). The **negative control** is the falsifier: the *same* equivariant map on a
+non-$G$-invariant *anisotropic* law breaks $3\times3$-isotropy (iso $4.83$) — so [C] *can* fail, and fails
+exactly when Prop. 2's premise (invariant law) is removed.
+
+**[D] The payoff.** The *static* covariance of $z_t$ is degenerate (gauge $231$), but the *learned*
+equivariant drift's dynamical spectrum lands on the $[18,4]$ rung (gauge $159$) — on a learned net, the
+world model resolves the gauge pure SSL leaves free (§7's underdetermined split), realising (b)
+empirically. The MLP's learned drift also reaches $159$ *in-distribution* (the OU's $r_1/r_0=4.5$ spectral
+gap is easy to inherit), but its drift is **not** equivariant, so that rung does not transport off the
+orbit — which is exactly what [E] exposes.
+
+**[E] 举一反三.** A predictor fit on a thin $z$-rotation wedge transfers across all of SO(3) for the
+equivariant model — OOD/seen relMSE $\times1.02$ (flat, the orbit-transport of [A3] realised on a learned
+net) — while the MLP degrades $\times2.41$ off the wedge. The eq model's $159$ rung is the *same* rung on
+every orbit; the MLP's is valid only where it was trained.
+
+**Controls & falsifiability.** Seeds fixed (full run reproducible); smoke vs full sizes; a dedicated
+$N=8192$ covariance sample for [C]/[D]; equivariance asserted init $+$ post-training. The suite gates the
+deterministic core ([A1]/[A2]/[A3]), the structural Prop.-2 claim and its negative control ([C]), and the
+learned payoff ([D]/[E]); the nine mechanism guards in `tests/test_step41_equivariant_dynamics.py` mirror
+them (Schur drift $+$ commutant projection, stationary degenerate static spectrum, dynamical ladder $+$
+`gap_factor` robustness, orbit-flatness, Haar law, and Prop. 2 failing exactly when its premise is
+removed). A run that fails to separate reports `INCONCLUSIVE` rather than relaxing a threshold.
+
+Confidence: Prop. 2(a) **0.9** (Schur $+$ Lyapunov, same rigour as Prop. 1); the gauge-resolution (b)
+**0.85** as a target-class statement (distinct $r_i$ is the live hypothesis — the exact mirror of §7's
+distinct-scale condition) and **0.7** realised on a learned net (Step 41 [D] reaches $159$, but so does
+the MLP in-distribution; equivariance is what makes the rung *transport*, [E]); the orbit-transport
+flatness (c) **0.85** (a clean identity, certified to $10^{-6}$). C2 overall **0.8** — upgraded from the
+0.65 sketch now that it is a theorem with a falsifiable experiment.
 
 ---
 
@@ -411,14 +513,24 @@ diagnostic**, not a pass/fail gate — per the standing rule, a run that fails t
   (Step 40, §8) extends this to the product group $S_O\times SO(3)$:** the compositional rung
   $304\to184$ is reachable as a target-class statement (deterministic [A]), and a **scale-sensitive**
   relational task partially realises it on the learned net (gauge $288\to240$, toward $184$) where a
-  *scale-invariant* free-fit task — zero scale pressure — provably cannot.
+  *scale-invariant* free-fit task — zero scale pressure — provably cannot. **Direction 2 (Step 41, §4)
+  closes the loop the other way:** instead of a hand-built task, a $G$-equivariant *world* (an OU
+  transition commuting with $\rho$) supplies the per-irrep signal for free — distinct dynamics $r_i$ at
+  equal stationary scale make the *dynamical* gauge $231\to159$ where the *static* covariance is stuck at
+  $O(22)$, and the learned equivariant predictor realises that rung and transports it across the orbit
+  ([E], $\times1.02$). The scale-sensitive signal §8 installs by hand is, in a world model, just the
+  dynamics.
 - **Honest confidences:** Prop. 1 0.95 (proof verified + empirically at the noise floor); Prop. 1′
   (product-group block-isotropy) 0.9 (same Schur argument; [C] at the floor + a passing negative control);
   block-SIGReg-as-target 0.8; gauge refinement *as a target-class statement* 0.85, *as something SSL
   reaches unaided* 0.35 (Step 39 negative finding); the compositional rung $304\to184$ *as a target-class
   statement* 0.85, *as something a scale-sensitive task realises on the learned net* 0.4 (Step 40 [E2]:
-  moves $288\to240$, not to $184$); C2 0.65; C3 0.75; Step 32↔Hermite 0.4; "this becomes a paper AMI
-  cares about" 0.6.
+  moves $288\to240$, not to $184$); **C2 (Prop. 2, equivariant dynamics) 0.8** — upgraded from a 0.65
+  sketch to a theorem $+$ falsifiable experiment (Step 41): the dynamical gauge ladder $231\to159$ is
+  deterministic (2a/2b), orbit-transport flatness is certified to $10^{-6}$ (2c), and the learned net
+  realises the $159$ rung — *realised-on-a-learned-net* 0.7 (the MLP reaches it in-distribution too;
+  equivariance is what makes it transport off-orbit, [E]); C3 0.75; Step 32↔Hermite 0.4; "this becomes a
+  paper AMI cares about" 0.6.
 
 ## 10. Why this strengthens an AMI application
 
