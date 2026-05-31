@@ -40,25 +40,42 @@ from e3nn import o3
 from e3nn.nn import NormActivation
 from torch import nn
 
+from ..geometry.irreps import IrrepBlock
+
 __all__ = ["SE3PointEncoder"]
 
 
 class SE3PointEncoder(nn.Module):
-    r"""SE(3)-equivariant point-cloud encoder. ``(B, N, 3) -> (B, 3*n_out_vec)``.
+    r"""SE(3)-equivariant point-cloud encoder. ``(B, N, 3) -> (B, latent_dim)``.
 
-    The flattened latent is ``n_out_vec`` stacked 3D vectors (type $\ell=1$) in
-    the standard $(x,y,z)$ basis, so ``latent_dim = 3 * n_out_vec`` and the
-    representation $\rho(R)$ is block-diagonal copies of $R$ — orthogonal, hence
-    the JEPA L2 cost is rotation-invariant. Pair with
+    By default the flattened latent is ``n_out_vec`` stacked 3D vectors (type
+    $\ell=1$) in the standard $(x,y,z)$ basis, so ``latent_dim = 3 * n_out_vec``
+    and the representation $\rho(R)$ is block-diagonal copies of $R$ — orthogonal,
+    hence the JEPA L2 cost is rotation-invariant. Pair with
     :class:`~src.models.structured.VNPredictor` (``dim=3``) for an equivariant
     latent world model.
 
+    **Mixed-type readout (``n_out_scalar > 0``).** Optionally also emit
+    ``n_out_scalar`` SO(3)-**invariant** scalars (type $\ell=0$, ``0e``), giving a
+    latent with *two* isotypic blocks — scalars (a $G$-invariant block) and vectors
+    (a type-1 block). The flattened layout is **scalars first, then vectors**:
+
+    $$ z = [\,\underbrace{s_1,\dots,s_{n_0}}_{\ell=0},\ \underbrace{v_1,\dots,v_{n_1}}_{\ell=1}\,],
+       \qquad \rho(R) = \mathbf I_{n_0}\oplus(\mathbf I_{n_1}\otimes R), $$
+
+    so ``latent_dim = n_out_scalar + 3 * n_out_vec``. This is the layout the
+    block-SIGReg experiment (task #83) needs: with two *inequivalent* irreps,
+    vanilla isotropic SIGReg and block-SIGReg genuinely differ (Prop. 1). The
+    isotypic block layout is exposed by :meth:`irrep_blocks`.
+
     Args:
-        n_out_vec: number of $\ell=1$ output vectors (``latent_dim = 3*n_out_vec``).
+        n_out_vec: number of $\ell=1$ output vectors.
         lmax: maximum spherical-harmonic degree for the geometric embedding.
         mul: channel multiplicity of each irrep in the hidden layer.
         n_radial: number of Gaussian radial-basis functions on $\lVert r\rVert$.
         r_max: spatial scale of the radial basis (RBF centres span $[0, r_{\max}]$).
+        n_out_scalar: number of $\ell=0$ invariant output scalars (default ``0``,
+            which reproduces the pure-vector latent byte-for-byte).
     """
 
     def __init__(
@@ -68,10 +85,12 @@ class SE3PointEncoder(nn.Module):
         mul: int = 8,
         n_radial: int = 8,
         r_max: float = 2.0,
+        n_out_scalar: int = 0,
     ):
         super().__init__()
         self.n_out_vec = n_out_vec
-        self.latent_dim = 3 * n_out_vec
+        self.n_out_scalar = n_out_scalar
+        self.latent_dim = n_out_scalar + 3 * n_out_vec
 
         # --- irreps ---------------------------------------------------------
         self.irreps_sh = o3.Irreps.spherical_harmonics(lmax)  # 1x0e+1x1o+...
@@ -80,7 +99,13 @@ class SE3PointEncoder(nn.Module):
         self.irreps_hidden = o3.Irreps(
             [(mul, (ir.l, ir.p)) for _, ir in self.irreps_sh]
         )
-        irreps_out = o3.Irreps(f"{n_out_vec}x1o")
+        # scalars first, then vectors (e3nn preserves declared order); for
+        # n_out_scalar == 0 this is exactly o3.Irreps(f"{n_out_vec}x1o") as before.
+        irreps_out = (
+            o3.Irreps(f"{n_out_vec}x1o")
+            if n_out_scalar == 0
+            else o3.Irreps(f"{n_out_scalar}x0e + {n_out_vec}x1o")
+        )
 
         # --- per-point tensor product (weights from the radial MLP) ---------
         self.tp = o3.FullyConnectedTensorProduct(
@@ -121,11 +146,14 @@ class SE3PointEncoder(nn.Module):
         )
         self.register_buffer("basis_xyz", torch.linalg.inv(M).T)  # (3, 3)
 
-    def encode_vectors(self, pos: torch.Tensor) -> torch.Tensor:
-        r"""Return the equivariant vector latent ``(B, n_out_vec, 3)``.
+    def _encode(self, pos: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        r"""Shared encoder body. ``(B, N, 3) -> (scalars, vectors)``.
 
-        Each output row $v$ satisfies $v(R\,x) = R\,v(x)$ (standard $(x,y,z)$
-        basis) and $v(x+t)=v(x)$ (translation invariance via centering).
+        ``scalars`` is ``(B, n_out_scalar)`` (SO(3)-invariant, type ``0e``; an empty
+        width-0 tensor when ``n_out_scalar == 0``) and ``vectors`` is
+        ``(B, n_out_vec, 3)`` in the standard $(x,y,z)$ basis (type ``1o``). The
+        change-of-basis is applied to the vector block only — the scalars are already
+        invariant, so they need no rotation.
         """
         # (B, N, 3) point cloud
         r = pos - pos.mean(dim=1, keepdim=True)  # centre: translation-invariant
@@ -147,11 +175,46 @@ class SE3PointEncoder(nn.Module):
         h = self.act1(h)
         h = self.lin1(h)
         h = self.act2(h)
-        out = self.lin_out(h)  # (B, n_out_vec*3) in e3nn (y,z,x) basis
+        out = self.lin_out(h)  # (B, n_out_scalar + 3*n_out_vec); scalars first (0e), then 1o
 
-        vecs = out.reshape(out.shape[0], self.n_out_vec, 3)
-        return vecs @ self.basis_xyz.T  # e3nn 1o basis -> standard (x, y, z)
+        n0 = self.n_out_scalar
+        scalars = out[:, :n0]  # (B, n_out_scalar) SO(3)-invariant (0e); empty when n0 == 0
+        vecs = out[:, n0:].reshape(out.shape[0], self.n_out_vec, 3)  # e3nn (y,z,x) basis
+        vecs = vecs @ self.basis_xyz.T  # e3nn 1o basis -> standard (x, y, z)
+        return scalars, vecs
+
+    def encode_vectors(self, pos: torch.Tensor) -> torch.Tensor:
+        r"""Return the equivariant **vector** latent ``(B, n_out_vec, 3)``.
+
+        Each output row $v$ satisfies $v(R\,x) = R\,v(x)$ (standard $(x,y,z)$
+        basis) and $v(x+t)=v(x)$ (translation invariance via centering). Any
+        invariant scalar block is dropped here; use :meth:`forward` for the full
+        flattened latent ``[scalars, vectors]``. For ``n_out_scalar == 0`` this is
+        byte-for-byte the original pure-vector encoder.
+        """
+        return self._encode(pos)[1]
 
     def forward(self, pos: torch.Tensor) -> torch.Tensor:
-        # (B, N, 3) -> (B, 3*n_out_vec)
-        return self.encode_vectors(pos).flatten(1)
+        # (B, N, 3) -> (B, n_out_scalar + 3*n_out_vec): [scalars (0e) | vectors (1o)].
+        # When n_out_scalar == 0, scalars is width-0 and this equals encode_vectors(pos).flatten(1).
+        scalars, vecs = self._encode(pos)
+        return torch.cat([scalars, vecs.flatten(1)], dim=-1)
+
+    def irrep_blocks(self) -> list[IrrepBlock]:
+        r"""Isotypic-block layout of the flattened latent (scalars first, then vectors).
+
+        Returns the contiguous blocks of :meth:`forward`'s output: the invariant
+        scalar block (``"0e"``, $d=1$, multiplicity ``n_out_scalar``) when present,
+        followed by the vector block (``"1o"``, $d=3$, multiplicity ``n_out_vec``).
+        These are the real isotypic components over which **Proposition 1** makes the
+        latent covariance block-isotropic, $\Sigma=\bigoplus_i\mathbf I_{d_i}\otimes
+        B_i$, and which :func:`src.training.sigreg.sigreg_block` Gaussianises at
+        independent (free) per-block scales.
+        """
+        blocks: list[IrrepBlock] = []
+        start = 0
+        if self.n_out_scalar > 0:
+            blocks.append(IrrepBlock("0e", start, 1, self.n_out_scalar))
+            start += self.n_out_scalar
+        blocks.append(IrrepBlock("1o", start, 3, self.n_out_vec))
+        return blocks

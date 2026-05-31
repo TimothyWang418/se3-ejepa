@@ -106,10 +106,13 @@ under $\rho:G\to O(n)$, and $\Sigma=\mathbb E[ZZ^\top]$. Decompose into real iso
 $\mathbb R^n=\bigoplus_i V_i^{\oplus m_i}$ ($V_i$ the distinct real irreducibles, $d_i=\dim V_i$,
 multiplicity $m_i$). Then
 $$\rho(g)\,\Sigma=\Sigma\,\rho(g)\ \ \forall g\quad\Longrightarrow\quad \Sigma=\bigoplus_i\big(\mathbf I_{d_i}\otimes B_i\big),\qquad B_i\succeq 0\ \text{symmetric }m_i\times m_i .$$
-That is, $\Sigma$ is **block-isotropic**: a scalar multiple of the identity *inside* each irreducible
-copy, with mixing allowed only across the $m_i$ multiplicity slots of the *same* irrep, and **zero**
-coupling between inequivalent irreps. (For complex/quaternionic-type $V_i$, $B_i$ is taken over
-$\mathbb C$/$\mathbb H$; the "scalar on each irrep copy" conclusion is unchanged.)
+That is, $\Sigma$ is **block-isotropic** (in any $G$-adapted orthonormal basis — one block-diagonalising
+$\rho$ into irreps; our type-0/type-1 latent is already such a basis): a scalar multiple of the identity
+*inside* each irreducible copy, with mixing allowed only across the $m_i$ multiplicity slots of the
+*same* irrep, and **zero** coupling between inequivalent irreps. (For complex/quaternionic-type $V_i$,
+$B_i$ is taken over $\mathbb C$/$\mathbb H$; the "scalar on each irrep copy" conclusion is unchanged. The
+case we use — $\mathrm{SO}(3)$ on integer-$\ell$ features — is **entirely real type**, so the clean form
+above holds verbatim.)
 
 *Proof.* $G$-invariance of the law gives $\rho(g)\Sigma\rho(g)^\top=\mathbb E[\rho(g)ZZ^\top\rho(g)^\top]
 =\mathbb E[ZZ^\top]=\Sigma$, and since $\rho(g)\in O(n)$ this is $\rho(g)\Sigma=\Sigma\rho(g)$: $\Sigma$
@@ -131,18 +134,37 @@ symmetry and PSD-ness of $\Sigma$ pass to $B_i$. $\qquad\blacksquare$
   block and test each toward an isotropic Gaussian of its **own** scale $\sigma_i^2$, leaving the
   cross-block scales free. This is the maximum-entropy $G$-invariant Gaussian at given per-irrep
   variances — the equivariant analogue of "isotropic Gaussian."
-- **Identifiability refinement (the prize).** A block-isotropic $\Sigma$ with **distinct** scales
-  $\sigma_i^2$ exposes the isotypic decomposition in its own spectrum, so the residual gauge of the
-  latent law collapses from all of $O(n)$ to the centraliser of $\rho(G)$ compatible with the blocks —
-  generically $\rho(G)$ times multiplicity-space mixing $\prod_i O(m_i)$, and exactly $\rho(G)$ in the
-  multiplicity-free, distinct-scale case. In words: **equivariance + block-isotropy upgrades
-  "recover up to an arbitrary rotation $Q\in O(n)$" to "recover up to the world's actual symmetry
-  $\rho(G)$."** That is precisely the "recover the true degrees of freedom *with their symmetry
-  structure*" desideratum their abstract opens with.
+- **Identifiability refinement (the prize) — stated precisely.** Three groups must be kept apart, and
+  an earlier draft conflated them. Let $\Sigma$ be block-isotropic with **distinct** per-irrep scales
+  $\sigma_i^2$. The residual gauge is the set of orthogonal $Q$ relating two equally-valid solutions:
+  1. **Law-matching only.** $Q$ must preserve the target law, $Q\Sigma Q^\top=\Sigma$. With $\sigma_i^2$
+     distinct, $\Sigma$'s eigenspaces are exactly the isotypic components, so $Q$ must preserve each:
+     $$Q\in\mathrm{Stab}_{O(n)}(\Sigma)=\textstyle\prod_i O(d_i m_i).$$
+     This already drops the gauge from $O(n)$ (LeJEPA's degenerate $\Sigma=\sigma^2 I$, eigenspace all
+     of $\mathbb R^n$) to the within-block product — a strict, spectrum-driven reduction.
+  2. **Equivariant recovery.** If we additionally demand the recovery map $h=f\circ g$ be
+     $G$-equivariant (true for a matched equivariant encoder on equivariant data), then $Qz=h(z)$
+     forces $Q\in\mathrm{Comm}(\rho):=\{Q\in O(n):Q\rho(g)=\rho(g)Q\}$. Intersecting with (1), in the
+     real type $Q=\bigoplus_i \mathbf I_{d_i}\otimes Q_i$ with $Q_i\in O(m_i)$, i.e. the residual gauge
+     is the **orthogonal commutant**
+     $$\boxed{\ \prod_i O(m_i)\ }\quad(\text{mixing only within each multiplicity space}).$$
+     **Multiplicity-free** ($m_i\le1$): this is $\prod_i\{\pm1\}$ — a **finite** group of per-irrep sign
+     flips. So the latent is identified **up to a finite group**, and the full $\rho(G)$-module
+     structure (which axes carry which irrep, and the within-irrep frames) is pinned.
+  3. **$\rho(G)$ itself** is a *third* group (the image of the representation); the gauge is **not**
+     $\rho(G)$ — it is $\rho(G)$'s commutant. The honest one-liner is therefore: *equivariance +
+     block-isotropy + distinct scales reduces the gauge from $O(n)$ to the (finite, when
+     multiplicity-free) commutant $\prod_i O(m_i)$, and in doing so **identifies the $\rho(G)$-module
+     structure** — i.e. recovers the true degrees of freedom together with their symmetry labels.* That
+     last clause is exactly the "recover the true DOF *with their symmetry structure*" desideratum their
+     abstract opens with, now with the gauge named correctly.
 
-Confidence: Prop. 1 itself 0.9 (textbook Schur). "Block-SIGReg is the right target" 0.8. The residual-
-gauge refinement 0.7 (the distinct-scale / multiplicity-free hypotheses must be stated carefully; equal
-scales degenerate back toward a larger symmetry).
+Confidence: Prop. 1 itself **0.9** (textbook Schur; for SO(3) integer-$\ell$ all irreps are real type, so
+the clean form $\Sigma=\bigoplus_i\mathbf I_{d_i}\otimes B_i$ holds with full rigor — no complex/
+quaternionic case to handle). "Block-SIGReg is the right target" 0.8. The gauge refinement **0.8** now
+that it is stated as the commutant rather than $\rho(G)$ (the one dependency is matched representations,
+so that $h$ is genuinely $\rho$-equivariant; the distinct-scale hypothesis is what makes the spectrum
+expose the blocks — equal scales degenerate the spectrum and re-inflate the gauge to $\prod_i O(d_i m_i)$).
 
 ---
 
@@ -206,26 +228,60 @@ opportunity, not yet a result).
 
 ---
 
-## 7. Minimal experiment (laptop, CPU/MPS, seeded)
+## 7. Minimal experiment — built and run (Step 39, laptop CPU, seeded)
 
-Validate C1 end-to-end on the existing 3D point-cloud VN/e3nn latent:
+`experiments/step39_block_sigreg.py` (+ `tests/test_step39_block_sigreg.py`) realises C1 on a mixed-type
+SO(3) point-cloud latent: $n_0=4$ invariant scalars (`0e`) and $n_1=6$ vectors (`1o`), so
+$\rho(R)=\mathbf I_4\oplus(\mathbf I_6\otimes R)$ on $\mathbb R^{22}$ — **two inequivalent irreps**, the
+minimal setting where vanilla and block-SIGReg genuinely differ (with one irrep they coincide). The
+analytic gauge ladder is $O(22)\,[\dim 231]\xrightarrow{\text{block}}O(4)\times O(18)\,[159]
+\xrightarrow{\text{known }\rho\text{'s }\otimes\mathbf I_3}$ commutant $O(4)\times O(6)\,[21]$. The
+encoder (`src/models/se3.py`) gained an `n_out_scalar` head and an `irrep_blocks()` layout descriptor
+(`src/geometry/irreps.py`); the two SIGReg variants live in `src/training/sigreg.py`.
 
-1. **Add SIGReg** to the equivariant JEPA in two variants: (a) **vanilla isotropic** (all projections
-   $\to\mathcal N(0,1)$); (b) **block-SIGReg** (project within each isotypic block; test each toward an
-   own-scale isotropic Gaussian). ~50 lines, linear cost, $\lambda\!\approx\!0.05$.
-2. **Measure.** (i) Does the latent covariance go block-isotropic (Prop. 1), and does (a) inflate the
-   equivariance residual / loss while (b) sits comfortably? (ii) **Cross-orbit linear identifiability:**
-   best-orthogonal-$Q$ regression of learned onto true latent, and whether $Q\in\rho(G)$ (block
-   structure preserved) versus arbitrary $O(n)$. (iii) Does block-SIGReg preserve/improve across-group
-   generalisation vs the no-SIGReg equivariant model and vs a no-symmetry LeJEPA?
-3. **Equivariance unit test** (init + post-training) that block-SIGReg keeps the encoder equivariant.
-4. **Controls:** seeds logged, git hash logged, Hydra/JSON config saved; compare against the existing
-   no-SIGReg checkpoints so the *only* change is the regulariser.
+The script has two halves with separate guards. **All pass** (full run, seeded; smoke via `STEP39_SMOKE=1`).
 
-Predicted outcome (falsifiable): block-SIGReg matches or beats vanilla isotropic on probe quality while
-**not** degrading equivariance, and the recovered $Q$ stays in $\rho(G)$ — empirically pinning the
-gauge to the world symmetry. If vanilla isotropic SIGReg *also* leaves the gauge at $\rho(G)$ with no
-penalty, C1's "fights equivariance" claim weakens and we report that honestly.
+**[A] Objective-level, deterministic (the rigorous core).** On *synthetic* block-isotropic Gaussians with
+a controlled scale split $\sigma_1/\sigma_0$ at fixed total budget $\tfrac1n\operatorname{tr}\Sigma=1$:
+vanilla SIGReg's statistic **grows $\times44$** from ratio 1 → 4 — it *penalises valid, Prop.-1-optimal
+laws* — while block-SIGReg stays **flat ($\times0.99$)**. Reading the spectral gauge off the same controlled
+laws: the equal-scale law (vanilla's target) is one eigenvalue cluster of 22 → $\dim\mathrm{Stab}_{O(22)}=231$;
+a distinct-scale law splits into the $[18,4]$ eigenspaces → $\dim O(18)\times O(4)=159$. This pins the gauge
+claim at the level of the **objective's target class**, with no optimisation noise.
+
+**[B/A'] Equivariance, init and post-training.** The mixed-type encoder is exactly equivariant (scalar-inv
+$2.4\times10^{-7}$, vector-equiv $2.3\times10^{-6}$) and **stays so after 40 epochs** of the faithful
+LeJEPA loss (jitter-augmented views pulled to their grad-carrying mean — *no* EMA, *no* stop-grad, *no*
+teacher — plus the SIGReg variant); the non-equivariant MLP control misses by $\sim5$–$7$.
+
+**[C] Block-isotropy of the *learned* latent (Prop. 1).** On a Haar (hence $G$-invariant) cloud law, at
+$N=8192$ the equivariant latent has cross-irrep coupling $0.015$ and per-channel vector isotropy ratio
+$1.07$ — right at the finite-sample floor $1.080$ — i.e. $\Sigma\to\bigoplus_i\mathbf I_{d_i}\otimes B_i$
+to noise. The MLP fails both ($0.40$, $2.14$).
+
+**[E] 举一反三 (the payoff).** A *type-respecting* linear probe $\hat y=\sum_a w_a v_a$ fitted on a thin
+$z$-rotation wedge transfers across **all** of SO(3): OOD/seen relMSE $\times0.98$ (flat). The MLP's affine
+probe degrades $\times8455$ off the wedge. This is the equivariance-flatness theorem (§4) made concrete on
+the LeJEPA-regularised latent.
+
+**Honest negative finding — and why it doesn't dent the claim.** [D] reports the *learned* per-irrep scale
+split, and in **pure SSL it is underdetermined**: block-SIGReg standardises each block by a *detached* RMS
+(so it constrains shape, not scale), the budget penalty pins only the *total*, and the pull-to-mean term is
+block-symmetric — so nothing drives the $\sigma_1/\sigma_0$ ratio to a particular value (the run even drove
+$\mathrm{var}(0e)\to0$). The scale separation is therefore a property of the **target class** (proved &
+demonstrated deterministically in [A]), not something pure SSL converges to; we gate on [A]'s controlled
+ladder and report [D] as an un-gated diagnostic rather than weaken a threshold. *Driving* the split to a
+chosen value needs a task signal on each irrep — the natural Direction-3 follow-up.
+
+**A correctness lesson worth keeping.** Prop. 1 needs the cloud law to be $G$-**invariant**, which requires
+the random orientations to be the **Haar** measure (left-invariance). An initial axis-uniform + angle-uniform
+$[0,2\pi)$ sampler is *not* Haar ($\mathbb E[R]=\tfrac13\mathbf I\neq\mathbf0$), and it left a systematic
+cross-irrep coupling ($\|C_{01}\|_F\approx0.017$) that did **not** shrink with $N$ — masking block-isotropy.
+Switching to a uniform-unit-quaternion Haar sampler made cross $\to0$ and vec-iso $\to1$ as $1/\sqrt N$, as
+the theorem predicts. A `test_rand_so3_is_haar` regression guard now pins this.
+
+**Controls.** Seeds fixed throughout; smoke vs full sizes; a dedicated large covariance sample ($N=8192$)
+for [C]/[D] so the isotropy estimate clears its noise floor; equivariance asserted init + post-training.
 
 ---
 
@@ -240,10 +296,16 @@ penalty, C1's "fights equivariance" claim weakens and we report that honestly.
   Mitigant: the specific refinement (turn $O(n)$-up-to into $\rho(G)$-up-to; block-isotropy as the
   SIGReg target; $G$-invariant-cost planning) is concrete and provable now, and we have two experiments
   (Steps 38, 32) already on the board. Speed matters — this is a 6-day-old paper.
-- **Degenerate cases.** Equal per-irrep scales collapse the gauge refinement back toward a larger
-  symmetry; the clean $\rho(G)$ result needs distinct scales / multiplicity-freeness, stated carefully.
-- **Honest confidences:** Prop. 1 0.9; block-SIGReg-as-target 0.8; gauge refinement 0.7; C2 0.65;
-  C3 0.75; Step 32↔Hermite 0.4; "this becomes a paper AMI cares about" 0.6.
+- **Degenerate cases — now demonstrated, not just feared.** Equal per-irrep scales collapse the gauge
+  refinement back to $O(n)$ (Step 39 [A]: gauge $231$); the clean $\rho(G)$-commutant result needs
+  *distinct* scales / multiplicity-freeness. Crucially, Step 39 showed pure SSL does **not** by itself
+  produce distinct scales (the split is underdetermined), so the sharp gauge claim is a statement about
+  the objective's *target class* (proved + shown deterministically), and *realising* it on a trained
+  encoder needs a per-irrep task signal — stated plainly as the honest boundary of C1.
+- **Honest confidences:** Prop. 1 0.95 (proof verified + empirically at the noise floor); block-SIGReg-as-
+  target 0.8; gauge refinement *as a target-class statement* 0.85, *as something SSL reaches unaided* 0.35
+  (Step 39 negative finding); C2 0.65; C3 0.75; Step 32↔Hermite 0.4; "this becomes a paper AMI cares
+  about" 0.6.
 
 ## 9. Why this strengthens an AMI application
 
