@@ -1,0 +1,76 @@
+{
+  "mode": "SMOKE",
+  "config": {
+    "N_TRAIN": 150,
+    "EPOCHS": 4,
+    "H_ROLL": 6,
+    "K": 4,
+    "N_OOD": 1,
+    "H_GOAL": 4,
+    "T_MAX": 8,
+    "REPLAN": 2,
+    "W_T": 0.5,
+    "T_SCALE": 0.5,
+    "n_samples": 64,
+    "n_iters": 3,
+    "n_elite": 8,
+    "sigma0": 0.6,
+    "w_run": 0.3
+  },
+  "goal_reorient_deg": 22.88666334788342,
+  "panel_A": {
+    "verbatim_1step": 0.2977700900405049,
+    "equiv_1step_l2": 0.4755253737272923,
+    "equiv_rollout_l2": 0.5366915135885459,
+    "equiv_rollout_proc": 0.6823109192167396,
+    "sweep": {
+      "l2_open": 0.5366915135885459,
+      "l2_recede": 0.6629411391589215,
+      "proc_open": 0.5305807968398325,
+      "proc_recede": 0.6823109192167396
+    },
+    "ceiling_pred": 0.7748025278585481,
+    "oracle": 1.0
+  },
+  "best_deployable": 0.6823109192167396,
+  "panel_B": {
+    "vn_ang": {
+      "0": 7.205110879775547,
+      "1": 7.205110590958382
+    },
+    "mlp_ang": {
+      "0": 23.38699315941208,
+      "1": 25.43099892307937
+    },
+    "vn_pos": {
+      "0": 0.15366666932861409,
+      "1": 0.15366667038632492
+    },
+    "vn_ratio_ci": [
+      0.9999999294639139,
+      1.0000000162167573
+    ],
+    "mlp_ratio_ci": [
+      0.9888932707773364,
+      1.1603827247178944
+    ],
+    "vn_diff_max": 7.371886265872263e-07,
+    "vn_diff_mean": -2.888171641846071e-07,
+    "mlp_diff_mean": 2.0440057636672897
+  },
+  "panel_C": {
+    "l2_cost_inv": 1.6641639954961818e-07,
+    "proc_cost_inv": 4.0635274256572984e-08,
+    "vn_composed_equiv": 1.4007091522216797e-06,
+    "mlp_composed_equiv": 1.8837807178497314
+  },
+  "checks": {
+    "ok_cured": true,
+    "ok_vn_flat": true,
+    "ok_mlp_degrades": false,
+    "ok_separated": false,
+    "ok_equiv": true,
+    "ok_cost_inv": true
+  },
+  "passed": false
+}

@@ -41,6 +41,7 @@ __all__ = [
     "StructuredStateEncoder",
     "VNPredictor",
     "VNTPPredictor",
+    "VNTPLadderPredictor",
     "extract_pusht_vectors",
 ]
 
@@ -292,6 +293,114 @@ class VNTPPredictor(nn.Module):
         h = torch.cat([self.lin2(h), self.tp2(h)], dim=1)  # second TP -> includes degree-3
         h = self.act2(h)
         delta = self.out(h)
+        return (z_vec + delta).reshape(b, -1)  # residual, equivariant
+
+
+class VNTPLadderPredictor(nn.Module):
+    r"""SO(3)-equivariant latent dynamics with a **tunable tensor-product degree** (Step 32).
+
+    A *degree ladder* generalising :class:`VNPredictor` (degree-1) and :class:`VNTPPredictor`
+    (a fixed two-tensor-product stack). The predictor is a fixed stack of ``n_blocks_total``
+    equivariant blocks; the **first** ``n_tp_blocks`` of them carry a :class:`VNTensorProduct`
+    (cross-product) branch and the rest are pure :class:`VNLinear`. Stacking $L$ tensor-product
+    blocks *at the front* lets the cross products **compound**, so the maximum representable
+    polynomial degree in the input vectors is
+
+    $$ d_{\max}(L) \;=\; 2^{L}, \qquad L=\texttt{n\_tp\_blocks}, $$
+
+    because each cross product multiplies degrees: block $0$ produces degree-$\{1,2\}$ features,
+    block $1$ crosses those to reach degree-$\{2,3,4\}$, block $2$ reaches up to degree-$8$, and so
+    on. The Step-24 interacting teacher's torque target $(\hat r_{ij}\times a_i)\times\tilde x_k$ is
+    **degree-3**, so the *first* rung that can represent it is $L=2$ ($d_{\max}=4\ge 3$); $L=0,1$ are
+    structurally capped and $L\ge 2$ should saturate — a degree signature, not a capacity one.
+
+    **Constant-width, constant-depth control.** Every block — TP or linear — outputs exactly
+    ``hidden`` channels (a TP block splits its width as ``hidden - tp_channels`` linear $+$
+    ``tp_channels`` cross-product, then concatenates), and the number of blocks (hence the number of
+    :class:`VNReLU` nonlinearities) is fixed at ``n_blocks_total`` for every rung. So sweeping
+    ``n_tp_blocks`` varies **only** the representable degree at near-constant depth, width, and
+    parameter count — isolating *degree* from raw capacity (a TP block carries only
+    ``c * tp_channels`` extra weights over a linear block, reported per rung by the caller).
+
+    Equivariance. Every branch (:class:`VNLinear`, :class:`VNReLU`, :class:`VNTensorProduct`) is
+    $\mathrm{SO}(3)$-equivariant and a residual sum of equivariant tensors is equivariant, so for
+    **every** rung $L$
+    $$ f_\phi\big(\rho(g)\,z,\; R(g)\,a\big) \;=\; \rho(g)\, f_\phi(z, a), \qquad g\in\mathrm{SO}(3). $$
+    Because the cross product is a pseudovector the predictor is $\mathrm{SO}(3)$- but not
+    $\mathrm{O}(3)$-equivariant — matching the teacher. ``dim`` must be ``3``.
+
+    Interface matches :class:`VNPredictor` / :class:`VNTPPredictor`:
+    ``forward: (B, latent_dim), (B, action_dim) -> (B, latent_dim)``.
+
+    Args:
+        latent_dim: total latent width; the latent is ``latent_dim // dim`` type-1 vectors.
+        action_dim: total action width; ``action_dim // dim`` type-1 vectors are concatenated.
+        hidden: per-block output channel count (constant across the ladder).
+        dim: vector dimension; must be ``3`` (SO(3) cross product).
+        n_tp_blocks: number $L$ of front-loaded tensor-product blocks (the ladder rung,
+            $0\le L\le$ ``n_blocks_total``). $L=0$ recovers a degree-1 VN-MLP.
+        n_blocks_total: fixed total number of blocks (depth), held constant across rungs.
+        tp_channels: cross-product channels inside each TP block (``hidden // 2`` if ``None``);
+            the linear branch of a TP block then has ``hidden - tp_channels`` channels.
+    """
+
+    def __init__(
+        self,
+        latent_dim: int = 48,
+        action_dim: int = 6,
+        hidden: int = 64,
+        dim: int = 3,
+        n_tp_blocks: int = 2,
+        n_blocks_total: int = 3,
+        tp_channels: int | None = None,
+    ):
+        super().__init__()
+        if dim != 3:
+            raise ValueError(f"VNTPLadderPredictor uses the SO(3) cross product; dim must be 3, got {dim}.")
+        if latent_dim % dim != 0 or action_dim % dim != 0:
+            raise ValueError(f"latent_dim and action_dim must be divisible by dim={dim}.")
+        if not (0 <= n_tp_blocks <= n_blocks_total):
+            raise ValueError(f"need 0 <= n_tp_blocks ({n_tp_blocks}) <= n_blocks_total ({n_blocks_total}).")
+        self.dim = dim
+        self.n_lat = latent_dim // dim
+        self.n_act = action_dim // dim
+        self.n_tp_blocks = n_tp_blocks
+        self.n_blocks_total = n_blocks_total
+        tp = tp_channels if tp_channels is not None else hidden // 2
+        if n_tp_blocks > 0 and not (1 <= tp <= hidden - 1):
+            raise ValueError(f"tp_channels ({tp}) must satisfy 1 <= tp <= hidden-1 ({hidden - 1}).")
+
+        c = self.n_lat + self.n_act  # input channel count: [z vectors, (a, message) vectors]
+        self.blocks = nn.ModuleList()
+        for i in range(n_blocks_total):
+            use_tp = i < n_tp_blocks  # front-load TP blocks so the cross products compound
+            block = nn.ModuleDict()
+            if use_tp:
+                # split the block width: a degree-1 linear branch ++ a degree-2 cross-product branch,
+                # concatenated to exactly `hidden` channels (constant width across the ladder).
+                block["lin"] = VNLinear(c, hidden - tp)
+                block["tp"] = VNTensorProduct(c, tp)
+            else:
+                block["lin"] = VNLinear(c, hidden)
+            block["act"] = VNReLU(hidden)
+            self.blocks.append(block)
+            c = hidden
+        self._use_tp = [i < n_tp_blocks for i in range(n_blocks_total)]
+        self.out = VNLinear(hidden, self.n_lat)
+
+    def forward(self, z: torch.Tensor, a: torch.Tensor) -> torch.Tensor:
+        # z: (B, latent_dim), a: (B, action_dim) -> (B, latent_dim)
+        b = z.shape[0]
+        z_vec = z.reshape(b, self.n_lat, self.dim)
+        a_vec = a.reshape(b, self.n_act, self.dim)
+        h = torch.cat([z_vec, a_vec], dim=1)  # (B, n_lat + n_act, 3)
+        for block, use_tp in zip(self.blocks, self._use_tp):
+            if use_tp:
+                h = torch.cat([block["lin"](h), block["tp"](h)], dim=1)  # (B, hidden, 3): degree compounds
+            else:
+                h = block["lin"](h)  # (B, hidden, 3): degree-1 mix
+            h = block["act"](h)
+        delta = self.out(h)  # (B, n_lat, 3)
         return (z_vec + delta).reshape(b, -1)  # residual, equivariant
 
 

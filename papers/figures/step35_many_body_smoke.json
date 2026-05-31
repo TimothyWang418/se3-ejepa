@@ -1,0 +1,117 @@
+{
+  "mode": "SMOKE",
+  "config": {
+    "TRAIN_OBJ": 3,
+    "MAX_OBJ": 6,
+    "P": 24,
+    "D_OBJ": 48,
+    "A_OBJ": 3,
+    "A_OBJ_AUG": 6,
+    "C_INT": 0.8,
+    "N_TRAIN": 150,
+    "N_TEST": 64,
+    "EPOCHS": 3,
+    "K_OOD": 2,
+    "VAR_COEF": 0.1,
+    "COUNTS_C": [
+      1,
+      2,
+      3,
+      5
+    ],
+    "COUNTS_G": [
+      4
+    ],
+    "UNSEEN_CHK": 4
+  },
+  "params": {
+    "VN-MP": 16920,
+    "VN-Set": 16856,
+    "MLP-MP": 62304
+  },
+  "latent_std": {
+    "VN-MP": 0.1823270618915558,
+    "VN-Set": 0.17790716886520386,
+    "MLP-MP": 0.05109808221459389
+  },
+  "equiv_posttrain_unseen": {
+    "VN-MP": {
+      "se3_comp": 3.1944364309310913e-06,
+      "perm_comp": 7.450580596923828e-08
+    },
+    "VN-Set": {
+      "se3_comp": 2.4866312742233276e-06,
+      "perm_comp": NaN
+    },
+    "MLP-MP": {
+      "se3_comp": 1.156964659690857,
+      "perm_comp": 2.682209014892578e-07
+    }
+  },
+  "indist": {
+    "VN-MP": 0.8990529179573059,
+    "VN-Set": 0.8898348212242126,
+    "MLP-MP": 49.06068801879883
+  },
+  "channel_factor": 0.9897468808020364,
+  "count_ood": {
+    "VN-MP": {
+      "1": 0.9464626312255859,
+      "2": 0.8946216702461243,
+      "3": 0.8990529179573059,
+      "5": 0.8998280763626099
+    },
+    "VN-Set": {
+      "1": 1.170667290687561,
+      "2": 0.8710890412330627,
+      "3": 0.8898348212242126,
+      "5": 0.893554151058197
+    },
+    "MLP-MP": {
+      "1": 731.0471801757812,
+      "2": 36.369266510009766,
+      "3": 49.06068801879883,
+      "5": 56.96725082397461
+    }
+  },
+  "count_ratio": {
+    "VN-MP": 1.000862194415725,
+    "VN-Set": 1.0041797980313554,
+    "MLP-MP": 1.1611588243961475
+  },
+  "count_orient_ood": {
+    "VN-MP": {
+      "4": {
+        "seen": 0.891700267791748,
+        "ood": 0.8917001783847809,
+        "ratio": 0.9999998997342825
+      }
+    },
+    "MLP-MP": {
+      "4": {
+        "seen": 54.697998046875,
+        "ood": 61.85149955749512,
+        "ratio": 1.1307817793347705
+      }
+    }
+  },
+  "vn_g_ratio": 0.9999998997342825,
+  "mlp_g_ratio": 1.1307817793347705,
+  "interacting_family": [
+    2,
+    3,
+    5
+  ],
+  "count_ratio_basis": "interacting family O>=2 (O=1 is the no-interaction limit, reported separately)",
+  "verdict": {
+    "passed": false,
+    "ok_vnmp_equiv": true,
+    "ok_vnmp_fits": false,
+    "ok_channel": false,
+    "ok_count_vn": true,
+    "ok_count_o1": true,
+    "ok_countorient_vn": true,
+    "ok_countorient_mlp": false,
+    "ok_mlp_no_equiv": true
+  }
+}

@@ -12,17 +12,22 @@ One arXiv submission, one PDF:
 
 - **Main body** = `equivariance_generalization_core.md` — the focused [A]+[B]+[C] write-up (the
   reviewable claim).
-- **Appendix** = `geometric_payoff.md` — the 27-step full results log, attached under `\appendix` (the
-  complete evidence trail).
+- **Appendix** = `geometric_payoff.md` — the full results log (Steps 3–38), attached under `\appendix`
+  (the complete evidence trail).
 
 Why one document and not core-only-with-a-supplement: the appendix then lives *inside* the timestamped
 arXiv record (better for priority), while a reader still meets the core claim first and only descends
-into the 27-step log if they want the receipts.
+into the full Steps 3–38 log if they want the receipts.
 
-Combined size: core 1067 lines / 3 figures + 2 cross-references; payoff 2121 lines / 4 figures / 0
-wikilinks. **Four unique figure files total** (`killer_figure`, `where_the_bet_pays`,
-`step23_indist_largeN`, `step24_object_interaction` — all in `papers/figures/`; the first two also as
-PDF). All math is standard `$...$` / `$$...$$`, which pandoc converts natively.
+Combined size: core 1408 lines / 3 figure embeds + 2 cross-references; payoff 3327 lines / 11 figure
+embeds / 0 wikilinks. **Eleven unique figure files total** (`killer_figure`, `where_the_bet_pays`,
+`step23_indist_largeN`, `step24_object_interaction`, `step32_tp_degree_ladder`,
+`step33_symmetry_discovery`, `step34_active_inference_noisy`, `step35_many_body`,
+`step36_discover_exploit`, `step37_active_inference_search`, `step38_latent_goal_reaching` — all in
+`papers/figures/` as PNG; `killer_figure`, `where_the_bet_pays`, `step24_object_interaction` also as
+PDF). The core's 3 embeds (`killer_figure`, `where_the_bet_pays`, `step23_indist_largeN`) are all a
+subset of the payoff's 11, so the union is 11 distinct files. All math is standard `$...$` / `$$...$$`,
+which pandoc converts natively.
 
 ---
 
@@ -59,7 +64,7 @@ field, which truncates around 1920 characters.)
 - **Cross-list:** `cs.AI`, `cs.RO` (closed-loop PushT control), `stat.ML`. Optionally `cs.CV` (3D
   point clouds).
 - **License:** **CC BY 4.0** (decided — see "Licensing").
-- **Comments:** e.g. `Laptop-scale (CPU/MPS), fully seeded and deterministic; 4 figures. Full 27-step results log included as an appendix. Code (Apache-2.0): https://github.com/TimothyWang418/se3-ejepa`
+- **Comments:** e.g. `Laptop-scale (CPU/MPS), fully seeded and deterministic; 11 figures. Full results log (Steps 3-38) included as an appendix. Code (Apache-2.0): https://github.com/TimothyWang418/se3-ejepa`
 - **MSC / ACM (optional):** ACM `I.2.6` (Learning), `I.2.9` (Robotics); MSC `68T07`.
 
 ---
@@ -106,7 +111,11 @@ brew install tectonic            # lightweight, or: brew install --cask mactex-n
 # 2. convert each paper to a LaTeX *fragment* (body only, no \documentclass)
 cd ~/Workspace/se3-ejepa/papers
 mkdir -p arxiv && cp figures/killer_figure.png figures/where_the_bet_pays.png \
-  figures/step23_indist_largeN.png figures/step24_object_interaction.png arxiv/
+  figures/step23_indist_largeN.png figures/step24_object_interaction.png \
+  figures/step32_tp_degree_ladder.png figures/step33_symmetry_discovery.png \
+  figures/step34_active_inference_noisy.png figures/step35_many_body.png \
+  figures/step36_discover_exploit.png figures/step37_active_inference_search.png \
+  figures/step38_latent_goal_reaching.png arxiv/
 pandoc equivariance_generalization_core.md -o arxiv/core_body.tex
 pandoc geometric_payoff.md                 -o arxiv/payoff_body.tex
 
@@ -121,24 +130,25 @@ pandoc geometric_payoff.md                 -o arxiv/payoff_body.tex
 #    \begin{document}\maketitle
 #    \input{core_body}
 #    \appendix
-#    \section{Full 27-step results log}\label{app:payoff}
+#    \section{Full results log (Steps 3--38)}\label{app:payoff}
 #    \input{payoff_body}
 #    \end{document}
 
 # 4. proof-compile (optional)
 cd arxiv && tectonic main.tex      # or: pdflatex main.tex
 
-# 5. submit main.tex + core_body.tex + payoff_body.tex + the 4 figures to arXiv
-#    (arxiv accepts PNG; killer_figure.pdf / where_the_bet_pays.pdf also exist)
+# 5. submit main.tex + core_body.tex + payoff_body.tex + the 11 figures to arXiv
+#    (arxiv accepts PNG; killer_figure / where_the_bet_pays / step24 also have PDF)
 ```
 
 **Hand-cleanup after pandoc (still small — the appendix is cleaner than expected):**
 - The 2 `[[geometric_payoff.md]]` cross-references in the core body (now pointing *at the appendix*) ->
   `\Cref{app:payoff}` / "see the full results log in the appendix" (pandoc leaves them literal
   `[[...]]`).
-- The payoff log has **0 wikilinks** and **4 figure embeds**; the core has **3**. `killer_figure`
-  appears in both -> it will render twice (body intro + appendix intro); leave it, or drop one.
-- Confirm all `\includegraphics` paths resolve (step 2 copies the 4 figures next to `main.tex`).
+- The payoff log has **0 wikilinks** and **11 figure embeds**; the core has **3**. `killer_figure`,
+  `where_the_bet_pays`, `step23_indist_largeN` appear in both -> they render twice (body + appendix);
+  leave it, or drop one.
+- Confirm all `\includegraphics` paths resolve (step 2 copies all 11 figures next to `main.tex`).
 - Spot-check that dense inline math (e.g. `$\mathrm{SE}(3)\rtimes S_O$`, `$\rho(g)$`,
   `$\mathbf 1\otimes\mathbf 1\to\mathbf 1$`) survived.
 - `\author{...}` and `\date{}` are filled in the wrapper (pandoc would leave them empty).
@@ -160,9 +170,22 @@ The only value still outstanding is the **arXiv ID itself** — it doesn't exist
 submit, and it back-fills the BibTeX `eprint` (currently `XXXX.XXXXX`) and the `CITATION.cff`
 `preferred-citation`.
 
-**One-time blocker before converting:** `brew install pandoc` (not currently installed).
+**Toolchain ready:** `pandoc 3.9.0.2` and `tectonic 0.16.9` are both installed — the conversion is
+unblocked. The built bundle lives in `papers/arxiv/`; regenerate the whole thing (combine -> pandoc ->
+copy figures -> tarball) with one command, run from `papers/`:
+
+```bash
+python3 arxiv/build.py        # writes _combined.md, main.tex, 00README.json, figures/, arxiv_upload.tar.gz
+cd arxiv && tectonic main.tex  # proof-compile -> main.pdf (132 pp, XeLaTeX for the 举一反三 glyphs)
+```
+
+The ready-to-upload source tarball is `papers/arxiv/arxiv_upload.tar.gz` (13 members: `main.tex` +
+`00README.json` + the 11 figures; `preamble_extra.tex` is *not* shipped because pandoc's `-H` already
+inlined it into `main.tex`). Last proof-compile: 132 pp, 1.84 MB, exit 0 (only cosmetic overfull-hbox
+warnings), Fandol CJK fonts embedded.
 
 ---
 
-*Prepared 2026-05-30. Decisions locked: both-papers-as-one, pandoc->LaTeX, paper CC BY 4.0, code
-Apache 2.0, repo public. Author + repo URL filled. Install pandoc, then convert.*
+*Prepared 2026-05-30; refreshed 2026-05-31 (campaign grew to Steps 3–38, 11 unique figures; pandoc +
+tectonic installed; bundle built). Decisions locked: both-papers-as-one, pandoc->LaTeX, paper CC BY
+4.0, code Apache 2.0, repo public. Author + repo URL filled. Bundle built; user submits manually.*

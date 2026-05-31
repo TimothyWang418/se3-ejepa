@@ -23,7 +23,14 @@ group — **float-floor-exact in 2D/$\mathrm{SO}(2)$** on real PushT (paired $K{
 block-angle change $=0$; the baseline degrades with a 95% CI excluding $0$) and **statistically
 flat in 3D/$\mathrm{SE}(3)$** ($[0.977,0.999]$, disjoint from the baseline's $[1.049,1.234]$). We
 are explicit about what stays **out of scope** (§12): binary task-success sweeps, planner-free
-closed-loop invariance, and scaling — the standing caveat being Sutton's Bitter Lesson.
+closed-loop invariance, and scaling the approach itself. We do, however, **stress-test the prior
+directly against Sutton's Bitter Lesson** — rotation augmentation given the whole group, brute-force
+scale at partial coverage, and a soft-equivariant interpolation — and find each closes at most the
+across-group *task* metric, never the architecture's float-floor *exactness* (Steps 28–30). Finally, because
+equivariance is **closed under composition**, the guarantee is not merely one-step: the $H$-fold rollout
+operator the world model is actually planned with stays across-group flat ($\times1.00$) and
+float-floor-exact ($\le\!2\times10^{-7}$) at **every** horizon, while the non-equivariant baseline's composed
+residual compounds monotonically with $H$ (Step 31).
 
 ---
 
@@ -38,7 +45,7 @@ closed-loop invariance, and scaling — the standing caveat being Sutton's Bitte
 > **out of scope** is binary task-success sweeps, planner-free closed-loop invariance, and
 > scaling (§12); this note is the claim I am willing to stand behind today.
 
-Last updated: 2026-05-30. All experiments are laptop-scale (CPU/MPS), fully seeded and
+Last updated: 2026-05-31. All experiments are laptop-scale (CPU/MPS), fully seeded and
 deterministic.
 
 ---
@@ -376,6 +383,51 @@ floor, not a symmetry break**, and the decisive statistic is the ratio separatio
 zero. Confidence ≈ **0.85** (one notch below 2D §6's $0.9$), ≈ **0.85** on the [S] model-and-planner
 finding.
 
+### 6.2 From tracking to *reaching* — the exactness theorem for decoder-free goal-reaching (Step 38)
+
+§6/§6.1 made closed-loop *tracking* exact: the seen-vs-OOD orientation-error **ratio** is flat under a
+matching equivariant planner. Step 38 asks the harder question — can a decoder-free planner *reach* a goal
+pose specified only as a target latent $z_g=E(X_g)$ (no decoder back to point clouds), and does the
+reaching inherit the same exactness? This re-attacks the project's **one outright negative**: Step 13's
+panel [C], where an open-loop CEM-MPC against $\lVert\hat z_H-z_g\rVert^2$ closed a *negative* fraction of
+the orientation gap for both models.
+
+The failure was diagnosed, not knob-tuned. A predictor trained only on *one-step* transitions has a
+multi-step rollout $f^h(E(x_0),a_{1:h})$ that drifts $\sim\!2.0$ from the encoded truth
+$E(\mathrm{teacher}^h)$ by $h{=}6$ — so $z_g$ sits **off the predictor's reachable manifold** and the
+terminal $L_2$ is ill-scaled. Three decoder-free, exactly-equivariant ingredients fix it: (i)
+**rollout-consistency training**, $L_{\rm roll}=\frac1H\sum_h\lVert f^h(E(x_0),a_{1:h})-\mathrm{sg}\,
+E_{\rm ema}(x_h)\rVert^2$ via BPTT against an EMA target encoder (pulls the reachable manifold onto the
+encoded one); (ii) the §6.1 SE(3)-equivariant CEM planner verbatim; (iii) an **SE(3)-native latent-Procrustes
+goal** — the geodesic angle of the Kabsch rotation $R^\star$ aligning $z_0\to z_g$ on the $16$ type-1
+vectors, $\arccos\frac{\operatorname{tr}R^\star-1}{2}$, invariant under a shared $\rho(R)$ because the fit
+conjugates.
+
+Decoder-free reaching flips from $+0.006$ (the faithful Step-13[C] control) up the ladder
+$+0.174$ (equivariant planner) $\to+0.399$ (rollout) $\to+0.527$ (Procrustes goal, best deployable),
+against a $+0.696$ predictor-space ceiling (which *uses* $a_{\rm true}$) and a $+1.000$ replay oracle. The
+reach is therefore **partial** — $\sim\!53\%$ of the gap, the residual being the encoder-vs-predictor
+manifold gap, a planning-horizon limitation, **not** an equivariance one — and I report it as partial.
+
+The theorem is the **transfer**. Paired over $K{=}24$ tasks on orbits of $1$ seen $+4$ OOD $(R,t)$:
+
+| residual orientation error (deg) | seen | g1 | g2 | g3 | g4 |
+|---|---:|---:|---:|---:|---:|
+| **VN (equivariant)** | $16.108$ | $16.108$ | $16.108$ | $16.108$ | $16.108$ |
+| **MLP (baseline)** | $15.197$ | $16.598$ | $14.016$ | $26.754$ | $48.699$ |
+
+The VN reaches **identically** on every orbit element to $\max_i\lvert d_i\rvert=1.8\times10^{-6}°$
+(OOD/seen ratio $1.000$, CI $[1.000,1.000]$ — the same tie-flip-free `e3nn` floor as §6.1); the MLP degrades
+to $48.7°$ (ratio $1.745$, CI $[1.473,2.100]$, disjoint from flat). The goal cost is SE(3)-invariant to the
+float floor (Procrustes $6.8\times10^{-8}$, $L_2$ $7.8\times10^{-6}$) and the rollout VN realises it
+end-to-end (composed equivariance $4.2\times10^{-6}$ vs MLP $5.15$). So **§6's exactness extends from
+tracking to goal-reaching**: whatever the decoder-free planner reaches, it reaches the *same* across the
+whole SE(3) orbit. Confidence ≈ **0.8** — one notch below §6.1 because the reach is partial (a horizon
+limitation), while the across-orbit exactness is at the `e3nn` floor. Guarded by
+`tests/test_step38_latent_goal_reaching.py` (the Procrustes-angle recovery of $\lvert R\rvert$, both goal
+costs' SE(3)-invariance, the VN-vs-free composed-equivariance separation, and exact reaching-transfer at
+init).
+
 ---
 
 ## 7. From one object to a scene — compositional generalisation across $\mathrm{SE}(3)^O\rtimes S_O$ (Step 19)
@@ -633,8 +685,13 @@ theorem, not an empirical artifact), and (ii) the entire information-seeking loo
 stays exactly $\mathrm{SE}(3)$-equivariant: the project's thesis carried all the way into a
 partial-observability decision problem. The belief update is deliberately minimal (one bit) so the
 geometry is the only moving part. Confidence ≈ **0.85** that the constructed win is correct and the
-loop-level invariance exact (theorem + survives training + control fails); ≈ **0.5** that it transfers to
-a non-constructed / noisy-observation benchmark (untested, genuinely open).
+loop-level invariance exact (theorem + survives training + control fails); the ≈ **0.5** that it transfers
+beyond this construction is since discharged in two rungs — **Step 34** removes the noiseless crutch (a noisy
+$K{=}2$ channel; the win survives at $\times0.614$ and vanishes when the channel goes useless) and **Step 37**
+the constructed *mirror* (a generic $K{=}3,4,5$ search with no antipodal pair at any $K$, the *exact categorical*
+mutual information as the drive, where the EFE planner **attains the oracle floor**), both still exactly
+$\mathrm{SE}(3)$-equivariant (§12) — so what stays genuinely open is now only a *fully* non-constructed
+real-observation benchmark, no longer the noise or the mirror.
 
 ---
 
@@ -853,7 +910,33 @@ where they meet.
   from architecture. Our training machinery is squarely in this family — an EMA target à la BYOL
   (Grill et al., 2020) with a VICReg variance hinge (Bardes et al., 2022) against collapse — but the
   encoder/predictor are **exactly equivariant by construction**, so the JEPA cost $\lVert E(x_a)-
-  E(x_b)\rVert$ is provably isometry-invariant (§2) instead of approximately so.
+  E(x_b)\rVert$ is provably isometry-invariant (§2) instead of approximately so. We make this
+  substitution *quantitative* in §12 (Step 28): handed the group, rotation augmentation closes the
+  across-group *task* metric but plateaus $\sim\!10^5\times$ above the architecture's
+  exact-equivariance floor — it **approximates** the symmetry the architecture **is**.
+- **A symmetry prior buys across-group generalisation at scale too — but in pixel space, at full
+  generative cost.** Concurrent generative multi-agent world models make our bet in a *different*
+  group. $\gamma$-World (Liu et al., 2026) encodes its $P$ agents as the vertices of a regular simplex
+  in rotary-angle space ("Simplex Rotary Agent Encoding", a parameter-free $3$D-RoPE extension) — an
+  *isometric orbit of the symmetric group $S_P$* that renders the model **permutation-equivariant**
+  over agents — and that single prior yields **zero-shot generalisation from two to four players
+  without retraining**, their analogue of 举一反三 across $S_P$ rather than $\mathrm{SE}(3)$. The
+  control is sharp: their dense-attention baseline distinguishes players by a *learned per-slot
+  identity*, which breaks the exchange symmetry and **cannot extend past its training roster without
+  retraining** — the same symmetry-respecting-vs-breaking split we report at the prediction level
+  (§4). We therefore read $\gamma$-World as independent, at-scale corroboration of the present
+  thesis — *an exact symmetry prior determines the model off the training slice* — now for a discrete
+  permutation group. Two axes locate our own corner. (i) **Representation:** it predicts in
+  **pixel/video space** through a distilled diffusion teacher, paying the full generative cost; we
+  predict in an **abstract equivariant latent** with no decoder, the cheaper route our contrarian bet
+  targets. (ii) **Realisation:** its symmetry is a discrete $S_P$ engineered into a positional
+  encoding; ours is the continuous $\mathrm{SE}(3)$ carried *exactly* by the network
+  ($\sim\!10^{-6}$ through a real training run, §3). The two are **complementary, not rival**: our
+  object-centric variant already factors a permutation symmetry over entities
+  ($\mathrm{SE}(3)^O\rtimes S_O$, payoff-log Steps 19/24) plus a combinatorial count-generalisation
+  result (Step 35, few-body $\to$ many-body) that is the discrete sibling of their $2\to4$ — so a
+  natural synthesis is a simplex-style $S_P$ entity code layered *over* SE(3)-equivariant per-entity
+  latents.
 
 **The underexplored corner this note targets.** Equivariant *layers* exist; equivariant *RL* exists;
 *JEPA* exists. What is largely missing is their conjunction: an *exactly* SE(3)-equivariant
@@ -882,9 +965,14 @@ mechanism* (the curiosity invariance and its $\beta$-knob), **not** a claimed ex
   *angle-error invariance*, not a success-rate win. (ii) **Planner-free** closed-loop
   invariance: Step 14 [S] shows a generic-angle-broken planner softens VN exactness to a
   statistical (unbiased) tie — [C] is a property of model *and* planner together, not the model
-  alone. (iii) **Latent-only planning toward a goal cloud** in 3D got **no** traction for either
-  model (Step 13 [C], negative) — a planner/decoder limitation, not an equivariance one (the VN
-  fails *flat* across the group).
+  alone. (iii) **Latent-only planning toward a goal cloud** in 3D was the lone outright negative —
+  Step 13 [C] closed a *negative* gap fraction for both models — and **Step 38 (§6.2) resolves it**:
+  rollout-consistency training $+$ the §6.1 equivariant planner $+$ an SE(3)-native latent-Procrustes
+  goal flip decoder-free reaching from $+0.006$ to $+0.527$, and the VN reaches *identically* across the
+  SE(3) orbit (ratio $1.000$, CI $[1.000,1.000]$ vs the MLP's $\times1.745$) — §6's exactness theorem now
+  for goal-reaching. What stays open is *full* (not partial) reaching: the $+0.527$ deployable fraction
+  trails a $+0.696$ predictor-space ceiling, the residual being the encoder-vs-predictor manifold gap, a
+  planning-horizon limitation, not an equivariance one.
 - **The 3D SE(3) [C] is *statistical*, not float-floor-literal (§6.1).** The 2D corollary (§6)
   hits the environment float floor ($\max_i\lvert d_i\rvert=4.9\times10^{-5}°$); the 3D SE(3) lift
   (Step 18) is exact only to the `e3nn` network's $\sim\!10^{-6}$ equivariance floor — *not* a
@@ -956,6 +1044,260 @@ mechanism* (the curiosity invariance and its $\beta$-knob), **not** a claimed ex
   a sample-efficiency barrier, not an impossibility.) The honest headline: a near-total,
   data-proof-in-$N$ across-group win that degrades only to a *tie* where the symmetry is most broken,
   and a wash-to-loss in-distribution — over **five** seeds, spanning $N$ up to $2048$.
+- **The fair augmentation baseline: given the group, augmentation closes the across-group *task*
+  metric but never the *exactness* (Step 28).** The sharpest objection to the whole note is that the
+  prior merely does what rotation **data augmentation** would: hand the non-equivariant MLP the *same*
+  knowledge (the world is symmetric) and let it learn the symmetry from an augmented training orbit.
+  On the exactly-equivariant teacher, sweeping augmentation **coverage** (a $\mathrm{SO}(2)$ arc
+  $[0,\theta_{\max})$ in 2D; a $\mathrm{SO}(3)$ geodesic ball of angle $\le\theta_{\max}$ in 3D, with
+  $\theta_{\max}{=}180°$ all of $\mathrm{SO}(3)$) settles it two ways. *(i) Task metric* — with **full**
+  coverage augmentation does flatten the MLP: the OOD/seen relMSE ratio collapses from the no-aug wall
+  to $\times1.06$ in 2D and $\times1.46$ in 3D (vs the no-aug $\times67$ / $\times951$), against the
+  VN's $\times1.00$ at *zero* coverage; the narrowest coverage stays broken ($\times118.9$ / $\times37.6$),
+  confirming the no-aug failure is missing coverage, not finite $N$. So *on the task metric*, with the
+  group known, augmentation is a viable substitute — the across-group task win is **not**
+  architecture-exclusive (the 3D residual $\times1.46$ honestly sits a touch above 2D's $\times1.06$:
+  the richer group leaves a visible gap the VN does not have). *(ii) Exactness* — augmentation **never**
+  reaches the architecture's symmetry: the residual equivariance
+  $\Delta_{\mathrm{eq}}=\max_g\lVert f(g{\cdot}x)-g{\cdot}f(x)\rVert/\lVert f(x)\rVert$ plateaus at
+  $7.8\times10^{-2}$ (2D) / $5.1\times10^{-2}$ (3D) even at full coverage — $\sim\!3\times10^{5}\times$
+  the VN's *weight-independent* float floor ($\sim\!10^{-7}$). The honest split: augmentation
+  **approximates** the symmetry, at the price of the same prior *plus* a wider training orbit, and only
+  ever buys the *approximate* version; the architecture **is** the symmetry, for free — and only the
+  architecture delivers the float-floor-exact invariance the closed-loop [C] (§6) is built on (an MLP
+  with $\Delta_{\mathrm{eq}}\approx0.05$ cannot close an exactly orientation-invariant loop). Five seeds
+  per arm; `experiments/step28_fair_augmentation_baseline.py` (2D) and `..._3d.py` (3D).
+- **The Bitter-Lesson stress test: at *partial* coverage, scale substitutes for neither the coverage nor
+  the architecture (Step 29).** Step 28 handed augmentation the *whole* group; the realistic regime is
+  *partial* coverage — you augment a wedge and hope the model extrapolates the rest. Holding coverage
+  partial (a 2D arc $[0,180°)$; a 3D geodesic ball of angle $\le90°$), so the uncovered orientations
+  (2D $[180°,360°)$; 3D shell $(90°,180°]$) are pure **extrapolation**, we sweep the two axes Sutton's
+  Bitter Lesson (2019) would invoke against the prior — MLP width $\in\{64,256,1024\}$
+  ($\approx\!1.7\text{–}313\times$ the VN's $3.5$k params) $\times$ base scenes $N\in\{256,1024,4096\}$
+  ($16\times$), each step re-rotated with fresh in-coverage group elements at a **fixed gradient-step
+  budget** (so $N$ varies content diversity at constant compute), five seeds. *(i) Task* — scaling does
+  **not** close the across-group gap. In 2D it *widens* it (OOD/seen $\times29.8\!\to\!\times48.9$
+  corner-to-corner): because the metric is a ratio, more data drives the *covered* (seen) error down
+  faster than the uncovered-extrapolation error, so the relative 举一反三 failure gets *worse* under
+  $16\times$ data and $309\times$ parameters. In 3D bigger *models* help but more *data* does not, and the
+  ratio stays enormous ($\times41\text{–}\times106$ across the grid), never approaching the wall it cannot
+  escape. Against this the VN reference is $\times1.00$ at *every* cell, for free — **scale is not a
+  substitute for the missing coverage.** *(ii) Exactness* — a **scale-independent plateau**: the single
+  most-equivariant cell in either $3\times3$ grid still has $\Delta_{\mathrm{eq}}\approx0.34$ (2D) / $0.36$
+  (3D), $\sim\!1\text{–}2\times10^{6}\times$ the VN's *weight-independent* float floor
+  ($\sim\!2\times10^{-7}$); $313\times$ the parameters and $16\times$ the data buy no exactness. The prior
+  delivers the flat task metric *and* float-floor exactness for free and scale-free; brute force buys
+  neither. Five seeds per cell; `experiments/step29_scaling_sweep.py` (2D) and `..._3d.py` (3D).
+- **The soft-equivariant model is a tunable dial, not a free lunch (Step 30).** Steps 28–29 asked whether
+  *data* can lift the free MLP into the hard prior's corner (it cannot); Step 30 asks the *architecture*
+  question — **interpolate** between them with the **Residual Pathway Prior** (Finzi, Benton & Wilson, 2021),
+  $f_\beta=f_{\mathrm{VN}}+f_{\mathrm{free}}$ with a residual-energy penalty
+  $\beta\,\mathbb E\lVert f_{\mathrm{free}}\rVert^2$ that slides continuously from the hard VN
+  ($\beta\to\infty$) to the free MLP ($\beta\to0$). On a world that is *almost* equivariant — the Step 16
+  controlled break $\mathrm{Dyn}_g=\mathrm{Dyn}_0-g\,(s\!\cdot\!e)\,e$ along a fixed lab axis, swept
+  $g\in\{0,0.2,0.4,0.8\}\times\beta\in\{1,10^{-2},10^{-4}\}$, five seeds (3D "seen" is the full coverage
+  ball, since the lab-$z$ break is $z$-rotation-invariant and a wedge would let even the VN fit it) — the
+  three metrics move *together*. *(i) Capacity:* the hard VN is **structurally blind** to the fixed-axis
+  term — seen relMSE rises with the break (×54.6 in 2D / ×604 in 3D, an irreducible misspecification floor,
+  §10); relax the prior and the floor lifts (the softest model fits $g{=}0.8$ by ×225 / ×431 better).
+  *(ii) Generalisation:* the OOD/seen ratio is **monotone in softness**, sweeping the whole interval from
+  the VN's flat corner (×1.00 in 2D, ≤×1.5 in 3D) through the soft middle to the MLP's extrapolation wall
+  (×34–45 in 2D, ×52–71 in 3D). *(iii) Exactness:* the VN is at the float floor for *every* $g$ (the §2
+  identity, break-independent), but the residual pathway forfeits exactness **the instant it is active** —
+  even at $g{=}0$, where the symmetry is perfectly intact, the softest RPP is already $\sim\!10^{5}\times$
+  the floor; there is no "slightly soft" exactness. The model-side free-fraction
+  $\rho=\mathbb E\lVert f_{\mathrm{free}}\rVert/\mathbb E\lVert f_\beta\rVert$ confirms $\beta$ is a genuine
+  dial (monotone in both $\beta$ and $g$). The soft model buys capacity to absorb a broken symmetry, but
+  spends across-group reach **and** float-floor exactness to do it — the exact-and-flat-for-free corner
+  belongs to the **architecture alone**, and no $\beta$ recovers it. Five seeds;
+  `experiments/step30_soft_equivariant.py` (2D) and `..._3d.py` (3D).
+- **One-step equivariance composes into a multi-step rollout guarantee (Step 31).** Every step up to here
+  measured a *one-step* prediction, yet a world model earns its keep by *rollout* — planning and imagination
+  compose the learned operator $H$ times. The worry: does the across-group flatness survive composition, or
+  does it decay step by step? The answer is a one-line theorem — **equivariance is closed under
+  composition.** If the one-step map $\Phi_\theta(s)=s+v_\theta(s,a)$ is equivariant, then so is its $H$-fold
+  iterate, by induction:
+  $\Phi_\theta^{(H)}(Rs)=\Phi_\theta^{(H-1)}\!\big(R\,\Phi_\theta(s)\big)=\cdots=R\,\Phi_\theta^{(H)}(s)$ — no
+  retraining, no per-horizon assumption. We test it directly: an *exact* equivariant velocity-field teacher
+  $s_{t+1}=s_t+\tau\,\widehat{\mathrm{Dyn}}_0(s_t,a)$ ($\tau{=}0.05$, no break), train one-step on the seen
+  region (wedge $[0,180^\circ)$ in 2D / ball $\le 90^\circ$ in 3D), then roll out $H\in\{1,2,4,8,16\}$ and
+  read three things. *(i) The honest baseline:* final-state rollout relMSE **accumulates for everyone** —
+  VN seen $1.2\times10^{-5}\!\to\!2.3\times10^{-2}$ (2D) / $1.7\times10^{-6}\!\to\!2.2\times10^{-2}$ (3D) from
+  $H{=}1$ to $H{=}16$, the MLP comparable — rollout is hard regardless of the prior. *(ii) Generalisation:*
+  the VN across-group OOD/seen rollout ratio is $\times1.00$ **flat at every horizon** (the §2 identity rides
+  through the composition), while the free MLP carries a large gap at **every** $H$ ($\times43\text{–}51$ in
+  2D / up to $\times66$ in 3D), peaking early then *compressing* at large $H$ as the OOD rollout decoheres
+  into the relMSE saturation ceiling — the ratio is a clean diagnostic only while the seen rollout is
+  faithful, so the *monotone* compounding signal lives in (iii). *(iii) Exactness:* the composed residual
+  $\Delta_{\mathrm{eq}}^{(H)}=\max_R\lVert\Phi^{H}(Rx)-R\,\Phi^{H}(x)\rVert/\lVert\Phi^{H}(x)\rVert$ stays at
+  the **float floor for every $H$** for the VN ($\le 2.3\times10^{-7}$ in 2D / $\le 1.6\times10^{-7}$ in 3D),
+  but **compounds monotonically** for the MLP — $2.3\times10^{-2}(H{=}1)\!\to\!3.7\times10^{-1}(H{=}16)$ in
+  2D / $3.9\times10^{-2}\!\to\!4.5\times10^{-1}$ in 3D — because each step re-injects the symmetry break into
+  the next. The one-step prior thus pays a **multi-step** guarantee at the horizon the world model is
+  actually planned with, not merely at $H{=}1$. Five seeds; `experiments/step31_rollout_horizon.py` (2D) and
+  `..._3d.py` (3D).
+- **The recovery is a *degree* signature, not a capacity ramp (Step 32).** Step 27 (§7.1) was a single
+  architectural point — one tensor-product stack recovered $42\%$ of the degree-1 cap — and could not say
+  *why*: is the missing ingredient a specific **representable polynomial degree** (a primitive the
+  equivariant class lacked), or just raw **capacity**? A *degree* bottleneck recovers once and stops; a
+  capacity bottleneck keeps improving. Step 32 separates them with a **ladder**: `VNTPLadderPredictor`
+  front-loads $L$ cross-product blocks into a fixed three-block stack, so the maximum representable degree
+  is $d_{\max}=2^{L}$ while **depth, width, and (near-)parameter count are held fixed** ($L0\!\to\!L3$ span
+  only $25.1$–$29.8$k params, against the MLP's $62.3$k) — *only* the degree changes. Same Step-24/27
+  interacting teacher (degree-3 torque), encoder, message, data, training; sweep $L\in\{0,1,2,3\}$
+  ($d_{\max}\in\{1,2,4,8\}$), three seeds. *(i) Recovery:* in-distribution relMSE recovers in **one step** at
+  the first cross-product rung ($L0\,0.263\to L1\,0.194$, $\times1.36$, $38\%$ of the cap$\to$MLP gap) and
+  then **saturates dead-flat** ($L1\!\approx\!L2\!\approx\!L3\!\approx\!0.20$ within seed noise, top rung
+  $+1\%$ of the total) — the degree signature, since a capacity ramp would keep closing toward the MLP's
+  $0.080$ with each doubling of $d_{\max}$. *(Honest subtlety: the knee sits at $d_{\max}{=}2$, one rung
+  before the naive "torque is degree-3, so $d_{\max}\ge3$" prediction, because the predictor acts on the
+  encoder's **already-nonlinear** $\ell_{\max}{=}2$ latent, not raw points — the point-space degree is an
+  upper bound on the latent-space knee, and the first cross product already supplies the recoverable bulk.)*
+  *(ii) 举一反三:* every rung is across-group $\times1.00$ (the §2 orthogonal-cancellation identity rides
+  through every cross-product block unchanged), while the $2.4\times$-larger MLP that fits better
+  in-distribution degrades $\times10.5$. *(iii) Exactness:* every rung holds the float floor (composed
+  $\mathrm{SE}(3)\le9.3\times10^{-5}$, perm $0$; the predictor alone $4.8\times10^{-7}$ at init), the MLP
+  $8.9$ — adding representable degree costs no exactness. So the degree-1 VN's bottleneck was a missing
+  **primitive** (one cross-product irrep), recoverable at the *first* rung that supplies it and saturating
+  thereafter — not an open-ended capacity climb, and never at the cost of the across-group guarantee. Three
+  seeds; `experiments/step32_tp_degree_ladder.py`, structural invariants at every rung in
+  `tests/test_step32_degree_ladder.py`.
+- **The symmetry prior is *discoverable from data*, and falsifiably so (Step 33).** Every step before this
+  *assumes* the group; Step 33 tests whether the group can instead be **read out of a frozen teacher's
+  behaviour**. Parametrise a *generator slate* of $K$ free $3\times3$ matrices $\{\hat G_k\}$ — with **no**
+  antisymmetry, Lie bracket, or $\mathfrak{so}(3)$ structure imposed — and minimise the relative
+  finite-transform equivariance residual $\mathcal R(\hat G)=\mathbb E_x\big\|f(e^{\theta\hat G}x)-e^{\theta\hat G}f(x)\big\|^2/\mathbb E_x\|f(x)\|^2$
+  of the teacher $f$; a direction survives **iff** the teacher is genuinely invariant along its finite flow
+  $e^{\theta\hat G}$. Two teachers (a TRUE $\mathrm{SO}(3)$ world and a BROKEN one with a lab-frame stretch
+  $M=\mathrm{diag}(1,1,-2)$ that leaves only $\mathrm{SO}(2)_z$), five seeds. *(i) Dimension off the data:*
+  sweep $K=1\ldots5$; the residual holds the float floor until the slate is forced to spend a direction the
+  teacher does not respect, so the **jump location is the dimension** — TRUE floors ($\sim10^{-13}$) through
+  $K{=}3$ then jumps $\times9.3\times10^{9}$ at $K{=}4$ ($\dim\mathfrak{so}(3)=3$), BROKEN jumps already
+  $\times1.8\times10^{10}$ at $K{=}2$ ($\dim\mathfrak{so}(2)_z=1$). *(ii) The algebra emerges:* at $K{=}3$ the
+  TRUE slate *is* $\mathfrak{so}(3)$ though nothing asked it to be — antisymmetry residual $6\times10^{-7}$,
+  bracket-closure $2\times10^{-6}$, and (generators normalised to unit Frobenius norm) structure-constant norm
+  $\|c\|=1.7320509=\sqrt3$, the exact $\mathfrak{so}(3)$ fingerprint (six nonzero $c_{ijk}=\pm1/\sqrt2$, so
+  $\|c\|^2=6\cdot\tfrac12=3$). *(iii) Falsifiable:* the BROKEN world **cannot fake** $\mathfrak{so}(3)$ at
+  $K{=}3$ ($\times1.6\times10^{10}$ worse than TRUE) but **does** recover its lone surviving generator at
+  $K{=}1$ (aligns with $L_z$ to $1.000$), and that dim-$1$ read holds across an $8\times$ sweep of break
+  strength $\beta\in\{0.1,\dots,0.8\}$ — a *symmetry* property, not a tuned magnitude. So the thesis's opening
+  "*if* the world carries a symmetry" is something the data can be made to **prove or refute**: discover the
+  prior, don't merely postulate it — and trust it only because it can be shown wrong. Five seeds, six guards;
+  `experiments/step33_symmetry_discovery.py`, structural invariants in
+  `tests/test_step33_symmetry_discovery.py`.
+- **The active-inference win survives a *noisy* cue, de-constructed (Step 34).** The Step 25 task win leaned on
+  one crutch: a *noiseless* one-bit reveal that snapped the belief to a certainty $p\in\{0,1\}$. Step 34 removes
+  it. The cue now passes through a **binary symmetric channel** with crossover
+  $\epsilon(d)=\tfrac12-(\tfrac12-\epsilon_0)e^{-d^2/2\delta^2}$ (floor $\epsilon_0>0$), the agent runs **soft
+  Bayes** (the posterior never reaches $\{0,1\}$), and the planner's epistemic drive is the **exact mutual
+  information** $\mathrm{IG}(p;\epsilon)=\mathcal H(p)-\mathbb E_o[\mathcal H(p')]=I(b;o\mid d)$ — verified to
+  equal the soft-Bayes belief-entropy drop to $10^{-7}$, with the three limits $\mathrm{IG}(\epsilon{=}0)=\mathcal
+  H(p)$ (recovering Step 25), $\mathrm{IG}(\epsilon{=}\tfrac12)=0$, and $\mathrm{IG}(p\in\{0,1\})=0$. *The one
+  design decision:* a noiseless reveal makes $\mathcal H(p)$ collapse to $0$ exactly, so Step 25's curiosity
+  *self-extinguished* and the agent committed; under soft evidence $\mathrm{IG}$ stays small-but-nonzero, and a
+  bare $z$-score renormalises that vanishing signal back to unit scale — pulling the agent to the cue *forever*.
+  Gating the channel by **normalised belief entropy** $g_{\rm epi}=\mathcal H(p)/\ln2\in[0,1]$ (the mutual
+  information's own ceiling) re-arms the self-extinguishing envelope; the gate is a *belief scalar*, so the loop
+  stays $\mathrm{SE}(3)$-invariant and the $\beta{=}0$ reward-only baseline is untouched. The win **survives**
+  ($\times0.614$ true-goal-error cut, CI$[0.499,0.749]$, past the same provable hedge floor), **recovers Step 25**
+  as $\epsilon_0\to0$ (EFE $0.333\approx$ oracle), and — the built-in **falsifiable negative** — **vanishes** when
+  the channel goes useless ($\epsilon_0{=}0.45$: EFE $0.723\approx$ reward-only $0.663$), with sensing effort
+  climbing monotonically $5.6\to15.7$ as the bit degrades. $\mathrm{IG}$ depends on the latent only through the
+  invariant distance, so the whole noisy loop is still $\mathrm{SE}(3)$-exact (IG-field $7\times10^{-7}$,
+  plan-equivariance $8\times10^{-9}$) where the free MLP shatters it (IG-invariance $0.17$). Seven guards;
+  `experiments/step34_active_inference_noisy.py`, structural invariants in
+  `tests/test_step34_active_inference_noisy.py`.
+- **Few-body $\to$ many-body: a *combinatorial* generalisation axis (Step 35).** Every result above generalises
+  across the *continuous* group; Step 35 opens an orthogonal **discrete** axis — object **cardinality** $O$.
+  Train the interacting world model at a *single* count $O{=}3$ and test zero-shot at $O\in\{1,2,4,5,6\}$. There
+  is no Lie generator carrying $O{=}3$ to $O{=}5$, so equivariance *alone* cannot buy it; what does is the **one
+  design decision** — a **count-stable mean message** $\bar r_i=\frac1{O-1}\sum_{j\ne i}\hat r_{ij}$. A *mean* of
+  unit vectors lives in the unit ball $\lVert\bar r_i\rVert\le1$ at *every* count (contracting $1.0\to0.94$ as
+  $O{:}2\to6$), so the message distribution a one-count predictor sees is count-stable — where a *sum* would grow
+  with $O$ and break transfer; $O{=}2$ recovers the Step-24 two-body teacher verbatim and $O{=}1$ reduces to pure
+  self-dynamics (message $\equiv0$). *(i) Count transfer is bought by factorisation, not the prior:* holding
+  orientation fixed, the relMSE is flat across the interacting family $O\ge2$ for **both** the equivariant VN-MP
+  ($\times1.09$) and the equally-equipped non-equivariant MLP-MP ($\times1.05$). *(ii) The prior adds the second
+  axis the MLP cannot:* combine the unseen count with an unseen **global rotation** and VN-MP stays **exactly**
+  flat (count$\times\mathrm{SO}(3)$ ratio $\times1.00$ to the float floor) while the MLP-MP degrades monotonically
+  with count ($\times2.26\to3.34$, mean $\times2.83$) — the clean isolation of the equivariance prior. *(iii)
+  Structural at an unseen count:* the whole VN-MP pipeline is $\mathrm{SE}(3)\rtimes S_O$-equivariant
+  post-training at a count it is not even built for ($O{=}5$: SE(3) $1.8\times10^{-5}$, perm $7\times10^{-7}$),
+  the MLP breaking SE(3) ($1.1\times10^{1}$). The $O{=}1$ no-interaction limit ($\times2.47$; message $\equiv0$ is
+  an unseen input and the torque-free latent step shrinks $\sim3.8\times$) is a *documented boundary* that still
+  beats no-change ($0.50<1$), not folded into the headline. So a single training count **determines** the
+  interacting dynamics across the many-body family, and the *product* of the discrete (count) and continuous
+  (rotation) axes is met only by the geometric model — channel-necessity itself is the inherited degree-1
+  cross-product cap, a modest $\times3.46$. Eight guards; `experiments/step35_many_body.py`, structural invariants
+  in `tests/test_step35_many_body.py`.
+- **Discover $\to$ exploit: a *discovered* symmetry, distilled into a free predictor (Step 36).** Every
+  across-group win above is bought by a symmetry **hand-wired** into the architecture; Step 33 had already shown
+  the prior is *discoverable* — from a blank slate of learnable $3\times3$ matrices it rediscovered a frozen
+  teacher's $\mathfrak{so}(3)$ (and an $\mathfrak{so}(2)_z$ on a rotation-broken teacher) with antisymmetry and
+  bracket-closure **emergent**, not imposed. Step 36 turns that *measurement* into a *method*: freeze one
+  exactly-equivariant encoder $E$ (so all arms share $E(Rx)=\rho(R)E(x)$) and train a **free** MLP predictor $f$
+  with the supervised latent-prediction loss plus a soft equivariance regulariser
+  $\lambda\sum_{k}\mathbb{E}_{z,a,\theta}\lVert\rho(g_k)f(z,a)-f(\rho(g_k)z,g_k a)\rVert^2$ along the
+  **discovered** finite flows $g_k=\exp(\theta\hat G_k)$ — distilling the discovered generators, with nothing
+  about $\mathfrak{so}(3)$ hand-coded beyond what discovery found. The **one design decision**: *decouple the
+  distillation flow range from discovery*. Discovery needs only a $\pm49^\circ$ wedge to *detect* asymmetry;
+  exploitation must *enforce* equivariance over the whole $1$-parameter subgroup, so $\theta_{\max}^{\rm distill}
+  =\pi\sqrt2$ sweeps a full half-turn per axis ($\mathrm{tr}\,\exp(\pi\sqrt2\,\hat G)=-1$, the antipode). The
+  reads: *(i)* the hard-wired VN predictor is the exact upper bound (composed residual $1.2\times10^{-5}$,
+  OOD/seen $\times1.00$) and the free MLP the lower bound (fits the seen wedge $0.45$ but breaks across
+  $\mathrm{SO}(3)$, $\times2.25$, equivariance residual $3.69$); *(ii)* distilling the discovered
+  $\mathfrak{so}(3)$ across a $\lambda$-ladder **closes $54\%$** of the free MLP's excess OOD gap ($\times2.25\to
+  \times1.09\to$ VN $\times1.00$) and drops the predictor equivariance residual $\times8.0$ ($3.69\to0.459$), at a
+  $\lambda^\star$ selected by minimum OOD with *statistical* ties (within $5\%$) broken toward the strongest
+  enforcement ($\lambda{=}10$ ties $\lambda{=}3$ on OOD but enforces equivariance twice as hard); *(iii)*
+  distilling the **discovered** basis is as flat as distilling the hand-wired **oracle** $\mathfrak{so}(3)$
+  ($\times1.09$ vs $\times1.06$) — the Step-33 discovery **costs nothing**; *(iv)* the **falsifiable** check —
+  distilling only the discovered $\mathfrak{so}(2)_z$ helps the z-axis OOD $+46\%$ but the off-axis only $+17\%$,
+  transferring **exactly** the symmetry discovered, no more. The honest limit (**soft $\neq$ hard**): the distilled
+  MLP is much flatter than free but does not reach the VN floor (distilled OOD $0.632>2\times$ VN $0.300$) — soft
+  regularisation *approximates* equivariance where the built-in prior *enforces* it (the Step-30 dial again). So
+  the across-group prior is not only *learnable* (Step 33) but *exploitable* (Step 36): a symmetry discovered from
+  data and distilled into a free predictor recovers most of the 举一反三 the hard-wired model gets for free,
+  matching the oracle and transferring exactly what it found — with a documented soft-vs-hard gap, not float-floor
+  exactness. Six guards; `experiments/step36_discover_exploit.py`, structural invariants in
+  `tests/test_step36_discover_exploit.py`.
+- **The active-inference win transfers beyond a *constructed* POMDP — the de-construction completed (Step 37).**
+  Step 34 removed Step 25's *noiseless* crutch; the **other** crutch was the *constructed mirror* — a hidden
+  *bit* with two opposite goals whose midpoint is the start, hand-tuned so the one cue sat exactly transverse.
+  Step 37 removes it: the mirror becomes a **generic $K$-target constellation** ($K\ge3$ scattered in a random
+  plane with **no antipodal pair at any $K$** — a gap stick-breaking sampler gives $0$ violations over $2000$
+  draws, every pair $>38^\circ$ and every angle $>30^\circ$ from $180^\circ$), so the belief is a genuine
+  **$K$-ary categorical** with no "opposite" to exploit. The drive is the **exact categorical mutual information**
+  $\mathrm{IG}(p;\epsilon,K)=\mathcal H(p)-\mathbb E_o[\mathcal H(p')]=I(b;o\mid d)$ of a **$K$-ary symmetric
+  channel** $P(o{=}j\mid b{=}i)=(1{-}\epsilon)[i{=}j]+\tfrac{\epsilon}{K-1}[i{\ne}j]$, crossover annealing with
+  the invariant latent distance to the useless floor $\epsilon_\star=(K{-}1)/K$; categorical soft Bayes never
+  collapses. **Step 34 is recovered exactly as $K{=}2$** ($\epsilon_\star(2)=\tfrac12$, $\mathrm{IG}$/crossover
+  match to $10^{-7}$). *(i) It attains the oracle floor:* on $24$ generic $K{=}3$ POMDPs ($\epsilon_0{=}0.15$) the
+  EFE agent reads the off-path cue $10.6\times$, resolves the belief to $p_{\text{true}}{=}1.00$, and lands at
+  $0.387$ — within noise of the oracle $0.376$ (gap $+0.011$, CI$[-0.062,+0.089]$ *includes* $0$) and $\times0.565$
+  of the reward-only hedge $0.685$ (paired drop $+0.298$, CI$[+0.204,+0.400]$). *(ii) It scales with $K$:* the win
+  holds at $K{=}3,4,5$ (ratios $0.60/0.71/0.55$, every drop-CI lower bound $>0$). *(iii) The kept ingredient is the
+  premise, made falsifiable:* a *separable* epistemic affordance is what active inference needs, not a crutch, and
+  two negatives both fire — the win **vanishes** when the cue is useless ($\epsilon_0{=}\tfrac23$, ratio $1.00$)
+  **and** when the affordance collapses to sense$=$commit (ratio $1.25$, EFE still senses *more*, $25.3$ vs $17.2$)
+  — pinning the advantage to the affordance, **not** the mirror. The whole loop stays $\mathrm{SE}(3)$-exact
+  (IG-field $6\times10^{-6}$, true-goal outcome $\le2\times10^{-6}$, plan-equivariance $2\times10^{-8}$) where the
+  free MLP shatters it (IG-field $0.29$, outcome $1.0$/$49^\circ$). What remains untested is a *fully*
+  non-constructed benchmark, no longer the mirror. Eight guards; `experiments/step37_active_inference_search.py`,
+  structural invariants in `tests/test_step37_active_inference_search.py`.
+- **The one outright failure is resolved — decoder-free goal-*reaching*, made exactly equivariant (Step 38, §6.2).**
+  Step 13 [C] — purely-latent planning toward a goal cloud without a decoder — was the project's lone outright
+  negative (both models closed a *negative* fraction of the orientation gap). Step 38 diagnoses it (not a knob):
+  a one-step-trained predictor's $H{=}6$ rollout drifts $\sim\!2.0$ from the encoded truth, so the encoder goal
+  $E(X_g)$ sits *off* the reachable manifold and the terminal $L_2$ is ill-scaled. The cure is three decoder-free,
+  exactly-equivariant ingredients: **rollout-consistency training** (BPTT to an EMA target encoder), the §6.1
+  SE(3)-equivariant CEM planner verbatim, and an **SE(3)-native latent-Procrustes goal** (geodesic angle of the
+  Kabsch $R^\star$ aligning $z_0\to z_g$). Decoder-free reaching flips $+0.006\to+0.527$ — **partial** (the residual
+  to a $+0.696$ predictor-space ceiling is the encoder-vs-predictor manifold gap, a horizon limitation). The headline
+  is the **exactness**: across a paired seen$+4$-OOD SE(3) orbit the VN's residual orientation error is *identical*
+  to $1.8\times10^{-6}°$ (ratio $1.000$, CI$[1.000,1.000]$) while the free MLP degrades to $48.7°$ ($\times1.745$,
+  CI$[1.473,2.100]$) — §6's closed-loop exactness theorem now for *goal-reaching*. Three panels;
+  `experiments/step38_latent_goal_reaching.py`, structural invariants in `tests/test_step38_latent_goal_reaching.py`.
 
 ---
 
@@ -1001,6 +1343,28 @@ $PRE .venv/bin/python experiments/make_step24_figure.py            # render Figu
 $PRE .venv/bin/python experiments/step25_active_inference_task.py  # partial-observability payoff: EFE planner beats reward-only past the hedge floor; SE(3)-invariant loop (§8.1; STEP25_SMOKE=1)
 $PRE .venv/bin/python experiments/step26_optimizer_equivariance.py # does the optimiser break equivariance? intrinsic stays exact under any optimiser, extrinsic drifts under Adam (§3.1; STEP26_SMOKE=1)
 $PRE .venv/bin/python experiments/step27_tensor_product_message.py  # tensor-product fix to the degree-1 VN cap: VN-TP recovers 42% of the in-dist cap (x1.45) while staying x1.00 across the group (§7.1; STEP27_SMOKE=1)
+$PRE .venv/bin/python experiments/step28_fair_augmentation_baseline.py # fair augmentation baseline (2D SO(2)): coverage closes the task metric (x1.06) but Delta_eq plateaus x2.6e5 above the VN floor -- approximate, never exact (§12; STEP28_SMOKE=1)
+$PRE .venv/bin/python experiments/step28_fair_augmentation_3d.py     # same, lifted to 3D SO(3): full-ball aug x1.46 vs VN x1.00, Delta_eq x3.1e5 the floor -- conclusion holds in 3D (§12; STEP28_SMOKE=1)
+$PRE .venv/bin/python experiments/step29_scaling_sweep.py            # Bitter-Lesson stress test (2D SO(2)): partial coverage [0,180); MLP width x16 x data x16 does NOT close the extrap gap (x29.8->x48.9, widens) and Delta_eq plateaus x1.1e6 above the VN floor (§12; STEP29_SMOKE=1)
+$PRE .venv/bin/python experiments/step29_scaling_sweep_3d.py         # same in 3D SO(3): ball<=90; grid stays x41-x106 vs VN x1.00, best Delta_eq x2.2e6 the floor -- scale != coverage != architecture (§12; STEP29_SMOKE=1)
+$PRE .venv/bin/python experiments/step30_soft_equivariant.py         # soft-equivariant RPP (2D SO(2)) under the Step-16 break: beta dials VN<->MLP; capacity recovers (VN seen x54.6, softest 0.0006) but ratio x1->x43 and Delta_eq x5.5e5 the floor at g=0 -- a dial, not a free lunch (§12; STEP30_SMOKE=1)
+$PRE .venv/bin/python experiments/step30_soft_equivariant_3d.py      # same in 3D SO(3): seen=full ball (lab-z break needs it); VN seen x604; ratio VN<=x1.53 vs MLP x52-71; softest Delta_eq x4.5e5 the floor at g=0 -- holds in 3D (§12; STEP30_SMOKE=1)
+$PRE .venv/bin/python experiments/step31_rollout_horizon.py          # multi-step rollout (2D SO(2)): one-step equivariance composes; VN rollout flat x1.00 + composed Delta_eq <=2.3e-7 at EVERY H in {1..16}, MLP gap persists (x43-x51) and composed residual COMPOUNDS 2.3e-2(H=1)->3.7e-1(H=16) (§12; STEP31_SMOKE=1)
+$PRE .venv/bin/python experiments/step31_rollout_horizon_3d.py       # same in 3D SO(3): seen ball<=90, OOD shell 90-180; VN flat x1.00 + Delta_eq <=1.6e-7 every H; MLP ratio x6.5-x66, residual 3.9e-2->4.5e-1 -- composition theorem holds in SO(3) too (§12; STEP31_SMOKE=1)
+$PRE .venv/bin/python experiments/step32_tp_degree_ladder.py         # degree ladder (3D SO(3)): sweep representable degree d_max=2^L at FIXED depth/width/(near-)params; in-dist relMSE recovers in ONE step (L0 0.263->L1 0.194, x1.36, 38% of cap->MLP gap) then SATURATES flat (L1~L2~L3~0.20, top rung +1%) -- a DEGREE signature not a capacity ramp; every rung x1.00 + SE(3)<=9.3e-5, MLP x10.5 (§12; STEP32_SMOKE=1)
+$PRE .venv/bin/python tests/test_step32_degree_ladder.py             # structural invariants at every rung L in {0,1,2,3}: SO(3) equivariance <1e-4 AND degree separation (L=0 exactly degree-1, every L>=1 carries >=degree-2 content) -- the ladder really climbs representable degree (§12)
+$PRE .venv/bin/python experiments/step33_symmetry_discovery.py       # symmetry DISCOVERY (3D): minimise a frozen teacher's finite-transform equiv residual over a free K-generator slate (NO antisym/bracket/so(3) imposed); dim read off the residual jump (TRUE so(3): floor thru K=3, x9.3e9 jump @K=4 => dim 3; BROKEN z-stretch: x1.8e10 jump @K=2 => dim 1); so(3) EMERGES (antisym 6e-7, closure 2e-6, ||c||=sqrt3=1.7320509); FALSIFIABLE: broken can't fake so(3) @K=3 (x1.6e10 worse) but recovers L_z @K=1 (align 1.00), dim-1 read robust over 8x beta range; 5 seeds, 6 guards (§12; STEP33_SMOKE=1)
+$PRE .venv/bin/python tests/test_step33_symmetry_discovery.py        # structural invariants: hand-built so(3) basis orthonormal+antisym+bracket-closes (struct const 1/sqrt2); TRUE teacher exactly SO(3)-equivariant; BROKEN teacher R_z-equivariant but breaks under generic R (SO(3)->SO(2)_z exactly); QR frame orthonormal; end-to-end recovers so(3)@K=3 (TRUE) and L_z@K=1 (BROKEN) (§12)
+$PRE .venv/bin/python experiments/step34_active_inference_noisy.py    # active inference DE-CONSTRUCTED (3D): Step 25's NOISELESS reveal -> binary symmetric channel eps(d)=1/2-(1/2-eps0)exp(-d^2/2delta^2); planner driven by EXACT mutual info IG=H(p)-E_o[H(p')]=I(b;o|d); belief-entropy gate g_epi=H(p)/ln2 RE-ARMS Step 25's self-extinguishing drive (z-scoring alone destroys it once soft Bayes can't reach {0,1}); win SURVIVES (x0.614 true-goal-err cut, CI[0.499,0.749], past hedge floor), RECOVERS Step 25 @eps0=0 (EFE 0.333~oracle), VANISHES @eps0=0.45 (EFE 0.723~reward 0.663) -- falsifiable; senses MORE for noisier bits (5.6->15.7); IG SE(3)-inv 7e-7, MLP breaks all; 7 guards (§12; STEP34_SMOKE=1)
+$PRE .venv/bin/python tests/test_step34_active_inference_noisy.py     # structural invariants: binary entropy H exact at {0,1} via xlogy (no clamp bias); the three exact-MI limits IG(eps=0)=H(p), IG(eps=1/2)=0, IG(p in {0,1})=0; crossover monotone in d; soft-Bayes posterior never collapses to {0,1}; IG-field SE(3)-invariant + EFE-plan SE(3)-equivariant; MLP shatters all (§12)
+$PRE .venv/bin/python experiments/step35_many_body.py                # few-body->many-body COMBINATORIAL generalisation (3D): train interacting WM at a SINGLE count O=3, test zero-shot at O in {1,2,4,5,6}; count-stable MEAN message rbar_i=mean_{j!=i} rhat_ij in the unit ball at every count (1.0@O=2->0.94@O=6) so a sum-free one-count predictor transfers (O=2 recovers Step 24, O=1 pure self-dyn msg=0); [C] interacting family O>=2 FLAT VN-MP x1.09 & MLP-MP x1.05 (factorisation buys count, NOT prior); [G] count x global-SO(3) VN-MP x1.00 EXACT vs MLP x2.83 (isolates equivariance); [A'] whole-pipeline equiv at UNSEEN O=5 SE(3) 1.8e-5/perm 7e-7, MLP breaks 1.1e1; channel-necessity x3.46 (degree-1 cap); O=1 no-interaction boundary x2.47 still beats no-change; 8 guards (§12; STEP35_SMOKE=1)
+$PRE .venv/bin/python tests/test_step35_many_body.py                 # structural invariants (random init): count-stable mean message in the unit ball at O in {1..6} (=0@O=1, =1@O=2, contracts after); translation-invariant; teacher exactly SE(3) x S_O-equivariant at counts {2,3,4,5} incl. unseen; O=2 recovers Step 24 bit-for-bit + O=1 reduces to pure Step-13 self-dynamics; VN-MP whole pipeline equivariant at UNSEEN O=5 (§12)
+$PRE .venv/bin/python experiments/step36_discover_exploit.py          # discover -> EXPLOIT (3D): DISTIL the so(3) generators DISCOVERED off a frozen teacher (Step 33, blank slate) into a FREE MLP predictor via a soft equivariance regulariser lambda*sum_k ||rho(g_k)f - f(rho(g_k)z, g_k a)||^2 along finite flows g_k=exp(theta G_k); one frozen eq-encoder, 5 arms; KEY: decouple the distill flow range (theta_max=pi*sqrt2 sweeps a half-turn, tr=-1) from discovery's detect-wedge (+-49deg); [D] discovery real frac_in_so3 1.00/antisym 0.00/struct-const sqrt3; [U] VN x1.00 (composed 1.2e-5); [L] free x2.25 (equiv 3.69); [M] distilled so(3) closes 54% of OOD gap (x2.25->x1.09) + equiv-resid drop x8.0 (3.69->0.459) @lambda*=10 (OOD ties broken toward enforcement); [O] discovered x1.09 ~ oracle x1.06 (discovery costs nothing); [X] partial so(2)_z z-axis +46% vs off-axis +17% (transfers exactly what it found); [S] soft!=hard distilled OOD 0.632 >2x VN 0.300; 6 guards (§12; STEP36_SMOKE=1)
+$PRE .venv/bin/python tests/test_step36_discover_exploit.py           # structural invariants (random init): oracle so3_basis a real Lie algebra (unit-Frobenius/antisym/frac_in_so3 1.0/closure 0/struct-const sqrt3); finite flows exp(theta G) in SO(3), at theta_max=pi*sqrt2 a half-turn (tr=-1, angle theta/sqrt2=pi); rotate_latent an orthogonal rep (norm-preserving, inverse rho(R^T), homomorphism); distill_residual separates VN (float floor <1e-6) from a free MLP (>1e-3, ratio >1e4) on real latents; composed pipeline equivariant for VN (<1e-4) not free (>1e-2, ratio >1e3) (§12)
+$PRE .venv/bin/python experiments/step37_active_inference_search.py  # active inference DE-CONSTRUCTED to a GENERIC search (3D): remove Step 25/34's constructed MIRROR (hidden bit, two opposite goals) -> generic K-target constellation (K>=3 in a random plane, NO antipodal pair at any K via gap stick-breaking, 0 viol/2000 draws), K-ary categorical belief; drive = EXACT categorical MI IG=H(p)-E_o[H(p')]=I(b;o|d) of a K-ary symmetric channel eps(d)=eps*-(eps*-eps0)exp(-d^2/2delta^2), useless floor eps*=(K-1)/K; categorical soft-Bayes (no collapse); RECOVERS Step 34 as K=2 (1e-7); [A] EFE ATTAINS THE ORACLE FLOOR (EFE 0.387~oracle 0.376, gap +0.011 CI[-0.062,+0.089] incl 0; x0.565 vs reward 0.685, paired drop +0.298), cue read 10.6x, p_true 1.00; [B] win SCALES with K (3,4,5 ratios 0.60/0.71/0.55, all WIN); TWO falsifiable negatives both fire: useless cue eps0=2/3 ratio 1.00 AND affordance-collapse sense==commit ratio 1.25 (EFE senses MORE 25.3 vs 17.2) -> pins advantage to the AFFORDANCE not the mirror; [C] IG-field SE(3)-inv 6e-6, outcome 2.6e-8, plan-equiv 1.9e-8, MLP breaks all (0.29); 8 guards (§12; STEP37_SMOKE=1)
+$PRE .venv/bin/python tests/test_step37_active_inference_search.py   # structural invariants (random init): crossover_cat limits/monotone/range + useless floor eps*=(K-1)/K; categorical IG exact limits IG(eps=0)=H(p), IG(eps=eps*)=0, IG(one-hot)=0, >=0, decreasing (K=3,4,5); K=2 specialisation cat_info_gain==binary info_gain (1.2e-7) & crossover_cat==crossover (0.0) & eps*(2)=1/2; IG==H(p)-E_o[H(p')] via categorical soft-Bayes (2.4e-8); soft-Bayes accumulates/never collapses/useless inert/eps=0 collapses; affordance-collapse reduction H(p)-E_o[H(cat_bayes_binary)]==binary info_gain (1.6e-7); generic constellation coplanar/no mirror(|ang-180|>30deg)/separated(>38deg)/balanced over 40 frames x K=3,4,5; VN categorical-MI field SE(3)-invariant at init (2.2e-8) [MLP-break is a post-train fact in the experiment's panel C] (8 checks) (§12)
+$PRE .venv/bin/python experiments/step38_latent_goal_reaching.py     # the ONE outright failure resolved (3D, §6.2): decoder-free latent-goal REACHING -- Step 13[C] (open-loop CEM vs ||z_H - E(Xg)||^2) closed a NEGATIVE gap fraction for both models; diagnosis (not a knob): a 1-step-trained predictor's H=6 rollout drifts ~2.0 from E(teacher^h) so the encoder goal sits OFF the reachable manifold + terminal L2 is ill-scaled; CURE = 3 decoder-free exactly-equivariant ingredients: rollout-consistency train L_roll=mean_h||f^h(E x0,a)-sg E_ema(x_h)||^2 via BPTT+EMA target (load-bearing), the Step-18/§6.1 SE(3)-equivariant CEM planner verbatim, and an SE(3)-native latent-Procrustes goal (geodesic angle of the Kabsch R* aligning z0->zg on the 16 type-1 vecs); [A] reaching ladder +0.006 (Step-13[C] verbatim) -> +0.174 (eq planner) -> +0.399 (rollout) -> +0.527 best DEPLOYABLE (Procrustes open-loop) vs +0.696 predictor-space CEILING (needs a_true) and +1.000 oracle -- PARTIAL (residual = encoder-vs-predictor manifold gap); [B] KILLER: across a paired seen+4-OOD SE(3) orbit the VN residual angle is IDENTICAL 16.108 deg, max|d_i|=1.8e-6, OOD/seen ratio 1.000 CI[1.000,1.000] while MLP degrades to 48.7 deg ratio 1.745 CI[1.473,2.100] -- §6's exactness theorem now for GOAL-REACHING; [C] goal cost SE(3)-native (Procrustes |d|7e-8, L2 8e-6), plan-equiv 1.8e-6, composed-equiv VN 4.2e-6 vs MLP 5.15; 3 panels (§6.2; STEP38_SMOKE=1)
+$PRE .venv/bin/python tests/test_step38_latent_goal_reaching.py      # structural invariants (random init): latent_residual_angle recovers |R| exactly (2.8e-12 deg) on the 16 type-1 vecs; Procrustes goal cost SE(3)-invariant under shared rho(R) (2.2e-13) and raw L2 cost too (1.7e-13, float64 re-orthogonalised R); VN composed-equiv at init 1.2e-6 << MLP 2.7 (assert MLP>100x); goal cost invariant through the VN encoder end-to-end under a cloud rotation (7e-15); reaching transfers EXACTLY across the SE(3) orbit at init (7.4e-7 deg, tiny CEM) (6 checks) (§6.2)
 $PRE .venv/bin/python experiments/make_bet_figures.py             # render the headline figures: step21_frontier.png + where_the_bet_pays.{png,pdf} (§9-§10)
 $PRE .venv/bin/python tests/test_planner_equivariance.py          # the clean single-plan SE(3) theorem: plan(g.x)=g.plan(x) to 1.2e-7
 $PRE .venv/bin/python tests/test_set_equivariance.py              # scene-group SE(3)^O |x| S_O equivariance, init + post-train (§7)
