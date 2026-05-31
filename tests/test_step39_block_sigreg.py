@@ -41,6 +41,7 @@ from experiments.step39_block_sigreg import (  # noqa: E402
     rand_so3,
     spectral_gauge,
     synth_block_iso,
+    synth_spatial_aniso,
     train_lejepa,
 )
 from src.training.sigreg import (  # noqa: E402
@@ -93,6 +94,37 @@ def test_sigreg_objectives_finite_and_differentiable() -> None:
         assert z.grad is not None and torch.isfinite(z.grad).all(), f"{name} gradient non-finite"
 
 
+def test_block_sigreg_discriminates() -> None:
+    r"""Anti-vacuity (positive control): block-SIGReg is flat on *valid* block-isotropic laws
+    at ANY per-irrep scale split, yet **spikes** on a spatially-anisotropic vector block — a
+    law outside Prop. 1's class ($\operatorname{cov}\not\propto\mathbf I_3$). Were it flat on
+    that too, its flatness on the [A] table would be meaningless (flat-on-everything)."""
+    blocks = build_eq().irrep_blocks()
+    g = torch.Generator().manual_seed(7)
+    g11 = lambda: torch.Generator().manual_seed(11)  # noqa: E731 (fixed sketch directions)
+    valid1 = float(sigreg_block(synth_block_iso(20000, 1.0, g), blocks, n_proj=128, generator=g11()))
+    valid4 = float(sigreg_block(synth_block_iso(20000, 4.0, g), blocks, n_proj=128, generator=g11()))
+    aniso = float(sigreg_block(synth_spatial_aniso(20000, 4.0, g), blocks, n_proj=128, generator=g11()))
+    assert max(valid1, valid4) < 1e-3, f"block-SIGReg not flat on valid laws: {valid1:.2e}, {valid4:.2e}"
+    assert aniso > 1e-3 and aniso > 20.0 * max(valid1, valid4), (
+        f"block-SIGReg did not spike on the anisotropic (non-Prop.1) law: "
+        f"aniso={aniso:.2e} vs valid floor {max(valid1, valid4):.2e}"
+    )
+
+
+def test_gauge_ladder_robust_to_gap_factor() -> None:
+    r"""The $231\to159$ ladder is a $\sim16\times$ eigenvalue gap (ratio$^2$ at ratio $4$), so it
+    must be recovered for ANY clustering ``gap_factor`` in $(\sim1.13, 16)$ — i.e. the gauge
+    claim is not an artefact of one tuned threshold."""
+    z_eq = synth_block_iso(20000, 1.0, torch.Generator().manual_seed(21))
+    z_di = synth_block_iso(20000, 4.0, torch.Generator().manual_seed(21))
+    for gf in (1.5, 2.0, 3.0, 4.0, 8.0):
+        assert spectral_gauge(z_eq, gap_factor=gf)["gauge_dim"] == _dim_on(22) == 231, f"equal@gf={gf}"
+        assert spectral_gauge(z_di, gap_factor=gf)["gauge_dim"] == _dim_on(18) + _dim_on(4) == 159, (
+            f"distinct@gf={gf}"
+        )
+
+
 def test_synth_gauge_ladder() -> None:
     r"""Equal-scale law -> gauge $\dim O(22)=231$; distinct-scale law -> $O(18)\times O(4)=159$."""
     g_eq = spectral_gauge(synth_block_iso(20000, 1.0, torch.Generator().manual_seed(21)))
@@ -138,6 +170,26 @@ def test_learned_latent_block_isotropic_on_haar() -> None:
     assert m["vec_iso"] < 1.5 * iso_floor, f"vector channels not isotropic: {m['vec_iso']:.3f} (floor {iso_floor:.3f})"
 
 
+def test_prop1_fails_on_non_invariant_law() -> None:
+    r"""Negative control for Prop. 1: the **same** equivariant encoder, fed a non-$G$-invariant
+    (wedge — $z$-rotations in $[0,90°)$) law, must FAIL block-isotropy. Block-isotropy follows
+    from equivariance **and** an invariant data law; remove the latter and it must break — so
+    [C] *can* fail, and fails exactly when the premise is removed (not because the metric is
+    lax). Holds at init: it is a structural consequence, not a training artefact."""
+    torch.manual_seed(0)
+    enc = build_eq()
+    blocks = enc.irrep_blocks()
+    N = 8192
+    with torch.no_grad():
+        m_haar = prop1_metrics(enc(make_clouds(N, seed=777, orient="haar")), blocks)
+        m_wedge = prop1_metrics(enc(make_clouds(N, seed=777, orient="wedge")), blocks)
+    # G-invariant (Haar) law -> block-isotropic; remove the invariance -> clearly not.
+    assert m_haar["cross"] < 0.05 and m_haar["vec_iso"] < 1.35, f"Haar should be block-isotropic: {m_haar}"
+    assert m_wedge["cross"] > 0.3 and m_wedge["vec_iso"] > 3.0, (
+        f"wedge (non-G-invariant) law should break block-isotropy: {m_wedge}"
+    )
+
+
 def main() -> None:
     torch.manual_seed(0)
     print("Step 39 — block-SIGReg mechanism guards\n")
@@ -153,9 +205,19 @@ def main() -> None:
     print("        isotropic / block / budget: finite scalar, finite grad      OK")
     print(line)
 
+    print("[2b] block-SIGReg discriminates (anti-vacuity positive control)")
+    test_block_sigreg_discriminates()
+    print("        flat on valid laws, spikes on anisotropic (non-Prop.1) law  OK")
+    print(line)
+
     print("[3] deterministic gauge ladder")
     test_synth_gauge_ladder()
     print(f"        equal-scale -> O(22)={_dim_on(22)}; distinct -> O(18)xO(4)={_dim_on(18) + _dim_on(4)}   OK")
+    print(line)
+
+    print("[3b] gauge ladder robust to clustering gap_factor")
+    test_gauge_ladder_robust_to_gap_factor()
+    print("        231/159 stable across gap_factor in {1.5,2,3,4,8}            OK")
     print(line)
 
     print("[4] Haar regression guard + learned block-isotropy")
@@ -164,7 +226,13 @@ def main() -> None:
     print("        E[R]~0 (Haar), latent block-isotropic on Haar data          OK")
     print(line)
 
-    print("\nPASS: block-SIGReg mechanism is intact (equivariance, objectives, gauge ladder, Haar law).")
+    print("[5] Prop. 1 negative control (non-G-invariant wedge law)")
+    test_prop1_fails_on_non_invariant_law()
+    print("        block-isotropy FAILS on wedge (premise removed -> [C] fails) OK")
+    print(line)
+
+    print("\nPASS: block-SIGReg mechanism is intact (equivariance, objectives non-vacuous,")
+    print("gauge ladder robust, Haar law, and Prop. 1 fails exactly when its premise is removed).")
 
 
 if __name__ == "__main__":

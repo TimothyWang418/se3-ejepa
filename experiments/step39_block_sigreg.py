@@ -35,7 +35,10 @@ Two halves, each with its own guards:
   with a controlled scale split $\sigma_1/\sigma_0$ (total budget fixed), vanilla SIGReg
   grows with the split — it **penalises valid Prop.-1-optimal laws** — while block-SIGReg
   stays flat. No training, no optimisation noise: this pins the claim at the level of the
-  loss itself.
+  loss itself. Guarded against two failure modes of the *test* itself: a **positive control**
+  (block-SIGReg must *spike* on a spatially-anisotropic vector block — a law outside Prop. 1's
+  class — so its flatness is discriminating, not vacuous), and a **gap_factor robustness sweep**
+  (the gauge ladder $231\!\to\!159$ must hold across clustering thresholds, not a tuned one).
 * **[B–E] learned (the JEPA payoff).** Train the mixed-type equivariant encoder under a
   faithful **LeJEPA** loss (pull jitter-augmented views to their mean — *no* EMA, *no*
   stop-grad — plus the SIGReg variant) on a **rotation-invariant** cloud distribution, so
@@ -44,7 +47,9 @@ Two halves, each with its own guards:
     [B/A'] equivariance at init **and** after training (scalars invariant, vectors equivariant);
     [C]    Prop. 1 block-isotropy of the *learned* latent (cross-block $\approx 0$; each
            vector channel's $3\times3$ covariance isotropic) — holds for the equivariant
-           encoder, fails for the MLP;
+           encoder, fails for the MLP; with a **negative control** — the *same* equivariant
+           encoder, fed a non-$G$-invariant (wedge) law, must *fail* block-isotropy, so [C]
+           can fail and fails exactly when Prop. 1's premise is removed;
     [D]    **headline** — per-block scales and the covariance spectrum: ``none`` collapses,
            ``vanilla`` forces equal scales (degenerate spectrum, spectral gauge $\dim O(n)$),
            ``block`` frees them (separated spectrum, gauge drops to $O(n_0d_0)\times O(n_1d_1)$);
@@ -476,6 +481,25 @@ def synth_block_iso(n: int, ratio: float, gen: torch.Generator) -> torch.Tensor:
     return torch.cat([scal, vecs], dim=1)
 
 
+def synth_spatial_aniso(n: int, spatial_ratio: float, gen: torch.Generator) -> torch.Tensor:
+    r"""A spatially-ANISOTROPIC vector block — a law **outside** Prop. 1's class (positive control).
+
+    Scalar block $\sim\mathcal N(\mathbf 0,\mathbf I_4)$ (isotropic, fine), but each of the
+    $n_1$ vector channels $\sim\mathcal N(\mathbf 0,\operatorname{diag}(g))$ with
+    $g\propto(r,1,1/r)$ renormalised to mean $1$ — so the per-channel RMS (hence the total
+    budget) is unchanged from the ``ratio=1`` law; *only the within-channel spatial shape*
+    differs. This breaks the $\propto\mathbf I_3$ spatial isotropy that **both** Prop. 1 and
+    block-SIGReg require (an axis-preferring, *non*-equivariant latent). block-SIGReg must
+    therefore **spike** on it — the anti-vacuity witness that its flatness on the valid laws
+    in :func:`synth_block_iso` is discriminating, not "flat on everything".
+    """
+    g = torch.tensor([spatial_ratio, 1.0, 1.0 / spatial_ratio])
+    g = g / g.mean()  # mean 1 -> per-channel RMS unchanged (same total budget as ratio=1)
+    scal = torch.randn(n, N_SCALAR, generator=gen)  # N(0, I_4)
+    vec = torch.randn(n, N_VEC, 3, generator=gen) * g.sqrt()[None, None, :]
+    return torch.cat([scal, vec.reshape(n, 3 * N_VEC)], dim=1)
+
+
 # --------------------------------------------------------------------------- #
 # main
 # --------------------------------------------------------------------------- #
@@ -515,20 +539,52 @@ def main() -> None:
     blk_growth = blk_a[4.0] / max(blk_a[1.0], 1e-9)
     print(f"    => vanilla grows x{van_growth:.1f} with the split (penalises valid laws); "
           f"block flat (x{blk_growth:.2f}).")
+    # Positive control (anti-vacuity): block-SIGReg must SPIKE on a law OUTSIDE Prop. 1's class.
+    # Without this, "block flat on the valid laws above" could secretly mean "block flat on
+    # EVERYTHING" (vacuous). A spatially-anisotropic vector block (cov !∝ I_3) keeps the same
+    # total budget as ratio=1 but breaks the within-block isotropy block-SIGReg tests for.
+    Z_aniso = synth_spatial_aniso(N_SYNTH, 4.0, torch.Generator().manual_seed(7))
+    blk_aniso = float(sigreg_block(Z_aniso, blocks, n_proj=128, generator=torch.Generator().manual_seed(11)))
+    aniso_spike = blk_aniso / max(blk_a[4.0], 1e-12)
+    print(f"    positive control — spatially-anisotropic vector block (OUTSIDE Prop. 1, cov!∝I_3): "
+          f"block-SIGReg={blk_aniso:.5f}")
+    print(f"    => NOT vacuous: block-SIGReg is flat on valid block-isotropic laws at ANY scale split,")
+    print(f"       yet spikes x{aniso_spike:.0f} (to {blk_aniso:.4f}) on a law that breaks within-block isotropy.")
+    # Gate: the anisotropic spike must be a real signal (>1e-3, stable in N) AND clearly above
+    # the valid-law floor (>5x; the floor rises at small N so a fixed multiple, not an absolute
+    # gap, is the mode-robust check). Margins: x23 (smoke) .. x203 (full).
+    ok_block_discriminates = blk_aniso > 1e-3 and blk_aniso > 5.0 * blk_a[4.0]
+
     # Gauge ladder, deterministically: the EQUAL-scale law vanilla forces vs a DISTINCT-scale
     # law block accepts. Per-irrep scales are a property of the objective's *target class*
     # (Prop. 1), so we read the gauge off controlled laws rather than an underdetermined SSL fit.
-    g_eq = spectral_gauge(synth_block_iso(N_SYNTH, 1.0, torch.Generator().manual_seed(21)))
-    g_di = spectral_gauge(synth_block_iso(N_SYNTH, 4.0, torch.Generator().manual_seed(21)))
+    Z_eq = synth_block_iso(N_SYNTH, 1.0, torch.Generator().manual_seed(21))
+    Z_di = synth_block_iso(N_SYNTH, 4.0, torch.Generator().manual_seed(21))
+    g_eq = spectral_gauge(Z_eq)
+    g_di = spectral_gauge(Z_di)
     print(f"    spectral gauge dim Stab_O(22)(Sigma):  equal-scale (ratio 1) -> {g_eq['gauge_dim']} "
           f"(clusters {g_eq['cluster_sizes']}); distinct-scale (ratio 4) -> {g_di['gauge_dim']} "
           f"(clusters {g_di['cluster_sizes']}).")
     print(f"    => vanilla's equal-scale target hides the irreps (gauge O(22)=231); a distinct-scale")
     print(f"       block-isotropic law exposes them (O(4)xO(18)=159), the spectral payoff of block-SIGReg.")
+    # Robustness of the ladder to the clustering threshold: the [18,4] split is a ~16x eigenvalue
+    # gap (ratio^2 at ratio=4), so ANY gap_factor in (~1.13 at this N, 16) recovers it — the
+    # claim is not tuned to a magic threshold. Sweep a spread and require 231/159 throughout.
+    gap_grid = (1.5, 2.0, 3.0, 4.0)
+    gauge_sweep = [
+        (gf, spectral_gauge(Z_eq, gap_factor=gf)["gauge_dim"], spectral_gauge(Z_di, gap_factor=gf)["gauge_dim"])
+        for gf in gap_grid
+    ]
+    print("    gauge-ladder robustness vs clustering gap_factor: "
+          + "  ".join(f"{gf:g}->{e}/{d}" for gf, e, d in gauge_sweep)
+          + "  (target 231/159 throughout)")
     # Gate on the deterministic ladder: equal-scale is one O(22) cluster (231); distinct-scale
     # splits into the [18,4] eigenspaces (O(18)xO(4)=159). This is a property of the objective's
     # TARGET CLASS, so we read it off controlled laws — robust, unlike an SSL-fit spectrum.
     ok_gauge_synth = g_eq["gauge_dim"] == _dim_on(22) and g_di["gauge_dim"] == _dim_on(18) + _dim_on(4)
+    ok_gauge_robust = all(
+        e == _dim_on(22) and d == _dim_on(18) + _dim_on(4) for _, e, d in gauge_sweep
+    )
 
     # ----------------------------------------------------------------- data + models
     train_haar = make_clouds(N_TRAIN, seed=0, orient="haar")
@@ -581,16 +637,25 @@ def main() -> None:
     with torch.no_grad():
         p_eq = prop1_metrics(eq["block"](cov_haar), blocks)
         p_mlp = prop1_metrics(mlp(cov_haar), blocks)
+        # Negative control: the SAME trained equivariant encoder, fed a WEDGE law (z-rotations
+        # in [0,90)) that is NOT G-invariant. Prop. 1's premise is removed, so block-isotropy
+        # must FAIL — proving [C] *can* fail and fails exactly when G-invariance is broken
+        # (not because the metric is lax). Same map, same sample seed; only the law's symmetry.
+        p_wedge = prop1_metrics(eq["block"](make_clouds(N_COV, seed=777, orient="wedge")), blocks)
     # finite-sample isotropy floor: even an exactly-isotropic 3x3 block gives lambda_max/lambda_min
     # ~ (1+sqrt(3/N))^2/(1-sqrt(3/N))^2 from N samples. Report it so the threshold is principled.
     rt = math.sqrt(3.0 / N_COV)
     iso_floor = (1 + rt) ** 2 / (1 - rt) ** 2
-    print(f"    {'model':14s} | {'cross-block':>12s} | {'vec 3x3 iso ratio':>18s}")
-    print("    " + "-" * 50)
-    print(f"    {'eq/block':14s} | {p_eq['cross']:12.4f} | {p_eq['vec_iso']:18.3f}")
-    print(f"    {'mlp/vanilla':14s} | {p_mlp['cross']:12.4f} | {p_mlp['vec_iso']:18.3f}")
-    print(f"    => equivariant latent is block-isotropic (Prop. 1); MLP is not. "
-          f"(isotropy noise floor at N={N_COV}: {iso_floor:.3f})")
+    print(f"    {'model':16s} | {'cross-block':>12s} | {'vec 3x3 iso ratio':>18s}")
+    print("    " + "-" * 52)
+    print(f"    {'eq/block  HAAR':16s} | {p_eq['cross']:12.4f} | {p_eq['vec_iso']:18.3f}")
+    print(f"    {'mlp/vanilla HAAR':16s} | {p_mlp['cross']:12.4f} | {p_mlp['vec_iso']:18.3f}")
+    print(f"    {'eq/block  WEDGE':16s} | {p_wedge['cross']:12.4f} | {p_wedge['vec_iso']:18.3f}  "
+          f"<- neg-control: non-G-invariant law, Prop. 1 void")
+    print(f"    => equivariant latent is block-isotropic on the G-invariant (Haar) law (Prop. 1); the")
+    print(f"       MLP is not, and the SAME eq encoder FAILS on the non-invariant wedge law — [C] can")
+    print(f"       fail, and fails exactly when the premise is removed. (iso noise floor N={N_COV}: {iso_floor:.3f})")
+    ok_prop1_negctrl = p_wedge["cross"] > 0.3 and p_wedge["vec_iso"] > 3.0
 
     # ----------------------------------------------------------------- [D] diagnostic
     print()
@@ -667,11 +732,23 @@ def main() -> None:
     diag_scale = abs(math.log(diag["vanilla"]["ratio"])) < 0.4 and (
         abs(math.log(max(diag["block"]["ratio"], 1e-9))) > 0.4
     )
-    passed = ok_obj and ok_gauge_synth_pass and ok_equiv and ok_prop1 and ok_jyfs
+    passed = (
+        ok_obj
+        and ok_gauge_synth_pass
+        and ok_gauge_robust
+        and ok_block_discriminates
+        and ok_equiv
+        and ok_prop1
+        and ok_prop1_negctrl
+        and ok_jyfs
+    )
     print(f"    [A]  vanilla penalises distinct-scale laws (x{van_growth:.1f}), block flat (x{blk_growth:.2f}): {ok_obj}")
+    print(f"    [A]  block-SIGReg NOT vacuous: spikes x{aniso_spike:.0f} on a non-Prop.1 (anisotropic) law: {ok_block_discriminates}")
     print(f"    [A]  deterministic gauge ladder equal->{g_eq['gauge_dim']} / distinct->{g_di['gauge_dim']} (231 vs 159): {ok_gauge_synth_pass}")
+    print(f"    [A]  gauge ladder stable across gap_factor in {{1.5,2,3,4}}: {ok_gauge_robust}")
     print(f"    [A'] eq stays equivariant ({max(inv1, equ1):.1e}), MLP not: {ok_equiv}")
     print(f"    [C]  learned latent block-isotropic (eq cross={p_eq['cross']:.3f} iso={p_eq['vec_iso']:.2f}): {ok_prop1}")
+    print(f"    [C]  neg-control: same eq encoder FAILS on non-invariant wedge (cross={p_wedge['cross']:.2f} iso={p_wedge['vec_iso']:.1f}): {ok_prop1_negctrl}")
     print(f"    [E]  eq probe flat (x{eq_ratio:.2f}) vs MLP degrades (x{mlp_ratio:.2f}): {ok_jyfs}")
     print(f"    [D]  (diagnostic, not gated) learned gauge block {diag['block']['gauge']} < vanilla "
           f"{diag['vanilla']['gauge']}: {diag_gauge}; learned scales vanilla~1 / block free: {diag_scale}")

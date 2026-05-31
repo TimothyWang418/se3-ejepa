@@ -249,6 +249,15 @@ laws: the equal-scale law (vanilla's target) is one eigenvalue cluster of 22 →
 a distinct-scale law splits into the $[18,4]$ eigenspaces → $\dim O(18)\times O(4)=159$. This pins the gauge
 claim at the level of the **objective's target class**, with no optimisation noise.
 
+*Two falsifiability guards on [A] itself.* (i) **Anti-vacuity positive control:** "block-SIGReg flat on the
+valid laws" would be empty if it were flat on *everything*. So we feed it a *spatially-anisotropic* vector
+block (each channel $\sim\mathcal N(0,\operatorname{diag}(g))$, $g\not\propto\mathbf 1$, same total budget) —
+a law **outside** Prop. 1's class, breaking the $\propto\mathbf I_3$ structure both Prop. 1 *and* block-SIGReg
+require. block-SIGReg **spikes $\times205$** (full; $\times22$ at smoke's higher floor) on it: the flatness is
+discriminating. (ii) **Gauge-ladder robustness:** the $231/159$ split is a $\sim16\times$ eigenvalue gap, so it
+must survive any clustering threshold — confirmed identical across `gap_factor` $\in\{1.5,2,3,4\}$ (and to 8),
+so the ladder is not an artefact of one tuned cut-off.
+
 **[B/A'] Equivariance, init and post-training.** The mixed-type encoder is exactly equivariant (scalar-inv
 $2.4\times10^{-7}$, vector-equiv $2.3\times10^{-6}$) and **stays so after 40 epochs** of the faithful
 LeJEPA loss (jitter-augmented views pulled to their grad-carrying mean — *no* EMA, *no* stop-grad, *no*
@@ -257,7 +266,11 @@ teacher — plus the SIGReg variant); the non-equivariant MLP control misses by 
 **[C] Block-isotropy of the *learned* latent (Prop. 1).** On a Haar (hence $G$-invariant) cloud law, at
 $N=8192$ the equivariant latent has cross-irrep coupling $0.015$ and per-channel vector isotropy ratio
 $1.07$ — right at the finite-sample floor $1.080$ — i.e. $\Sigma\to\bigoplus_i\mathbf I_{d_i}\otimes B_i$
-to noise. The MLP fails both ($0.40$, $2.14$).
+to noise. The MLP fails both ($0.40$, $2.14$). **Negative control (the falsifier):** Prop. 1 needs *both*
+equivariance *and* a $G$-invariant law, so feeding the **same** equivariant encoder a non-$G$-invariant
+*wedge* law ($z$-rotations in $[0,90°)$) must *break* block-isotropy — and it does, hard (cross $0.59$, vec-iso
+$72.7$). So [C] *can* fail and fails **exactly** when the premise is removed; it is not a metric that passes
+regardless. (This is structural — it already holds at init — so the test needs no training.)
 
 **[E] 举一反三 (the payoff).** A *type-respecting* linear probe $\hat y=\sum_a w_a v_a$ fitted on a thin
 $z$-rotation wedge transfers across **all** of SO(3): OOD/seen relMSE $\times0.98$ (flat). The MLP's affine
@@ -280,8 +293,14 @@ cross-irrep coupling ($\|C_{01}\|_F\approx0.017$) that did **not** shrink with $
 Switching to a uniform-unit-quaternion Haar sampler made cross $\to0$ and vec-iso $\to1$ as $1/\sqrt N$, as
 the theorem predicts. A `test_rand_so3_is_haar` regression guard now pins this.
 
-**Controls.** Seeds fixed throughout; smoke vs full sizes; a dedicated large covariance sample ($N=8192$)
-for [C]/[D] so the isotropy estimate clears its noise floor; equivariance asserted init + post-training.
+**Controls & falsifiability.** Seeds fixed throughout (full run reproducible byte-for-byte); smoke vs full
+sizes; a dedicated large covariance sample ($N=8192$) for [C]/[D] so the isotropy estimate clears its noise
+floor; equivariance asserted init + post-training. Beyond positive results, the suite now carries explicit
+*falsifiers*, each gated and mirrored in `tests/test_step39_block_sigreg.py` (8 gates): an **anti-vacuity
+positive control** (block-SIGReg must spike on a non-Prop.-1 law), a **gap_factor robustness sweep** (the
+gauge ladder must not depend on a tuned threshold), and a **Prop.-1 negative control** (block-isotropy must
+break on a non-$G$-invariant law). A run that fails to *separate* on any of these reports `INCONCLUSIVE`
+rather than relaxing a threshold — so every headline number has a way to be wrong.
 
 ---
 
