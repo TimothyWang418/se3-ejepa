@@ -284,7 +284,7 @@ block-symmetric — so nothing drives the $\sigma_1/\sigma_0$ ratio to a particu
 $\mathrm{var}(0e)\to0$). The scale separation is therefore a property of the **target class** (proved &
 demonstrated deterministically in [A]), not something pure SSL converges to; we gate on [A]'s controlled
 ladder and report [D] as an un-gated diagnostic rather than weaken a threshold. *Driving* the split to a
-chosen value needs a task signal on each irrep — the natural Direction-3 follow-up.
+chosen value needs a task signal on each irrep — the natural Direction-3 follow-up, **now built and run (§8)**.
 
 **A correctness lesson worth keeping.** Prop. 1 needs the cloud law to be $G$-**invariant**, which requires
 the random orientations to be the **Haar** measure (left-invariance). An initial axis-uniform + angle-uniform
@@ -304,7 +304,94 @@ rather than relaxing a threshold — so every headline number has a way to be wr
 
 ---
 
-## 8. Honest scope, risks, confidence
+## 8. Direction 3 — compositional bi-block-SIGReg on a product symmetry $S_O\times SO(3)$ (Step 40)
+
+§7 proved block-SIGReg on a **single** object's SE(3)-type structure. The open question it leaves: does a
+*product* symmetry buy a strictly finer identifiability rung that single-object block-SIGReg cannot reach? A
+scene of several interchangeable, individually-rotating objects is the natural test — its symmetry group is
+$S_O\times SO(3)$ (relabel the objects $\times$ rotate them as one rigid frame), and that product is exactly
+what an object-centric world model must respect.
+
+**Prop. 1′ (product-group block-isotropy).** Take a scene of $O$ distinguishable objects, each carrying
+$n_0$ scalar features ($0e$) and $n_1$ vector features ($1o$). The scene latent lives in
+$\mathbb R^{O}\otimes\mathbb R^{D_{\mathrm{obj}}}$ and carries the **outer-tensor** representation
+$P\boxtimes\rho_{SE3}$ of $S_O\times SO(3)$, where $P$ is the $O$-dimensional permutation rep and
+$\rho_{SE3}=n_0\,\mathbf 0e\oplus n_1\,\mathbf 1o$. Because the permutation rep splits
+$\mathbb R^{O}=\mathbb 1\oplus\mathbf{std}$ (trivial $\oplus$ standard, $\dim\mathbf{std}=O-1$), the latent
+decomposes into **four** bi-isotypic blocks
+$$(\mathbb 1,0e),\qquad(\mathbb 1,1o),\qquad(\mathbf{std},0e),\qquad(\mathbf{std},1o).$$
+Under an $S_O\times SO(3)$-invariant data law, real-type Schur forces the covariance block-diagonal across
+these four, each block isotropic in its irrep: $\Sigma=\bigoplus_i \mathbf I_{d_i}\otimes B_i$ — the
+product-group analogue of Prop. 1. The $(\mathbb 1,\cdot)$ blocks are the **aggregate**
+(permutation-invariant) content; the $(\mathbf{std},\cdot)$ blocks are the **relational** content.
+Decoupling $\mathbb 1$ from $\mathbf{std}$ is precisely what $S_O$ — not $SO(3)$ — buys.
+
+**The compositional gauge rung.** With $O=4$, $n_0=n_1=2$ ($D_{\mathrm{obj}}=8$, latent $n=32$), the bi-block
+widths $(d\!\cdot\!m)$ are $(2,6,6,18)$ and the residual-gauge ladder is
+$$\underbrace{O(32)}_{496}\ \xrightarrow{\ SE(3)\ }\ \underbrace{O(8)\times O(24)}_{304}\ \xrightarrow{\ +\,S_O\ }\ \underbrace{O(2)\,O(6)\,O(6)\,O(18)}_{184}\ \xrightarrow{\ \text{known }\rho\ }\ \underbrace{O(2)^4}_{4}.$$
+The middle rung $304\to184$ is the **payoff**: SE(3)-block-SIGReg (§7, which sees only the scalar/vector
+split) stops at $304=\binom 82+\binom{24}2$; resolving the $\mathbb 1\oplus\mathbf{std}$ split *inside* each
+SE(3) block reaches $184=\binom22+2\binom62+\binom{18}2$. This rung **does not exist for a single object**: at
+$O=1$, $\mathbb R^1=\mathbb 1$ and $\mathbf{std}=0$, so there is nothing for $S_O$ to refine — it is a
+genuinely *compositional* identifiability gain. An **orthogonal** Helmert change of basis $U\otimes\mathbf
+I_{D_{\mathrm{obj}}}$ on the object axis (row $0=$ the mean $=\mathbb 1$; rows $1..O\!-\!1=$ an orthonormal
+basis of $\mathbb 1^\perp=\mathbf{std}$) makes the four blocks contiguous without touching the spectrum, so
+the ladder is a property of the law, not of the chart.
+
+**[A] Objective level (deterministic, gated).** Bi-block-SIGReg is flat ($\approx3\times10^{-5}$) on every
+block-isotropic law, while vanilla isotropic-SIGReg grows $\times86$ on a distinct-scale bi-type law. The
+compositional separation is the headline: on a *within-type* $S_O$ split (trivial vs. standard scaled
+differently at a fixed SO(3)-type budget) the Step-39 SE(3)-block objective **grows $\times247$** — it
+literally cannot represent the split — while bi-block stays flat ($\times1.00$). Anti-vacuity holds:
+bi-block **spikes $\times100$** on a spatially-anisotropic $(\mathbf{std},1o)$ block
+($\mathrm{cov}\not\propto\mathbf I_3$, outside Prop. 1′). And the deterministic spectral gauge lands exactly
+on the ladder — se3-type law $\to304$ (clusters $[24,8]$), bi-type law $\to184$ (clusters $[18,6,6,2]$) —
+stable for every clustering `gap_factor` in $\{1.5,2,3,4\}$ inside the separating window $(1,9)$.
+
+**[B / A′] Exact equivariance, init and post-training.** The scene encoder is per-object SE(3)-equivariant,
+$S_O$-permutation-equivariant, and translation-invariant to the float floor at init (scalar-inv
+$1.8\times10^{-7}$, vector-equiv $4.3\times10^{-6}$, perm $0$, trans-inv $5.7\times10^{-6}$), and faithful
+LeJEPA training does **not** damage it (post-train $1.2\times10^{-7}$ / $1.7\times10^{-6}$ / perm $0$). The
+MLP control is perm-equivariant by construction but has no rotation prior ($0.32/5.50$ after training).
+
+**[C] Prop. 1′ on the learned latent + negative control.** On the $S_O\times SO(3)$-invariant (Haar $+$
+permute) law the trained equivariant latent is bi-block-isotropic: the six cross-block couplings collapse
+(cross $=0.030$) and each $1o$ block is $3\times3$-isotropic (iso_rel $1.06$); the MLP fails (cross $0.80$).
+The **negative control** is the sharp one: the *same* equivariant encoder on a **fixed-slot** law (still
+rotation-invariant, but $S_O$-*broken*) fails decoupling (cross $0.67$) — so [C] *can* fail, and fails
+exactly when the $S_O$ premise is removed. Block-isotropy is a consequence of the product symmetry, not a
+metric that passes regardless.
+
+**[E1] 举一反三 across *both* groups.** A type-respecting relational probe fitted on one seen slice transfers
+flat across all of SO(3) **and** all of $S_O$: rot-OOD/seen $\times1.01$, perm-OOD/seen $\times0.99$. The MLP
+degrades $\times789$ under rotation and $\times2079$ under relabeling. The equivariance-flatness theorem (§4)
+now holds on the *product* group — the relational content is genuinely permutation- and rotation-robust.
+
+**[D / E2] The honest boundary — and a sharper lesson.** As in §7, the *learned* per-block scales are
+**underdetermined in pure SSL** (bi-block-SIGReg is scale-detached, the budget pins only the total, the
+pull-to-mean is block-symmetric), so the gauge claim is gated *deterministically* in [A], with [D] reported
+as an un-gated diagnostic. [E2] then asks whether a **relational task** — natural to a compositional scene —
+can *realise* the $(\mathbf{std},1o)$ split on the learned net. The lesson is worth keeping: a task scored by
+the relMSE of a **free linear fit** is *scale-invariant* in the latent (the fitted weight absorbs any block
+rescaling), so it exerts **zero** scale pressure and cannot realise a scale-based refinement. The principled
+fix is a **parameter-free, scale-sensitive** equivariant readout (no free multiplicative weight). With it the
+relational task drives the $(\mathbf{std},1o)$ block from collapsed to $\mathrm{rel\text{-}scale}\;0.63$ and
+pulls the residual gauge $288\to240$, *toward* the $184$ rung [A] proved reachable — honestly, it moves in
+the right direction at this 1-GPU scale, it does not snap to $184$. The design principle — *the task that
+realises a scale-based gauge reduction must itself be scale-sensitive on the target irrep* — is itself a
+transferable finding.
+
+**Controls & falsifiability.** Seeds fixed (full run reproducible); smoke vs. full sizes; a dedicated
+covariance sample ($N=6144$) for [C]/[D]; equivariance asserted init $+$ post-training. The full run gates
+**nine** deterministic/structural claims (the compositional separation, anti-vacuity, the gauge ladder and
+its robustness sweep, exact equivariance, Prop. 1′ and its negative control, dual-group 举一反三), mirrored by
+**seven** mechanism guards in `tests/test_step40_compositional_sigreg.py`. [E2] is explicitly an **un-gated
+diagnostic**, not a pass/fail gate — per the standing rule, a run that fails to separate reports
+`INCONCLUSIVE` rather than relaxing a threshold.
+
+---
+
+## 9. Honest scope, risks, confidence
 
 - **The user's own worry is correct and worth stating in the application:** the *plumbing* (SIGReg on
   an equivariant net) is easy and AMI could do it in an afternoon. The contribution is **not** the
@@ -320,13 +407,20 @@ rather than relaxing a threshold — so every headline number has a way to be wr
   *distinct* scales / multiplicity-freeness. Crucially, Step 39 showed pure SSL does **not** by itself
   produce distinct scales (the split is underdetermined), so the sharp gauge claim is a statement about
   the objective's *target class* (proved + shown deterministically), and *realising* it on a trained
-  encoder needs a per-irrep task signal — stated plainly as the honest boundary of C1.
-- **Honest confidences:** Prop. 1 0.95 (proof verified + empirically at the noise floor); block-SIGReg-as-
-  target 0.8; gauge refinement *as a target-class statement* 0.85, *as something SSL reaches unaided* 0.35
-  (Step 39 negative finding); C2 0.65; C3 0.75; Step 32↔Hermite 0.4; "this becomes a paper AMI cares
-  about" 0.6.
+  encoder needs a per-irrep task signal — stated plainly as the honest boundary of C1. **Direction 3
+  (Step 40, §8) extends this to the product group $S_O\times SO(3)$:** the compositional rung
+  $304\to184$ is reachable as a target-class statement (deterministic [A]), and a **scale-sensitive**
+  relational task partially realises it on the learned net (gauge $288\to240$, toward $184$) where a
+  *scale-invariant* free-fit task — zero scale pressure — provably cannot.
+- **Honest confidences:** Prop. 1 0.95 (proof verified + empirically at the noise floor); Prop. 1′
+  (product-group block-isotropy) 0.9 (same Schur argument; [C] at the floor + a passing negative control);
+  block-SIGReg-as-target 0.8; gauge refinement *as a target-class statement* 0.85, *as something SSL
+  reaches unaided* 0.35 (Step 39 negative finding); the compositional rung $304\to184$ *as a target-class
+  statement* 0.85, *as something a scale-sensitive task realises on the learned net* 0.4 (Step 40 [E2]:
+  moves $288\to240$, not to $184$); C2 0.65; C3 0.75; Step 32↔Hermite 0.4; "this becomes a paper AMI
+  cares about" 0.6.
 
-## 9. Why this strengthens an AMI application
+## 10. Why this strengthens an AMI application
 
 It demonstrates, on their *newest* theory paper, the exact profile a world-model lab is short on: a
 mathematician who (1) reads the identifiability theory closely enough to find that $O(n)$ is doing too
