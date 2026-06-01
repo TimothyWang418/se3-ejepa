@@ -197,7 +197,7 @@ a map that is exactly $\mathrm{SO}(d)$-equivariant by construction — and is th
 
 ---
 
-## 1. Foundation (Steps 3–7, one-line recap)
+## 1. Foundation (one-line recap)
 
 | Step | Claim established | Worst-case equivariance error |
 |------|-------------------|-------------------------------|
@@ -212,7 +212,7 @@ worth building if exactness pays off in learning. Steps 8–9 are that test.
 
 ---
 
-## 2. Step 8 — sample efficiency + 举一反三, one-step prediction
+## 2. Sample efficiency + 举一反三, one-step prediction
 
 **Design (controlled head-to-head).** Instantiate a *world* whose one-step dynamics
 $s'=T(s,a)$ is *exactly* SO(2)-equivariant by making $T$ a **frozen random VN net
@@ -278,7 +278,7 @@ the rotation group. Confidence ≈ **0.9**.
 
 ---
 
-## 3. Step 9 — closed-loop few-shot planning + 举一反三 (CEM-MPC)
+## 3. Closed-loop few-shot planning + 举一反三 (CEM-MPC)
 
 Step 8 proved the benefit for *one-step* prediction. A world model earns its name
 only if it can **plan**: roll its own dynamics forward over a horizon and act.
@@ -356,7 +356,7 @@ not just one-step regression. Confidence ≈ **0.9** on the exactly-equivariant 
 
 ---
 
-## 4. Step 10 — external validity: closed-loop control on *real* PushT
+## 4. External validity: closed-loop control on *real* PushT
 
 Steps 8–9 proved the payoff on dynamics that are *exactly* SO(2)-equivariant **by
 construction** (frozen random VN teacher / damped point mass). The honest question is
@@ -447,7 +447,7 @@ the closed-loop task-success question is **open**, not refuted.
 
 ---
 
-## 5. Step 11 — the end-to-end equivariant *latent* JEPA (举一反三 in latent space)
+## 5. The end-to-end equivariant *latent* JEPA (举一反三 in latent space)
 
 Steps 8–10 all learned an **explicit-coordinate** forward model $M:(s,a)\mapsto s'$
 that predicts the next *physical* state, and planned against a cost on the block's
@@ -551,7 +551,7 @@ task-success gap stays **open**.
 
 ---
 
-## 6. Step 12 — the contact test: does the prediction gap convert under *pose* control?
+## 6. The contact test: does the prediction gap convert under *pose* control?
 
 Steps 10–11 ended on one honest open question. On real PushT the equivariant model
 shows clean prediction-level 举一反三 (×16 OOD), but it did **not** convert to a
@@ -644,7 +644,7 @@ in-distribution-fit confound on the absolute level).
 
 ---
 
-## 7. Step 13 — the SO(3) lift: does end-to-end latent 举一反三 survive one dimension up?
+## 7. The SO(3) lift: does end-to-end latent 举一反三 survive one dimension up?
 
 Steps 10–12 all live in 2D / SO(2) on PushT. But the thesis is about *geometry*, and the
 architecture the project is actually building (CLAUDE.md Phase 4) is **SE(3)** on 3D point
@@ -744,7 +744,7 @@ equivariance one (the VN still fails flat across the group). Confidence ≈ **0.
 
 ---
 
-## 8. Step 14 — the paired power test: converting the prediction gap into an *exact* closed-loop result
+## 8. The paired power test: converting the prediction gap into an *exact* closed-loop result
 
 Step 12 [C] gave the first closed-loop OOD signal that wasn't a tie, but it was an
 *unpaired* comparison (2 seeds × 15 tasks/bin) with two honest weaknesses: the absolute
@@ -801,7 +801,7 @@ on the *same* equivariant planner, degrades by $+3.68°$ with a CI that **exclud
 (ratio $1.180$, CI $[1.059,1.367]$). With the planner held equivariant for both, the only
 explanation for the split is the model's prior.
 
-### [S] DIAGNOSTIC — the verbatim Step-12 planner (not equivariant at generic angles)
+### [S] DIAGNOSTIC — the verbatim §6 planner (not equivariant at generic angles)
 
 Re-running the paired test with the **unmodified** Step-12 planner (box clamp + diagonal
 $\sigma$) is a diagnostic, not the headline:
@@ -835,7 +835,7 @@ $K{=}48$), ≈ **0.85** on [S] (the model/planner-jointly-equivariant finding).
 
 ---
 
-## 9. Step 15 — completing the group: SE(3) $=$ SO(3) $\ltimes\ \mathbb{R}^3$ (translation 举一反三)
+## 9. Completing the group: SE(3) $=$ SO(3) $\ltimes\ \mathbb{R}^3$ (translation 举一反三)
 
 The project is named for **SE(3)**, but every generalisation test so far isolated the
 *rotation* subgroup: Steps 10–12 are SO(2), Step 13 is SO(3). Translation — the other half of
@@ -894,7 +894,7 @@ closing the gap between the project's named target geometry and what had been te
 
 ---
 
-## 10. Step 16 — robustness sweep: how much symmetry-breaking can the prior tolerate? (the Bitter-Lesson boundary)
+## 10. Robustness sweep: how much symmetry-breaking can the prior tolerate? (the Bitter-Lesson boundary)
 
 **Honest scoping of "Task 4."** The original Phase-4 plan named a *real 3D manipulation simulator*
 (ManiSkill / RLBench) as the next validation. Those renderers need CUDA / EGL and **do not run on
@@ -959,7 +959,7 @@ the real-3D-sim validation that "Task 4" named remains genuine future work, gate
 
 ---
 
-## 11. Step 17 — the training-seed error bar (multi-seed closed-loop OOD degradation)
+## 11. The training-seed error bar (multi-seed closed-loop OOD degradation)
 
 Step 12 [C] and Step 14 both reported the closed-loop OOD contrast from **one** trained VN and
 **one** trained MLP (Step 14 added a paired bootstrap over $K{=}48$ *tasks*, but still on a single
@@ -994,7 +994,7 @@ statistical picture. Confidence ≈ **0.85**.
 
 ---
 
-## 12. Step 18 — the SE(3) closed-loop lift (the [C]/[E] theorem in 3D)
+## 12. The SE(3) closed-loop lift (the [C]/[E] theorem in 3D)
 
 Step 14 made the closed-loop orientation invariance **exact** — but in **2D / SO(2)**, on PushT.
 The project's *named* geometry is **SE(3)**. Step 18 lifts the entire [E]/[S] paired design to **3D
@@ -1069,7 +1069,7 @@ the model-and-planner [S] finding, mirroring Step 14.
 
 ---
 
-## 13. Step 19 — object-centric compositionality: which prior buys which generalisation? ($\mathrm{SE}(3)^O\rtimes S_O$)
+## 13. Object-centric compositionality: which prior buys which generalisation? ($\mathrm{SE}(3)^O\rtimes S_O$)
 
 Steps 13–18 proved the claims for a **single** rigid body under $\mathrm{SE}(3)$. The world has *many*
 objects, and CLAUDE.md Open Question #3 asks the next thing directly: *how do compositional /
@@ -1147,7 +1147,7 @@ large and the structural half is exact).
 
 ---
 
-## 14. Active inference in the equivariant latent — the curiosity invariance (Step 20) and its task payoff (Step 25)
+## 14. Active inference in the equivariant latent — the curiosity invariance and its task payoff
 
 Steps 13–19 built the *pragmatic* half of the loop — perceive, predict, and act toward a goal — and
 proved its exact $\mathrm{SE}(3)$-equivariance. Friston's active inference adds the *other* half: an
@@ -1241,7 +1241,7 @@ a control that fails); confidence that the epistemic term *converts to a task wi
 observability ≈ **0.85** (now demonstrated in §14.1, on a constructed POMDP); overall ≈ **0.85** — the
 geometry is certain and the active-inference payoff is now a result, on a constructed task.
 
-### 14.1 The payoff: active inference earns a task win under partial observability (Step 25)
+### 14.1 The payoff: active inference earns a task win under partial observability
 
 Step 20's honest ceiling was that on a *fully observed, deterministic* teacher the epistemic term is a
 demonstrated **mechanism**, not a task necessity — the pragmatic planner alone reaches every goal (Step 18).
@@ -1330,7 +1330,7 @@ to within noise of the oracle), recovers this section exactly as the noise floor
 
 ---
 
-## 15. Step 21 — the sample-efficiency frontier: equivariance as a learning curve, not a point (Open Question #1)
+## 15. The sample-efficiency frontier: equivariance as a learning curve, not a point (Open Question #1)
 
 Every step so far measured generalisation at a *single* training-set size. Step 21 sweeps it and
 draws the **frontier** — test error vs the number of interactions $N$ — because that frontier is the
@@ -1338,8 +1338,8 @@ operational form of CLAUDE.md Open Question #1 (*does $\mathrm{SE}(3)$-equivaria
 improve sample efficiency?*) and the sharpest statement of the thesis: the inductive-bias payoff is
 exactly the gap between two learning curves.
 
-**Protocol.** Both models — the Step-13 backbone (`SE3PointEncoder`+`VNPredictor` vs a
-param-comparable `MLPPointEncoder`+`LatentPredictor`) — train on the thin orientation wedge
+**Protocol.** Both models — the Step-13 backbone (`SE3PointEncoder` + `VNPredictor` vs a
+param-comparable `MLPPointEncoder` + `LatentPredictor`) — train on the thin orientation wedge
 $\phi\in[0,90°)$. At each $N\in\{16,32,64,128,256,512\}$ we read two curves: pooled latent 1-step
 relMSE on held-out **in-wedge** clouds (`seen`) and on the *same* transition rotated by random
 $\mathrm{SO}(3)$ (`group`). The budget is a **fixed 600 gradient updates per run**
@@ -1405,7 +1405,7 @@ architecture-dependent). The cleanest statement of Open Question #1 the project 
 
 ---
 
-## 16. Step 22 — the symmetry-break × data phase diagram: locating the Bitter-Lesson boundary
+## 16. The symmetry-break × data phase diagram: locating the Bitter-Lesson boundary
 
 Steps 16 and 21 each swept *one* axis of the geometric bet and pinned the other: Step 16 swept the
 **symmetry break** $g$ (a fixed lab-$z$ field added to the exact-SO(3) Step-13 teacher) at a single
@@ -1499,7 +1499,7 @@ every $g$, monotone honest knob), hardened over **five seeds**, are guarded in
 ≈ **0.85** on the across-group near-total win and the data-proof-in-$N$ wall; ≈ **0.6** that the
 extreme-break tie generalises beyond this teacher/capacity/compute regime.
 
-### [D] Step 23 — the large-$N$ in-distribution test: the gap still does not widen
+### [D] The large-$N$ in-distribution test: the gap still does not widen
 
 [C] left one escape open: maybe the in-distribution gap *would* widen with $g$ if $N$ went past the
 $512$ this grid stopped at — Step 16 saw widening at $N{=}1200$, after all. Step 23 closes it. Two
@@ -1556,7 +1556,7 @@ large $N$, not conjectured away as a small-$N$ artifact. Guarded with the per-$(
 
 ---
 
-## 17. Step 24 — object *interaction*: the scene symmetry collapses, and the interpolation/extrapolation flip
+## 17. Object *interaction*: the scene symmetry collapses, and the interpolation/extrapolation flip
 
 Step 19 proved compositional 举一反三 for objects that **do not interact** — the teacher was a direct
 sum, with the large per-object symmetry $\mathrm{SE}(3)^O\rtimes S_O$ — and named the next rung itself: an
@@ -1640,7 +1640,7 @@ decisive result [G] is *independent* of this cap: even handicapped to $0.33$ in-
 **only** model that 举一反三 across the group, while the un-handicapped MLP that fit to $0.067$ collapses
 $\times17$. The prior's value is the extrapolation flatness, not the interpolation fit.
 
-### 17.1. Step 27 — the tensor-product message recovers most of the cap, *keeping* equivariance
+### 17.1. The tensor-product message recovers most of the cap, *keeping* equivariance
 
 The §17 cap is a missing **primitive**, so the fix is to supply it, not to abandon the prior. The SO(3)
 cross product is exactly the **antisymmetric** $\ell{=}1$ part of $\mathbf 1\otimes\mathbf 1=\mathbf
@@ -1677,7 +1677,7 @@ are real and clean — one notch below the single-body steps because the vanilla
 *in-distribution* fit (not the OOD flatness) architecture-limited, and the relative-arrangement axis is
 learned rather than exact.
 
-![Step 24 — the interpolation/extrapolation flip](figures/step24_object_interaction.png)
+![The interpolation/extrapolation flip](figures/step24_object_interaction.png)
 
 > **Figure 4.** Object interaction ($\kappa=0.8$) collapses the scene symmetry to the global diagonal
 > $\mathrm{SE}(3)\rtimes S_O$. **(a)** In-distribution, the non-equivariant **MLP-MP fits best** ($0.067$): a
@@ -1739,7 +1739,7 @@ the way it is.
 
 ---
 
-## 19. Step 26 — does the *optimiser* break equivariance? intrinsic vs extrinsic
+## 19. Does the *optimiser* break equivariance? intrinsic vs extrinsic
 
 Every step above probed equivariance **after** training and found it intact to $\sim10^{-6}$ — but a
 recent result (Lau & Su, *A Symmetry-Compatible Principle for Optimizer Design*, arXiv:2605.18106)
@@ -1768,7 +1768,7 @@ subspace* of weight space. There are two ways to be in $\mathcal C$:
   commutant that does not vanish at convergence — the Lau–Su effect.
 
 **[A] The real model is optimiser-agnostic (de-risking).** Train the *actual* Step-13 VN `EqJEPA`
-(`SE3PointEncoder`+`VNPredictor`) on the exactly-SO(3) teacher with three optimisers — the project
+(`SE3PointEncoder` + `VNPredictor`) on the exactly-SO(3) teacher with three optimisers — the project
 default **Muon/AdamW**, **pure Adam on every parameter** (the geometry-blind optimiser the paper warns
 against, applied even to the 2D weight matrices Muon would orthogonalise), and **pure SGD** — and read the
 composed SE(3) residual at init and post-train in float64. A non-equivariant MLP under Adam is the control.
@@ -1816,7 +1816,7 @@ optimisers; extrinsic-Adam drift under noise; the real VN model optimiser-agnost
 
 ---
 
-## 20. Step 28 — the fair augmentation baseline: does augmentation buy what equivariance gives free?
+## 20. The fair augmentation baseline: does augmentation buy what equivariance gives free?
 
 The single sharpest objection to this whole note is the *fair-baseline* one. The equivariant prior
 encodes "the world is symmetric"; **rotation data augmentation** encodes the same thing — so perhaps the
@@ -1880,7 +1880,7 @@ the five assertions above) by `experiments/step28_fair_augmentation_baseline.py`
 
 ---
 
-## 21. Step 29 — the Bitter-Lesson stress test: can size × data substitute for the prior?
+## 21. The Bitter-Lesson stress test: can size × data substitute for the prior?
 
 Step 28 handed augmentation the *whole* group and found it closes the across-group *task* metric but never
 the *exactness*. The Bitter-Lesson rejoinder (Sutton, 2019) is that the 2D arm was too easy and that
@@ -1959,7 +1959,7 @@ $16\times$ the data, buys neither. Guarded inline (five seeds, four assertions) 
 
 ---
 
-## 22. Step 30 — the soft-equivariant model: a tunable dial, not a free lunch
+## 22. The soft-equivariant model: a tunable dial, not a free lunch
 
 Steps 28–29 pitted two *extremes* against each other — the hard Vector-Neuron prior vs the free MLP — and
 asked whether **data** (augmentation, scale) could lift the free model into the hard model's corner. It
@@ -2069,7 +2069,7 @@ Guarded inline (five seeds, five assertions) by `experiments/step30_soft_equivar
 
 ---
 
-## 23. Step 31 — does one-step equivariance buy multi-step *rollout* generalisation for free?
+## 23. Does one-step equivariance buy multi-step *rollout* generalisation for free?
 
 Every metric so far (Steps 8–30) measured a **single** step $f(s,a)$. But a world model is *used* by
 rolling it forward: planning and imagination are $H$-step rollouts. The honest question is whether the
@@ -2150,7 +2150,7 @@ be used at, with no extra training, data, or tuning. Guarded inline (five seeds,
 
 ---
 
-## 24. Step 32 — is the recovery a *degree* signature (a missing primitive) or a capacity ramp?
+## 24. Is the recovery a *degree* signature (a missing primitive) or a capacity ramp?
 
 Step 27 (§17.1) was a single architectural *point*: one tensor-product stack recovered $42\%$ of the
 degree-1 cap. It could not separate the two explanations of *why*. Is the missing ingredient a specific
@@ -2239,7 +2239,7 @@ primitive the physics needs; keep the prior.* Guarded inline (three seeds, five 
 `experiments/step32_tp_degree_ladder.py`; structural invariants at every rung by
 `tests/test_step32_degree_ladder.py`.
 
-![Step 32 — the tensor-product degree ladder](figures/step32_tp_degree_ladder.png)
+![The tensor-product degree ladder](figures/step32_tp_degree_ladder.png)
 
 > **Figure 5.** The degree ladder at constant depth/width/(near-)parameters, sweeping only the representable
 > degree $d_{\max}=2^{L}$. **(left)** the recovery curve: in-distribution relMSE drops once at the first
@@ -2252,7 +2252,7 @@ primitive the physics needs; keep the prior.* Guarded inline (three seeds, five 
 
 ---
 
-## 25. Step 33 — is the symmetry *prior* itself recoverable from data, or must it be hand-wired?
+## 25. Is the symmetry *prior* itself recoverable from data, or must it be hand-wired?
 
 Every step so far *assumes* the group and asks what hard-wiring it buys. Step 33 asks the question
 underneath the whole bet: if a world carries a symmetry, can its generators be **discovered from a frozen
@@ -2336,7 +2336,7 @@ just postulate it — and trust it only because it can be proven wrong.* Guarded
 guards, $\beta$-sweep) by `experiments/step33_symmetry_discovery.py`; structural invariants by
 `tests/test_step33_symmetry_discovery.py`.
 
-![Step 33 — the symmetry prior is recoverable from data, and falsifiably so](figures/step33_symmetry_discovery.png)
+![The symmetry prior is recoverable from data, and falsifiably so](figures/step33_symmetry_discovery.png)
 
 > **Figure 6.** Discovering the symmetry generators from a frozen teacher, no structure imposed.
 > **(left, [D])** the relative finite-transform equivariance residual vs slate size $K$: the TRUE
@@ -2351,7 +2351,7 @@ guards, $\beta$-sweep) by `experiments/step33_symmetry_discovery.py`; structural
 
 ---
 
-## 26. Step 34 — does the active-inference win survive when the cue is *noisy* (a de-constructed task)?
+## 26. Does the active-inference win survive when the cue is *noisy* (a de-constructed task)?
 
 Step 25 (§14.1) earned its task win on a cue that, *once sensed*, revealed the goal **exactly** — a noiseless
 one-bit collapse. The fair de-construction question is whether the win was an artefact of that clean reveal or
@@ -2369,7 +2369,7 @@ latent only through the **invariant** distance $d$, so the whole epistemic field
 $\mathrm{SE}(3)$-invariant. Same encoder, equivariant planner, and $K{=}24$ ambiguous-goal POMDPs as Step 25;
 five noise floors swept.
 
-### The one design decision — re-arming Step 25's self-extinguishing envelope
+### The one design decision — re-arming §14.1's self-extinguishing envelope
 
 Porting Step 25's planner *verbatim* fails, for a reason worth stating because it is the crux of the
 de-construction. In Step 25 a noiseless bit sets $p$ to **exactly** $1$, so $\mathcal H(p)=0$ *exactly*: the
@@ -2441,7 +2441,7 @@ and invariant by construction.* Guarded inline (five noise floors, seven guards)
 $\mathrm{IG}={}$soft-Bayes-entropy-drop identity, and the $\mathrm{SE}(3)$-invariance of the information field by
 `tests/test_step34_active_inference_noisy.py`.
 
-![Step 34 — active inference under a noisy cue: the win survives, de-constructed](figures/step34_active_inference_noisy.png)
+![Active inference under a noisy cue: the win survives, de-constructed](figures/step34_active_inference_noisy.png)
 
 > **Figure 7.** The active-inference task win survives a *noisy* cue. **(left, [A])** at noise floor
 > $\epsilon_0=0.15$ the exact-mutual-information EFE planner ($0.38$) beats the reward-only hedge ($0.62$, above
@@ -2455,7 +2455,7 @@ $\mathrm{IG}={}$soft-Bayes-entropy-drop identity, and the $\mathrm{SE}(3)$-invar
 
 ---
 
-## 27. Step 35 — does the latent world model transfer across a *combinatorial* axis (object count) it never trains on?
+## 27. Does the latent world model transfer across a *combinatorial* axis (object count) it never trains on?
 
 Every generalisation result so far has lived on the **continuous** group: rotate/translate the scene and the
 prediction follows. Step 35 opens an **orthogonal, discrete** axis — the **number of interacting objects** $O$ —
@@ -2537,7 +2537,7 @@ models, eight guards) by `experiments/step35_many_body.py`; the count-stable mea
 $\mathrm{SE}(3)\rtimes S_O$-equivariance of the teacher at unseen counts, the $O=2$/$O=1$ boundaries, and the
 whole-pipeline equivariance at $O=5$ by `tests/test_step35_many_body.py`.
 
-![Step 35 — combinatorial 举一反三: one training count determines the many-body family](figures/step35_many_body.png)
+![Combinatorial 举一反三: one training count determines the many-body family](figures/step35_many_body.png)
 
 > **Figure 8.** A latent world model trained at a *single* object count $O=3$ transfers across the many-body
 > family. **(left, [C])** holding orientation fixed, the relMSE is flat over the interacting family
@@ -2551,7 +2551,7 @@ whole-pipeline equivariance at $O=5$ by `tests/test_step35_many_body.py`.
 
 ---
 
-## 28. Step 36 — can a symmetry *discovered* from data be *distilled* into a free predictor to buy back the across-group 举一反三?
+## 28. Can a symmetry *discovered* from data be *distilled* into a free predictor to buy back the across-group 举一反三?
 
 Every across-group win in this log has come from a symmetry that was **hand-wired** into the architecture (VN/e3nn): build $\mathrm{SO}(3)$ in, and latent prediction is exactly equivariant by construction, so 举一反三 across the whole group is float-floor exact and **free** — but you must *know* the group in advance and bake it in. Step 33 broke that prerequisite: from a **blank slate** of $K$ learnable $3\times3$ matrices it *rediscovered* a frozen teacher's symmetry algebra ($\mathfrak{so}(3)$, $\dim 3$, on the true teacher; $\mathfrak{so}(2)_z$, $\dim 1$, on a rotation-broken one) with nothing antisymmetric or bracket-closing imposed. That was **measurement**. Step 36 asks the obvious follow-up that turns measurement into a **method**: *now that the generators are discovered, can you USE them?* Concretely — **don't postulate the prior, discover it (Step 33), then distil the discovered generators into a free MLP predictor as a soft regulariser.** Does discovered-symmetry distillation buy a free predictor most of the $\times1.00$ that the hard-wired VN gets for nothing?
 
@@ -2579,13 +2579,13 @@ Discovery only needs a *modest* angle to *detect* asymmetry ($\theta_{\max}=1.2$
 
 **Verdict — all six gating reads green.** Discovery real ✓; VN exact ($\times1.00$) ✓; free breaks ($\times2.25$) ✓; method closes $54\%$ of the gap and drops the residual $\times8.0$ ✓; discovery $\approx$ oracle ✓; partial$\to$partial ✓. **PASS.** Confidence ≈ **0.8** that a symmetry *discovered* from data (Step 33) and distilled into a free predictor recovers most of the across-group 举一反三 the hard-wired VN gets for free — closing more than half the OOD gap, matching the hand-wired oracle, and transferring *exactly* the symmetry discovered (partial $\mathfrak{so}(2)_z\to$ partial flatness). One notch below the cleanest steps for an honest reason: soft distillation approximates, it does not reach the float-floor exactness of the built-in prior, and the encoder here is the hand-wired-equivariant Step-13 one (frozen) — we test whether a *free predictor* can inherit a discovered symmetry, not whether a free *encoder* can. *Step 33 measured the group; Step 36 shows the measurement is usable — the prior is learnable AND exploitable, with a documented soft-vs-hard gap.* Guarded inline (five arms, six guards) by `experiments/step36_discover_exploit.py`; the oracle $\mathfrak{so}(3)$ algebra, the full-subgroup finite flows, the orthogonality of $\rho$, and the distillation residual separating VN (float floor) from a free MLP at random init by `tests/test_step36_discover_exploit.py`.
 
-![Step 36 — a discovered symmetry, distilled into a free predictor, buys most of the hard-wired across-group generalisation](figures/step36_discover_exploit.png)
+![A discovered symmetry, distilled into a free predictor, buys most of the hard-wired across-group generalisation](figures/step36_discover_exploit.png)
 
 > **Figure 9.** Distilling a *data-discovered* symmetry into a free predictor. **(left, [M])** the soft$\to$hard dial along the **discovered** flows: as $\lambda$ grows the distilled OOD relMSE falls from the free MLP's $1.02$ ($\times2.25$) toward the VN floor ($0.30$, $\times1.00$), closing $54\%$ of the gap at $\lambda^\star$; the seen relMSE rises slightly — the honest cost of trading wedge-overfit for across-group flatness. **(centre-left, [U/L/O])** the flatness ladder: VN $\times1.00$, free $\times2.25$, discovered $\mathfrak{so}(3)$ $\times1.09\approx$ oracle $\times1.06$ — discovery costs nothing. **(centre-right, [X])** partial discovery $\to$ partial flatness: the discovered $\mathfrak{so}(2)_z$ arm collapses the z-axis OOD ($+46\%$ vs free) far more than the off-axis ($+17\%$) — it transfers exactly the symmetry it found. **(right, [D])** a discovered generator $\hat G_1$ — visibly antisymmetric, distilled rather than hand-wired. Regenerate with `experiments/step36_discover_exploit.py`.
 
 ---
 
-## 29. Step 37 — does the active-inference win transfer beyond a *constructed* POMDP? (a generic $K$-target search)
+## 29. Does the active-inference win transfer beyond a *constructed* POMDP? (a generic $K$-target search)
 
 Step 25's caveat had **two** crutches, not one. Step 34 (§26) removed the first — the *noiseless* reveal — by
 routing the cue through a noisy channel. But Step 25/34 still ran on a **constructed** POMDP with the *other*
@@ -2606,7 +2606,7 @@ categorical cue. A separable place-to-look is not a crutch but the **premise** o
 removes the *theory*, not the artefact. So instead of hiding it, Step 37 makes it **falsifiable** with an
 affordance-collapse control ([B] below).
 
-### The drive is the exact categorical mutual information ($K{=}2$ recovers Step 34)
+### The drive is the exact categorical mutual information ($K{=}2$ recovers §26)
 
 The cue is a **$K$-ary symmetric channel** $P(o{=}j\mid b{=}i)=(1-\epsilon)\,[i{=}j]+\tfrac{\epsilon}{K-1}\,[i{\ne}j]$,
 whose crossover anneals with the **invariant** latent distance,
@@ -2684,7 +2684,7 @@ channel, the categorical-MI exact limits, the $\mathrm{IG}={}$soft-Bayes-entropy
 $K{=}2\to$Step-34 reduction, the affordance-collapse reduction to a binary channel, the no-mirror constellation,
 and the $\mathrm{SE}(3)$-invariance of the categorical-MI field by `tests/test_step37_active_inference_search.py`.
 
-![Step 37 — active inference on a generic K-target search: the win survives the mirror's removal](figures/step37_active_inference_search.png)
+![Active inference on a generic K-target search: the win survives the mirror's removal](figures/step37_active_inference_search.png)
 
 > **Figure 10.** The active-inference win transfers to a *generic* $K$-target identification search — no mirror
 > goals, a $K$-ary categorical belief, the exact categorical mutual information as the drive. **(left, [A])** on
@@ -2699,7 +2699,7 @@ and the $\mathrm{SE}(3)$-invariance of the categorical-MI field by `tests/test_s
 
 ---
 
-## 30. Step 38 — the one outright failure, resolved: decoder-free latent-goal *reaching*, made exactly equivariant
+## 30. The one outright failure, resolved: decoder-free latent-goal *reaching*, made exactly equivariant
 
 Across $37$ steps there was exactly **one** outright negative: Step 13's panel [C], purely-latent
 decoder-free planning toward a goal *cloud*. An open-loop CEM-MPC against the terminal latent cost
@@ -2797,7 +2797,7 @@ the latent-Procrustes residual-angle recovery of $\lvert R\rvert$, the $\mathrm{
 goal costs, the composed-equivariance separation of VN from a free MLP, and exact reaching-transfer across
 the orbit at init by `tests/test_step38_latent_goal_reaching.py`.
 
-![Step 38 — decoder-free latent-goal reaching: the only outright failure, cured and made exactly equivariant](figures/step38_latent_goal_reaching.png)
+![Decoder-free latent-goal reaching: the only outright failure, cured and made exactly equivariant](figures/step38_latent_goal_reaching.png)
 
 > **Figure 11.** The project's only outright failure — Step 13[C]'s decoder-free latent-goal reaching —
 > resolved and made exactly equivariant. **(left, [A])** the reaching cure ladder: the faithful Step-13[C]
@@ -3099,229 +3099,42 @@ of it scales. Those are the next tests — not foregone conclusions.
 
 ---
 
-## Reproduce
+## Reproducibility and experiment index
 
-**Reproducibility checklist.**
+The environment (Python 3.11, PyTorch 2.12, `e3nn` 0.6.0, NumPy 2.4; dependencies pinned in `requirements.txt` and managed with `uv`, not pip; no CUDA — every experiment runs on a laptop CPU/MPS), the seed and determinism protocol, the figure-regeneration scripts, the module layout under `src/`, and the full result → experiment → guard-test mapping are collected once in the core paper's Appendix A. The exactness facts ([A] post-training equivariance, [B] across-group relMSE flatness) are *theorems* (§0): they hold at initialisation and after training independent of seed, while the closed-loop confidence intervals are over fixed task and CEM seeds (paired designs). Each heavier 3D / sweep experiment also accepts a `STEP{n}_SMOKE=1` flag for a fast wiring check, and every structural claim has a matching `tests/test_*.py` guard that checks equivariance / invariance **at initialisation and after training** and fails the non-equivariant control.
 
-- **Environment.** Python 3.11, PyTorch 2.12, `e3nn` 0.6.0, NumPy 2.4, Matplotlib; dependencies managed
-  with `uv` (not pip) and pinned in `requirements.txt`: `uv venv && uv pip install -r requirements.txt`.
-  No CUDA — every step runs on a laptop CPU/MPS.
-- **Determinism.** Each experiment sets explicit data/init/planner seeds; re-running reproduces the
-  numbers above. The exactness facts ([A] post-training equivariance, [B] across-group relMSE flatness)
-  are *theorems* (§0), so they hold at init and post-training independent of seed; the closed-loop CIs
-  are over fixed task/CEM seeds (paired designs, Steps 14/18).
-- **Hardware / runtime.** Everything below finishes in minutes-to-tens-of-minutes on a single CPU; pass
-  `STEP{n}_SMOKE=1` for a fast wiring check of the heavier 3D / sweep steps.
-- **Outputs.** Numeric dumps and figures land in `papers/figures/*.json` / `*.png`; the headline figures
-  (Figures 1–4) are regenerated without retraining by `make_figures.py` / `make_bet_figures.py`
-  (Figures 1–2), `step23_indist_largeN.py` (Figure 3), and `make_step24_figure.py` (Figure 4).
-- **Guards.** Every structural claim has a matching `tests/test_*.py` that checks equivariance /
-  invariance **at init and after training** and fails the non-equivariant control.
+References throughout this appendix are by experiment ("Step N"). The index below resolves each to the section that discusses it and to the script under `experiments/` that produces it.
 
-```bash
-cd ~/Workspace/se3-ejepa
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python experiments/step8_sample_efficiency.py
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python experiments/step9_closed_loop.py
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python experiments/step10_pusht_closed_loop.py
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python experiments/step11_latent_jepa.py
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python experiments/step12_pose_control.py
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python experiments/step13_se3_latent_jepa.py   # SO(3) lift (STEP13_SMOKE=1 for fast)
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python experiments/step14_pose_control_power.py  # paired closed-loop power (STEP14_SMOKE=1 for fast)
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python experiments/step15_se3_translation.py     # SE(3): + translation (STEP15_SMOKE=1 for fast)
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python experiments/step16_misspecification.py    # SO(3) misspecification sweep (STEP16_SMOKE=1)
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python experiments/step17_multiseed_closed_loop.py  # training-seed error bar (STEP17_SMOKE=1)
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python experiments/step18_se3_closed_loop.py     # 3D SE(3) closed-loop [E]/[S] lift (STEP18_SMOKE=1 for fast)
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python experiments/step19_object_centric.py      # SE(3)^O |x| S_O object-centric 2x2 ablation (STEP19_SMOKE=1 for fast)
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python experiments/step20_active_inference.py    # EFE active inference: curiosity invariance + beta-knob (STEP20_SMOKE=1 for fast)
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python experiments/step21_sample_efficiency_frontier.py # sample-efficiency frontier: VN whole-group == in-wedge, MLP wall (STEP21_SMOKE=1 for fast)
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python experiments/step22_symmetry_data_phase.py # g×N phase diagram: prior wins 24/25 across the group, capacity wins in-wedge (STEP22_SMOKE=1 for fast)
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python experiments/step23_indist_largeN.py      # large-N fixed-epochs in-dist test: gap does NOT widen to N=2048 (Figure 3; STEP23_SMOKE=1 for fast)
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python experiments/step24_object_interaction.py # object interaction: collapse to global SE(3)|xS_O + interpolation/extrapolation flip (STEP24_SMOKE=1 for fast)
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python experiments/make_step24_figure.py        # renders step24_object_interaction.{png,pdf} (Figure 4) from the Step-24 JSON dump
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python experiments/step25_active_inference_task.py # cue-foraging POMDP: EFE planner beats reward-only past the hedge floor; SE(3)-invariant loop (STEP25_SMOKE=1 for fast)
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python experiments/step26_optimizer_equivariance.py # intrinsic vs extrinsic: VN EqJEPA optimiser-agnostic; Adam breaks an extrinsic layer under noise (STEP26_SMOKE=1 for fast)
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python experiments/step28_fair_augmentation_baseline.py # fair aug baseline (2D SO(2)): coverage closes the task ratio (x1.06) but Delta_eq plateaus x2.6e5 above the VN floor (STEP28_SMOKE=1 for fast)
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python experiments/step28_fair_augmentation_3d.py # same lifted to 3D SO(3): full-ball aug x1.46 vs VN x1.00, Delta_eq x3.1e5 the floor -- holds in 3D (STEP28_SMOKE=1 for fast)
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python experiments/step29_scaling_sweep.py     # Bitter-Lesson stress test (2D SO(2)): partial coverage [0,180); width x16 x data x16 widens the gap (x29.8->x48.9), Delta_eq plateaus x1.1e6 the VN floor (STEP29_SMOKE=1 for fast)
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python experiments/step29_scaling_sweep_3d.py  # same in 3D SO(3): ball<=90; grid stays x41-x106 vs VN x1.00, best Delta_eq x2.2e6 the floor -- scale != coverage != architecture (STEP29_SMOKE=1 for fast)
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python experiments/step30_soft_equivariant.py  # soft-equivariant RPP (2D SO(2)) under the Step-16 break: beta dials VN<->MLP; capacity recovers (VN seen x54.6 -> softest 0.0006) but ratio x1->x43 and Delta_eq x5.5e5 the floor at g=0 -- a dial, not a free lunch (STEP30_SMOKE=1 for fast)
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python experiments/step30_soft_equivariant_3d.py # same in 3D SO(3): seen=full ball (lab-z break needs it); VN seen x604, softest recovers; ratio VN<=x1.53 vs MLP x52-71; softest Delta_eq x4.5e5 the floor at g=0 -- holds in 3D (STEP30_SMOKE=1 for fast)
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python experiments/step31_rollout_horizon.py     # multi-step rollout (2D SO(2)): one-step equivariance composes over horizon H in {1..16}; VN rollout across-group flat x1.00 + composed Delta_eq <=2.3e-7 at EVERY H, while MLP gap persists (ratio x43-x51 then compresses as OOD saturates) and composed residual COMPOUNDS 2.3e-2(H=1)->3.7e-1(H=16) (STEP31_SMOKE=1 for fast)
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python experiments/step31_rollout_horizon_3d.py  # same in 3D SO(3): seen ball<=90 deg, OOD shell 90-180; VN rollout flat x1.00 + Delta_eq <=1.6e-7 at every H; MLP ratio x6.5-x66, composed residual 3.9e-2(H=1)->4.5e-1(H=16) -- the composition theorem holds in SO(3) too (STEP31_SMOKE=1 for fast)
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python experiments/step32_tp_degree_ladder.py    # degree ladder (3D SO(3)): sweep representable degree d_max=2^L at fixed depth/width/(near-)params; in-dist relMSE recovers in ONE step at first cross-product rung (L0 0.263->L1 0.194, x1.36, 38% of cap->MLP gap) then SATURATES flat (L1~L2~L3~0.20, top rung +1%) -- a DEGREE signature not a capacity ramp; every rung across-group x1.00 + SE(3)<=9.3e-5, MLP x10.5 (STEP32_SMOKE=1 for fast)
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python tests/test_step32_degree_ladder.py        # structural invariants at every rung L in {0,1,2,3}: SO(3) equivariance <1e-4 AND degree separation (L=0 exactly degree-1 homogeneous, every L>=1 carries genuine >=degree-2 content) -- the ladder really climbs representable degree
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python experiments/step33_symmetry_discovery.py  # symmetry DISCOVERY (3D): minimise a frozen teacher's finite-transform equiv residual over a free K-generator slate (no antisym/bracket/so(3) imposed); read dim off the residual jump (TRUE so(3): floor thru K=3, x9.3e9 jump @K=4 => dim 3; BROKEN z-stretch: x1.8e10 jump @K=2 => dim 1); so(3) EMERGES (antisym 6e-7, closure 2e-6, ||c||=sqrt3=1.7320509); FALSIFIABLE: broken can't fake so(3) @K=3 (x1.6e10 worse) but recovers L_z @K=1 (align 1.00), dim-1 read robust over 8x beta range; 5 seeds, 6 guards (STEP33_SMOKE=1 for fast)
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python tests/test_step33_symmetry_discovery.py   # structural invariants: hand-built so(3) reference basis orthonormal+antisymmetric+bracket-closes (struct const 1/sqrt2); TRUE teacher exactly SO(3)-equivariant; BROKEN teacher R_z-equivariant but breaks under generic R (SO(3)->SO(2)_z exactly, nothing else); QR frame genuinely orthonormal; end-to-end discovery recovers so(3) @K=3 on TRUE and L_z @K=1 on BROKEN (fast settings)
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python experiments/step34_active_inference_noisy.py # active inference DE-CONSTRUCTED (3D): Step 25's NOISELESS one-bit reveal -> binary symmetric channel eps(d)=1/2-(1/2-eps0)exp(-d^2/2delta^2); planner driven by EXACT mutual info IG=H(p)-E_o[H(p')]=I(b;o|d); belief-entropy gate g_epi=H(p)/ln2 RE-ARMS Step 25's self-extinguishing drive (z-scoring alone destroys it once soft Bayes can't reach {0,1}); win SURVIVES noise (x0.614 true-goal-err cut, CI[0.499,0.749], past provable hedge floor), RECOVERS Step 25 @eps0=0 (EFE 0.333~oracle), VANISHES @eps0=0.45 (EFE 0.723~reward-only 0.663) -- built-in falsifiable negative; senses MORE for noisier bits (5.6->15.7); IG SE(3)-inv 7e-7, plan-equiv 8e-9, MLP breaks all (IG-inv 0.17); 7 guards (STEP34_SMOKE=1 for fast)
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python tests/test_step34_active_inference_noisy.py # structural invariants: binary entropy H exact at the {0,1} ends via xlogy (no clamp bias); the three exact-MI limits IG(eps=0)=H(p), IG(eps=1/2)=0, IG(p in {0,1})=0; crossover monotone in d; soft-Bayes posterior never collapses to {0,1}; IG-field SE(3)-invariant + EFE-plan SE(3)-equivariant; MLP shatters all (5 checks)
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python experiments/step35_many_body.py          # few-body->many-body COMBINATORIAL generalisation (3D): train interacting WM at a SINGLE count O=3, test zero-shot at O in {1,2,4,5,6}; count-stable MEAN message rbar_i=mean_{j!=i} rhat_ij lives in the unit ball at every count (1.0@O=2 -> 0.94@O=6) so a sum-free single-count predictor transfers; [I] channel necessity VN-MP 0.2027 < VN-Set 0.7023 (x3.46, degree-1 cap); [C] interacting family O>=2 FLAT VN-MP x1.09 & MLP-MP x1.05 (factorisation+mean buy count transfer, NOT equivariance); [G] count x global-SO(3) VN-MP x1.00 EXACT vs MLP-MP x2.83 (THIS isolates equivariance); [A'] whole-pipeline equiv at UNSEEN O=5 SE(3) 1.8e-5/perm 7e-7, MLP breaks 1.1e1; O=1 no-interaction boundary x2.47 (msg=0, latent step 5.71->1.49) still beats no-change; 8 guards (STEP35_SMOKE=1 for fast)
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python tests/test_step35_many_body.py           # structural invariants (random init, no training): count-stable mean message in the unit ball at O in {1..6} (=0 @O=1, =1 @O=2, contracts after); translation-invariant; teacher exactly SE(3) x S_O-equivariant at counts {2,3,4,5} incl. unseen; O=2 recovers Step 24 bit-for-bit + O=1 reduces to pure Step-13 self-dynamics; VN-MP whole pipeline SE(3) x S_O-equivariant at UNSEEN O=5 (5 checks)
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python experiments/step36_discover_exploit.py   # discover -> EXPLOIT (3D): take the so(3) generators DISCOVERED off a frozen teacher (Step 33, blank slate) and DISTIL them into a free MLP predictor as a soft equivariance regulariser lambda*sum_k ||rho(g_k)f - f(rho(g_k)z, g_k a)||^2 along finite flows g_k=exp(theta G_k); one frozen eq-encoder shared by five arms; KEY decision: decouple the distill flow range (theta_max=pi*sqrt2, a full half-turn, tr=-1) from discovery's detect-wedge (+-49deg); [D] discovery real frac_in_so3 1.00 / antisym 0.00 / struct-const sqrt3; [U] VN x1.00 (composed 1.2e-5); [L] free x2.25 (equiv 3.69); [M] distilled so(3) closes 54% of the OOD gap (x2.25 -> x1.09) + equiv-resid drop x8.0 (3.69 -> 0.459) @lambda*=10 (OOD ties broken toward strongest enforcement); [O] discovered x1.09 ~ oracle x1.06 (discovery costs nothing); [X] partial: discovered so(2)_z helps z-axis +46% vs off-axis +17% (transfers EXACTLY what it found); [S] soft!=hard distilled OOD 0.632 > 2x VN floor 0.300; 6 guards (STEP36_SMOKE=1 for fast)
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python tests/test_step36_discover_exploit.py    # structural invariants (random init, no training): oracle so3_basis is a real Lie algebra (unit-Frobenius / antisym / frac_in_so3 1.0 / closure 0 / struct-const sqrt3); finite flows exp(theta G) in SO(3) and at theta_max=pi*sqrt2 sweep a half-turn (tr=-1, angle theta/sqrt2=pi); rotate_latent is an orthogonal rep (norm-preserving, inverse rho(R^T), homomorphism); distill_residual separates VN (float floor <1e-6) from a free MLP (>1e-3, ratio >1e4) on real encoder latents; composed pipeline SE(3)-equivariant for VN (<1e-4) not free (>1e-2, ratio >1e3) (5 checks)
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python experiments/step37_active_inference_search.py # active inference DE-CONSTRUCTED to a GENERIC search (3D): remove Step 25/34's constructed MIRROR (a hidden bit, two opposite goals) -> a generic K-target constellation (K>=3 in a random plane, NO antipodal pair at any K via gap stick-breaking, 0 viol / 2000 draws) with a K-ary categorical belief; drive = EXACT categorical mutual info IG=H(p)-E_o[H(p')]=I(b;o|d) of a K-ary symmetric channel eps(d)=eps*-(eps*-eps0)exp(-d^2/2delta^2), useless floor eps*=(K-1)/K; categorical soft-Bayes (no collapse); RECOVERS Step 34 exactly as K=2 (1e-7); [A] EFE ATTAINS THE ORACLE FLOOR (EFE 0.387 ~ oracle 0.376, gap +0.011 CI[-0.062,+0.089] incl 0; x0.565 vs reward-only 0.685, paired drop +0.298), reads the off-path cue 10.6x, p_true 1.00; [B] win SCALES with K (3,4,5 ratios 0.60/0.71/0.55, all WIN); TWO falsifiable negatives both fire: useless cue eps0=2/3 ratio 1.00 AND affordance-collapse sense==commit ratio 1.25 (EFE senses MORE 25.3 vs 17.2) -> pins advantage to the AFFORDANCE not the mirror; [C] IG-field SE(3)-inv 6e-6, outcome 2.6e-8, plan-equiv 1.9e-8, MLP breaks all (IG-inv 0.29); 8 guards (STEP37_SMOKE=1 for fast)
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python tests/test_step37_active_inference_search.py # structural invariants (random init, no training): crossover_cat limits/monotone/range + useless floor eps*=(K-1)/K; categorical IG exact limits IG(eps=0)=H(p), IG(eps=eps*)=0, IG(one-hot)=0, >=0, decreasing in eps (K=3,4,5); K=2 specialisation cat_info_gain==binary info_gain (1.2e-7) & crossover_cat==crossover (0.0) & eps*(2)=1/2; IG==H(p)-E_o[H(p')] via categorical soft-Bayes (2.4e-8); soft-Bayes accumulates / never collapses / useless inert / eps=0 collapses; affordance-collapse reduction H(p)-E_o[H(cat_bayes_binary)]==binary info_gain (1.6e-7); generic constellation coplanar / no mirror (|ang-180|>30 deg) / separated (>38 deg) / balanced over 40 frames x K=3,4,5; VN categorical-MI field SE(3)-invariant at init (2.2e-8) [MLP-break is a post-train fact verified in the experiment's panel C] (8 checks)
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python experiments/step38_latent_goal_reaching.py # the ONE outright failure resolved (3D): decoder-free latent-goal REACHING -- Step 13[C] (open-loop CEM vs ||z_H - E(Xg)||^2) closed a NEGATIVE gap fraction for both models; diagnosis (not a knob): a 1-step-trained predictor's H=6 rollout drifts ~2.0 from E(teacher^h) so the encoder goal sits OFF the reachable manifold + terminal L2 is ill-scaled; CURE = 3 decoder-free exactly-equivariant ingredients: rollout-consistency train L_roll=mean_h||f^h(E x0,a)-sg E_ema(x_h)||^2 via BPTT+EMA target (load-bearing), the Step-18 SE(3)-equivariant CEM planner verbatim, and an SE(3)-native latent-Procrustes goal (geodesic angle of the Kabsch R* aligning z0->zg on the 16 type-1 vecs); [A] reaching ladder +0.006 (Step-13[C] verbatim) -> +0.174 (eq planner) -> +0.399 (rollout) -> +0.527 best DEPLOYABLE (Procrustes open-loop), vs +0.696 predictor-space CEILING (needs a_true) and +1.000 oracle -- PARTIAL by the honest residual (encoder-vs-predictor manifold gap); [B] KILLER: across a paired seen+4-OOD SE(3) orbit the VN residual angle is IDENTICAL 16.108 deg, max|d_i|=1.8e-6, OOD/seen ratio 1.000 CI[1.000,1.000] while MLP degrades to 48.7 deg ratio 1.745 CI[1.473,2.100] -- the Steps 14/18 exactness theorem now for GOAL-REACHING; [C] goal cost SE(3)-native (Procrustes |d|7e-8, L2 8e-6), plan-equiv 1.8e-6, composed-equiv VN 4.2e-6 vs MLP 5.15; 3 panels (STEP38_SMOKE=1 for fast)
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python tests/test_step38_latent_goal_reaching.py  # structural invariants (random init, no training): latent_residual_angle recovers |R| exactly (2.8e-12 deg) on the 16 type-1 vecs; Procrustes goal cost SE(3)-invariant under shared rho(R) (2.2e-13) and raw L2 cost too (1.7e-13, float64 re-orthogonalised R); VN composed-equiv at init 1.2e-6 << MLP 2.7 (assert MLP>100x); goal cost invariant through the VN encoder end-to-end under a cloud rotation (7e-15); reaching transfers EXACTLY across the SE(3) orbit at init (7.4e-7 deg, tiny CEM) (6 checks)
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python experiments/make_bet_figures.py          # renders step21_frontier.png + where_the_bet_pays.{png,pdf} from the Step-21/22 JSON dumps
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python tests/test_planner_equivariance.py        # the clean single-plan SE(3) theorem (residual 1.2e-7)
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python tests/test_set_equivariance.py            # scene-group SE(3)^O |x| S_O equivariance, init + post-train
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python tests/test_efe_invariance.py              # active-inference EFE drives SE(3)-invariant, init + post-train
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python tests/test_step25_salience_invariance.py  # cue salience SE(3)-invariant + EFE-plan SE(3)-equivariant, init + post-train
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python tests/test_step26_optimizer_equivariance.py # intrinsic immune to any optimiser; extrinsic Adam drifts off C; real VN model optimiser-agnostic init+post
-SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
-    .venv/bin/python tests/test_sample_efficiency_frontier.py  # whole-group relMSE == in-wedge (float floor) + frontier statistic, init + post
-```
-
-Source: `experiments/step8_sample_efficiency.py`, `experiments/step9_closed_loop.py`,
-`experiments/step10_pusht_closed_loop.py`, `experiments/step11_latent_jepa.py`,
-`experiments/step12_pose_control.py` (reuses Step 10's forward models + env, adds the
-reorientation task sampler and SO(2)-invariant pose cost),
-`experiments/step13_se3_latent_jepa.py` (the SO(3) lift: end-to-end 3D point-cloud latent
-JEPA — `SE3PointEncoder`+`VNPredictor(dim=3)` — with an exactly-SO(3)-equivariant synthetic
-teacher, anisotropic $z$-wedge training, and full-SO(3) OOD bins),
-`experiments/step14_pose_control_power.py` (the paired seen-vs-OOD closed-loop power analysis:
-reuses Step 10's models + Step 12's pose task/cost, adds `rotate_pose_task`, an equivariant CEM
-planner `cem_plan_pose_iso` — isotropic $\sigma$ + $R(\Delta)$-rotated noise + disk action clamp
-`_disk_clamp` — and paired bootstrap CIs over $K{=}48$ tasks; panel [E] equivariant planner,
-panel [S] verbatim Step-12 planner),
-`experiments/step15_se3_translation.py` (completes SE(3): reuses the Step-13 encoders/teacher/recipe,
-adds `translate_points` + a translation-invariance/teacher-translation-equivariance probe and an
-SE(3) ladder of OOD bins — pure translation, pure SO(3), and their composition),
-`experiments/step16_misspecification.py` (the robustness sweep: `teacher_step_g` adds a
-centering-surviving, non-SO(3)-equivariant fixed-axis term with knob $g$, `noneq_fraction` measures
-the broken share, and OOD is re-sampled at full SO(3) through the *true* $\mathrm{Dyn}_g$; dumps
-`papers/figures/step16_misspecification.{json,png}`),
-`experiments/step17_multiseed_closed_loop.py` (the training-seed error bar: trains $K{=}5$ independent
-VN/MLP pairs, runs the verbatim Step-12 closed loop on each, reports the degree-degradation
-distribution; dumps `papers/figures/step17_multiseed.json`),
-`experiments/step18_se3_closed_loop.py` (the 3D SE(3) closed-loop lift: reuses the Step-13
-`SE3PointEncoder`+`VNPredictor(dim=3)` latent JEPA + synthetic teacher, adds an SE(3)-equivariant CEM
-planner `latent_cem_plan_iso` — iso-$\sigma$, unit-ball clamp `_ball_clamp`, $R$-rotated noise, latent
-+ closed-form **centroid** cost — a Kabsch orientation readout `kabsch_rotation`/`rotation_angle_deg`,
-and the paired seen-vs-OOD$(R,t)$ bootstrap over $K{=}24$ tasks; panel [E] equivariant planner, panel
-[S] verbatim Step-13 planner; dumps `papers/figures/step18_se3_closed_loop.json`),
-`experiments/step19_object_centric.py` (the object-centric lift to a *scene* group
-$\mathrm{SE}(3)^O\rtimes S_O$: reuses the Step-13 `SE3PointEncoder`+`VNPredictor` per slot, adds the
-shared-weight `SetSE3Encoder`/`SlotPredictor`, the two non-equivariant controls `SlotMLPEncoder` and
-`GlobalMLPEncoder`, a direct-sum `scene_teacher_step`, the paired `transform_orient`/`transform_arrange`
-OOD transforms, and the permutation/leakage/composed-equivariance probes; dumps the 2×2 to
-`papers/figures/step19_object_centric.json`),
-`experiments/step20_active_inference.py` (the active-inference EFE objective: a shared-encoder $K{=}5$
-deep ensemble `EnsembleJEPA` over the Step-13 `SE3PointEncoder`+`VNPredictor`, the epistemic
-`disagreement` + `gaussian_entropy` quantities, a per-member-bootstrap `train_ensemble_jepa`, the
-`efe_term_invariance`/`total_efe_invariance` probes, the same-orbit `_reorient` + off-orbit `_novel_shape`
-calibration sets, and an SE(3)-equivariant `efe_cem_plan` $\beta$-sweep planner; dumps
-`papers/figures/step20_active_inference.json`),
-`experiments/step21_sample_efficiency_frontier.py` (the sample-efficiency **frontier**: reuses the
-Step-13 `build_eq_jepa`/`build_mlp_jepa` + `collect_cloud_transitions` + `latent_rel_mse`, trains both
-on the thin $z$-wedge while sweeping the training-set size $N$ at a *fixed* gradient-update budget via
-`train_eval_one`, reads two learning curves per model with `eval_seen_ood` — held-out in-wedge relMSE vs
-the same transition rotated by random $\mathrm{SO}(3)$ — and a pure log-$N$ interpolator
-`frontier_n_at_target` that turns a curve into the smallest $N$ to reach a target error and reports a
-*wall* as `None`; dumps `papers/figures/step21_sample_efficiency_frontier.json`),
-`experiments/step22_symmetry_data_phase.py` (the symmetry-break × data phase diagram: reuses the
-Step-13 backbones + Step-16 `teacher_step_g`/`collect_transitions_g`/`noneq_fraction`, trains a
-`train_eval_cell` over a $g\times N$ grid reading both held-out in-wedge and *re-sampled* full-SO(3)
-metrics, scores winner-per-cell on each, and a pure `first_overtake_N` in-wedge crossover extractor;
-dumps `papers/figures/step22_symmetry_data_phase.{json,png}`),
-`experiments/step24_object_interaction.py` (the object-*interaction* rung: reuses Step 19's
-`SetSE3Encoder`/`SlotPredictor`/`SlotMLPEncoder` + Step 13's single-body `teacher_step`, adds the exactly
-global-$\mathrm{SE}(3)\rtimes S_O$-equivariant `scene_teacher_interact` torque $\omega_i=\hat r_{ij}\times
-a_i$, the equivariant relative-pose message `build_msg_action`, the three one-variable models `build_vn_mp`
-/ `build_vn_set` / `build_mlp_mp`, the whole-pipeline message-rebuilding equivariance probes
-`vnmp_se3_err`/`vnmp_perm_err`, and the [I]/[G]/[R] panels; dumps `papers/figures/step24_object_interaction.json`),
-`experiments/make_step24_figure.py` (pure read-and-plot: renders the Figure-4 interpolation/extrapolation
-flip from that JSON),
-`experiments/step25_active_inference_task.py` (the partial-observability payoff: an ambiguous-goal
-cue-foraging POMDP over the Step-13 teacher — `make_cue_tasks` builds the $\pm n_g$ goals + the transverse
-cue, `efe_pomdp_plan` is the belief-weighted three-channel CEM EFE planner with the self-extinguishing cue
-salience $\eta\,\mathcal H(p)$, `run_pomdp_episode` closes the loop with a one-bit Bayesian belief update,
-and `salience_invariance` is the loop-level $\mathrm{SE}(3)$ probe; dumps
-`papers/figures/step25_active_inference_task.json`),
-`experiments/step26_optimizer_equivariance.py` (the intrinsic-vs-extrinsic optimiser probe: Panel A trains
-the Step-13 `build_eq_jepa` under three optimisers via `_make_opts` (project `build_muon_adamw`, all-param
-Adam, all-param SGD) with a swappable-optimiser EMA-target+VICReg `_train`, probing the composed SE(3)
-residual at float64 init+post against a `build_mlp_jepa` control; Panel B is a closed-form commutant $2\times2$
-— `_rho(R)=I_2\otimes R` on $\mathbb R^6$, the orthogonal projector `_commutant_proj` onto $\mathcal
-C=\{M\otimes I_3\}$, the off-commutant witness `_offcommutant` and commutator residual `_equiv_resid` — fitting
-$W^\star=M^\star\otimes I_3$ under label noise with `_run_commutant` for intrinsic `VNLinear` vs extrinsic
-`nn.Linear`; dumps `papers/figures/step26_optimizer_equivariance.json`),
-`experiments/make_bet_figures.py` (pure read-and-plot, no training: renders `step21_frontier.png` and
-the combined `where_the_bet_pays.{png,pdf}` — frontier + the two-metric phase panels — from the
-Step-21/22 JSON dumps), with the clean
-single-plan SE(3) theorem guarded in `tests/test_planner_equivariance.py`
-($\mathrm{plan}(g\cdot x)=g\cdot\mathrm{plan}(x)$ to $1.2\times10^{-7}$, MLP control fails), the
-scene-group $\mathrm{SE}(3)^O\rtimes S_O$ equivariance (global $\mathrm{SO}(3)$ + permutation + leakage,
-init **and** post-train, with both non-equivariant controls failing) guarded in
-`tests/test_set_equivariance.py`, and the active-inference EFE drives (disagreement, Gaussian entropy,
-total $G$ all $\mathrm{SE}(3)$-invariant init **and** post-train, MLP ensemble control failing) guarded in
-`tests/test_efe_invariance.py`, the cue-foraging salience invariance + EFE-plan equivariance (the cue
-salience $\eta$ $\mathrm{SE}(3)$-invariant to the float floor and the EFE-optimal plan
-$\mathrm{SE}(3)$-equivariant, init **and** post-train, the non-equivariant control breaking the plan
-equivariance) guarded in `tests/test_step25_salience_invariance.py`, and the whole-group sample-efficiency frontier (VN whole-group relMSE
-$=$ in-wedge relMSE to the e3nn float floor — `ood/seen` $=1$ — init **and** post-train, the
-non-equivariant MLP breaking it into a wall, plus the pure `frontier_n_at_target` log-$N$
-interpolation / grid-hit / wall / monotonicity) guarded in `tests/test_sample_efficiency_frontier.py`,
-and the Step-22 misspecified-teacher knob + phase extractor ($\mathrm{Dyn}_g$ reduces to the exact
-SO(3) teacher at $g{=}0$ and breaks it monotonically for $g{>}0$; the break term is centering-invariant,
-lab-$z$, a genuine target; the rotated OOD label is exact at $g{=}0$ but *fake* at $g{>}0$ ⇒ re-sample;
-and `first_overtake_N` interpolates/walls/orders correctly) guarded in
-`tests/test_symmetry_data_phase.py`, and the intrinsic-vs-extrinsic optimiser dichotomy (the commutant
-construction exact — $M\otimes I_3\in\mathcal C$, $P_{\mathcal C}$ idempotent, a dense $W$ off $\mathcal C$;
-the intrinsic `VNLinear` off-commutant $=0$ under both Adam and SGD even with label noise; the extrinsic
-`nn.Linear` drifting off $\mathcal C$ under Adam while still fitting; the real VN `EqJEPA` optimiser-agnostic
-init **and** post-train; the MLP control breaking) guarded in `tests/test_step26_optimizer_equivariance.py`;
-equivariant
-primitives in `src/models/structured.py` (`VNLinear`, `VNReLU`, `StructuredStateEncoder`,
-`VNPredictor`),
-the JEPA wrapper + latent predictor in `src/models/eqjepa.py`, EMA/VICReg training loop in
-`src/training/jepa.py`, SE(3) encoder in `src/models/se3.py`, the Muon/AdamW symmetry-compatible
-optimiser split in `src/training/muon.py`.
+| Step | § | Experiment (`experiments/`) |
+|------|------|------|
+| 8 | §2 | `step8_sample_efficiency` |
+| 9 | §3 | `step9_closed_loop` |
+| 10 | §4 | `step10_pusht_closed_loop` |
+| 11 | §5 | `step11_latent_jepa` |
+| 12 | §6 | `step12_pose_control` |
+| 13 | §7 | `step13_se3_latent_jepa` |
+| 14 | §8 | `step14_pose_control_power` |
+| 15 | §9 | `step15_se3_translation` |
+| 16 | §10 | `step16_misspecification` |
+| 17 | §11 | `step17_multiseed_closed_loop` |
+| 18 | §12 | `step18_se3_closed_loop` |
+| 19 | §13 | `step19_object_centric` |
+| 20 | §14 | `step20_active_inference` |
+| 21 | §15 | `step21_sample_efficiency_frontier` |
+| 22 | §16 | `step22_symmetry_data_phase` |
+| 23 | §16 [D] | `step23_indist_largeN` |
+| 24 | §17 | `step24_object_interaction` |
+| 25 | §14.1 | `step25_active_inference_task` |
+| 26 | §19 | `step26_optimizer_equivariance` |
+| 27 | §17.1 | `step27_tensor_product_message` |
+| 28 | §20 | `step28_fair_augmentation_baseline`, `step28_fair_augmentation_3d` |
+| 29 | §21 | `step29_scaling_sweep`, `step29_scaling_sweep_3d` |
+| 30 | §22 | `step30_soft_equivariant`, `step30_soft_equivariant_3d` |
+| 31 | §23 | `step31_rollout_horizon`, `step31_rollout_horizon_3d` |
+| 32 | §24 | `step32_tp_degree_ladder` |
+| 33 | §25 | `step33_symmetry_discovery` |
+| 34 | §26 | `step34_active_inference_noisy` |
+| 35 | §27 | `step35_many_body` |
+| 36 | §28 | `step36_discover_exploit` |
+| 37 | §29 | `step37_active_inference_search` |
+| 38 | §30 | `step38_latent_goal_reaching` |

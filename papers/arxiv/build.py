@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""Reproducible build: two Markdown papers -> one arXiv LaTeX source.
+"""Reproducible build: three Markdown documents -> one arXiv LaTeX source.
 
 Pipeline
 --------
-1. Concatenate the focused core write-up (main body) with the full results log
-   (Steps 3--38, appendix), separated by a hard ``\\clearpage``.
+1. Concatenate three parts, each separated by a hard ``\\clearpage``:
+   the focused core write-up (main body), the full results log (Steps 3--38,
+   "Appendix"), and the forward-looking equivariant-LeJEPA theory note
+   ("Supplement").
 2. Rewrite the cross-references that used to point at a *separate* file
    ``geometric_payoff.md`` so they now point at the in-document appendix.
 3. Keep the recurring Chinese idiom 举一反三 as Chinese glyphs (the project's
@@ -33,6 +35,7 @@ HERE = Path(__file__).resolve().parent          # papers/arxiv
 PAPERS = HERE.parent                             # papers
 CORE = PAPERS / "equivariance_generalization_core.md"
 PAYOFF = PAPERS / "geometric_payoff.md"
+LEJEPA = PAPERS / "equivariant_lejepa.md"   # forward-looking theory supplement
 SRC_FIGURES = PAPERS / "figures"                 # papers/figures (source of truth)
 COMBINED = HERE / "_combined.md"
 MAIN_TEX = HERE / "main.tex"
@@ -40,6 +43,23 @@ PREAMBLE = HERE / "preamble_extra.tex"
 README_JSON = HERE / "00README.json"             # arXiv engine selector
 ARXIV_FIGURES = HERE / "figures"                 # papers/arxiv/figures (shipped)
 TARBALL = HERE / "arxiv_upload.tar.gz"           # ready-to-upload source bundle
+
+# --- fonts shipped with the bundle ---------------------------------------
+# We typeset in TeX Gyre Termes (a Times clone -> the NeurIPS/JEPA look). The
+# OTFs are *shipped in the bundle* and loaded by filename, not by family name:
+#  * tectonic resolves fonts from its own bundle by filename and does NOT query
+#    the system fontconfig, so ``\setmainfont{TeX Gyre Termes}`` (by family)
+#    fails locally even though TeXLive has the font.
+#  * shipping the files makes rendering byte-identical locally and on arXiv.
+# These live in TeXLive's tex-gyre / tex-gyre-math trees; we locate them once
+# at build time and mirror them next to main.tex.
+FONT_BASENAMES = [
+    "texgyretermes-regular.otf",
+    "texgyretermes-bold.otf",
+    "texgyretermes-italic.otf",
+    "texgyretermes-bolditalic.otf",
+    "texgyretermes-math.otf",
+]
 
 TITLE = ("Exact equivariance, kept through training, buys zero-shot "
          "generalisation across the symmetry group")
@@ -87,6 +107,7 @@ def _assert_no_math_digit_bug(text: str) -> None:
 def build_combined() -> None:
     core = CORE.read_text(encoding="utf-8")
     payoff = PAYOFF.read_text(encoding="utf-8")
+    lejepa = LEJEPA.read_text(encoding="utf-8")
 
     # --- core: drop the H1 (title comes from pandoc metadata) ---
     core_lines = core.split("\n")
@@ -111,8 +132,29 @@ def build_combined() -> None:
     payoff_body = "\n".join(payoff_lines)
     payoff_body = payoff_body.replace("[[geometric_payoff.md]]", "the full results log")
 
-    # --- stitch with a hard page break (raw LaTeX block) ---
-    combined = core_body + "\n\n```{=latex}\n\\clearpage\n```\n\n" + payoff_body
+    # --- lejepa: becomes a forward-looking supplement; prefix its H1 ---
+    # This is the third part: a theory note connecting the program to the very
+    # recent LeJEPA identifiability line (arXiv:2511.08544 / 2605.26379). Labelled
+    # "Supplement" (not "Appendix B"): the payoff is the unlettered results-log
+    # "Appendix", and the core carries its own internal reproducibility "Appendix
+    # A", so a lettered scheme would collide. Its §1--10 are manual numbers that
+    # coexist with the core's §1--6 and payoff's §0--31 under secnumdepth=-1.
+    lejepa_lines = lejepa.split("\n")
+    assert lejepa_lines[0].startswith("# "), "lejepa line 1 is not an H1"
+    lejepa_lines[0] = "# Supplement --- " + lejepa_lines[0][2:]
+    lejepa_body = "\n".join(lejepa_lines)
+    # Retarget the Sources line's separate-file names at their in-document homes.
+    # The "(core paper §4)" prose refs (in §3/§7 bodies) are left as-is: the core
+    # *is* the main body here, so "core paper §4" reads correctly and keeps them
+    # distinct from the supplement's own §4.
+    lejepa_body = lejepa_body.replace(
+        "`equivariance_generalization_core.md` (flatness theorem, §4), `geometric_payoff.md`",
+        "the core paper (flatness theorem, §4) and the appendix",
+    )
+
+    # --- stitch the three parts with hard page breaks (raw LaTeX blocks) ---
+    pagebreak = "\n\n```{=latex}\n\\clearpage\n```\n\n"
+    combined = core_body + pagebreak + payoff_body + pagebreak + lejepa_body
 
     # --- fix a pandoc-incompatible inline-math fragment ---------------------
     # Pandoc does not close inline math on a ``$`` that is immediately followed
@@ -133,20 +175,40 @@ def build_combined() -> None:
     # below requires it; tectonic is XeTeX-based, and arXiv auto-detects xelatex
     # from the fontspec/xeCJK packages):
     #  * manual section numbers in the prose are authoritative -> kill auto-numbering
-    #  * a handful of Unicode symbols appear in *prose* (text mode); Latin Modern
-    #    lacks them, so map each to its math equivalent via newunicodechar. (→ is
-    #    NOT mapped: Latin Modern renders it fine.)
+    #  * a handful of Unicode symbols appear in *prose* (text mode); the text font
+    #    may lack them, so map each to its math equivalent via newunicodechar
+    #    (including → now that we typeset in TeX Gyre Termes).
     #  * xeCJK + Fandol typesets the 举一反三 glyphs. Fandol is bundled in TeXLive,
     #    so tectonic fetches it locally and arXiv's server already has it -> the
     #    same font on both ends, no install. BoldFont is needed because some
     #    occurrences of 举一反三 sit inside **bold** prose.
     PREAMBLE.write_text(
+        # JEPA/NeurIPS-style layout + fonts. The pandoc template already loads
+        # fontspec+unicode-math under XeLaTeX; we only widen the column and pin
+        # the font families. Fonts load BY FILENAME from the bundle dir (Path=./)
+        # so tectonic (no fontconfig) and arXiv render identically.
+        "\\usepackage[letterpaper,margin=1in]{geometry}\n"
+        "\\setmainfont{texgyretermes}["
+        "Path=./, Extension=.otf, "
+        "UprightFont=*-regular, BoldFont=*-bold, "
+        "ItalicFont=*-italic, BoldItalicFont=*-bolditalic]\n"
+        "\\setmathfont{texgyretermes-math.otf}[Path=./]\n"
+        "\\fvset{fontsize=\\small}\n"
         "\\setcounter{secnumdepth}{-1}\n"
+        # Long snake_case identifiers in \texttt{} (e.g.
+        # test_step26_optimizer_equivariance) overflow narrow table columns
+        # because \_ is non-breaking; make each underscore a legal break point.
+        "\\renewcommand{\\_}{\\textunderscore\\allowbreak}\n"
         "\\usepackage{newunicodechar}\n"
         "\\newunicodechar{≈}{\\ensuremath{\\approx}}\n"
         "\\newunicodechar{↔}{\\ensuremath{\\leftrightarrow}}\n"
         "\\newunicodechar{⇒}{\\ensuremath{\\Rightarrow}}\n"
+        "\\newunicodechar{→}{\\ensuremath{\\rightarrow}}\n"
         "\\newunicodechar{✓}{\\ensuremath{\\checkmark}}\n"
+        # NB: the prime U+2032 ("Prop. 1$'$", "[B/A$'$]") is NOT mapped here -- it
+        # is written as an explicit math prime in the source. unicode-math claims
+        # U+2032 as a math symbol at \begin{document}, overriding any text-mode
+        # newunicodechar binding, so a mapping would lose and error in text mode.
         "\\usepackage{xeCJK}\n"
         "\\setCJKmainfont{FandolSong-Regular.otf}"
         "[BoldFont=FandolSong-Bold.otf, AutoFakeSlant=0.15]\n",
@@ -229,13 +291,52 @@ def copy_figures() -> list[str]:
     return refs
 
 
+def copy_fonts() -> list[str]:
+    """Locate the TeX Gyre Termes OTFs and mirror them next to ``main.tex``.
+
+    tectonic resolves fonts from its bundle by filename and ignores system
+    fontconfig, so the Times-clone families must *travel in the build dir* and be
+    loaded by filename (see the preamble's ``Path=./`` font spec). We find each
+    OTF under the local TeXLive opentype trees -- with a few system font dirs as
+    a fallback -- and copy it into ``papers/arxiv/``. Idempotent: a file already
+    present is left in place. Returns the basenames shipped.
+    """
+    roots = sorted(Path("/usr/local/texlive").glob(
+        "*/texmf-dist/fonts/opentype/public"))
+    roots += [Path("/Library/Fonts"), Path.home() / "Library" / "Fonts",
+              Path("/System/Library/Fonts")]
+    missing = []
+    for name in FONT_BASENAMES:
+        dst = HERE / name
+        if dst.exists():
+            continue  # already shipped -> skip the search (idempotent + fast)
+        found = next(
+            (h for root in roots if root.exists()
+             for h in root.rglob(name)),
+            None,
+        )
+        if found is None:
+            missing.append(name)
+            continue
+        shutil.copy2(found, dst)
+    assert not missing, (
+        f"TeX Gyre Termes OTFs not found on this machine: {missing}. "
+        "Install the tex-gyre / tex-gyre-math TeXLive packages, or copy the "
+        "OTFs into papers/arxiv/ manually."
+    )
+    print(f"fonts/: shipped {len(FONT_BASENAMES)} Termes OTFs -> {HERE}")
+    return list(FONT_BASENAMES)
+
+
 def make_tarball(figures: list[str]) -> None:
-    """Pack the arXiv source bundle: ``main.tex`` + ``00README.json`` + figures.
+    """Pack the arXiv source bundle: ``main.tex`` + ``00README.json`` + figures
+    + the TeX Gyre Termes OTFs.
 
     ``preamble_extra.tex`` is *not* shipped -- pandoc's ``-H`` already inlined its
     content into ``main.tex``'s preamble, so it would be dead weight. Arcnames are
-    repo-root-relative (``main.tex``, ``figures/<name>``) so arXiv sees a flat
-    top-level ``main.tex`` exactly as ``00README.json`` declares.
+    repo-root-relative (``main.tex``, ``figures/<name>``, ``<font>.otf``) so arXiv
+    sees a flat top-level ``main.tex`` -- with the fonts alongside it, matching the
+    preamble's ``Path=./`` -- exactly as ``00README.json`` declares.
     """
     if TARBALL.exists():
         TARBALL.unlink()
@@ -244,8 +345,11 @@ def make_tarball(figures: list[str]) -> None:
         tar.add(MAIN_TEX, arcname=MAIN_TEX.name)
         for name in figures:
             tar.add(ARXIV_FIGURES / name, arcname=f"figures/{name}")
+        for name in FONT_BASENAMES:
+            tar.add(HERE / name, arcname=name)
     size_kb = TARBALL.stat().st_size / 1024
-    print(f"{TARBALL.name}: {2 + len(figures)} members, {size_kb:.0f} KiB")
+    n = 2 + len(figures) + len(FONT_BASENAMES)
+    print(f"{TARBALL.name}: {n} members, {size_kb:.0f} KiB")
 
 
 if __name__ == "__main__":
@@ -253,4 +357,5 @@ if __name__ == "__main__":
     run_pandoc()
     write_arxiv_readme()
     figs = copy_figures()
+    copy_fonts()
     make_tarball(figs)

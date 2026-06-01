@@ -45,6 +45,8 @@ papers/arxiv/00README.json
 papers/arxiv/arxiv_upload.tar.gz
 papers/arxiv/figures/
 papers/arxiv/*.log
+papers/arxiv/main.xdv
+papers/arxiv/*.otf
 
 # --- OS / editor cruft ---
 .DS_Store

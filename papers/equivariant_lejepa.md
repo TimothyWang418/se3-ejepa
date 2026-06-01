@@ -1,24 +1,30 @@
 # Equivariant LeJEPA: symmetry-structured identifiability for latent world models
 
-> **Status:** research note / Direction-1 plan (2026-05-31). Two results are now **proved + instantiated**
-> with seeded, falsifiable experiments: Prop. 1 (C1, block-isotropy; Step 39, extended to the product
-> group $S_O\times SO(3)$ in Step 40) and Prop. 2 (C2, equivariant latent dynamics; Step 41 — the world
-> model resolves the gauge pure SSL leaves free). One remains a **proposition-to-finish** (C3, planning
-> under $G$-invariant cost) with a proof sketch and an existing experiment (Step 38) that instantiates it.
->
-> **The one-paragraph pitch.** LeCun, Balestriero & Klindt now have a *theory* of when a JEPA recovers
-> the world's latent variables: LeJEPA's embeddings are **linearly identifiable up to a global rotation
-> $Q\in O(n)$**, and that rotation is treated as an unavoidable *nuisance* "inherent to the isotropic
-> Gaussian." Their latent-planning guarantee (Thm 5.4) then has to *assume* the cost is invariant under
-> the **entire** $O(n)$. That assumption is physically far too strong, and the $O(n)$ indeterminacy is
-> exactly the slot a **world symmetry group** $G\hookrightarrow O(n)$ lives in. An *equivariant* JEPA
-> replaces the unstructured $O(n)$ nuisance with a known orthogonal representation $\rho(G)$: it (C1)
-> changes the optimal SIGReg target from full isotropy to **block-isotropy** (proved below via Schur),
-> (C2) makes their stationarity condition transportable across group orbits, and (C3) weakens the
-> planning theorem's hypothesis from "$O(n)$-invariant cost" to the realistic "**$G$-invariant cost**"
-> — a regime our Step 38 already verifies. The differentiator is not the plumbing (SIGReg on an
-> equivariant net — anyone can do that) but the **symmetry-structured identifiability theory**, which
-> is absent from their paper and is precisely a representation-theory contribution.
+**Abstract.** LeCun, Balestriero & Klindt now have a *theory* of when a JEPA recovers
+the world's latent variables: LeJEPA's embeddings are **linearly identifiable up to a global rotation
+$Q\in O(n)$**, and that rotation is treated as an unavoidable *nuisance* "inherent to the isotropic
+Gaussian." Their latent-planning guarantee (Thm 5.4) then has to *assume* the cost is invariant under
+the **entire** $O(n)$. That assumption is physically far too strong, and the $O(n)$ indeterminacy is
+exactly the slot a **world symmetry group** $G\hookrightarrow O(n)$ lives in. An *equivariant* JEPA
+replaces the unstructured $O(n)$ nuisance with a known orthogonal representation $\rho(G)$: it (C1)
+changes the optimal SIGReg target from full isotropy to **block-isotropy** (proved below via Schur),
+(C2) makes their stationarity condition transportable across group orbits, and (C3) weakens the
+planning theorem's hypothesis from "$O(n)$-invariant cost" to the realistic "**$G$-invariant cost**"
+— a regime our decoder-free latent-goal–reaching experiment already verifies (§5). The differentiator
+is not the plumbing (SIGReg on an equivariant net — anyone can do that) but the **symmetry-structured
+identifiability theory**, which is absent from their paper and is precisely a representation-theory
+contribution.
+
+**Contributions and status.** Two of the three contributions are **proved and instantiated** with
+seeded, falsifiable experiments; one is a **proposition-to-finish** with a proof sketch and an existing
+experiment that instantiates it.
+
+- **C1** — block-isotropy is the equivariant SIGReg target (Prop. 1): **proved**, instantiated on a
+  mixed-type SO(3) latent (§7) and extended to the product group $S_O\times SO(3)$ (Prop. 1$'$, §8).
+- **C2** — equivariant latent dynamics (Prop. 2): **proved**, instantiated by an equivariant OU world
+  model that resolves the gauge pure SSL leaves free (§4).
+- **C3** — planning under a $G$-invariant (not $O(n)$-invariant) cost (Prop. 3): **proof sketch**,
+  instantiated by the decoder-free latent-goal–reaching experiment (§5).
 
 ---
 
@@ -70,7 +76,7 @@ representation $\rho$.)
   "essentially free."
 - **Thm 5.4 (planning).** Under $h(z)=Qz$ **and a cost invariant under the whole $O(n)$**,
   $\ell(Rz,a)=\ell(z,a)\ \forall R\in O(n)$, latent-space planning is exact:
-  $\hat V^\*(h(z_0))=V^\*(z_0)$ and $\hat a^\*_{1:t}=a^\*_{1:t}$.
+  $\hat V^*(h(z_0))=V^*(z_0)$ and $\hat a^*_{1:t}=a^*_{1:t}$.
 - **Still no group.** Orthogonality is treated as a *nuisance* to quotient; the only "symmetry" is the
   rotation-invariance of the isotropic Gaussian and the (strong) $O(n)$-invariant-cost hypothesis.
 
@@ -169,7 +175,7 @@ expose the blocks — equal scales degenerate the spectrum and re-inflate the ga
 
 ---
 
-## 4. C2 — Equivariant latent dynamics: the world model resolves the gauge SSL leaves free (Step 41)
+## 4. C2 — Equivariant latent dynamics: the world model resolves the gauge SSL leaves free
 
 Their guarantee requires the world to lie in the stationary additive-noise (OU) class, and identifies
 the latent only up to the *static* nuisance $Q\in O(n)$. §3 sharpened the static picture but found the
@@ -222,10 +228,10 @@ The honesty clause from the earlier sketch survives intact: equivariance does **
 world into the OU class — it reduces *verification* of an already-$G$-symmetric world from $\mathbb R^n$
 to $\mathcal F$, and the flatness identity (c) certifies the transport is exact. What is new beyond the
 sketch is (b): the dynamics supply, *for free*, the per-irrep scale separation pure SSL leaves
-underdetermined (§7) — the predictor **is** the "scale-sensitive task" Step 40 [E2] had to install by
+underdetermined (§7) — the predictor **is** the "scale-sensitive task" §8 [E2] had to install by
 hand, here handed over by the world itself.
 
-### 4.1 Minimal experiment — built and run (Step 41, laptop CPU, seeded)
+### 4.1 Minimal experiment — built and run (laptop CPU, seeded)
 
 `experiments/step41_equivariant_dynamics.py` (+ `tests/test_step41_equivariant_dynamics.py`, 9 gates)
 instantiates Prop. 2 on the same mixed-type latent as §7: $n=22$,
@@ -248,7 +254,7 @@ rotation-invariant Frobenius norm, so even a wrong drift looks flat in expectati
 on the anisotropic law, where a non-equivariant world genuinely varies — a principled fix, not a loosened
 threshold.)
 
-**[B/A′] Predictor equivariance, init and post-training.** A mixed-type equivariant predictor (a
+**[B/A$'$] Predictor equivariance, init and post-training.** A mixed-type equivariant predictor (a
 Vector-Neuron channel-mix gated by invariant features, with cross-type *capacity*) is exactly equivariant
 at init ($3.6\times10^{-7}$) and **stays so after 30 epochs** of one-step-MSE training
 ($7.2\times10^{-7}$); the MLP control misses by $\sim0.63$ at init and $1.15$ after training.
@@ -285,14 +291,14 @@ removed). A run that fails to separate reports `INCONCLUSIVE` rather than relaxi
 
 Confidence: Prop. 2(a) **0.9** (Schur $+$ Lyapunov, same rigour as Prop. 1); the gauge-resolution (b)
 **0.85** as a target-class statement (distinct $r_i$ is the live hypothesis — the exact mirror of §7's
-distinct-scale condition) and **0.7** realised on a learned net (Step 41 [D] reaches $159$, but so does
+distinct-scale condition) and **0.7** realised on a learned net (§4.1 [D] reaches $159$, but so does
 the MLP in-distribution; equivariance is what makes the rung *transport*, [E]); the orbit-transport
 flatness (c) **0.85** (a clean identity, certified to $10^{-6}$). C2 overall **0.8** — upgraded from the
 0.65 sketch now that it is a theorem with a falsifiable experiment.
 
 ---
 
-## 5. C3 — Planning under $G$-invariant (not $O(n)$-invariant) costs; Step 38 is the instance
+## 5. C3 — Planning under $G$-invariant (not $O(n)$-invariant) costs
 
 Thm 5.4 needs the cost invariant under **all** of $O(n)$. Under an equivariant encoder whose
 identifiability is pinned to $\rho(G)$ (C1, distinct-scale case), the same argument goes through under
@@ -301,25 +307,25 @@ the strictly weaker, physically natural hypothesis:
 **Proposition 3 (equivariant planning, sketch).** If $h(z)=\rho(g_0)\,z$ for some fixed $g_0$ (recovery
 up to the world symmetry, not arbitrary $O(n)$) and the cost is **$G$-invariant**,
 $\ell(\rho(g)z,a\cdot g)=\ell(z,a)\ \forall g\in G$ (with the induced action on actions), then latent
-planning is exact: $\hat V^\*(h(z_0))=V^\*(z_0)$ and the optimal action sequences coincide up to the
+planning is exact: $\hat V^*(h(z_0))=V^*(z_0)$ and the optimal action sequences coincide up to the
 group action. The proof mirrors 5.4 but only invokes invariance under $\rho(G)\subset O(n)$.
 
-**This is already verified.** Step 38 (latent-goal reaching *without a decoder*): an SE(3)-invariant
+**This is already verified.** The decoder-free latent-goal–reaching experiment: an SE(3)-invariant
 reaching cost, planned by an equivariant CEM planner directly in the latent, reaches **identically
 across the SE(3) orbit** — OOD/seen ratio $1.000$, CI $[1.000,1.000]$ — versus a non-equivariant MLP
-planner at $\times1.745$. That is exactly Thm 5.4's conclusion ($\hat V^\*=V^\*$, matched optimal
+planner at $\times1.745$. That is exactly Thm 5.4's conclusion ($\hat V^*=V^*$, matched optimal
 actions) holding in the regime their theorem does **not** cover (a $G$-invariant, *not* $O(n)$-
-invariant, cost). Step 38 is the experiment a referee would demand for Prop. 3, and we ran it before we
+invariant, cost). It is the experiment a referee would demand for Prop. 3, and we ran it before we
 knew it was the experiment. Confidence 0.75 (sound given C1's gauge-pinning; the one dependency is that
 the encoder's residual gauge really is $\rho(G)$, i.e. C1's distinct-scale hypothesis).
 
 ---
 
-## 6. A bridge already built: Step 32 ↔ their Hermite spectral penalty
+## 6. A bridge already built: the degree ladder ↔ their Hermite spectral penalty
 
 Thm 5.1's forward direction is a **Hermite-degree** spectral decomposition: each degree of nonlinearity
-strictly reduces positive-pair correlation, so the linear map wins. Our **Step 32** built a predictor
-with a *tunable* maximum polynomial degree, $d_{\max}(L)=2^L$ (the `VNTPLadderPredictor`), and showed a
+strictly reduces positive-pair correlation, so the linear map wins. We built a predictor
+with a *tunable* maximum polynomial degree, $d_{\max}(L)=2^L$ (the degree-ladder predictor), and showed a
 degree-3 interaction target is first representable at rung $L=2$. So our degree ladder is a
 **constructive, equivariant** realisation of their spectral-degree analysis: their scalar-Hermite basis
 is the $G$-trivial case, and the equivariant generalisation replaces Hermite polynomials by the
@@ -330,7 +336,7 @@ opportunity, not yet a result).
 
 ---
 
-## 7. Minimal experiment — built and run (Step 39, laptop CPU, seeded)
+## 7. Minimal experiment for C1 — built and run (laptop CPU, seeded)
 
 `experiments/step39_block_sigreg.py` (+ `tests/test_step39_block_sigreg.py`) realises C1 on a mixed-type
 SO(3) point-cloud latent: $n_0=4$ invariant scalars (`0e`) and $n_1=6$ vectors (`1o`), so
@@ -376,7 +382,7 @@ regardless. (This is structural — it already holds at init — so the test nee
 
 **[E] 举一反三 (the payoff).** A *type-respecting* linear probe $\hat y=\sum_a w_a v_a$ fitted on a thin
 $z$-rotation wedge transfers across **all** of SO(3): OOD/seen relMSE $\times0.98$ (flat). The MLP's affine
-probe degrades $\times8455$ off the wedge. This is the equivariance-flatness theorem (§4) made concrete on
+probe degrades $\times8455$ off the wedge. This is the equivariance-flatness theorem (core paper §4) made concrete on
 the LeJEPA-regularised latent.
 
 **Honest negative finding — and why it doesn't dent the claim.** [D] reports the *learned* per-irrep scale
@@ -406,7 +412,7 @@ rather than relaxing a threshold — so every headline number has a way to be wr
 
 ---
 
-## 8. Direction 3 — compositional bi-block-SIGReg on a product symmetry $S_O\times SO(3)$ (Step 40)
+## 8. Direction 3 — compositional bi-block-SIGReg on a product symmetry $S_O\times SO(3)$
 
 §7 proved block-SIGReg on a **single** object's SE(3)-type structure. The open question it leaves: does a
 *product* symmetry buy a strictly finer identifiability rung that single-object block-SIGReg cannot reach? A
@@ -414,7 +420,7 @@ scene of several interchangeable, individually-rotating objects is the natural t
 $S_O\times SO(3)$ (relabel the objects $\times$ rotate them as one rigid frame), and that product is exactly
 what an object-centric world model must respect.
 
-**Prop. 1′ (product-group block-isotropy).** Take a scene of $O$ distinguishable objects, each carrying
+**Prop. 1$'$ (product-group block-isotropy).** Take a scene of $O$ distinguishable objects, each carrying
 $n_0$ scalar features ($0e$) and $n_1$ vector features ($1o$). The scene latent lives in
 $\mathbb R^{O}\otimes\mathbb R^{D_{\mathrm{obj}}}$ and carries the **outer-tensor** representation
 $P\boxtimes\rho_{SE3}$ of $S_O\times SO(3)$, where $P$ is the $O$-dimensional permutation rep and
@@ -443,20 +449,20 @@ the ladder is a property of the law, not of the chart.
 **[A] Objective level (deterministic, gated).** Bi-block-SIGReg is flat ($\approx3\times10^{-5}$) on every
 block-isotropic law, while vanilla isotropic-SIGReg grows $\times86$ on a distinct-scale bi-type law. The
 compositional separation is the headline: on a *within-type* $S_O$ split (trivial vs. standard scaled
-differently at a fixed SO(3)-type budget) the Step-39 SE(3)-block objective **grows $\times247$** — it
+differently at a fixed SO(3)-type budget) the §7 SE(3)-block objective **grows $\times247$** — it
 literally cannot represent the split — while bi-block stays flat ($\times1.00$). Anti-vacuity holds:
 bi-block **spikes $\times100$** on a spatially-anisotropic $(\mathbf{std},1o)$ block
-($\mathrm{cov}\not\propto\mathbf I_3$, outside Prop. 1′). And the deterministic spectral gauge lands exactly
+($\mathrm{cov}\not\propto\mathbf I_3$, outside Prop. 1$'$). And the deterministic spectral gauge lands exactly
 on the ladder — se3-type law $\to304$ (clusters $[24,8]$), bi-type law $\to184$ (clusters $[18,6,6,2]$) —
 stable for every clustering `gap_factor` in $\{1.5,2,3,4\}$ inside the separating window $(1,9)$.
 
-**[B / A′] Exact equivariance, init and post-training.** The scene encoder is per-object SE(3)-equivariant,
+**[B / A$'$] Exact equivariance, init and post-training.** The scene encoder is per-object SE(3)-equivariant,
 $S_O$-permutation-equivariant, and translation-invariant to the float floor at init (scalar-inv
 $1.8\times10^{-7}$, vector-equiv $4.3\times10^{-6}$, perm $0$, trans-inv $5.7\times10^{-6}$), and faithful
 LeJEPA training does **not** damage it (post-train $1.2\times10^{-7}$ / $1.7\times10^{-6}$ / perm $0$). The
 MLP control is perm-equivariant by construction but has no rotation prior ($0.32/5.50$ after training).
 
-**[C] Prop. 1′ on the learned latent + negative control.** On the $S_O\times SO(3)$-invariant (Haar $+$
+**[C] Prop. 1$'$ on the learned latent + negative control.** On the $S_O\times SO(3)$-invariant (Haar $+$
 permute) law the trained equivariant latent is bi-block-isotropic: the six cross-block couplings collapse
 (cross $=0.030$) and each $1o$ block is $3\times3$-isotropic (iso_rel $1.06$); the MLP fails (cross $0.80$).
 The **negative control** is the sharp one: the *same* equivariant encoder on a **fixed-slot** law (still
@@ -466,7 +472,7 @@ metric that passes regardless.
 
 **[E1] 举一反三 across *both* groups.** A type-respecting relational probe fitted on one seen slice transfers
 flat across all of SO(3) **and** all of $S_O$: rot-OOD/seen $\times1.01$, perm-OOD/seen $\times0.99$. The MLP
-degrades $\times789$ under rotation and $\times2079$ under relabeling. The equivariance-flatness theorem (§4)
+degrades $\times789$ under rotation and $\times2079$ under relabeling. The equivariance-flatness theorem (core paper §4)
 now holds on the *product* group — the relational content is genuinely permutation- and rotation-robust.
 
 **[D / E2] The honest boundary — and a sharper lesson.** As in §7, the *learned* per-block scales are
@@ -486,7 +492,7 @@ transferable finding.
 **Controls & falsifiability.** Seeds fixed (full run reproducible); smoke vs. full sizes; a dedicated
 covariance sample ($N=6144$) for [C]/[D]; equivariance asserted init $+$ post-training. The full run gates
 **nine** deterministic/structural claims (the compositional separation, anti-vacuity, the gauge ladder and
-its robustness sweep, exact equivariance, Prop. 1′ and its negative control, dual-group 举一反三), mirrored by
+its robustness sweep, exact equivariance, Prop. 1$'$ and its negative control, dual-group 举一反三), mirrored by
 **seven** mechanism guards in `tests/test_step40_compositional_sigreg.py`. [E2] is explicitly an **un-gated
 diagnostic**, not a pass/fail gate — per the standing rule, a run that fails to separate reports
 `INCONCLUSIVE` rather than relaxing a threshold.
@@ -495,52 +501,53 @@ diagnostic**, not a pass/fail gate — per the standing rule, a run that fails t
 
 ## 9. Honest scope, risks, confidence
 
-- **The user's own worry is correct and worth stating in the application:** the *plumbing* (SIGReg on
-  an equivariant net) is easy and AMI could do it in an afternoon. The contribution is **not** the
-  plumbing — it is the **symmetry-structured identifiability theory** (C1's block-isotropy + gauge
-  refinement, C3's weakening of the planning hypothesis), which is *absent* from 2605.26379 and is a
-  representation-theory result. Lead with the theorem, not the code.
-- **Novelty risk.** They may already be moving this way internally; symmetry is the obvious next axis.
-  Mitigant: the specific refinement (turn $O(n)$-up-to into $\rho(G)$-up-to; block-isotropy as the
-  SIGReg target; $G$-invariant-cost planning) is concrete and provable now, and we have two experiments
-  (Steps 38, 32) already on the board. Speed matters — this is a 6-day-old paper.
+- **The contribution is the theory, not the plumbing.** Implementing SIGReg on an equivariant network
+  is routine. The contribution is **not** that engineering — it is the **symmetry-structured
+  identifiability theory** (C1's block-isotropy + gauge refinement, C3's weakening of the planning
+  hypothesis), which is *absent* from arXiv:2605.26379 and is a representation-theory result. The
+  theorem, not the code, is what is new.
+- **Novelty risk.** Symmetry is an obvious next axis, so concurrent work is plausible. What is concrete
+  here: the specific refinement (turn $O(n)$-up-to into $\rho(G)$-up-to; block-isotropy as the SIGReg
+  target; $G$-invariant-cost planning) is provable now, with two experiments already instantiating it —
+  the $G$-invariant-cost planner (§5) and the degree ladder (§6). The identifiability paper it builds on
+  is recent (arXiv:2605.26379, 2026-05-25).
 - **Degenerate cases — now demonstrated, not just feared.** Equal per-irrep scales collapse the gauge
-  refinement back to $O(n)$ (Step 39 [A]: gauge $231$); the clean $\rho(G)$-commutant result needs
-  *distinct* scales / multiplicity-freeness. Crucially, Step 39 showed pure SSL does **not** by itself
+  refinement back to $O(n)$ (§7 [A]: gauge $231$); the clean $\rho(G)$-commutant result needs
+  *distinct* scales / multiplicity-freeness. Crucially, §7 showed pure SSL does **not** by itself
   produce distinct scales (the split is underdetermined), so the sharp gauge claim is a statement about
   the objective's *target class* (proved + shown deterministically), and *realising* it on a trained
   encoder needs a per-irrep task signal — stated plainly as the honest boundary of C1. **Direction 3
-  (Step 40, §8) extends this to the product group $S_O\times SO(3)$:** the compositional rung
+  (§8) extends this to the product group $S_O\times SO(3)$:** the compositional rung
   $304\to184$ is reachable as a target-class statement (deterministic [A]), and a **scale-sensitive**
   relational task partially realises it on the learned net (gauge $288\to240$, toward $184$) where a
-  *scale-invariant* free-fit task — zero scale pressure — provably cannot. **Direction 2 (Step 41, §4)
+  *scale-invariant* free-fit task — zero scale pressure — provably cannot. **Direction 2 (§4)
   closes the loop the other way:** instead of a hand-built task, a $G$-equivariant *world* (an OU
   transition commuting with $\rho$) supplies the per-irrep signal for free — distinct dynamics $r_i$ at
   equal stationary scale make the *dynamical* gauge $231\to159$ where the *static* covariance is stuck at
   $O(22)$, and the learned equivariant predictor realises that rung and transports it across the orbit
   ([E], $\times1.02$). The scale-sensitive signal §8 installs by hand is, in a world model, just the
   dynamics.
-- **Honest confidences:** Prop. 1 0.95 (proof verified + empirically at the noise floor); Prop. 1′
+- **Honest confidences:** Prop. 1 0.95 (proof verified + empirically at the noise floor); Prop. 1$'$
   (product-group block-isotropy) 0.9 (same Schur argument; [C] at the floor + a passing negative control);
   block-SIGReg-as-target 0.8; gauge refinement *as a target-class statement* 0.85, *as something SSL
-  reaches unaided* 0.35 (Step 39 negative finding); the compositional rung $304\to184$ *as a target-class
-  statement* 0.85, *as something a scale-sensitive task realises on the learned net* 0.4 (Step 40 [E2]:
+  reaches unaided* 0.35 (§7 negative finding); the compositional rung $304\to184$ *as a target-class
+  statement* 0.85, *as something a scale-sensitive task realises on the learned net* 0.4 (§8 [E2]:
   moves $288\to240$, not to $184$); **C2 (Prop. 2, equivariant dynamics) 0.8** — upgraded from a 0.65
-  sketch to a theorem $+$ falsifiable experiment (Step 41): the dynamical gauge ladder $231\to159$ is
+  sketch to a theorem $+$ falsifiable experiment (§4.1): the dynamical gauge ladder $231\to159$ is
   deterministic (2a/2b), orbit-transport flatness is certified to $10^{-6}$ (2c), and the learned net
   realises the $159$ rung — *realised-on-a-learned-net* 0.7 (the MLP reaches it in-distribution too;
-  equivariance is what makes it transport off-orbit, [E]); C3 0.75; Step 32↔Hermite 0.4; "this becomes a
-  paper AMI cares about" 0.6.
+  equivariance is what makes it transport off-orbit, [E]); C3 0.75; the degree-ladder↔Hermite bridge (§6) 0.4; "this becomes a
+  publishable contribution" 0.6.
 
-## 10. Why this strengthens an AMI application
+## 10. Discussion: what is new, and where it sits in the program
 
-It demonstrates, on their *newest* theory paper, the exact profile a world-model lab is short on: a
-mathematician who (1) reads the identifiability theory closely enough to find that $O(n)$ is doing too
-much work, (2) **proves** the symmetry-structured refinement (Schur), (3) already has the experiments
-(Step 38 = $G$-invariant-cost planning; Step 32 = constructive degree spectrum) that instantiate the
-refined theorems, and (4) frames it as "here is the next theorem in your program," not "here is a model
-I trained." The narrative writes itself: *LeJEPA recovers the world up to a rotation; equivariance
-recovers it up to the world's symmetry — and that is what a world model is supposed to do.*
+This work builds on the identifiability program of arXiv:2605.26379 and advances it on one axis. It
+(1) locates where the $O(n)$ indeterminacy is doing too much work, (2) **proves** the symmetry-structured
+refinement (Schur), (3) instantiates the refined theorems with experiments already on the board
+($G$-invariant-cost planning, §5; a constructive degree spectrum, §6), and (4) is framed as the *next
+theorem* in that program rather than as a trained model. The one-line summary: *LeJEPA recovers the
+world up to a rotation; equivariance recovers it up to the world's symmetry — which is what a world
+model is supposed to do.*
 
 ---
 
@@ -548,4 +555,4 @@ recovers it up to the world's symmetry — and that is what a world model is sup
 - LeJEPA — Balestriero & LeCun, arXiv:2511.08544.
 - When Does LeJEPA Learn a World Model? — Klindt, LeCun & Balestriero, arXiv:2605.26379 (2026-05-25).
 - This project: `equivariance_generalization_core.md` (flatness theorem, §4), `geometric_payoff.md`
-  (Step 32 degree ladder §…, Step 38 latent-goal reaching §30).
+  (the degree ladder, §24; latent-goal reaching, §30).
