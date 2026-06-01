@@ -1,0 +1,219 @@
+{
+  "mode": "SMOKE",
+  "config": {
+    "BUDGET_RUNGS": [
+      "B16-nout16",
+      "B24-nout24",
+      "B32-nout32",
+      "B48-nout48"
+    ],
+    "ORACLES": [
+      "ORACLE-unit"
+    ],
+    "labels": {
+      "B16-nout16": "nout16 D48 [a,r]",
+      "B24-nout24": "nout24 D72 [a,r]",
+      "B32-nout32": "nout32 D96 [a,r]",
+      "B48-nout48": "nout48 D144 [a,r]",
+      "ORACLE-unit": "points [a,r_hat]",
+      "MLP-MP": "MLP [a,r]"
+    },
+    "n_out_vec": {
+      "B16-nout16": 16,
+      "B24-nout24": 24,
+      "B32-nout32": 32,
+      "B48-nout48": 48
+    },
+    "LMAX_FIXED": 2,
+    "MUL_FIXED": 8,
+    "HIDDEN_DIM": 72,
+    "SEEDS": [
+      0
+    ],
+    "N_TRAIN": 150,
+    "N_TEST": 64,
+    "EPOCHS": 3,
+    "K_OOD": 2,
+    "VAR_COEF": 0.1,
+    "C_INT": 0.8,
+    "AUG": 6,
+    "D_OBJ_ORACLE": 72
+  },
+  "params": {
+    "B16-nout16": 65304,
+    "B24-nout24": 67928,
+    "B32-nout32": 70552,
+    "B48-nout48": 75800,
+    "ORACLE-unit": 65408,
+    "MLP-MP": 62304
+  },
+  "indist_per_seed": {
+    "B16-nout16": [
+      0.8120609521865845
+    ],
+    "B24-nout24": [
+      0.8937249183654785
+    ],
+    "B32-nout32": [
+      0.8998277187347412
+    ],
+    "B48-nout48": [
+      0.9261432886123657
+    ],
+    "ORACLE-unit": [
+      0.8727339506149292
+    ],
+    "MLP-MP": [
+      10.794533729553223
+    ]
+  },
+  "ood_ratio_per_seed": {
+    "B16-nout16": [
+      1.0000000366996127
+    ],
+    "B24-nout24": [
+      0.9999997999228503
+    ],
+    "B32-nout32": [
+      0.999999867519874
+    ],
+    "B48-nout48": [
+      0.9999998712841836
+    ],
+    "ORACLE-unit": [
+      0.9999998634070676
+    ],
+    "MLP-MP": [
+      2.9416774914923187
+    ]
+  },
+  "se3_per_seed": {
+    "B16-nout16": [
+      2.2239983081817627e-06
+    ],
+    "B24-nout24": [
+      5.21540641784668e-06
+    ],
+    "B32-nout32": [
+      4.980713129043579e-06
+    ],
+    "B48-nout48": [
+      3.3676624298095703e-06
+    ],
+    "ORACLE-unit": [
+      7.152557373046875e-07
+    ],
+    "MLP-MP": [
+      0.8971828818321228
+    ]
+  },
+  "perm_per_seed": {
+    "B16-nout16": [
+      0.0
+    ],
+    "B24-nout24": [
+      0.0
+    ],
+    "B32-nout32": [
+      0.0
+    ],
+    "B48-nout48": [
+      0.0
+    ],
+    "ORACLE-unit": [
+      0.0
+    ],
+    "MLP-MP": [
+      0.0
+    ]
+  },
+  "indist_mean": {
+    "B16-nout16": 0.8120609521865845,
+    "B24-nout24": 0.8937249183654785,
+    "B32-nout32": 0.8998277187347412,
+    "B48-nout48": 0.9261432886123657,
+    "ORACLE-unit": 0.8727339506149292,
+    "MLP-MP": 10.794533729553223
+  },
+  "indist_std": {
+    "B16-nout16": 0.0,
+    "B24-nout24": 0.0,
+    "B32-nout32": 0.0,
+    "B48-nout48": 0.0,
+    "ORACLE-unit": 0.0,
+    "MLP-MP": 0.0
+  },
+  "ood_ratio_mean": {
+    "B16-nout16": 1.0000000366996127,
+    "B24-nout24": 0.9999997999228503,
+    "B32-nout32": 0.999999867519874,
+    "B48-nout48": 0.9999998712841836,
+    "ORACLE-unit": 0.9999998634070676,
+    "MLP-MP": 2.9416774914923187
+  },
+  "se3_mean": {
+    "B16-nout16": 2.2239983081817627e-06,
+    "B24-nout24": 5.21540641784668e-06,
+    "B32-nout32": 4.980713129043579e-06,
+    "B48-nout48": 3.3676624298095703e-06,
+    "ORACLE-unit": 7.152557373046875e-07,
+    "MLP-MP": 0.8971828818321228
+  },
+  "perm_mean": {
+    "B16-nout16": 0.0,
+    "B24-nout24": 0.0,
+    "B32-nout32": 0.0,
+    "B48-nout48": 0.0,
+    "ORACLE-unit": 0.0,
+    "MLP-MP": 0.0
+  },
+  "conv_per_seed": {
+    "B16-nout16": [
+      0.0
+    ],
+    "B24-nout24": [
+      0.0
+    ],
+    "B32-nout32": [
+      0.0
+    ],
+    "B48-nout48": [
+      0.0
+    ],
+    "ORACLE-unit": [
+      0.0
+    ],
+    "MLP-MP": [
+      0.0
+    ]
+  },
+  "conv_mean": {
+    "B16-nout16": 0.0,
+    "B24-nout24": 0.0,
+    "B32-nout32": 0.0,
+    "B48-nout48": 0.0,
+    "ORACLE-unit": 0.0,
+    "MLP-MP": 0.0
+  },
+  "ok_converged": true,
+  "cap": 0.8120609521865845,
+  "mlp": 10.794533729553223,
+  "gap": -9.982472777366638,
+  "oracle_unit": 0.8727339506149292,
+  "widest": 0.9261432886123657,
+  "best_budget": 0.8120609521865845,
+  "best_budget_variant": "B16-nout16",
+  "widest_gap_closed_frac": 0.01142826421570027,
+  "best_budget_gap_closed_frac": -0.0,
+  "oracle_gap_closed_frac": 0.006077952806033114,
+  "saturation_residual_ratio": 0.3969727624527952,
+  "reading": "budget_not_cap",
+  "verdict": {
+    "passed": true,
+    "ok_equiv": true,
+    "ok_global_flat": true,
+    "ok_mlp_degrades": true,
+    "ok_converged": true,
+    "ok_conclusive": true
+  }
+}
