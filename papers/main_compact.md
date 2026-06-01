@@ -73,19 +73,22 @@ determines* the model on the entire orbit (举一反三). We verify this end-to-
 (CPU/MPS, fully seeded), and make three claims. **[A]** the symmetry **survives a real Muon/AdamW $+$ EMA
 $+$ VICReg run** — composed residual $\sim\!10^{-6}$ *after* optimisation, under *any* optimiser, because
 the Vector-Neuron/`e3nn` weights parametrise the intertwiner space **intrinsically**. **[B]** one-step
-error is **flat to five digits across the group** while a same-class non-equivariant baseline fits the
-slice but breaks out-of-distribution (VN $\times1.00$ vs baseline $\times13.8$ in 2D latent, $\times17.2$
-in 3D, $\times157$ over the full $\mathrm{SE}(3)$ ladder), the equivariant model **$4.5$–$7.4\times$
-smaller** and frequently *better* in-distribution. **[C]** under a *matching* equivariant planner the
+error is **flat to five digits across the group** while a **higher-capacity, identically-trained**
+non-equivariant baseline (*no* augmentation) fits the slice but breaks out-of-distribution (VN
+$\times1.00$ vs the non-augmented baseline's $\times13.8$ in 2D latent, $\times17.2$ in 3D, $\times157$
+over the full $\mathrm{SE}(3)$ ladder; given the group, augmentation closes the across-group *task* ratio
+to $\times1.06$–$1.46$ but never the float-floor exactness, §7), the equivariant model **$4.5$–$7.4\times$
+smaller** but with **no in-distribution edge** (a wash-to-loss at scale, §7). **[C]** under a *matching* equivariant planner the
 realised control trajectory at orientation $g$ is exactly $\rho(g)$ applied to the seen trajectory —
 **float-floor-exact in 2D/$\mathrm{SO}(2)$** on real PushT and **statistically flat in
 3D/$\mathrm{SE}(3)$**. We then extract a **design rule** for the regime where the equivariant class
 *under-fits in-distribution*: do not relax the prior (that would forfeit [B], which is free), but
 **localise which lossy component caps the fit and widen it**, read off a *recovery-then-saturation*
-fingerprint. Across three sweeps the predictor degree recovers-then-saturates (a missing cross-product
+fingerprint. Across four sweeps the predictor degree recovers-then-saturates (a missing cross-product
 primitive), the message is null ($\times1.02$), and a *lossless* point-cloud oracle through the *same*
-predictor closes $156\%$ of the gap while a fixed-budget encoder ladder closes only $29\%$ — pinning the
-residual cap on the **encoder's lossy translation-invariant latent**. We are explicit about scope (§7):
+predictor **solves** the task ($>\!150\%$ of the gap, past the MLP) while neither the encoder's internal
+capacity ($29\%$) nor its output budget (swept $3\times$, $21\%$) recovers — localising the residual cap on
+the **encoder's lossy *pooled* latent, not its width**. We are explicit about scope (§7):
 no binary task-success claim, [C] needs a matching planner, and against Sutton's Bitter Lesson
 augmentation/scale/soft-equivariance each close at most the across-group *task* metric, never the
 architecture's float-floor *exactness*.
@@ -110,7 +113,7 @@ $\mathrm{SO}(3)$ (3D point clouds), and a closed-loop corollary. All experiments
 >
 > **[B] one-step prediction error is *exactly flat* across the whole group** — fitting the
 > dynamics on a restricted slice of orientations *determines* it on the entire orbit
-> (举一反三), whereas a non-equivariant baseline of the same hypothesis class fits the slice
+> (举一反三), whereas a higher-capacity non-equivariant baseline fits the slice
 > but breaks out-of-distribution; and
 >
 > **[C] under a *matching* equivariant planner the result extends to closed loop** — the
@@ -127,7 +130,7 @@ $\mathrm{SO}(3)$ (3D point clouds), and a closed-loop corollary. All experiments
 >
 > We show [A]/[B] for $G=\mathrm{SO}(2)$ on a **real** contact-rich simulator (PushT) and for
 > $G=\mathrm{SO}(3)$ on 3D **point clouds**, with the equivariant model **$4.5$–$7.4\times$
-> smaller** and frequently *better* in-distribution; [C] on real-PushT pose control (2D/SO(2))
+> smaller** but with **no in-distribution edge** (a wash-to-loss at scale, §7); [C] on real-PushT pose control (2D/SO(2))
 > and, lifted, on 3D point clouds under the full SE(3) group (§3.3). We make
 > **no** claim here about *binary* task-success sweeps or scaling (§7), and [C] requires the
 > **planner** to share the symmetry (§3.3).
@@ -139,7 +142,7 @@ five digits; [C] is that *same* theorem applied to the realised closed-loop traj
 
 > **Figure 1.** The claim, as the three error bars a sceptic asks for. **(a)** OOD/seen
 > prediction-error factor: the equivariant model is flat ($\approx\!\times1$) across every setting
-> while the same-class baseline blows up $\times13$–$\times157$ (§3.2). **(b)** Five *independently
+> while the (non-augmented) baseline blows up $\times13$–$\times157$ (§3.2). **(b)** Five *independently
 > trained* models, real-PushT closed-loop pose control: the VN's seen-vs-unseen block-angle sits on
 > $y=x$ ($\Delta=-1.0°$) while the baseline sits above it ($\Delta=+9.6°$) — the contrast is the
 > *architecture*, not the seed. **(c)** Deliberately breaking the SO(3) symmetry: the prior's OOD error
@@ -157,9 +160,10 @@ five digits; [C] is that *same* theorem applied to the realised closed-loop traj
   $\times13.8$/$\times17.2$/$\times157$, at $4.5$–$7.4\times$ fewer parameters.
 - **A closed-loop corollary (§3.3)** — Result **[C]**: float-floor-exact in 2D, statistically flat in 3D.
 - **A *design rule* for the in-distribution cap (§4 — new).** When the equivariant class under-fits
-  in-distribution, *enrich the class, don't drop the prior*: a recovery-then-saturation triangulation
-  (predictor degree / message / encoder) **localises the residual cap to the encoder's lossy latent**,
-  and the across-group [B] exactness is unaffected throughout.
+  in-distribution, *enrich the class, don't drop the prior*: a lossless oracle (decisive) plus a
+  recovery-then-saturation triangulation (predictor degree / message / encoder capacity / output budget)
+  **localises the residual cap to the encoder's lossy *pooled* latent**, and the across-group [B]
+  exactness is unaffected throughout.
 - **An honest Bitter-Lesson bracket (§5, §7).** Augmentation given the whole group, scale at partial
   coverage, and a soft-equivariant interpolation each close at most the across-group *task* metric, never
   the architecture's float-floor *exactness*.
@@ -211,7 +215,20 @@ $$ \boxed{\;\mathrm{relMSE}(g\cdot\mathcal{D}) = \mathrm{relMSE}(\mathcal{D})\qu
 No step refers to the weights, so the identity holds at every point of training. $\qquad\blacksquare$
 
 The OOD curve is **mathematically forced** to be flat ($\times1.00$); the only deviations we observe
-($\le0.2\%$) are the floating-point floor.
+($\le0.2\%$) are the floating-point floor. **(H2) is met by construction:** the whole latent is $C$ copies
+of the standard rep, so $\rho(g)=I_C\otimes R(g)$ is a *single* orthogonal action on all of
+$\mathbb R^{dC}$ ($\rho^\top\rho=I$) — no per-channel gauge to spoil the isometry.
+
+**What the measured $\times1.00$ does and does not establish.** Since Proposition 1 *forces* the OOD
+factor to exactly $1$ whenever (H1)–(H3) hold, the empirical `group/seen` $=1.0000$ is **not, by
+itself, the decisive result** — it is an **implementation check** that encoder, predictor and latent
+action really are equivariant *in code* (a bug breaking (H1)/(H3) would show up as a deviation above
+the $\le0.2\%$ float floor). The two *contentful* claims sit either side of it: **(a)** that
+(H1)/(H3) **survive a real training run** ($\sim\!10^{-6}$ residual *after* Muon/AdamW$+$EMA$+$VICReg,
+Result [A], §3.1; §2.3 says why optimisation cannot corrupt it), and **(b)** that a non-equivariant
+baseline on the **same data** fails the across-group test ($\times13$–$\times157$, Result [B], §3.2).
+The theorem turns $\times1.00$ into a *falsifiable prediction*; [A] and the baseline contrast carry
+the empirical weight.
 
 **Corollary 1 (closed-loop orientation-invariance, why [C] is the *same* theorem).** *Add* **(H4)** *the
 planner is $G$-equivariant — its sampling distribution and constraint set commute with the group (an
@@ -244,12 +261,22 @@ This does **not** touch our models. Equivariance of $x\mapsto Wx$ means $W$ lies
 $\mathcal C=\{W:W\rho(g)=\rho'(g)W\}$, a linear subspace. Our layers are **intrinsic**: `VNLinear`/`e3nn`
 store a channel-mixing $M$ and realise $W=M\otimes I_d\in\mathcal C$ for *every* $M$ — the parametrisation's
 whole image *is* the commutant, so the residual is identically zero for any weights and **any** optimiser
-keeps it exact. §3.1 confirms it across three optimisers; the contrast is *extrinsic* equivariance, a free
+keeps it exact. The same closure covers the equivariant nonlinearities (`VNReLU`, `e3nn` gated/tensor-product
+layers — each equivariant for *every* parameter value, their free weights being invariant gates or per-path
+scalars on Clebsch–Gordan-fixed couplings), so the whole map $F$, not just its linear pieces, sits in the
+commutant. §3.1 confirms it across three optimisers; the contrast is *extrinsic* equivariance, a free
 dense $W$ merely *initialised* in $\mathcal C$, which drifts off.
 
 ---
 
 ## 3. The symmetry survives, and generalises across the group
+
+> **Confidence rubric (for the `Confidence ≈ x` verdicts below).** $\approx0.9$ — a theorem realised
+> to its float/equivariance floor, with a paired or multi-seed error bar I would stake the paper on.
+> $\approx0.85$ — same mechanism, but the *measurement* carries a residual I cannot fully kill (a CEM
+> tie-flip floor, a single-pair closed loop, the 3D statistical-vs-literal gap). $\approx0.6$ — a
+> *generalisation beyond what was measured* (e.g. "no in-distribution edge persists at scale"):
+> directionally supported, not proven.
 
 ### 3.1 [A] — the learned symmetry survives optimisation
 
@@ -271,11 +298,12 @@ $\mathbf{0.665}$. Parametrisation dominates; the optimiser is a second-order cor
 ### 3.2 [B] — zero-shot generalisation across the group (举一反三)
 
 Train on one orientation wedge; rotate the held-out set across the group. VN flat to the float floor
-everywhere; the same-class baseline fits the wedge and degrades OOD:
+everywhere; the higher-capacity baseline fits the wedge and degrades OOD:
 
 | demo | group / world | VN relMSE (every bin) | baseline seen → worst-OOD | OOD factor (VN \| base) |
 |---|---|---:|---:|---:|
 | synthetic teacher, 1-step | $\mathrm{SO}(2)$, synth | $1.4$–$1.7\times10^{-3}$ | $0.032 \to 3.41$ | **×1.17** \| ×107 |
+| same demo, **real** PushT inputs ([D]) | $\mathrm{SO}(2)$, real-in | flat | — | **×1.00** \| ×7 |
 | real PushT, full state | $\mathrm{SO}(2)$, real | $1.05\times10^{-2}$ | $1.66\!\times\!10^{-2} \to 2.69\!\times\!10^{-1}$ | **×1.00** \| ×16.2 |
 | real PushT, **latent** | $\mathrm{SO}(2)$, real | $0.2559$ | $1.14 \to 15.70$ | **×1.00** \| ×13.8 |
 | 3D clouds, **latent** | $\mathrm{SO}(3)$, synth | $0.228$ | $0.307 \to 5.28$ | **×1.00** \| ×17.2 |
@@ -297,13 +325,13 @@ yields another valid task of identical difficulty, so the same base task runs se
 rotations with env- and CEM-seed fixed. Under a **matching equivariant planner** (isotropic-$\sigma$ CEM,
 $R(\Delta)$-rotated noise, a disk action constraint — identical for both models):
 
-| paired OOD$-$seen block-angle error, 95% bootstrap CI over $K{=}48$ | mean | 95% CI |
+| paired OOD$-$seen block-angle error, 95% bootstrap CI over $K{=}48$ ($B{=}4000$) | mean | 95% CI |
 |---|---:|---:|
 | **VN (equivariant)** | $-0.000°$ | $[-0.000,+0.000]$, $\max_i\lvert d_i\rvert=4.9\times10^{-5}$ |
 | **MLP (baseline)** | $+3.68°$ | $[+1.49,+6.02]$ (excludes 0) |
 
 The VN's seen-vs-OOD change is **zero to the env float floor** — Corollary 1 realised — while the
-same-class baseline on the *same* planner degrades with a CI excluding $0$. **[S] diagnostic:** re-run with
+baseline on the *same* planner degrades with a CI excluding $0$. **[S] diagnostic:** re-run with
 a generic-angle-broken planner and the VN's paired difference is no longer exactly zero (mean $-0.71°$, CI
 $[-2.76,+1.01]$, still bracketing $0$) — *the model is exact, the planner broke the symmetry*: closed-loop
 invariance needs model **and** planner.
@@ -311,12 +339,16 @@ invariance needs model **and** planner.
 **The SE(3) lift (3D).** The same paired design on 3D point clouds under the full SE(3) group (a closed-form
 centroid channel restores translation), $K{=}24$ tasks, $1$ seen $+4$ OOD $(R,t)$:
 
-| OOD/seen orientation-error ratio, 95% CI over $K{=}24$ | ratio | 95% CI |
+| OOD/seen orientation-error ratio, 95% bootstrap CI over $K{=}24$ ($B{=}4000$) | ratio | 95% CI |
 |---|---:|---:|
 | **VN (equivariant)** | $0.989$ | $[0.977,\ 0.999]$ |
 | **MLP (baseline)** | $1.134$ | $[1.049,\ 1.234]$ |
 
-The CIs are **disjoint** ($0.999<1.049$). Stated honestly: the 3D VN is equivariant only to `e3nn`'s
+The CIs are **disjoint** ($0.999<1.049$). Since $K{=}24$ paired tasks is *thin* for a disjoint-CI verdict,
+we add distribution-free backstops on the same paired design: a sign-flip permutation test on the per-task
+MLP$-$VN excess degradation gives $p_{\text{perm}}=0.004$, while the conservative sign test is $17/24$
+($p=0.06$ — marginal because it discards the large magnitude gap and $K$ is small). Stated honestly: the 3D
+VN is equivariant only to `e3nn`'s
 $\sim\!1.2\times10^{-6}$ architectural floor (not a float32 issue — float64 barely moves it), so the
 defensible 3D headline is the **ratio separation**, not a literal zero; the single plan still commutes to
 $1.2\times10^{-7}$, and the VN's $\max_i\lvert d_i\rvert=3.5°$ is a CEM **tie-flip floor, not a symmetry
@@ -338,19 +370,23 @@ capacity — is exactly wrong, and we make the alternative a *rule*.
 Couple objects with an equivariant **torque**: object $i$'s points are reoriented by
 $\omega_i=\kappa\,\hat r_{ij}\times a_i$ ($\kappa=0.8$), a degree-3 trilinear teacher that stays
 $\mathrm{SO}(3)$-equivariant (so [B] still applies) but is **bilinear** in a way a degree-1 VN cannot form.
-Three models — **VN-MP** (equiv $+$ relative-pose message), **MLP-MP** (same message, *no* equivariance):
+Three models — **VN-MP** (equiv $+$ relative-pose message), **VN-Set** (equiv, *no* message — the [B] model,
+now mis-specified), **MLP-MP** (same message, *no* equivariance):
 
 | | in-distribution relMSE | global-orientation OOD/seen |
 |---|---:|---:|
 | **VN-MP** (equiv + msg) | $0.331$ | $\times1.00$ |
+| **VN-Set** (equiv, no msg) | $0.450$ | $\times1.00$ |
 | **MLP-MP** (msg, no equiv) | $\mathbf{0.067}$ | $\times17.0$ |
 
 Read across the columns and the whole bet is one experiment: **in-distribution the non-equivariant MLP
 fits $\sim5\times$ better** (it can form the bilinear cross-product a vanilla VN cannot), **but across the
-collapsed group that same MLP degrades $\times17$** — worse than predicting no latent change — while the
-equivariant model stays $\times1.00$ (a §2.2 theorem, guarded post-training: VN-MP global SO(3) residual
+collapsed group that same MLP degrades $\times17$** — worse than predicting no latent change — while **both**
+equivariant models stay $\times1.00$ (a §2.2 theorem, guarded post-training: VN-MP global SO(3) residual
 $3.5\times10^{-5}$). *The better interpolator is the catastrophically worse extrapolator: capacity wins
-inside the wedge, the prior wins across the group.* The cap does **not** touch [B] — equivariance is about
+inside the wedge, the prior wins across the group.* Among the VN models the message still earns its keep
+in-distribution (VN-MP $\times1.36$ over the channel-blind VN-Set), so the channel is necessary even before
+the OOD test. The cap does **not** touch [B] — equivariance is about
 how error transforms *across* the group, not in-distribution capacity — so the $\times1.00$-vs-$\times17$
 flip stands independent of the cap. Supplying the missing irrep (a tensor-product
 $\mathbf1\otimes\mathbf1\to\mathbf1$ message) lets an *exactly* equivariant VN-TP recover **$42\%$** of the
@@ -360,10 +396,10 @@ candidates open.
 
 ### 4.2 Localising the residual cap by *recovery-then-saturation*
 
-Three sweeps, each holding everything fixed but one lossy component, read off a diagnostic fingerprint: a
-**degree/primitive** bottleneck recovers at the first rung that supplies the missing irrep and then
-**saturates**; a **capacity** bottleneck keeps closing with each doubling; a **lossless bypass** that
-closes the gap pins the cap on the bypassed component.
+Four sweeps across three axes, each holding everything fixed but one lossy component, read off a
+diagnostic fingerprint: a **degree/primitive** bottleneck recovers at the first rung that supplies the
+missing irrep and then **saturates**; a **capacity** bottleneck keeps closing with each doubling; a
+**lossless bypass** that closes the gap localises the cap on the bypassed component.
 
 - **Axis 1 — predictor degree (Step 32).** A ladder front-loads $L$ cross-product blocks at fixed depth /
   width / params ($d_{\max}=2^L$, $L\!\in\!\{0,1,2,3\}$). In-distribution relMSE recovers in **one step**
@@ -371,7 +407,9 @@ closes the gap pins the cap on the bypassed component.
   ($L1\!\approx\!L2\!\approx\!L3\!\approx\!0.20$, top rung $+1\%$). A capacity ramp would keep closing
   toward the MLP's $0.080$; instead it stops — a **degree signature**, a missing *primitive*, not a
   capacity climb. Every rung is across-group $\times1.00$ vs the $2.4\times$-larger MLP's $\times10.5$.
-  *(Three seeds — kept at three by design; it is a robust qualitative signature.)*
+  *(**Three seeds, no per-rung CI — read as qualitative.** The flat top ($+1\%$) is within seed noise
+  (per-rung std $\approx0.05$), so the saturation is a shape claim, not a tested null; the quantitative
+  weight of this section rests on the five-seed Steps 42–44 below.)*
 
 - **Axis 2 — the message (Step 42).** A homogeneous predictor cannot form $1/\lVert r\rVert$ at *any*
   degree, so we hand it the **unit** edge feature $\hat r$ directly (a standard TFN/NequIP/MACE ingredient,
@@ -383,25 +421,32 @@ closes the gap pins the cap on the bypassed component.
   across-group $\times1.00$ vs the MLP's $\times10.2$ — enriching the message is zero-cost in 举一反三 even
   though it did not help fit. Reported as an honest **INCONCLUSIVE** on recovery (no guard loosened).
 
-- **Axis 3 — the encoder, with a lossless bypass (Step 43).** Two sub-sweeps, five seeds, $80$ epochs.
-  *(A) Capacity ladder:* scale the encoder's **internal** width / angular resolution at a **fixed
-  $16$-vector output budget** ($\mathrm{mul}\!\in\!\{8,16,32\}$, $\ell_{\max}\!\in\!\{2,3\}$) — the cap
-  moves $0.255\to$ at best $0.207$ (E1-mul16), closing only **$29\%$** of the E0$\to$MLP gap: *internal*
-  encoder capacity saturates like the predictor and the message. *(B) Lossless oracle:* **bypass** the
-  encoder, feeding the true per-object centred cloud $\tilde x_k=x_k-\bar x$ ($72$ numbers, vs the
-  encoder's lossy $48$) into the **same degree-3 predictor** at matched $\sim\!65$k params — relMSE
-  collapses to $0.00281\pm0.0004$, closing **$156\%$** of the gap, *past* even the non-equivariant MLP,
-  while staying exactly equivariant (post-train SE(3) $1.8\times10^{-6}$, perm $0$, across-group
-  $\times1.00$). *Lossless, equivariant, and flat coexist.*
+- **Axis 3 — the encoder: a lossless bypass solves it, more budget does not (Steps 43–44).** The
+  **decisive** probe is a **lossless oracle**: feed the true per-object centred cloud $\tilde x_k=x_k-\bar
+  x$ into the **same degree-3 predictor** ($\sim\!65$k params), bypassing the encoder. relMSE **collapses
+  to $\sim\!0.003$** (Step 43 $0.00281$, Step 44 $0.00258$), closing $>\!150\%$ of the E0$\to$MLP gap —
+  *past* even the non-equivariant MLP — while staying exactly equivariant (post-train SE(3)
+  $\le1.8\times10^{-6}$, perm $0$, across-group $\times1.00$): *lossless, equivariant, and flat coexist.*
+  **Capacity does not substitute for losslessness.** Scaling the encoder's **internal** width / angular
+  resolution at fixed output closes only **$29\%$** of the gap (Step 43, $\mathrm{mul}\!\in\!\{8,16,32\}$,
+  $\ell_{\max}\!\in\!\{2,3\}$, five seeds, $80$ epochs); a dedicated **output-budget** sweep
+  ($n_{\text{out}}\!\in\!\{16,24,32,48\}$, per-object width $48\!\to\!144$; Step 44, five seeds, $120$
+  epochs) closes only **$21\%$** at $3\times$ the budget and does **not** cleanly saturate (residual-ratio
+  $3.2$) — a gentle monotone nudge, not recovery. Both ladders stay exactly equivariant, across-group
+  $\times1.00$ (MLP control $\times8.2$).
 
-**The triangulation is complete.** The residual interaction cap is the **encoder's lossy
-translation-invariant output latent** — the $16$-vector pooling that discards the point detail the
-trilinear $(\hat r_{ij}\times a_i)\times\tilde x_k$ coupling needs — **not** its internal capacity, **not**
-the predictor degree (Axis 1), **not** the message (Axis 2). *Honest caveats:* the oracle relMSE is in
-**point space** (read it as *solved* vs E0's *still $\sim\!0.25$*, not subtracted against E0), and the
-convergence witness flags non-convergence driven **entirely by the MLP** ($27.8\%$) while the decisive
-oracle plateaued at $8.2\%$ (under the $10\%$ bar) — verdict **CONFIRMED**, four guards green. Confidence
-≈ **0.85** (up from $0.6$ when the cap was only inferred by elimination).
+**Three independent levers converge** on one localisation: the residual interaction cap is the
+**encoder's lossy *pooled* latent** — the permutation-invariant sum-pool that discards the point detail
+the trilinear $(\hat r_{ij}\times a_i)\times\tilde x_k$ coupling needs — **not** its internal capacity
+(Step 43), **not** its output budget (Step 44), **not** the predictor degree (Axis 1), **not** the message
+(Axis 2). *Honest caveats:* the oracle relMSE lives in **ordered point space** (read it as *solved* vs
+E0's *still $\sim\!0.25$*, not subtracted against E0), so the oracle is both *lossless* **and** *ordered*;
+Step 44 controls the **width** half of that confound — its $n_{\text{out}}{=}24$ rung carries the oracle's
+*exact* $72$-wide latent yet still sits at $0.247$, and widening to $144$ (past the oracle's $72$) does not
+help, so the cap is the **pooling, not the width**. The convergence guard trips **only** on the
+non-equivariant MLP control plus one near-floor oracle seed — all four budget rungs converged every seed —
+so we report **CONFIRMED on the science, INCONCLUSIVE-per-guard** (no threshold loosened). Confidence ≈
+**0.85** (up from $0.6$ when the cap was only inferred by elimination).
 
 > **Design rule.** When an *exactly-equivariant* world model under-fits in-distribution, **do not relax
 > the prior** — the across-group [B] exactness is free and independent of in-distribution capacity
@@ -468,6 +513,16 @@ off the training slice"*, but in **pixel space at full generative cost** and a d
 **decoder-free abstract latent** carrying the continuous $\mathrm{SE}(3)$ exactly. The two are
 complementary (our object-centric variant already factors $\mathrm{SE}(3)^O\rtimes S_O$).
 
+**What is new is the conjunction, on four counts.** (1) The *combination itself* — an exactly
+$\mathrm{SE}(3)$-equivariant JEPA latent world model whose symmetry survives a real training run and
+yields across-group zero-shot prediction in 2D *and* 3D (the three lines above exist only separately).
+(2) *Empirical localisation* of where the prior stops being free — the symmetry-break $\times$ data
+plane (§5) *maps* the Bitter-Lesson crossover instead of asserting it. (3) *Equivariant active
+inference* — an $\mathrm{SE}(3)$-invariant Expected Free Energy drive that earns a payoff under partial
+observability (supplement). (4) *Discover-then-exploit* — *learning* the symmetry generators from data
+and distilling the across-group payoff into a free predictor (supplement), not hard-wiring the group a
+priori. None of the four is a new layer; the contribution is the corner where they meet.
+
 ---
 
 ## 7. Limitations & honest scope
@@ -478,9 +533,13 @@ complementary (our object-centric variant already factors $\mathrm{SE}(3)^O\rtim
   **and** planner together.
 - **3D [C] is *statistical*, not float-floor-literal.** Exact only to `e3nn`'s $\sim\!10^{-6}$ floor; the
   defensible 3D headline is the ratio separation ($[0.977,0.999]$ vs $[1.049,1.234]$, disjoint).
-- **Exactness requires the world to actually carry the symmetry.** Real PushT's *interior* is
-  $\mathrm{SO}(2)$-equivariant to $10^{-5}$ px; block↔wall contact breaks it to $C_4$. The guarantee is
-  exact only where the symmetry is real.
+- **Exactness requires the world to actually carry the symmetry — and our generators do.** Real
+  PushT's *interior* is $\mathrm{SO}(2)$-equivariant to $10^{-5}$ px; block↔wall contact breaks it to
+  $C_4$. The guarantee is exact only where the symmetry is real. Every exactness number is measured on
+  a generator that *genuinely* carries $G$ — an $\mathrm{SO}(3)$-equivariant teacher, or PushT's
+  symmetric interior — fed **identically to both arms**; the contribution is not that the data is
+  symmetric (it is, for the baseline too) but that the equivariant architecture **inherits** that
+  symmetry exactly while the higher-capacity baseline, on the same transitions, **cannot**.
 - **No in-distribution edge.** Inside the training orbit the higher-capacity baseline fits at least as well
   (often better, §3.2/§4.1); the across-group payoff is the whole edge. The §4 cap is precisely this
   in-distribution gap, localised — not closed by dropping the prior.
@@ -531,6 +590,7 @@ preserved **unchanged** in the comprehensive supplement. One-line pointers:
 
 *Spine experiments cited in the main text:* `step10/11/12/14` ([A]/[B]/[C], 2D), `step13/15/18` (3D
 SE(3)), `step24` (interaction rung), `step27` (TP fix), `step32` (degree ladder), `step42` (message
-ladder), `step43` (encoder ladder + lossless oracle), `step28/29/30/31` (Bitter-Lesson bracket). Each
+ladder), `step43` (encoder capacity ladder + lossless oracle), `step44` (encoder output-budget sweep),
+`step28/29/30/31` (Bitter-Lesson bracket). Each
 structural claim has a matching guard test (`tests/test_step*.py`) checking equivariance/invariance at
 initialisation **and** after training, with a non-equivariant control that fails.
