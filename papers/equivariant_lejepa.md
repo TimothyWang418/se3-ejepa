@@ -15,14 +15,20 @@ is not the plumbing (SIGReg on an equivariant net — anyone can do that) but th
 identifiability theory**, which is absent from their paper and is precisely a representation-theory
 contribution.
 
-**Contributions and status.** All three contributions are now **proved and instantiated** with seeded,
-falsifiable experiments (C3 upgraded from a proof sketch to two full propositions $+$ an init/post-training
-guard, §5).
+**Contributions and status.** All three contributions are **proved as target-class statements** —
+claims about the optimal embedding / dynamics / planner the objective *defines* — with seeded,
+falsifiable experiments. Their **realisation on a *trained* encoder is partial**, and each section
+carries its own honest confidence; the headline gap is that the gauge refinement is a theorem about the
+target class, while pure SSL realises only *part* of it on the learned net (§7 [D], §8 [E2]; conf.
+$\approx0.4$, the main open empirical claim). C3 was upgraded from a proof sketch to two full
+propositions $+$ an init/post-training guard (§5).
 
-- **C1** — block-isotropy is the equivariant SIGReg target (Prop. 1): **proved**, instantiated on a
-  mixed-type SO(3) latent (§7) and extended to the product group $S_O\times SO(3)$ (Prop. 1$'$, §8).
+- **C1** — block-isotropy is the equivariant SIGReg target (Prop. 1): **proved as a target-class
+  statement**, instantiated on a mixed-type SO(3) latent (§7) and extended to the product group
+  $S_O\times SO(3)$ (Prop. 1$'$, §8). The *gauge-refinement payoff* is realised only **partially** on
+  the trained net (§7 [D], §8 [E2]).
 - **C2** — equivariant latent dynamics (Prop. 2): **proved**, instantiated by an equivariant OU world
-  model that resolves the gauge pure SSL leaves free (§4).
+  model whose distinct per-irrep dynamics resolve, *for free*, the gauge pure SSL leaves underdetermined (§4).
 - **C3** — planning under a $G$-invariant (not $O(n)$-invariant) cost (Prop. 3 $+$ Prop. 3$'$): **proved**
   — the dynamic-programming optimum *and* the realised iso-CEM estimator are both $G$-equivariant —
   instantiated by the decoder-free latent-goal–reaching experiment and an init/post-training
@@ -93,7 +99,7 @@ costs** to plan. But:
    coarse. The physically meaningful object is a **subgroup** $G\hookrightarrow O(n)$ (e.g.
    $\rho(\mathrm{SO}(3))$ acting on type-1 latents), not all of $O(n)$.
 2. Almost no real cost is invariant under *arbitrary* latent rotations — the $O(n)$-invariant-cost
-   hypothesis of Thm 5.4 is close to vacuous in practice. Real costs are invariant under the *world's*
+   hypothesis of Thm 5.4 is unrealistically strong in practice. Real costs are invariant under the *world's*
    symmetry $G$ (a reaching cost is SE(3)-invariant, not invariant under scrambling unrelated latent
    axes).
 3. Their model is **passive**: identifiability is something the data-generating process either grants
@@ -159,7 +165,14 @@ symmetry and PSD-ness of $\Sigma$ pass to $B_i$. $\qquad\blacksquare$
      $$\boxed{\ \prod_i O(m_i)\ }\quad(\text{mixing only within each multiplicity space}).$$
      **Multiplicity-free** ($m_i\le1$): this is $\prod_i\{\pm1\}$ — a **finite** group of per-irrep sign
      flips. So the latent is identified **up to a finite group**, and the full $\rho(G)$-module
-     structure (which axes carry which irrep, and the within-irrep frames) is pinned.
+     structure (which axes carry which irrep, and the within-irrep frames) is pinned. **Caveat — the
+     boxed finite case is the multiplicity-free idealisation, not our experiment.** The §7/§8 latent is
+     $m_0=4$ scalars and $m_1=6$ vectors, so the realised commutant is the *continuous* group
+     $O(4)\times O(6)$ (dimension $6+15=21$), **not** a finite sign group; the within-multiplicity frames
+     are not pinned there. "Up to $\prod_i\{\pm1\}$" is the clean special case one gets only when every
+     irrep appears at most once; with multiplicities $>1$ the prize degrades from *finite identifiability*
+     to *block-diagonal identifiability* — the symmetry labels are still recovered, the within-block frame
+     is not.
   3. **$\rho(G)$ itself** is a *third* group (the image of the representation); the gauge is **not**
      $\rho(G)$ — it is $\rho(G)$'s commutant. The honest one-liner is therefore: *equivariance +
      block-isotropy + distinct scales reduces the gauge from $O(n)$ to the (finite, when
@@ -213,8 +226,14 @@ conditional mean $z\mapsto Az$ (linear, equivariant), and its Bayes error is **o
 $$\mathbb E\big\|\rho(g)z'-A\,\rho(g)z\big\|^2=\mathbb E\big\|\rho(g)(z'-Az)\big\|^2=\mathbb E\|z'-Az\|^2=\operatorname{tr}Q=\sum_i d_im_i\,\sigma^2(1-r_i^2),$$
 using $A\rho(g)=\rho(g)A$, kernel-equivariance of the target, and orthogonality of $\rho(g)$. Thus
 stationarity $+$ additive noise, verified on a fundamental domain $\mathcal F$, transport to all of
-$\mathbb R^n$; the last equality is the **per-irrep refinement** of KLB's forward bound (Thm 5.1's scalar
-$2(1-r)n$ resolves into $\sum_i d_im_i\sigma^2(1-r_i^2)$, each irrep contributing its own $1-r_i^2$).
+$\mathbb R^n$; the last equality is the **per-irrep analogue** of KLB's forward bound — *not* literally
+equal to it. Our $\operatorname{tr}Q=\sum_i d_im_i\sigma^2(1-r_i^2)$ is the *optimal-predictor
+innovation* $\mathbb E\lVert z'-Az\rVert^2$, whereas KLB's scalar $2(1-r)n$ is the *positive-pair
+distance* $\mathbb E\lVert z'-z\rVert^2$ of a whitened ($\sigma^2{=}1$, single $r$) embedding; the two
+differ by the drift term $\mathbb E\lVert(A-I)z\rVert^2$ (so $\mathbb E\lVert z'-z\rVert^2=
+\operatorname{tr}Q+\mathbb E\lVert(A-I)z\rVert^2$, and they coincide only as $r\to1$). The refinement
+that *does* carry over is structural: each irrep contributes its **own** $1-r_i^2$, splitting KLB's
+single scalar across the isotypic blocks.
 
 *Proof.* (a) $G$-equivariance of $A,Q$ is Schur exactly as Prop. 1; the commutant
 $\{\bigoplus_i\mathbf I_{d_i}\otimes M_i\}$ is a subalgebra closed under $M\mapsto AMA^\top+Q$, and the
@@ -302,7 +321,7 @@ flatness (c) **0.85** (a clean identity, certified to $10^{-6}$). C2 overall **0
 
 ## 5. C3 — Planning under $G$-invariant (not $O(n)$-invariant) costs
 
-Thm 5.4 needs the cost invariant under **all** of $O(n)$ — a hypothesis close to vacuous in practice,
+Thm 5.4 needs the cost invariant under **all** of $O(n)$ — a hypothesis unrealistically strong in practice,
 since real planning costs are invariant under the *world's* symmetry $G$, not an arbitrary latent
 rotation. Under an equivariant encoder whose residual identifiability is pinned to $\rho(G)$ (C1,
 distinct-scale case), the guarantee goes through under the strictly weaker, physically natural
@@ -559,8 +578,9 @@ the relMSE of a **free linear fit** is *scale-invariant* in the latent (the fitt
 rescaling), so it exerts **zero** scale pressure and cannot realise a scale-based refinement. The principled
 fix is a **parameter-free, scale-sensitive** equivariant readout (no free multiplicative weight). With it the
 relational task drives the $(\mathbf{std},1o)$ block from collapsed to $\mathrm{rel\text{-}scale}\;0.63$ and
-pulls the residual gauge $288\to240$, *toward* the $184$ rung [A] proved reachable — honestly, it moves in
-the right direction at this 1-GPU scale, it does not snap to $184$. The design principle — *the task that
+pulls the residual gauge $288\to240$, *toward* the $184$ rung [A] proved reachable — quantitatively, that
+closes $288-240=48$ of the $288-184=104$ reachable gauge dimensions (**$\approx46\%$**) on a single 1-GPU
+run: honestly the right direction, not a snap to $184$. The design principle — *the task that
 realises a scale-based gauge reduction must itself be scale-sensitive on the target irrep* — is itself a
 transferable finding.
 
@@ -576,11 +596,18 @@ diagnostic**, not a pass/fail gate — per the standing rule, a run that fails t
 
 ## 9. Honest scope, risks, confidence
 
-- **The contribution is the theory, not the plumbing.** Implementing SIGReg on an equivariant network
-  is routine. The contribution is **not** that engineering — it is the **symmetry-structured
-  identifiability theory** (C1's block-isotropy + gauge refinement, C3's weakening of the planning
-  hypothesis), which is *absent* from arXiv:2605.26379 and is a representation-theory result. The
-  theorem, not the code, is what is new.
+- **The contribution is the theory, not the plumbing — and the *proven* part is a target-class
+  statement.** Implementing SIGReg on an equivariant network is routine. What is new is **not** that
+  engineering but the **symmetry-structured identifiability theory** (C1's block-isotropy SIGReg
+  *target* $+$ the gauge accounting that reduces $O(n)$ to the commutant $\prod_i O(m_i)$, C3's weakening
+  of the planning hypothesis), which is *absent* from arXiv:2605.26379 and is a representation-theory
+  result. Be precise about what "proved" covers: the **proven** novelty is the *target-class* statement
+  — the optimal embedding the objective defines is block-isotropic, and on it the residual gauge is the
+  named commutant. The **realised identifiability gain on a *trained* encoder is partial** (conf. $0.4$;
+  §8 [E2] closes $\approx46\%$ of the reachable gauge dims, not all), and that gap — does pure or
+  task-shaped SSL actually *reach* the target-class identifiability on a learned net? — is **the main
+  open empirical claim** of this note, not a settled result. The theorem, not the code, is what is new;
+  the *empirics* of realisation are deliberately reported as unfinished.
 - **Novelty risk.** Symmetry is an obvious next axis, so concurrent work is plausible. What is concrete
   here: the specific refinement (turn $O(n)$-up-to into $\rho(G)$-up-to; block-isotropy as the SIGReg
   target; $G$-invariant-cost planning) is provable now, with two experiments already instantiating it —
