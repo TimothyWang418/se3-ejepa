@@ -2343,7 +2343,7 @@ budget*, not to drop the prior.
 **Verdict — encoder localisation CONFIRMED, four guards green.** Equivariant at every variant
 ($\mathrm{SE}(3)\le5.4\times10^{-5}$, perm $0$) ✓; across-group flat at every variant ($\times1.00$) ✓; MLP
 degrades ($\times10.0$) ✓; **and the lossless oracle closes the gap** ($156\%>50\%$) ✓. One honest convergence
-caveat: the global plateau witness flags $\mathrm{ok\_converged}{=}\text{false}$, driven **entirely by the
+caveat: the global plateau witness flags `ok_converged = false`, driven **entirely by the
 MLP** (its VICReg variance collapses — a different optimisation regime, $|\Delta\text{pred}|=27.8\%$ over the
 last $20\%$ of training); every *equivariant* variant sits under the $10\%$ convergence bar (E0 $5.6\%$, E1 $2.0\%$, E2 $2.4\%$, E3
 $4.4\%$, ORACLE-raw $8.3\%$), and the **decisive ORACLE-unit at $8.2\%$** — so the verdict is
@@ -2409,7 +2409,7 @@ budget, like enriching the message (Step 42) or bypassing the encoder (Step 43),
 
 **Verdict — `budget_not_cap` CONFIRMED on the science, INCONCLUSIVE-per-guard.** Equivariant at every
 variant ✓; across-group flat at every variant ✓; MLP degrades ✓; *conclusive* on the budget-vs-cap question
-✓. The convergence guard reads $\mathrm{ok\_converged}{=}\text{false}$ — but it trips **only** on the
+✓. The convergence guard reads `ok_converged = false` — but it trips **only** on the
 non-equivariant MLP control (its VICReg variance collapses) plus one near-floor oracle seed ($0.138$); all
 four budget rungs converged at every seed (max $0.077$). We do **not** loosen the guard: the science is
 clean (the budget rungs converged), the flag is merely conservative for bundling the control. Confidence
