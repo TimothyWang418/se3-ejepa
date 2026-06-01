@@ -1,5 +1,5 @@
 ---
-title: "Exact equivariance, kept through training, buys zero-shot generalisation across the symmetry group"
+title: "Exact equivariance makes world-model error constant across the symmetry group — necessary, not sufficient, for zero-shot generalisation"
 subtitle: "Compact main-text draft (additive) — full papers are the comprehensive supplement"
 status: DRAFT (review block resolved 2026-06-01) — NOT wired into the arXiv build
 target_venue: ICLR (primary) / NeurIPS (equal alternative) — 9-page main-text norm
@@ -66,15 +66,21 @@ created: 2026-06-01
 > not sufficient, for zero-shot generalisation"* (keeps the mechanism, drops the over-promise);
 > (c) reframe around the freshest contribution: *"A design rule for equivariant world models: keep the
 > prior, localise the cap."*
-> **Recommendation: (b)** — it preserves the headline mechanism while removing exactly the over-claim the
-> abstract now also guards against; v1 stays frozen regardless (this only affects a future v2 main).
+> **DECIDED — (b), applied (2026-06-01).** This draft's title and H1 are now the sharpened (b): it
+> preserves the headline mechanism while dropping exactly the over-claim the abstract now also guards
+> against. The arXiv v1/v2 keep the original title (frozen); only this conference draft adopts (b).
 > *Other still-open, lower-stakes:* whether the supplement is cited as one "appendix" or three companion
 > notes; and the ICLR/NeurIPS `\documentclass` conversion (a separate build step — this markdown is the
 > *content* draft, deliberately not yet in submission format).
 
 ---
 
-# Exact equivariance, kept through training, buys zero-shot generalisation across the symmetry group
+# Exact equivariance makes world-model error constant across the symmetry group — necessary, not sufficient, for zero-shot generalisation
+
+> *Working title for the conference draft (sharpened from the arXiv v1 title "Exact equivariance, kept
+> through training, buys zero-shot generalisation across the symmetry group" to drop the over-promise the
+> stress-test flagged — "constant" is what the body proves; "buys generalisation" implied "low". The
+> arXiv v1/v2 keep the original title; only this conference draft adopts the sharpened one.)*
 
 ## Abstract
 
