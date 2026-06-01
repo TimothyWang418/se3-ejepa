@@ -195,6 +195,20 @@ rectifies each vector against a learned equivariant direction. Composing them gi
 a map that is exactly $\mathrm{SO}(d)$-equivariant by construction — and is the
 *same* code for $d=2$ and $d=3$.
 
+**A note on the "float floor."** Throughout this log, **float floor** denotes the
+smallest equivariance residual a *given* operator can reach in float32 — which is
+**not a single number**. (i) The Vector-Neuron and 2D `e2cnn` layers, and the
+predictor-only latent rollout, reach *machine* epsilon: float32
+$\varepsilon\approx 1.2\times10^{-7}$, realised as residuals $\le 2\times10^{-7}$.
+(ii) The 3D `e3nn` $\mathrm{SE}(3)$ encoder is exactly equivariant only up to its
+**own library floor** $\sim\!10^{-6}$ (spherical-harmonic / tensor-product
+round-off), so a *composed* encode$\to$predict residual through it can be as large
+as $\sim\!3\times10^{-5}$ — still "exact" in the sense that it is independent of the
+weights and survives training (claim [A]), but **not** literal machine precision.
+Equivariance guard tests therefore assert a *tolerance* (typically $\le 10^{-4}$):
+comfortably above (ii) yet orders of magnitude below any learned
+symmetry-breaking signal. Where the literal value matters we print it.
+
 ---
 
 ## 1. Foundation (one-line recap)
@@ -686,7 +700,7 @@ by **full random $R\in\mathrm{SO}(3)$** — new axes *and* angles the wedge neve
 | parameters | $16{,}856$ | $124{,}512$ (**7.4×**) |
 
 The learned 3D latent keeps the exact symmetry through optimisation (composed residual at
-the float floor, $3.0\times10^{-5}$), so the JEPA planning cost
+the `e3nn` library floor, $3.0\times10^{-5}$; see the float-floor convention in §0), so the JEPA planning cost
 $\mathcal{C}=\lVert\hat z_H-z_g\rVert^2$ is rotation-invariant to $\sim10^{-7}$ under random
 SO(3) while the baseline's cost decorrelates (drift up to $0.85$) — and the equivariant model
 does it with **7.4× fewer parameters**.

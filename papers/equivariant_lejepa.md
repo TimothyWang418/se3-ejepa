@@ -15,16 +15,18 @@ is not the plumbing (SIGReg on an equivariant net — anyone can do that) but th
 identifiability theory**, which is absent from their paper and is precisely a representation-theory
 contribution.
 
-**Contributions and status.** Two of the three contributions are **proved and instantiated** with
-seeded, falsifiable experiments; one is a **proposition-to-finish** with a proof sketch and an existing
-experiment that instantiates it.
+**Contributions and status.** All three contributions are now **proved and instantiated** with seeded,
+falsifiable experiments (C3 upgraded from a proof sketch to two full propositions $+$ an init/post-training
+guard, §5).
 
 - **C1** — block-isotropy is the equivariant SIGReg target (Prop. 1): **proved**, instantiated on a
   mixed-type SO(3) latent (§7) and extended to the product group $S_O\times SO(3)$ (Prop. 1$'$, §8).
 - **C2** — equivariant latent dynamics (Prop. 2): **proved**, instantiated by an equivariant OU world
   model that resolves the gauge pure SSL leaves free (§4).
-- **C3** — planning under a $G$-invariant (not $O(n)$-invariant) cost (Prop. 3): **proof sketch**,
-  instantiated by the decoder-free latent-goal–reaching experiment (§5).
+- **C3** — planning under a $G$-invariant (not $O(n)$-invariant) cost (Prop. 3 $+$ Prop. 3$'$): **proved**
+  — the dynamic-programming optimum *and* the realised iso-CEM estimator are both $G$-equivariant —
+  instantiated by the decoder-free latent-goal–reaching experiment and an init/post-training
+  planner-equivariance guard (§5).
 
 ---
 
@@ -300,24 +302,97 @@ flatness (c) **0.85** (a clean identity, certified to $10^{-6}$). C2 overall **0
 
 ## 5. C3 — Planning under $G$-invariant (not $O(n)$-invariant) costs
 
-Thm 5.4 needs the cost invariant under **all** of $O(n)$. Under an equivariant encoder whose
-identifiability is pinned to $\rho(G)$ (C1, distinct-scale case), the same argument goes through under
-the strictly weaker, physically natural hypothesis:
+Thm 5.4 needs the cost invariant under **all** of $O(n)$ — a hypothesis close to vacuous in practice,
+since real planning costs are invariant under the *world's* symmetry $G$, not an arbitrary latent
+rotation. Under an equivariant encoder whose residual identifiability is pinned to $\rho(G)$ (C1,
+distinct-scale case), the guarantee goes through under the strictly weaker, physically natural
+$G$-invariant hypothesis. We give it in two halves: the **idealised optimum** (Prop. 3 — the
+dynamic-programming claim 5.4 makes for $O(n)$, now for $\rho(G)\subset O(n)$), and — the part 5.4
+never addresses — the **realised finite-horizon CEM estimator** we actually deploy (Prop. 3$'$), whose
+equivariance is what makes the closed loop [C] a theorem rather than an observation.
 
-**Proposition 3 (equivariant planning, sketch).** If $h(z)=\rho(g_0)\,z$ for some fixed $g_0$ (recovery
-up to the world symmetry, not arbitrary $O(n)$) and the cost is **$G$-invariant**,
-$\ell(\rho(g)z,a\cdot g)=\ell(z,a)\ \forall g\in G$ (with the induced action on actions), then latent
-planning is exact: $\hat V^*(h(z_0))=V^*(z_0)$ and the optimal action sequences coincide up to the
-group action. The proof mirrors 5.4 but only invokes invariance under $\rho(G)\subset O(n)$.
+**Setup.** Latent dynamics $z_{t+1}=f(z_t,a_t)$ that are **$G$-equivariant**,
+$f(\rho(g)z,\,g\cdot a)=\rho(g)f(z,a)$; a stage cost $\ell$ and terminal cost $c_T$ that are
+**$G$-invariant**, $\ell(\rho(g)z,\,g\cdot a)=\ell(z,a)$ and $c_T(\rho(g)z,\rho(g)z_g)=c_T(z,z_g)$
+($g\cdot a$ is the induced action on actions — for a velocity action, $g\cdot a=Ra$); and an action set
+$\mathcal A$ that is **$g$-stable**, $g\cdot\mathcal A=\mathcal A$ for all $g\in G$ (the unit ball
+qualifies, as $\lVert g\cdot a\rVert=\lVert a\rVert$). Write the finite-horizon value with goal $z_g$ as a
+parameter, $V^*_t(z;z_g)=\min_{a\in\mathcal A}\{\ell(z,a)+V^*_{t-1}(f(z,a);z_g)\}$, $V^*_0(z;z_g)=c_T(z,z_g)$.
 
-**This is already verified.** The decoder-free latent-goal–reaching experiment: an SE(3)-invariant
-reaching cost, planned by an equivariant CEM planner directly in the latent, reaches **identically
-across the SE(3) orbit** — OOD/seen ratio $1.000$, CI $[1.000,1.000]$ — versus a non-equivariant MLP
-planner at $\times1.745$. That is exactly Thm 5.4's conclusion ($\hat V^*=V^*$, matched optimal
-actions) holding in the regime their theorem does **not** cover (a $G$-invariant, *not* $O(n)$-
-invariant, cost). It is the experiment a referee would demand for Prop. 3, and we ran it before we
-knew it was the experiment. Confidence 0.75 (sound given C1's gauge-pinning; the one dependency is that
-the encoder's residual gauge really is $\rho(G)$, i.e. C1's distinct-scale hypothesis).
+**Proposition 3 (exact $G$-invariant latent planning).** *Under the Setup:* **(a)** *the optimal value is
+$G$-invariant, $V^*_t(\rho(g)z;\rho(g)z_g)=V^*_t(z;z_g)$ for all $g\in G$, $t\le T$, and the optimal
+control transforms covariantly — if $a^*_{1:T}$ is optimal at $(z,z_g)$ then $g\cdot a^*_{1:T}$ is optimal
+at $(\rho(g)z,\rho(g)z_g)$;* **(b)** *consequently, if the encoder is recovered only up to a fixed
+world-symmetry gauge $h(z)=\rho(g_0)z$, $g_0\in G$ (not an arbitrary $Q\in O(n)$), latent planning is*
+**exact**: *$\hat V^*(h(z_0))=V^*(z_0)$ and $\hat a^*_{1:T}=g_0\cdot a^*_{1:T}$.*
+
+*Proof.* (a) Backward induction on $t$. Base $t=0$: $V^*_0(\rho(g)z;\rho(g)z_g)=c_T(\rho(g)z,\rho(g)z_g)
+=c_T(z,z_g)$ by $G$-invariance of $c_T$. Step: assume the claim at $t-1$. Substituting $a=g\cdot a'$ —
+a bijection of $\mathcal A$ onto itself by $g$-stability — and using $\ell(\rho(g)z,g\cdot a')=\ell(z,a')$
+and $f(\rho(g)z,g\cdot a')=\rho(g)f(z,a')$,
+$$ V^*_t(\rho(g)z;\rho(g)z_g)=\min_{a'\in\mathcal A}\Big\{\ell(z,a')+V^*_{t-1}\big(\rho(g)f(z,a');\rho(g)z_g\big)\Big\}
+=\min_{a'\in\mathcal A}\Big\{\ell(z,a')+V^*_{t-1}\big(f(z,a');z_g\big)\Big\}=V^*_t(z;z_g), $$
+the middle equality by the inductive hypothesis. The minimiser at $\rho(g)z$ is thus $g\cdot a'^\star$ with
+$a'^\star$ the minimiser at $z$; composing this per-step covariance along the equivariant rollout gives the
+sequence claim. (b) Apply (a) with $g=g_0$: planning in $h$-coordinates is the $g_0$-image of the true
+problem, so the optimum value coincides and the optimal actions are its $g_0$-image. Only invariance under
+$\rho(G)$ — never under a general $O(n)$ element — is used, which is exactly what C1's $\rho(G)$
+gauge-pinning supplies. $\qquad\blacksquare$
+
+**The realised estimator is equivariant too — not just the optimum.** Prop. 3 is the dynamic-programming
+statement; the planner we deploy is a finite-sample iso-CEM-MPC (`experiments/step18.latent_cem_plan_iso`),
+a *stochastic* map. 5.4 stops at the optimum, but closed-loop [C] needs the **realised** plan to commute
+with $G$. It does, sample-path-wise.
+
+**Proposition 3$'$ (the iso-CEM-MPC estimator is $G$-equivariant).** *Let the CEM planner use* **(P1)** *a
+$\rho$-invariant cost — terminal $\lVert\hat z_H-z_g\rVert^2$ under orthogonal $\rho$ plus the closed-form
+centroid drift cost $w_t\lVert\bar x_0+c_t\sum_h a_h-\bar x_g\rVert^2$, both invariant under a joint
+$(R,t)$ (the $t$'s cancel in the centroid term);* **(P2)** *a $g$-stable constraint — the unit-ball clamp,
+$\mathrm{clip}_{\rm ball}(g\cdot a)=g\cdot\mathrm{clip}_{\rm ball}(a)$;* **(P3)** *isotropic Gaussian
+sampling whose noise is pre-rotated by $R$, $\varepsilon\mapsto R\varepsilon$, under a shared random seed;
+and* **(P4)** *elite selection and an isotropic per-step $\sigma$-refit that depend on the candidates only
+through the $\rho$-invariant cost and an isotropy-pooled variance. Then for every $g=(R,t)\in\mathrm{SE}(3)$,
+$\mathrm{plan}(\rho(g)z_0,\rho(g)z_g)=g\cdot\mathrm{plan}(z_0,z_g)$ exactly (to the float floor), at any
+weights* ($g\cdot$ *rotates each action by $R$; the translation part acts trivially on velocity actions*).
+
+*Proof.* Induction on the CEM iteration under the seed coupling of (P3), with invariant
+$(\mathrm{mean}_k,\sigma_k)\mapsto(R\cdot\mathrm{mean}_k,\sigma_k)$ — the mean is the $R$-image, the
+isotropic $\sigma$ is *identical*. Base: $\mathrm{mean}_0=\mathbf 0=R\mathbf 0$, $\sigma_0=\sigma_0\mathbf 1$.
+Step: the shared generator draws $\varepsilon$ for the base run and the rotated run multiplies it by $R$
+(P3); as $\sigma_k$ is isotropic, $\mathrm{cand}^g=\mathrm{clip}_{\rm ball}(R\,\mathrm{mean}_k+\sigma_k\,
+R\varepsilon)=R\cdot\mathrm{cand}$ by (P2). The rolled latents are $\rho(g)$-images (encoder-equivariance
+gives $z_0^g=\rho(g)z_0$, then the equivariant predictor), so by (P1) each candidate's cost is *identical*
+across the two runs; `topk` over identical costs returns the *same indices* (P4), hence
+$\mathrm{mean}_{k+1}^g=R\cdot\mathrm{mean}_{k+1}$ and the isotropy-pooled variance is rotation-invariant,
+$\sigma_{k+1}^g=\sigma_{k+1}$. The returned mean is the $R$-image. Swap any one hypothesis back — a *box*
+clamp (only $B_n$-stable, breaking P2) or a *diagonal* $\sigma$-refit (breaking isotropy in P4) — and the
+candidate sets cease to be $R$-related at generic $R$; this is exactly the [S] panel's controlled drift. $\qquad\blacksquare$
+
+**This is verified — init *and* post-training, with a non-vacuous control.** Two seeded CPU guards:
+
+- `tests/test_planner_equivariance.py` certifies Prop. 3$'$ directly:
+  $\max\lvert R\cdot\mathrm{plan}(x_0,x_g)-\mathrm{plan}(Rx_0+t,Rx_g+t)\rvert=1.19\times10^{-7}$ (the CEM
+  float floor) for the VN at **both** random init and after a real training run — *identical*, because the
+  property is architectural — over pure rotations *and* large translations $t$; the *same* equivariant
+  planner on a non-equivariant MLP world misses by $1.35$ ($\sim\!10^{7}\times$ the VN floor), so the test
+  is not vacuous. The Kabsch orientation readout the loop reads off is itself $\mathrm{SE}(3)$-invariant
+  ($\le1.1\times10^{-3}$ deg).
+- `experiments/step38_latent_goal_reaching.py` (+ a 6-gate test) instantiates the payoff: a decoder-free
+  goal cost (an $L_2$ latent cost *and* a Procrustes geodesic-angle signal, both $\rho$-invariant to
+  $\sim\!10^{-13}$), planned by the equivariant CEM directly in the latent, **reaches identically across the
+  $\mathrm{SE}(3)$ orbit** — OOD/seen fraction-of-gap-closed ratio $1.000$ (per-task seen-vs-OOD spread
+  $7.4\times10^{-7}$ deg at init) — versus a non-equivariant MLP planner at $\times1.745$. This is 5.4's
+  conclusion ($\hat V^*=V^*$, matched optimal actions) holding where 5.4 does **not** apply (a $G$-invariant,
+  *not* $O(n)$-invariant, cost), and — beyond 5.4 — for the *realised* estimator, certified to survive
+  optimisation.
+
+**Confidence.** Prop. 3(a) **0.9** (elementary backward induction $+$ orthogonality of $\rho$, the standing
+of Prop. 1/2's algebra); Prop. 3$'$ **0.9** (a clean sample-path coupling, verified to the float floor at
+init *and* post-training with a non-vacuous MLP control); the *end-to-end deployment* claim **0.75** (sound
+given C1's gauge-pinning — the one live dependency is that the encoder's residual gauge really is $\rho(G)$,
+i.e. C1's distinct-scale hypothesis, the exact mirror of C2(b)'s distinct-$r_i$ caveat). **C3 overall
+0.85** — upgraded from the 0.65/0.75 sketch now that it is two theorems with full proofs and a falsifiable
+experiment (Step 38 $+$ the init/post-training planner guard), the same upgrade C2 received.
 
 ---
 
@@ -536,7 +611,11 @@ diagnostic**, not a pass/fail gate — per the standing rule, a run that fails t
   sketch to a theorem $+$ falsifiable experiment (§4.1): the dynamical gauge ladder $231\to159$ is
   deterministic (2a/2b), orbit-transport flatness is certified to $10^{-6}$ (2c), and the learned net
   realises the $159$ rung — *realised-on-a-learned-net* 0.7 (the MLP reaches it in-distribution too;
-  equivariance is what makes it transport off-orbit, [E]); C3 0.75; the degree-ladder↔Hermite bridge (§6) 0.4; "this becomes a
+  equivariance is what makes it transport off-orbit, [E]); **C3 (Prop. 3 $+$ 3$'$, $G$-invariant-cost planning) 0.85** — upgraded from a 0.65/0.75
+  sketch to two full-proof theorems $+$ a falsifiable experiment (§5): the DP optimum is $G$-invariant (3a)
+  and the *realised* iso-CEM estimator commutes with $\mathrm{SE}(3)$ to the float floor at init *and*
+  post-training (3$'$), end-to-end deployment held at 0.75 (lone dependency: C1's $\rho(G)$ gauge-pinning);
+  the degree-ladder↔Hermite bridge (§6) 0.4; "this becomes a
   publishable contribution" 0.6.
 
 ## 10. Discussion: what is new, and where it sits in the program

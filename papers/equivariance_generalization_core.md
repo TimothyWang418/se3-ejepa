@@ -127,8 +127,8 @@ closed-loop trajectory.
 ## 2. Setup and the exact-flatness guarantee
 
 We state the two measurements the whole note turns on (§2.1), prove the exact-flatness theorem
-that makes [B] a mathematical guarantee rather than an empirical trend (§2.2), and show the
-guarantee is *intrinsic to the parametrisation* — hence preserved by any optimiser (§2.3).
+(Proposition 1) that makes [B] a mathematical guarantee rather than an empirical trend (§2.2), and
+show the guarantee is *intrinsic to the parametrisation* — hence preserved by any optimiser (§2.3).
 
 ### 2.1 The two measurements
 
@@ -154,33 +154,55 @@ cross-model relMSE is not directly comparable; the *ratio* is).
 
 ### 2.2 The isometry theorem (why [B] is a theorem)
 
-Let the dataset be transitions $\{(s_i,a_i,s_i')\}$ and apply $g$ to every transition. Because
-$\rho(g)$ is **orthogonal**, it is an isometry: $\lVert \rho(g)v\rVert=\lVert v\rVert$. Each
-numerator term of the relMSE transforms as
+We state the central guarantee as a proposition: the one-step error of an equivariant model is the
+*same number* on every orientation, so the across-orbit OOD curve is flat **by necessity, not by
+luck**. The three hypotheses are exactly the structural facts §2.1 builds in.
+
+**Proposition 1 (exact $G$-invariance of the one-step relMSE).** *Suppose* **(H1)** *the encoder is
+exactly $G$-equivariant, $E(g\cdot x)=\rho(g)E(x)$;* **(H2)** *the latent action is **orthogonal**,
+$\rho(g)^\top\rho(g)=I$ (hence an isometry, $\lVert\rho(g)v\rVert=\lVert v\rVert$);* and **(H3)** *the
+predictor is a $G$-intertwiner, $f(\rho(g)z,\,g\cdot a)=\rho(g)f(z,a)$, so the composed predictor
+$F(x,a):=f(E(x),a)$ satisfies $F(g\cdot x,\,g\cdot a)=\rho(g)F(x,a)$. Then the relMSE of §2.1 is
+$G$-invariant: for any transition set $\mathcal D=\{(s_i,a_i,s_i')\}$ and every $g\in G$,
+$\mathrm{relMSE}(g\cdot\mathcal D)=\mathrm{relMSE}(\mathcal D)$. In particular the OOD factor (worst
+unseen bin $/$ seen bin) of an equivariant model is exactly $1$, at any weights — at initialisation
+and after any amount of training.*
+
+*Proof.* Apply $g$ to every transition. By (H1) and (H3), each numerator term of the relMSE
+transforms as
 $$
 \big\lVert F(g s_i,\,g a_i)-E(g s_i')\big\rVert^2
 =\big\lVert \rho(g)F(s_i,a_i)-\rho(g)E(s_i')\big\rVert^2
 =\big\lVert \rho(g)\big(F(s_i,a_i)-E(s_i')\big)\big\rVert^2
 =\big\lVert F(s_i,a_i)-E(s_i')\big\rVert^2,
 $$
-and the denominator is invariant by the identical argument. Hence
+the final equality by the isometry (H2); the denominator term $\lVert E(g s_i')-E(g s_i)\rVert^2$ is
+invariant by the identical step. Summing numerator and denominator separately leaves the ratio
+unchanged:
 $$ \boxed{\;\mathrm{relMSE}(g\cdot\mathcal{D}) = \mathrm{relMSE}(\mathcal{D})\quad\text{exactly, for every }g\in G.\;} $$
+No step refers to the weights, so the identity holds at every point of training. $\qquad\blacksquare$
+
 The equivariant model's OOD curve is therefore **mathematically forced to be flat** (×$1.00$);
 the only deviations we observe ($\le 0.2\%$) are the floating-point floor. The planning cost
 $\mathcal{C}=\lVert\hat z_H-z_{\mathrm g}\rVert^2$ with $z_{\mathrm g}=E(s_{\mathrm g})$ is
 invariant by the same isometry step — so an equivariant planner literally **cannot tell two
 $g$-related problems apart** and solves them identically.
 
-**Closed-loop corollary (why [C] is the *same* theorem).** Suppose additionally the *planner*
-is $G$-equivariant — its sampling distribution and constraint set commute with the group (an
-isotropic search with a $g$-covariant noise model and a $G$-invariant action constraint). Then
-at each replan step the action sequence selected at orientation $g$ is exactly the $g$-image of
-the one selected at the identity, and — because the *world* itself is $G$-equivariant — the
-executed next state is the $g$-image of the unrotated next state. By induction over the
-receding-horizon loop, **the entire closed-loop trajectory at orientation $g$ is the
-$\rho(g)$-image of the trajectory at the identity**, so any $G$-invariant control error (e.g.
-block-angle error) is *exactly* invariant across the group. This is [C]: the closed-loop
-analogue of the boxed identity. It holds to the float floor only when **both** the model and
+**Corollary 1 (closed-loop orientation-invariance, why [C] is the *same* theorem).** *Add* **(H4)**
+*the planner is $G$-equivariant — its sampling distribution and constraint set commute with the group
+(an isotropic search with a $g$-covariant noise model and a $G$-invariant action constraint). Then the
+entire receding-horizon trajectory at orientation $g$ is the $\rho(g)$-image of the trajectory at the
+identity, and any $G$-invariant control error (e.g. block-angle error) is exactly invariant across $G$.*
+
+*Proof.* At each replan step the planner ranks candidates only through the planning cost $\mathcal C$,
+which the isometry step of Proposition 1 leaves $G$-invariant, while (H4) maps the candidate set
+$g$-covariantly; so
+the action sequence selected at orientation $g$ is exactly the $g$-image of the one selected at the
+identity. Because the *world* itself is $G$-equivariant, the executed next state is then the $g$-image
+of the unrotated next state. Induction over the loop propagates the $\rho(g)$-image to **the entire
+closed-loop trajectory**, and a $G$-invariant error read off it is identical across $G$. $\qquad\blacksquare$
+
+This is [C]: the closed-loop analogue of the boxed identity. It holds to the float floor only when **both** the model and
 the planner carry the symmetry — if the planner breaks it (e.g. a box action constraint that is
 only $C_4$-symmetric, or a per-component variance refit that does not commute with $\rho(g)$),
 the invariance degrades to a statistical, *unbiased* one even though the model is exact
@@ -194,6 +216,47 @@ off the training orbit the loss says nothing. Channels that are *affine* in the 
 coordinate (a near-linear PD "self-motion") extrapolate fine; channels that genuinely *rotate*
 around the orbit (object orientation / torque) are undetermined and break — empirically
 crossing relMSE $=1$ exactly in the rotation channel (§3.2).
+
+**Proposition 2 (discover then exploit — the *discovered*-symmetry analogue of Proposition 1, in the soft
+limit).** *Proposition 1 takes $G$ as **given** and hard-wires $\rho(g)$ into the architecture. Suppose instead we are handed only a
+**queryable** teacher $f$ — we may evaluate it at transformed inputs but are told nothing of its symmetry.
+Parametrise a slate of $K$ generators $\{\hat G_k\}\subset\mathfrak{gl}(3)$ with **no** antisymmetry or Lie
+structure imposed, and form the **relative** finite-flow residual
+$\mathcal R(\hat G)=\mathbb E_{x,\theta}\big\lVert f(e^{\theta\hat G}x)-e^{\theta\hat G}f(x)\big\rVert^2/\mathbb E_x\lVert f(x)\rVert^2$.*
+
+***(i) Discovery.*** *In exact arithmetic $\mathcal R(\hat G)=0$ **iff** $f$ commutes with the flow
+$e^{\theta\hat G}$ — **iff** $\hat G$ generates a symmetry of $f$ — so the residual-nulling directions are
+exactly the symmetry algebra $\mathfrak g(f)$, and the least $K$ at which the floor breaks is
+$\dim\mathfrak g(f)$.* ***(ii) Exploit.*** *Freeze one exactly-equivariant encoder $E$ (so **(H1)–(H2)** hold
+for every arm), let $H=\langle e^{\theta\hat G_k}\rangle\subseteq G$ be the **discovered** subgroup, and train a
+**free** predictor $f_\phi$ with the supervised loss plus
+$\lambda\,\mathcal R_{\mathrm{distill}}=\lambda\sum_k\mathbb E_{z,a,\theta}\lVert\rho(g_k)f_\phi(z,a)-f_\phi(\rho(g_k)z,\,g_k\!\cdot a)\rVert^2$,
+$g_k=e^{\theta\hat G_k}$. Then $\mathcal R_{\mathrm{distill}}(f_\phi)=0$ **iff** $f_\phi$ is a $G$-intertwiner
+restricted to $H$ — **exactly (H3) for $H$** — whereupon Proposition 1 applies verbatim and the composed relMSE
+is exactly $H$-invariant (across-$H$ OOD factor $1$).* **Honest limit (soft $\neq$ hard):** *a finite $\lambda$
+drives $\mathcal R_{\mathrm{distill}}$ toward but not to $0$, so the across-$H$ factor relaxes toward $1$ as
+$\lambda$ enforces equivariance more strongly, without reaching the built-in float floor; the guarantee is
+"**[B] across the discovered subgroup, in the limit $\mathcal R_{\mathrm{distill}}\to0$**".*
+
+*Proof.* Each residual is a sum of nonnegative terms. For (i), $\mathcal R(\hat G)=0$ iff
+$f(e^{\theta\hat G}x)=e^{\theta\hat G}f(x)$ for $\mathbb E_x$-a.e. $x$ and the sampled $\theta$ (a neighbourhood of
+$0$ suffices, since the one-parameter-subgroup property then propagates it to all $\theta$); this is the
+definition of $\hat G\in\mathfrak g(f)$, and the forward direction is immediate (a symmetry makes the numerator
+vanish identically). The nulling set is the subspace $\mathfrak g(f)$, so a slate of size
+$K\le\dim\mathfrak g(f)$ fits inside it (floor) while $K>\dim\mathfrak g(f)$ must spend a non-symmetry direction
+(jump) — locating the dimension. For (ii), $\mathcal R_{\mathrm{distill}}(f_\phi)=0$ iff
+$\rho(g_k)f_\phi(z,a)=f_\phi(\rho(g_k)z,g_k\!\cdot a)$ for every $k$ and $\theta$, i.e.
+$f_\phi(\rho(h)z,h\!\cdot a)=\rho(h)f_\phi(z,a)$ for all $h\in H$ (the intertwiner condition is closed under
+composition and the $g_k$ generate $H$) — hypothesis (H3) over $H$. With (H1)–(H2) supplied by the frozen
+encoder, Proposition 1's boxed identity holds for every $h\in H$. For finite $\lambda$ the penalty has a strictly
+positive minimiser, so the implication is exact only in the limit. $\qquad\blacksquare$
+
+*This closes the loop the thesis opens with: the symmetry need not be **postulated** — it can be **read out of
+the world's behaviour** and **distilled** into a free predictor to buy the across-group payoff (§5 measures it:
+$54\%$ of the free predictor's excess OOD gap recovered, matching the hand-wired oracle, transferring **exactly**
+the discovered subgroup), short of the float-floor exactness only a built-in $\rho$ attains. The prior is
+**learnable, falsifiable, and cheap to learn** — yet enforcing it exactly still pays, the boundary against which
+the Bitter-Lesson caveat (§5) should be read.*
 
 **Expressivity caveat (Schur), stated up front.** Scalar-weight Vector-Neuron layers
 (`VNLinear`/`VNReLU`, Deng et al. 2021) are a *complete* equivariant basis for
@@ -580,6 +643,45 @@ there is to learn from an action does not depend on the global pose of the scene
 pragmatic cost the whole $G$ is invariant, hence the EFE-optimal plan is $\mathrm{SE}(3)$-*equivariant*.
 This is the §2.2 isometry argument lifted from the *loss* to the agent's *information geometry*.
 
+**Proposition 3 (exact $G$-invariance of the Expected Free Energy).** *The computation above used nothing
+about $\mathcal{D}$ beyond its being a function of $\rho(G)$-invariant latent quantities; stated generally,
+this is a property of the EFE itself, not of one drive. Assume* **(H1)–(H3)** *of Proposition 1 (the encoder
+is $G$-equivariant, $\rho(g)$ is orthogonal, and the predictor — here every ensemble member $f_k$ — is a
+$G$-intertwiner), and write the EFE of an action sequence $a_{1:H}$ in a scene $x$ (the start, goal, and any
+cue clouds) as $G_x(a_{1:H})=\mathcal{C}_{\mathrm{prag}}-\beta\,\mathcal{C}_{\mathrm{epi}}$
+with* **(E1)** *the pragmatic term $G$-invariant (it is the §3.3 latent/centroid cost, invariant by the
+isometry step of Proposition 1) and* **(E2)** *the epistemic term a function of $\rho(G)$-invariant latent
+quantities only — any of the ensemble spread $\lVert z^{(k)}-\bar z\rVert$, the log-determinant
+$\log\det(\hat\Sigma+\epsilon I)$, or a mutual information whose channel likelihood depends on the latent
+only through invariant distances. Then, rotating the whole instance (scene and actions together by $g$),*
+$$
+  G_{g\cdot x}(g\cdot a_{1:H}) \;=\; G_{x}(a_{1:H}) \qquad\text{for every } g\in G,\ \text{at any weights,}
+$$
+*so the EFE-optimal plan is $G$-equivariant ($\arg\min_a G_{g\cdot x}$ is the $\rho(g)$-image of the plan
+at $x$) and the resulting closed-loop outcome is $G$-invariant.*
+
+*Proof.* Under $x\mapsto g\cdot x$ the encoder sends each latent $z\mapsto\rho(g)z$ and each type-1 action
+$a\mapsto g\cdot a$ (H1), composed through the intertwining predictor (H3) — exactly the substitution of
+Proposition 1. The pragmatic term is invariant by (E1). For the epistemic term, orthogonality
+$\rho(g)^\top\rho(g)=I$ (H2) gives $\lVert\rho(g)(z^{(k)}-\bar z)\rVert=\lVert z^{(k)}-\bar z\rVert$;
+$\hat\Sigma\mapsto\rho(g)\hat\Sigma\rho(g)^\top$ leaves $\log\det(\hat\Sigma+\epsilon I)$ fixed
+($\det\rho=\pm1$); and any latent distance feeding a channel likelihood is preserved — so every argument of
+$\mathcal{C}_{\mathrm{epi}}$ is unchanged and $\mathcal{C}_{\mathrm{epi}}(g\cdot a)=\mathcal{C}_{\mathrm{epi}}(a)$
+by (E2). Hence $G(g\cdot a)=G(a)$. No step refers to the weights (H1/H3 are intrinsic; §3.1, Step 26), so the
+identity holds at initialisation and after any amount of training; invariance of the scalar field $G$ over
+the equivariant candidate population makes its minimiser equivariant and the executed trajectory's terminal
+state the $\rho(g)$-image. $\qquad\blacksquare$
+
+**Three verified instances.** The three epistemic drives we test are each a function of invariant latent
+quantities, hence each an instance of (E2): §3.5's **ensemble disagreement** $\mathcal{D}$ (and its
+$\log\det$ entropy face) just above; §3.5.1's **cue salience** $\eta$ under partial observability; and §5's
+**exact categorical mutual information** of the $K$-ary cue channel. Each is guarded init **and** post-train,
+with a non-equivariant control that breaks every line. The operational reading is the curiosity analogue of
+[B]: *an exploration policy fit on one orientation slice transfers exactly across the whole orbit* — the
+agent is **correctly indifferent to global pose** (the $\times1.0000$ re-orientation row below), spending
+information-seeking effort only on what the symmetry does not already hand it for free (举一反三 in the
+language of curiosity).
+
 A two-ensemble ablation — VN (shared equivariant encoder) vs a non-equivariant **MLP** control ($74{,}456$
 vs $494{,}368$ params; the equivariant model is again $6.6\times$ smaller) — pins it init **and** after a
 real Muon/AdamW + EMA + VICReg run. The disagreement, the entropy, and the *total* one-step $G$ under a
@@ -682,7 +784,8 @@ that still leaves it pinned at the hedge floor). It is the deliberate detour *fo
 better dynamics, the **same** latent and model — that wins.
 
 **The theorem realised at the decision level.** The cue sensor is a function of the latent distance
-$\lVert\hat z_h - z_c\rVert$ only; the equivariant encoder sends every latent by the same orthogonal
+$\lVert\hat z_h - z_c\rVert$ only — so the salience $\eta$ satisfies hypothesis (E2) and this is an instance
+of Proposition 3: the equivariant encoder sends every latent by the same orthogonal
 $\rho(R)$, so $\eta$ — and hence the whole EFE, the optimal plan, **and the resulting task outcome** — is
 exactly $\mathrm{SE}(3)$-invariant/equivariant. Rotating the entire POMDP by a global $(R,t)$:
 
@@ -1264,7 +1367,9 @@ mechanism* (the curiosity invariance and its $\beta$-knob), **not** a claimed ex
   MLP is much flatter than free but does not reach the VN floor (distilled OOD $0.632>2\times$ VN $0.300$) — soft
   regularisation *approximates* equivariance where the built-in prior *enforces* it (the soft-equivariant dial again). So
   the across-group prior is not only *learnable* but *exploitable*: a symmetry discovered from
-  data and distilled into a free predictor recovers most of the 举一反三 the hard-wired model gets for free,
+  data and distilled into a free predictor recovers most of the 举一反三 the hard-wired model gets for free
+  (this is **Proposition 2**'s exploit half made concrete — at the penalty's zero the free predictor meets
+  Proposition 1's (H3) over the *discovered* subgroup, so [B] rides across it, in the soft limit),
   matching the oracle and transferring exactly what it found — with a documented soft-vs-hard gap, not float-floor
   exactness. Six guards.
 - **The active-inference win transfers beyond a *constructed* POMDP — the de-construction completed.**
@@ -1287,8 +1392,9 @@ mechanism* (the curiosity invariance and its $\beta$-knob), **not** a claimed ex
   two negatives both fire — the win **vanishes** when the cue is useless ($\epsilon_0{=}\tfrac23$, ratio $1.00$)
   **and** when the affordance collapses to sense$=$commit (ratio $1.25$, EFE still senses *more*, $25.3$ vs $17.2$)
   — pinning the advantage to the affordance, **not** the mirror. The whole loop stays $\mathrm{SE}(3)$-exact
-  (IG-field $6\times10^{-6}$, true-goal outcome $\le2\times10^{-6}$, plan-equivariance $2\times10^{-8}$) where the
-  free MLP shatters it (IG-field $0.29$, outcome $1.0$/$49^\circ$). What remains untested is a *fully*
+  (the categorical MI is a function of the invariant latent cue-distance, so this is the §5 instance of
+  Proposition 3: IG-field $6\times10^{-6}$, true-goal outcome $\le2\times10^{-6}$, plan-equivariance
+  $2\times10^{-8}$) where the free MLP shatters it (IG-field $0.29$, outcome $1.0$/$49^\circ$). What remains untested is a *fully*
   non-constructed benchmark, no longer the mirror. Eight guards.
 - **The one outright failure is resolved — decoder-free goal-*reaching*, made exactly equivariant (§3.3.2).**
   The open-loop 3D [C] — purely-latent planning toward a goal cloud without a decoder — was the project's lone outright
