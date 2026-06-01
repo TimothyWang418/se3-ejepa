@@ -1351,7 +1351,17 @@ None of the four is a new layer; the contribution is the corner where they meet.
   symmetry**, and that approximation carries a statistically-real downstream cost the exact architecture
   does not — **exactness buys a closed-loop orientation-invariance augmentation cannot**, on the model that
   actually carries a planner. This turns §3.3's [C] selling point from an assertion into a measured,
-  multi-seed head-to-head (`step45_augmented_mlp_closed_loop.py`, 3 seeds).
+  multi-seed head-to-head (`step45_augmented_mlp_closed_loop.py`, 3 seeds; Figure 5).
+
+  ![Augmentation vs exact equivariance in the closed loop](figures/step45_augmented_vs_exact.png)
+
+  *Figure 5 — exact vs augmentation in the closed loop (Step 45; 3 seeds, 288 pooled tasks, pure-rotation
+  orbit). **(a)** Closed-loop OOD/seen orientation-error ratio: the exact VN is flat ($\times1.000$);
+  full-$\mathrm{SO}(3)$ augmentation narrows the un-augmented MLP's $\times1.401$ to $\times1.071$, but its
+  pooled CI still **excludes** $1$ (sign $p=0.02$) — it does not close the loop. **(b)** Composed
+  equivariance residual $\Delta_{\mathrm{eq}}$ (log): augmentation ($\approx11$) is no better than no
+  augmentation ($\approx4.4$), and $\sim\!10^{6}\times$ the VN's weight-independent float floor
+  ($\sim\!8\times10^{-6}$) — approximate-by-coverage is not exact-by-construction.*
 - **The Bitter-Lesson stress test: at *partial* coverage, scale substitutes for neither the coverage nor
   the architecture.** The full-coverage experiment handed augmentation the *whole* group; the realistic regime is
   *partial* coverage — you augment a wedge and hope the model extrapolates the rest. Holding coverage
