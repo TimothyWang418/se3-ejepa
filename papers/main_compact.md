@@ -1,7 +1,8 @@
 ---
 title: "Exact equivariance, kept through training, buys zero-shot generalisation across the symmetry group"
 subtitle: "Compact main-text draft (additive) — full papers are the comprehensive supplement"
-status: DRAFT — for review, NOT wired into the arXiv build
+status: DRAFT (review block resolved 2026-06-01) — NOT wired into the arXiv build
+target_venue: ICLR (primary) / NeurIPS (equal alternative) — 9-page main-text norm
 created: 2026-06-01
 ---
 
@@ -20,11 +21,11 @@ created: 2026-06-01
 >   `papers/arxiv/_combined.md` or the existing `arxiv_upload.tar.gz`. The mid-submission bundle is
 >   undisturbed. If you like this draft, wiring it into the build is a separate, explicit step.
 >
-> **2. The one genuinely new structural decision.** The core paper buries the
+> **2. The one genuinely new structural decision — ✅ CONFIRMED (2026-06-01).** The core paper buries the
 > Step 27→32→42→43 triangulation inside its §5 *limitations* bullets. I **promoted it to a first-class
 > main section (§4, "A design rule")**, because it is the freshest contribution and reads as a *method*
 > ("enrich the class, don't drop the prior; localise the cap by recovery-then-saturation"), not a caveat.
-> If you disagree, the fallback is to demote §4 back to a limitations paragraph and lead with [C].
+> **Reviewer approved keeping §4 promoted**, so the structure below stands.
 >
 > **3. What I relegated to the supplement (one-line map in the final section).** Active inference
 > (§3.5/3.5.1, Steps 34/37), symmetry discovery (Steps 33/36), the sample-efficiency frontier (§3.6),
@@ -44,10 +45,19 @@ created: 2026-06-01
 > at three seeds — the message lever is the null **×1.02 (~3%)**, and the lossless oracle closes **156%**.
 > See the morning summary for the seed-hardening deltas.
 >
-> **6. Open questions only you can settle** (I did *not* ask — you were asleep): target venue + length
-> cap; whether §4 should lead or [C] should lead; whether to keep the core title or sharpen it toward the
-> design rule; and whether the main should cite the supplement as "appendix" (one document) or as three
-> companion notes.
+> **6. Decisions resolved (2026-06-01 review).**
+> - **§4 promotion:** ✅ keep §4 ("A design rule") as a first-class section (see item 2).
+> - **Target venue:** **ICLR** (primary), **NeurIPS** equal alternative — JEPA is representation
+>   learning, ICLR's home turf, and the geometric-DL / world-model communities are strong there. Both use
+>   a **9-page main-text** norm (refs + appendix separate), which this draft is sized to.
+> - **Length:** approved "about right." Final fit happens at LaTeX-conversion time; if it runs >9pp, the
+>   first things to push to appendix are the Prop. 1 / Cor. 1 *proofs* and the §4.2 per-axis detail
+>   (keep the design-rule box and the three headline numbers in the body).
+>
+> **7. Genuinely still open** (lower-stakes, can wait): whether to keep the core title or sharpen it
+> toward the design rule; whether the supplement is cited as one "appendix" document or three companion
+> notes; and the actual ICLR/NeurIPS `\documentclass` conversion (a separate build step — this markdown
+> is the *content* draft, deliberately not yet in submission format).
 
 ---
 
