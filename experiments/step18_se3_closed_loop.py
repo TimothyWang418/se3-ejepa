@@ -462,6 +462,49 @@ def boot_ratio_ci(num: np.ndarray, den: np.ndarray, *, n_boot: int = 4000, alpha
 
 
 # --------------------------------------------------------------------------- #
+# distribution-free companions to the bootstrap CI (a referee asked for these
+# *alongside* the percentile CI, since K=24 paired tasks is thin for a
+# "disjoint-CI => decisive" claim). The sign test makes NO distributional
+# assumption; the sign-flip permutation test is the exact paired-design null.
+# --------------------------------------------------------------------------- #
+def paired_sign_test(d: np.ndarray) -> tuple[int, int, float]:
+    r"""Exact two-sided sign test that the paired differences ``d`` have nonzero median.
+
+    Counts how many of the $K$ paired differences are positive and returns the exact
+    two-sided binomial $p$ under $H_0:\Pr[d_i>0]=\tfrac12$ (zeros excluded — the standard
+    sign-test convention). Distribution-free: assumes only exchangeable signs.
+    """
+    from math import comb
+
+    d = np.asarray(d, dtype=np.float64)
+    nz = d[d != 0.0]
+    n = int(len(nz))
+    n_pos = int((nz > 0).sum())
+    if n == 0:
+        return 0, 0, 1.0
+    k = min(n_pos, n - n_pos)
+    tail = sum(comb(n, j) for j in range(0, k + 1)) / (2.0 ** n)
+    return n_pos, n, float(min(1.0, 2.0 * tail))
+
+
+def paired_permutation_test(d: np.ndarray, *, n_perm: int = 20000, seed: int = 7) -> float:
+    r"""Two-sided sign-flip permutation $p$-value for $H_0:\mathbb{E}[d]=0$ (paired design).
+
+    Under the paired null each $d_i$ is equally likely $\pm\lvert d_i\rvert$; we Monte-Carlo
+    the sign-flip distribution of $\lvert\overline d\rvert$ and return the add-one-smoothed
+    two-sided $p$. This is the exact permutation null for a paired difference.
+    """
+    d = np.asarray(d, dtype=np.float64)
+    if len(d) == 0:
+        return 1.0
+    obs = abs(float(d.mean()))
+    rng = np.random.default_rng(seed)
+    signs = rng.choice(np.array([-1.0, 1.0]), size=(n_perm, len(d)))
+    perm_means = np.abs((signs * d).mean(axis=1))
+    return float((1.0 + int((perm_means >= obs - 1e-12).sum())) / (n_perm + 1.0))
+
+
+# --------------------------------------------------------------------------- #
 # reporting
 # --------------------------------------------------------------------------- #
 def _per_gid_mean(results: dict, gids: list[int], key: str) -> dict:
@@ -490,19 +533,33 @@ def report_panel_se3(vn_res: dict, mlp_res: dict, gids: list[int]) -> dict:
     vr_m, vr_lo, vr_hi = boot_ratio_ci(vn_ood, vn_seen, seed=3)
     mr_m, mr_lo, mr_hi = boot_ratio_ci(mlp_ood, mlp_seen, seed=4)
     print(f"    paired OOD-minus-seen orientation increase (deg), 95% bootstrap CI over "
-          f"K={len(vn_seen)} tasks:")
+          f"K={len(vn_seen)} tasks (n_boot={4000}):")
     print(f"        VN  : mean={vd_m:+7.4f}  CI[{vd_lo:+7.4f}, {vd_hi:+7.4f}]  "
           f"max|d_i|={np.abs(vn_diff).max():.3e}")
     print(f"        MLP : mean={md_m:+7.4f}  CI[{md_lo:+7.4f}, {md_hi:+7.4f}]")
     print(f"    OOD/seen orientation-error ratio, 95% CI:")
     print(f"        VN  : {vr_m:5.3f}  CI[{vr_lo:5.3f}, {vr_hi:5.3f}]")
     print(f"        MLP : {mr_m:5.3f}  CI[{mr_lo:5.3f}, {mr_hi:5.3f}]")
+    # distribution-free backstops for the thin (K) paired design -----------------
+    sep = mlp_diff - vn_diff               # per-task EXCESS OOD degradation of MLP over VN
+    mlp_pos, mlp_n, mlp_sign_p = paired_sign_test(mlp_diff)
+    sep_pos, sep_n, sep_sign_p = paired_sign_test(sep)
+    mlp_perm_p = paired_permutation_test(mlp_diff)
+    sep_perm_p = paired_permutation_test(sep)
+    print(f"    distribution-free (K={len(vn_seen)} paired tasks; no CI assumption):")
+    print(f"        MLP degrades OOD (d=OOD-seen>0)         : sign {mlp_pos}/{mlp_n}, "
+          f"p_sign={mlp_sign_p:.2e}, p_perm={mlp_perm_p:.2e}")
+    print(f"        MLP degrades MORE than VN (d=MLP-VN>0)  : sign {sep_pos}/{sep_n}, "
+          f"p_sign={sep_sign_p:.2e}, p_perm={sep_perm_p:.2e}  <- decisive separation")
     return {
         "vn_ang": vn_ang, "mlp_ang": mlp_ang, "vn_pos": vn_pos,
         "vn_diff_max": float(np.abs(vn_diff).max()),
         "vn_diff_mean": vd_m, "mlp_diff_mean": md_m,
         "vn_ci": (vd_lo, vd_hi), "mlp_ci": (md_lo, md_hi),
         "vn_ratio_ci": (vr_lo, vr_hi), "mlp_ratio_ci": (mr_lo, mr_hi),
+        "n_boot": 4000,
+        "mlp_degrades_sign": (mlp_pos, mlp_n, mlp_sign_p), "mlp_degrades_perm_p": mlp_perm_p,
+        "sep_sign": (sep_pos, sep_n, sep_sign_p), "sep_perm_p": sep_perm_p,
     }
 
 
@@ -639,6 +696,9 @@ def main() -> None:
             "mlp_diff_mean": eg["mlp_diff_mean"],
             "vn_ci": eg["vn_ci"], "mlp_ci": eg["mlp_ci"],
             "vn_ratio_ci": eg["vn_ratio_ci"], "mlp_ratio_ci": eg["mlp_ratio_ci"],
+            "n_boot": eg["n_boot"],
+            "mlp_degrades_sign": eg["mlp_degrades_sign"], "mlp_degrades_perm_p": eg["mlp_degrades_perm_p"],
+            "sep_sign": eg["sep_sign"], "sep_perm_p": eg["sep_perm_p"],
         },
         "verdict": {"passed": bool(passed), "ok_vn_flat": ok_vn_flat,
                     "ok_mlp_degrades": ok_mlp_degrades, "ok_separated": ok_separated, "ok_equiv": ok_equiv},
@@ -648,6 +708,8 @@ def main() -> None:
             "vn_ang_by_gid": sg["vn_ang"], "mlp_ang_by_gid": sg["mlp_ang"],
             "vn_ci": sg["vn_ci"], "mlp_ci": sg["mlp_ci"],
             "vn_diff_mean": sg["vn_diff_mean"], "mlp_diff_mean": sg["mlp_diff_mean"],
+            "mlp_degrades_sign": sg["mlp_degrades_sign"], "mlp_degrades_perm_p": sg["mlp_degrades_perm_p"],
+            "sep_sign": sg["sep_sign"], "sep_perm_p": sg["sep_perm_p"],
         }
     fig_dir = ROOT / "papers" / "figures"
     fig_dir.mkdir(parents=True, exist_ok=True)

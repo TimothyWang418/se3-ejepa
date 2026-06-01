@@ -66,11 +66,24 @@
     "mlp_ratio_ci": [
       0.7605557745235377,
       1.4791025908799624
-    ]
+    ],
+    "n_boot": 4000,
+    "mlp_degrades_sign": [
+      3,
+      4,
+      0.625
+    ],
+    "mlp_degrades_perm_p": 0.4977251137443128,
+    "sep_sign": [
+      3,
+      4,
+      0.625
+    ],
+    "sep_perm_p": 0.4977251137443128
   },
   "verdict": {
     "passed": false,
-    "ok_vn_exact": true,
+    "ok_vn_flat": true,
     "ok_mlp_degrades": false,
     "ok_separated": false,
     "ok_equiv": true
