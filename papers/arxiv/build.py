@@ -12,12 +12,15 @@ Pipeline
 3. Keep the recurring Chinese idiom 举一反三 as Chinese glyphs (the project's
    nickname for "zero-shot generalisation across the symmetry group"), adding a
    one-time parenthetical gloss at first use: pinyin + an English rendering. The
-   CJK glyphs are typeset with ``xeCJK`` + the TeXLive-bundled Fandol font, so
-   the source compiles with **XeLaTeX** (tectonic locally; arXiv auto-detects
-   xelatex from the fontspec/xeCJK load).
+   CJK glyphs are typeset with ``xeCJK`` + the Fandol font, which is *shipped in
+   the bundle* and loaded by filename (``Path=./``) -- self-contained, with no
+   dependency on arXiv's server having the font. The source compiles with
+   **XeLaTeX** (tectonic locally; arXiv auto-detects xelatex from the
+   fontspec/xeCJK load).
 4. Run pandoc to emit a standalone ``main.tex``.
 5. Copy exactly the figures the combined document embeds into ``arxiv/figures/``.
-6. Pack ``main.tex`` + ``00README.json`` + ``figures/`` into the upload tarball.
+6. Pack ``main.tex`` + ``00README.json`` + ``figures/`` + the Termes & Fandol
+   OTFs into the upload tarball.
 
 Run from papers/:  python3 arxiv/build.py
 """
@@ -59,6 +62,19 @@ FONT_BASENAMES = [
     "texgyretermes-italic.otf",
     "texgyretermes-bolditalic.otf",
     "texgyretermes-math.otf",
+]
+
+# --- CJK font shipped with the bundle ------------------------------------
+# The idiom 举一反三 is set in Fandol Song. We *ship* the OTFs and load them by
+# filename via Path=./ (see the xeCJK line in the preamble) for the same reason
+# as Termes above: it makes the upload self-contained, so the compile never
+# depends on arXiv's server (or tectonic's bundle) happening to carry Fandol.
+# These two faces (Regular + Bold) are all the document needs -- Bold is loaded
+# because some 举一反三 occurrences sit inside **bold** prose. The OTFs live in
+# TeXLive's fandol tree; copy_fonts() locates them the same way as Termes.
+CJK_FONT_BASENAMES = [
+    "FandolSong-Regular.otf",
+    "FandolSong-Bold.otf",
 ]
 
 TITLE = ("Exact equivariance, kept through training, buys zero-shot "
@@ -178,10 +194,11 @@ def build_combined() -> None:
     #  * a handful of Unicode symbols appear in *prose* (text mode); the text font
     #    may lack them, so map each to its math equivalent via newunicodechar
     #    (including → now that we typeset in TeX Gyre Termes).
-    #  * xeCJK + Fandol typesets the 举一反三 glyphs. Fandol is bundled in TeXLive,
-    #    so tectonic fetches it locally and arXiv's server already has it -> the
-    #    same font on both ends, no install. BoldFont is needed because some
-    #    occurrences of 举一反三 sit inside **bold** prose.
+    #  * xeCJK + Fandol typesets the 举一反三 glyphs. The Fandol OTFs are *shipped*
+    #    and loaded by filename via Path=./ (like Termes), so the same font is
+    #    used locally and on arXiv with no dependency on either side carrying
+    #    Fandol. BoldFont is needed because some 举一反三 occurrences sit inside
+    #    **bold** prose.
     PREAMBLE.write_text(
         # JEPA/NeurIPS-style layout + fonts. The pandoc template already loads
         # fontspec+unicode-math under XeLaTeX; we only widen the column and pin
@@ -211,7 +228,7 @@ def build_combined() -> None:
         # newunicodechar binding, so a mapping would lose and error in text mode.
         "\\usepackage{xeCJK}\n"
         "\\setCJKmainfont{FandolSong-Regular.otf}"
-        "[BoldFont=FandolSong-Bold.otf, AutoFakeSlant=0.15]\n",
+        "[Path=./, BoldFont=FandolSong-Bold.otf, AutoFakeSlant=0.15]\n",
         encoding="utf-8",
     )
 
@@ -292,21 +309,23 @@ def copy_figures() -> list[str]:
 
 
 def copy_fonts() -> list[str]:
-    """Locate the TeX Gyre Termes OTFs and mirror them next to ``main.tex``.
+    """Locate the Termes + Fandol OTFs and mirror them next to ``main.tex``.
 
     tectonic resolves fonts from its bundle by filename and ignores system
-    fontconfig, so the Times-clone families must *travel in the build dir* and be
-    loaded by filename (see the preamble's ``Path=./`` font spec). We find each
-    OTF under the local TeXLive opentype trees -- with a few system font dirs as
-    a fallback -- and copy it into ``papers/arxiv/``. Idempotent: a file already
-    present is left in place. Returns the basenames shipped.
+    fontconfig, so both the Times-clone body families *and* the Fandol CJK font
+    must *travel in the build dir* and be loaded by filename (see the preamble's
+    ``Path=./`` font specs). We find each OTF under the local TeXLive opentype
+    trees -- with a few system font dirs as a fallback -- and copy it into
+    ``papers/arxiv/``. Idempotent: a file already present is left in place.
+    Returns the basenames shipped.
     """
+    wanted = FONT_BASENAMES + CJK_FONT_BASENAMES
     roots = sorted(Path("/usr/local/texlive").glob(
         "*/texmf-dist/fonts/opentype/public"))
     roots += [Path("/Library/Fonts"), Path.home() / "Library" / "Fonts",
               Path("/System/Library/Fonts")]
     missing = []
-    for name in FONT_BASENAMES:
+    for name in wanted:
         dst = HERE / name
         if dst.exists():
             continue  # already shipped -> skip the search (idempotent + fast)
@@ -320,17 +339,18 @@ def copy_fonts() -> list[str]:
             continue
         shutil.copy2(found, dst)
     assert not missing, (
-        f"TeX Gyre Termes OTFs not found on this machine: {missing}. "
-        "Install the tex-gyre / tex-gyre-math TeXLive packages, or copy the "
-        "OTFs into papers/arxiv/ manually."
+        f"required OTFs not found on this machine: {missing}. "
+        "Install the tex-gyre / tex-gyre-math / fandol TeXLive packages, or copy "
+        "the OTFs into papers/arxiv/ manually."
     )
-    print(f"fonts/: shipped {len(FONT_BASENAMES)} Termes OTFs -> {HERE}")
-    return list(FONT_BASENAMES)
+    print(f"fonts/: shipped {len(FONT_BASENAMES)} Termes + "
+          f"{len(CJK_FONT_BASENAMES)} Fandol OTFs -> {HERE}")
+    return wanted
 
 
 def make_tarball(figures: list[str]) -> None:
     """Pack the arXiv source bundle: ``main.tex`` + ``00README.json`` + figures
-    + the TeX Gyre Termes OTFs.
+    + the Termes & Fandol OTFs.
 
     ``preamble_extra.tex`` is *not* shipped -- pandoc's ``-H`` already inlined its
     content into ``main.tex``'s preamble, so it would be dead weight. Arcnames are
@@ -338,6 +358,7 @@ def make_tarball(figures: list[str]) -> None:
     sees a flat top-level ``main.tex`` -- with the fonts alongside it, matching the
     preamble's ``Path=./`` -- exactly as ``00README.json`` declares.
     """
+    fonts = FONT_BASENAMES + CJK_FONT_BASENAMES
     if TARBALL.exists():
         TARBALL.unlink()
     with tarfile.open(TARBALL, "w:gz") as tar:
@@ -345,10 +366,10 @@ def make_tarball(figures: list[str]) -> None:
         tar.add(MAIN_TEX, arcname=MAIN_TEX.name)
         for name in figures:
             tar.add(ARXIV_FIGURES / name, arcname=f"figures/{name}")
-        for name in FONT_BASENAMES:
+        for name in fonts:
             tar.add(HERE / name, arcname=name)
     size_kb = TARBALL.stat().st_size / 1024
-    n = 2 + len(figures) + len(FONT_BASENAMES)
+    n = 2 + len(figures) + len(fonts)
     print(f"{TARBALL.name}: {n} members, {size_kb:.0f} KiB")
 
 
