@@ -1,0 +1,232 @@
+{
+  "mode": "SMOKE",
+  "config": {
+    "ENC_RUNGS": [
+      "E0-base",
+      "E1-mul16",
+      "E2-mul32",
+      "E3-lmax3"
+    ],
+    "ORACLES": [
+      "ORACLE-raw",
+      "ORACLE-unit"
+    ],
+    "labels": {
+      "E0-base": "enc lmax2 mul8 [a,r]",
+      "E1-mul16": "enc lmax2 mul16 [a,r]",
+      "E2-mul32": "enc lmax2 mul32 [a,r]",
+      "E3-lmax3": "enc lmax3 mul8 [a,r]",
+      "ORACLE-raw": "points [a,r]",
+      "ORACLE-unit": "points [a,r_hat]",
+      "MLP-MP": "MLP [a,r]"
+    },
+    "SEEDS": [
+      0
+    ],
+    "N_TRAIN": 150,
+    "N_TEST": 64,
+    "EPOCHS": 3,
+    "K_OOD": 2,
+    "VAR_COEF": 0.1,
+    "C_INT": 0.8,
+    "AUG": 6,
+    "D_OBJ": 48,
+    "D_OBJ_ORACLE": 72
+  },
+  "params": {
+    "E0-base": 65304,
+    "E1-mul16": 67568,
+    "E2-mul32": 73248,
+    "E3-lmax3": 65888,
+    "ORACLE-raw": 65408,
+    "ORACLE-unit": 65408,
+    "MLP-MP": 62304
+  },
+  "indist_per_seed": {
+    "E0-base": [
+      0.8120609521865845
+    ],
+    "E1-mul16": [
+      0.8315523266792297
+    ],
+    "E2-mul32": [
+      0.8805614113807678
+    ],
+    "E3-lmax3": [
+      0.8932601809501648
+    ],
+    "ORACLE-raw": [
+      0.8694947957992554
+    ],
+    "ORACLE-unit": [
+      0.8727339506149292
+    ],
+    "MLP-MP": [
+      10.794533729553223
+    ]
+  },
+  "ood_ratio_per_seed": {
+    "E0-base": [
+      1.0000000366996127
+    ],
+    "E1-mul16": [
+      1.0
+    ],
+    "E2-mul32": [
+      0.9999999323106328
+    ],
+    "E3-lmax3": [
+      0.9999999666364593
+    ],
+    "ORACLE-raw": [
+      0.9999998628982139
+    ],
+    "ORACLE-unit": [
+      0.9999998292588345
+    ],
+    "MLP-MP": [
+      2.0567383424291905
+    ]
+  },
+  "se3_per_seed": {
+    "E0-base": [
+      2.2239983081817627e-06
+    ],
+    "E1-mul16": [
+      1.955777406692505e-06
+    ],
+    "E2-mul32": [
+      2.6971101760864258e-06
+    ],
+    "E3-lmax3": [
+      1.3783574104309082e-05
+    ],
+    "ORACLE-raw": [
+      5.364418029785156e-07
+    ],
+    "ORACLE-unit": [
+      7.152557373046875e-07
+    ],
+    "MLP-MP": [
+      0.8971828818321228
+    ]
+  },
+  "perm_per_seed": {
+    "E0-base": [
+      0.0
+    ],
+    "E1-mul16": [
+      0.0
+    ],
+    "E2-mul32": [
+      0.0
+    ],
+    "E3-lmax3": [
+      0.0
+    ],
+    "ORACLE-raw": [
+      0.0
+    ],
+    "ORACLE-unit": [
+      0.0
+    ],
+    "MLP-MP": [
+      0.0
+    ]
+  },
+  "indist_mean": {
+    "E0-base": 0.8120609521865845,
+    "E1-mul16": 0.8315523266792297,
+    "E2-mul32": 0.8805614113807678,
+    "E3-lmax3": 0.8932601809501648,
+    "ORACLE-raw": 0.8694947957992554,
+    "ORACLE-unit": 0.8727339506149292,
+    "MLP-MP": 10.794533729553223
+  },
+  "indist_std": {
+    "E0-base": 0.0,
+    "E1-mul16": 0.0,
+    "E2-mul32": 0.0,
+    "E3-lmax3": 0.0,
+    "ORACLE-raw": 0.0,
+    "ORACLE-unit": 0.0,
+    "MLP-MP": 0.0
+  },
+  "ood_ratio_mean": {
+    "E0-base": 1.0000000366996127,
+    "E1-mul16": 1.0,
+    "E2-mul32": 0.9999999323106328,
+    "E3-lmax3": 0.9999999666364593,
+    "ORACLE-raw": 0.9999998628982139,
+    "ORACLE-unit": 0.9999998292588345,
+    "MLP-MP": 2.0567383424291905
+  },
+  "se3_mean": {
+    "E0-base": 2.2239983081817627e-06,
+    "E1-mul16": 1.955777406692505e-06,
+    "E2-mul32": 2.6971101760864258e-06,
+    "E3-lmax3": 1.3783574104309082e-05,
+    "ORACLE-raw": 5.364418029785156e-07,
+    "ORACLE-unit": 7.152557373046875e-07,
+    "MLP-MP": 0.8971828818321228
+  },
+  "perm_mean": {
+    "E0-base": 0.0,
+    "E1-mul16": 0.0,
+    "E2-mul32": 0.0,
+    "E3-lmax3": 0.0,
+    "ORACLE-raw": 0.0,
+    "ORACLE-unit": 0.0,
+    "MLP-MP": 0.0
+  },
+  "conv_per_seed": {
+    "E0-base": [
+      0.0
+    ],
+    "E1-mul16": [
+      0.0
+    ],
+    "E2-mul32": [
+      0.0
+    ],
+    "E3-lmax3": [
+      0.0
+    ],
+    "ORACLE-raw": [
+      0.0
+    ],
+    "ORACLE-unit": [
+      0.0
+    ],
+    "MLP-MP": [
+      0.0
+    ]
+  },
+  "conv_mean": {
+    "E0-base": 0.0,
+    "E1-mul16": 0.0,
+    "E2-mul32": 0.0,
+    "E3-lmax3": 0.0,
+    "ORACLE-raw": 0.0,
+    "ORACLE-unit": 0.0,
+    "MLP-MP": 0.0
+  },
+  "ok_converged": true,
+  "cap": 0.8120609521865845,
+  "mlp": 10.794533729553223,
+  "gap": -9.982472777366638,
+  "best_enc": 0.8120609521865845,
+  "best_enc_variant": "E0-base",
+  "enc_gap_closed_frac": -0.0,
+  "oracle_raw": 0.8694947957992554,
+  "oracle_unit": 0.8727339506149292,
+  "oracle_raw_gap_closed_frac": 0.005753468593762783,
+  "oracle_unit_gap_closed_frac": 0.006077952806033114,
+  "verdict": {
+    "passed": false,
+    "ok_equiv": true,
+    "ok_oracle_closes": false,
+    "ok_global_flat": true,
+    "ok_mlp_degrades": true
+  }
+}

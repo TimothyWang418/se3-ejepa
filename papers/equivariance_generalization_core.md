@@ -609,7 +609,9 @@ the trilinear torque — lets an *exactly* equivariant predictor (VN-TP) recover
 $\mathrm{SE}(3)$ residual $4.0\times10^{-5}$); a residual $\times2.59$ to the unconstrained MLP shows the
 degree-1 cap was the **dominant, not the sole**, in-distribution bottleneck — and §5 later rules out the two
 candidate residual caps it leaves open (climbing the predictor degree *and* enriching the message both
-saturate), pinning the remainder on the encoder's lossy latent. The lesson is constructive:
+saturate) and then **confirms the third directly**: a lossless point-cloud oracle through the *same* predictor
+closes the gap while a fixed-budget encoder ladder does not, pinning the remainder on the encoder's lossy
+latent. The lesson is constructive:
 *enrich the equivariant hypothesis class, don't drop the prior.* The cap does **not** touch the [B] result —
 equivariance is about how error
 transforms *across the group*, not in-distribution capacity — so the $\times1.00$-vs-$\times17$ flip stands
@@ -1300,8 +1302,30 @@ mechanism* (the curiosity invariance and its $\beta$-knob), **not** a claimed ex
   unconditionally while the recovery half simply had nothing to recover (the prior was never the bottleneck).
   Reported as an honest INCONCLUSIVE on recovery (no guard loosened); confidence $\approx0.7$ the message lever
   is null *here*, $\approx0.6$ on the stronger encoder-localisation reading (a triangulation across Step 32
-  $+$ Step 42). Three seeds; structural invariant (every variant exactly $\mathrm{SE}(3)\rtimes S_O$-equivariant,
-  $\hat r$ scale-invariant where raw $r$ is not) in `test_step42_message_ladder.py`.
+  $+$ Step 42, **confirmed directly by Step 43 below**). Three seeds; structural invariant (every variant
+  exactly $\mathrm{SE}(3)\rtimes S_O$-equivariant, $\hat r$ scale-invariant where raw $r$ is not) in
+  `test_step42_message_ladder.py`.
+- **The encoder *is* the bottleneck — a lossless oracle closes what the predictor, message, and encoder ladder
+  cannot (Step 43).** Steps 32 and 42 left the residual cap *inferred* on the encoder by elimination; Step 43
+  tests it directly, holding the VN-TP predictor, M0 message, teacher, data, and training fixed (three seeds,
+  $80$ epochs) along **two** axes. *(A) Capacity ladder:* scale the encoder's **internal** width/angular
+  resolution at a **fixed $16$-vector output budget** ($\mathrm{mul}\in\{8,16,32\}$, $\ell_{\max}\in\{2,3\}$) —
+  the cap moves $0.263\to$ at best $0.227$ (E2-mul32), closing only $21\%$ of the E0$\to$MLP gap: *internal*
+  encoder capacity saturates like the predictor and the message. *(B) Lossless oracle:* **bypass** the encoder
+  entirely, feeding the true per-object centred cloud $\tilde x_k=x_k-\bar x$ ($72$ numbers, vs the encoder's
+  lossy $48$) into the **same degree-3 predictor** at a matched $\sim65$k params — relMSE collapses to
+  $0.00269\pm0.0004$, closing $\mathbf{153\%}$ of the gap, *past* even the non-equivariant MLP. *(i) Localised:*
+  the residual interaction cap is the encoder's lossy **output latent** (the $16$-vector pooling that discards
+  the point detail the trilinear $(\hat r_{ij}\times a_i)\times\tilde x_k$ coupling needs), not its internal
+  capacity, not the predictor (Step 32), not the message (Step 42) — the triangulation is complete. *(ii) Free:*
+  the oracle stays exactly equivariant (post-training $\mathrm{SE}(3)\,1.8\times10^{-6}$, perm $0$) and
+  across-group $\times1.00$ — *lossless, equivariant, and flat coexist* — while the lossless-but-non-equivariant
+  MLP carries $\times9.9$; the fix is to **widen the latent budget, not drop the prior**. Honest caveats: the
+  oracle relMSE is in point space (read as *solved* vs E0's *still $\sim0.26$*, not subtracted against E0), and
+  the global plateau witness flags non-convergence driven *entirely by the MLP* ($27.9\%$) while the decisive
+  oracle plateaued at $5.3\%$ — verdict CONFIRMED, four guards green (no guard loosened); confidence
+  $\approx0.85$ (up from $0.6$). Structural invariants — ladder *and* oracle stay $\mathrm{SE}(3)\rtimes S_O$-exact,
+  oracle latent lossless ($72>48$) — in `test_step43_encoder_ladder.py`.
 - **The symmetry prior is *discoverable from data*, and falsifiably so.** Every result before this
   *assumes* the group; we test whether the group can instead be **read out of a frozen teacher's
   behaviour**. Parametrise a *generator slate* of $K$ free $3\times3$ matrices $\{\hat G_k\}$ — with **no**
@@ -1533,6 +1557,7 @@ and, where it asserts a symmetry, the guard test that checks it (under `tests/`)
 | 5 | multi-step rollout horizon (2D, 3D) | `step31_rollout_horizon`, `step31_rollout_horizon_3d` | — |
 | 5 | tensor-product degree ladder | `step32_tp_degree_ladder` | `test_step32_degree_ladder` |
 | 5 | tensor-product message ladder | `step42_tp_message_ladder` | `test_step42_message_ladder` |
+| 5 | encoder ladder + lossless oracle | `step43_encoder_ladder` | `test_step43_encoder_ladder` |
 | 5 | emergent symmetry discovery | `step33_symmetry_discovery` | `test_step33_symmetry_discovery` |
 | 5 | active inference, noisy-channel curiosity | `step34_active_inference_noisy` | `test_step34_active_inference_noisy` |
 | 5 | few-body $\to$ many-body transfer | `step35_many_body` | `test_step35_many_body` |
