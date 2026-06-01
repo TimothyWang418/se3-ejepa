@@ -15,23 +15,31 @@ Compatible-Optimizer* warning (Lau & Su) leaves it untouched (§2.3) ([A]) — a
 **flat to five digits across the group**
 while a **higher-capacity, identically-trained** non-equivariant baseline (*no* rotation augmentation)
 fits the slice but breaks out-of-distribution
-([B]: VN ×1.00 vs baseline ×13.8 in 2D latent, ×17.2 in 3D, ×157 over the full $\mathrm{SE}(3)$
-ladder — all *vs the non-augmented baseline*; given the group, augmentation closes the across-group
-*task* ratio to $\times1.06$–$1.46$ but never the float-floor exactness, §5), with the equivariant
+([B]: VN ×1.00 vs baseline ×13.8 in 2D latent, ×17.2 in 3D, and ×157 over the full $\mathrm{SE}(3)$
+ladder — that last factor a raw-coordinate *translation*-extrapolation blow-up rather than a
+learned-rotation effect, since the equivariant model handles translation *exact-by-centring*; all *vs
+the non-augmented baseline*; given the group, augmentation closes the across-group *task* ratio to
+$\times1.06$–$1.46$ but never the float-floor exactness, §5), with the equivariant
 model **$4.5$–$7.4\times$ smaller** — though it earns **no
 in-distribution edge** (a wash-to-loss at scale, where the higher-capacity baseline fits the seen
-slice at least as well; the across-group flatness is the whole claim, §3.6). The same isometry
+slice at least as well; the across-group flatness is the whole claim, §3.6). **One caution is
+load-bearing: flatness is necessary, not sufficient.** The theorem transports the *in-distribution*
+error level across the group **unchanged**, but does not lower it; on these tasks that level is itself
+only *moderate* (3D latent relMSE $\approx0.43$ at $N{=}512$, against the relMSE$=1$ predict-no-change
+baseline), so the headline is that across-group error is *constant*, not that it is *low* (§3.2, §3.6). The same isometry
 argument lifts to a **closed-loop corollary** ([C]): under a
 *matching* equivariant planner the realised control trajectory at orientation $g$ is exactly
 $\rho(g)$ applied to the seen trajectory, so closed-loop control error is invariant across the
 group — **float-floor-exact in 2D/$\mathrm{SO}(2)$** on real PushT (paired $K{=}48$: VN seen-vs-OOD
 block-angle change $=0$; the baseline degrades with a 95% CI excluding $0$) and **statistically
-flat in 3D/$\mathrm{SE}(3)$** ($[0.977,0.999]$, disjoint from the baseline's $[1.049,1.234]$). We
+flat in 3D/$\mathrm{SE}(3)$** ($[0.993,1.000]$ over $K{=}200$ paired tasks, disjoint from the baseline's $[1.038,1.090]$). We
 are explicit about what stays **out of scope** (§5): binary task-success sweeps, planner-free
 closed-loop invariance, and scaling the approach itself. We do, however, **stress-test the prior
 directly against Sutton's Bitter Lesson** — rotation augmentation given the whole group, brute-force
 scale at partial coverage, and a soft-equivariant interpolation — and find each closes at most the
-across-group *task* metric, never the architecture's float-floor *exactness* (§5). Finally, because
+across-group *task* metric, never the architecture's float-floor *exactness*; tested **head-to-head in the
+closed loop** (3 seeds), augmentation narrows but never closes the orientation-invariant loop the
+architecture does (exact VN $1.000$ vs augmented baseline $1.071$, CI excluding $1$, §5). Finally, because
 equivariance is **closed under composition**, the guarantee is not merely one-step: the $H$-fold rollout
 operator the world model is actually planned with stays across-group flat ($\times1.00$) and
 float-floor-exact ($\le\!2\times10^{-7}$) at **every** horizon, while the non-equivariant baseline's composed
@@ -73,7 +81,7 @@ All experiments are laptop-scale (CPU/MPS), fully seeded and deterministic (last
 > env float floor; the non-equivariant baseline degrades with a CI excluding $0$). The corollary
 > **lifts to the full 3D SE(3) group** (§3.3.1): on 3D point clouds with an
 > SE(3)-equivariant planner the VN's OOD/seen orientation-error ratio is statistically flat
-> ($[0.977,0.999]$) and disjoint from the baseline's ($[1.049,1.234]$) — there "exact" means to
+> ($[0.993,1.000]$ over $K{=}200$ paired tasks) and disjoint from the baseline's ($[1.038,1.090]$) — there "exact" means to
 > the network's $\sim\!10^{-6}$ equivariance floor (a CEM tie-flip floor), not the literal float
 > zero 2D reaches; the single-plan identity $\mathrm{plan}(g\cdot x)=g\cdot\mathrm{plan}(x)$ still
 > holds to $1.2\times10^{-7}$.
@@ -192,7 +200,14 @@ the only deviations we observe ($\le 0.2\%$) are the floating-point floor. **Two
 honest.** The theorem constrains only the across-group *ratio* — it is silent on the in-distribution
 *magnitude* of the error, and so confers **no** in-distribution edge: a higher-capacity non-equivariant
 baseline can and does fit the seen slice at least as well (§3.4.1, where MLP-MP fits *best*
-in-distribution; §3.6's frontier). And it holds for whatever group $G$ makes (H1)–(H3) true: when object
+in-distribution; §3.6's frontier). **The corollary worth stating plainly: flatness *transports*
+competence, it does not *manufacture* it.** Since the across-group error *equals* the in-distribution
+error — that is the entire content of $\times1.00$ — the equivariant model is exactly as good, and *no
+better*, across the orbit as on the training wedge; and on these tasks that wedge fit is itself only
+*moderate* (3D latent relMSE $\approx0.43$ at $N{=}512$, against the relMSE$=1$ predict-no-change
+baseline). So "zero-shot generalisation across the group" means the error is *uniform*, not that it is
+*small* — a flat-at-$0.43$ world model, not a flat-and-solved one. And it holds for whatever group $G$
+makes (H1)–(H3) true: when object
 interaction collapses the per-object $\mathrm{SE}(3)^O\rtimes S_O$ to its global diagonal (§3.4.1), the
 guarantee follows the *surviving* global group, not the richer per-object one — the relative-arrangement
 axis is then a *learned*, not theorem-forced, generalisation. The planning cost
@@ -221,6 +236,21 @@ initialisation (Result [A], §3.1); optimisation was free to corrupt the symmetr
 genuinely fails the across-group test — the $\times13$–$\times157$ blow-up (Result [B], §3.2). The
 theorem's role is to turn $\times1.00$ from a *finding* into a *falsifiable prediction*; [A] and the
 baseline contrast are what carry the empirical weight.
+
+**One statement, instantiated many times — where the independent empirical content actually sits.** It
+follows that the reader should *not* count the $\times1.00$ results as independent evidence. Every
+$\times1.00$ reported later in this note and in the appendix — across $\mathrm{SO}(2)$, $\mathrm{SO}(3)$,
+the full $\mathrm{SE}(3)$ ladder, the scene group $\mathrm{SE}(3)^O\rtimes S_O$, the rollout horizon, and
+the active-inference drives — is the *same* Proposition 1 instantiated, not a separate finding. The
+note's independent content is therefore **concentrated, not diffuse**: two structural theorems (this
+isometry-cancellation, and the intrinsic-parametrisation result of §2.3 that makes [A] optimiser-proof)
+plus a *handful* of genuinely could-have-gone-otherwise measurements — that real PushT's interior is
+exactly $\mathrm{SO}(2)$-equivariant to $1.8\times10^{-5}$ px (§3.3), that the non-equivariant baseline
+collapses by $\times13$–$\times157$ off the wedge (§3.2), that the equivariant-latent active-inference
+planner converts an invariant curiosity drive into a task win a reward-only planner provably cannot match
+(§3.5.1), and that the in-distribution under-fit localises to the encoder's pooled latent by a
+recovery-then-saturation fingerprint (§3.4.1, §5). The many tables are that small core re-confirmed
+across settings, reported in full **for falsifiability, not as additive evidence**.
 
 **Corollary 1 (closed-loop orientation-invariance, why [C] is the *same* theorem).** *Add* **(H4)**
 *the planner is $G$-equivariant — its sampling distribution and constraint set commute with the group
@@ -332,6 +362,11 @@ matching hypothesis-class restriction.) §3.1 confirms it empirically across thr
 > residual I cannot fully kill (a CEM tie-flip floor, a single-pair closed loop, a 3D statistical-vs-literal
 > gap). $\approx0.6$ — a *generalisation beyond what was measured* (e.g. "no in-distribution edge holds
 > at scale", "the located crossover transfers off the tested plane"): directionally supported, not proven.
+> **One calibration note (to keep the scores honest).** A high score certifies the claim is *correct as
+> stated*, **not** that it is *contentful*: a $\approx0.9$ on a $\times1.00$ result means only that I
+> would stake the paper on its being a true *instance of Proposition 1* — which §2.2 flags as
+> near-tautological — *not* that it independently advances the thesis. Read the per-section score as
+> calibrating *correctness*; for **where the independent empirical weight sits**, read §2.2.
 
 ### 3.1 [A] — the learned symmetry survives optimisation
 
@@ -398,7 +433,10 @@ Two facts hold in every row:
 
 - **VN flat to five digits** — same axis/new angle, new axes, random $\mathrm{SO}(3)$, **and large
   translations**. This is §2.2's theorem, realised. The equivariant model has seen one wedge and is
-  *exactly* as good on the entire orbit.
+  *exactly* as good on the entire orbit — but read the *level*, not just the flatness: "as good" is the
+  **wedge** level (latent relMSE $0.26$ in 2D, $0.23$ in 3D — comfortably under the $1.0$ no-change line,
+  but far from solved). The theorem pins the across-group *ratio* at $\times1.00$, not the *magnitude*;
+  flat here means *uniformly moderate*, not *uniformly good* (§2.2, §3.6).
 - **The baseline fits the wedge but breaks OOD**, crossing relMSE $=1$ (worse than predicting
   no change) in the latent demos, and — in 3D — worst on the **new-axis** rotations the
   $z$-wedge never showed ($x\,90°$ at $5.28$) or on large translations its raw-coordinate inputs
@@ -496,22 +534,26 @@ translation-blind, so SE(3) would silently collapse to SO(3). A separate **close
 channel** (terminal cost $\lVert\bar x_0+C_T\sum_h a_h-\bar x_g\rVert^2$) restores exact translation
 handling. Paired over $K{=}24$ tasks on orbits of $1$ seen $+ 4$ OOD $(R,t)$, $\lvert t\rvert\!\sim\!0.8$:
 
-| OOD/seen orientation-error ratio, 95% bootstrap CI over $K{=}24$ ($B{=}4000$ resamples) | ratio | 95% CI |
+| OOD/seen orientation-error ratio, 95% bootstrap CI over $K{=}200$ ($B{=}4000$ resamples) | ratio | 95% CI |
 |---|---:|---:|
-| **VN (equivariant)** | $0.989$ | $[0.977,\ 0.999]$ — within $2\%$ of flat, deviation *negative* |
-| **MLP (baseline)** | $1.134$ | $[1.049,\ 1.234]$ — excludes $1$ |
+| **VN (equivariant)** | $0.996$ | $[0.993,\ 1.000]$ — flat to the upper bound, deviation *negative* |
+| **MLP (baseline)** | $1.064$ | $[1.038,\ 1.090]$ — excludes $1$ |
 
-The CIs are **disjoint** ($0.999<1.049$); panel [S] (the verbatim non-equivariant planner) grows the
-VN residual $\sim\!5\times$ (ratio $0.886$, CI $[0.825,0.954]$), re-confirming §3.3's lesson — closed-loop
-invariance needs **model *and* planner**. VN $16{,}856$ params vs MLP $124{,}512$ (**7.4×**),
-post-train composed equivariance $6.1\times10^{-6}$ vs $5.61$. **Honest power note:** $K{=}24$ paired tasks
-is *thin* for "disjoint CI $\Rightarrow$ decisive", so we add two distribution-free backstops on the same
-paired design (no CI assumption). On whether the MLP degrades **more** per task than the VN, the
-magnitude-aware **sign-flip permutation test gives $p=0.004$**; the more conservative **sign test is
-$17/24$, $p=0.064$** — marginal precisely *because* $K$ is small and it discards the (large) magnitude
-gap, with the $7$ "wrong-sign" tasks being ones where the VN's own $\le3.5°$ tie-flip noise (below) exceeds
-the MLP's degradation on that task. Read together — disjoint CIs, $p_{\text{perm}}=0.004$, sign $p=0.064$ —
-the separation is real but we flag the thin $K$ rather than lean on the CI alone.
+The CIs are **disjoint** ($1.000<1.038$); panel [S] (the verbatim non-equivariant planner) leaves the
+VN's ratio CI still bracketing $1$ ($0.991$, CI $[0.957,1.027]$ — *unbiased*) while inflating its
+worst-case paired residual from $3.8°$ to $25°$, re-confirming §3.3's lesson — closed-loop invariance
+needs **model *and* planner**. VN $16{,}856$ params vs MLP $124{,}512$ (**7.4×**), post-train composed
+equivariance $6.1\times10^{-6}$ vs $5.61$. **On statistical power — the headline is now run at $K{=}200$,
+not $24$.** The teacher is synthetic, so paired tasks are a *compute* choice, not a data-scarcity limit;
+running the paired design at $K{=}200$ settles the one genuinely marginal statistic an earlier thin run
+left open. The conservative, magnitude-blind **sign test** (does the MLP degrade *more* per task than the
+VN?), which a $K{=}24$ run had put at a marginal $17/24$ ($p=0.064$), is now **$121/200$,
+$p=3.6\times10^{-3}$** — decisive — while the magnitude-aware **sign-flip permutation test is
+$p\le5\times10^{-5}$** (its Monte-Carlo floor). More data also *sharpens the effect size downward, and we
+say so*: the MLP's degradation settles at ratio $1.064$ (CI $[1.038,1.090]$, against the thinner run's
+$1.134$), still disjoint from the VN's $[0.993,1.000]$. Read together — disjoint CIs at $K{=}200$,
+$p_{\text{perm}}\le5\times10^{-5}$, and a now-decisive sign test $p=3.6\times10^{-3}$ — the separation
+holds on *every* test, including the distribution-free one, no longer leaning on the CI alone.
 
 **Why "statistical", not "float-floor exact", in 3D — stated honestly.** 2D reached
 $\max_i\lvert d_i\rvert=4.9\times10^{-5}°$ because real interior PushT is SO(2)-equivariant to
@@ -670,7 +712,15 @@ saturate) and then **confirms the third directly**: a lossless point-cloud oracl
 solves the task while neither the encoder's internal capacity (Step 43) nor its output budget (Step 44, swept
 $3\times$) recovers, localising the remainder on the encoder's lossy *pooled* latent — the pooling, not the
 width. The lesson is constructive:
-*enrich the equivariant hypothesis class, don't drop the prior.* The cap does **not** touch the [B] result —
+*enrich the equivariant hypothesis class, don't drop the prior.* **But be honest about how far the rule
+is *delivered* here, not just *stated*:** the only lever that fully closes the gap is the *lossless
+oracle*, and it does so by feeding the predictor the true centred point cloud — i.e. by **bypassing the
+encoder's pooled latent entirely**, deleting the very bottleneck that makes this a *latent* (the "J" in
+JEPA) model. Every architecture-preserving lever we actually built — predictor degree, message, encoder
+width, output budget — closes at most $21$–$42\%$ and stalls at relMSE $\sim0.20$–$0.23$ (against the
+MLP's $0.07$–$0.13$). So the design rule's *diagnosis* is firm — the cap is the permutation-invariant
+pooling — but its *prescription*, a pooling operator lossless enough yet still an abstract latent, is an
+**open problem we localise, not one we solve here**. The cap does **not** touch the [B] result —
 equivariance is about how error
 transforms *across the group*, not in-distribution capacity — so the $\times1.00$-vs-$\times17$ flip stands
 independent of the cap. Full treatment, figures, the third (relative-arrangement) OOD axis, and the
@@ -1028,8 +1078,8 @@ most-broken row** ($g{=}0.8$, where the winner flips cell-to-cell inside the see
 crack at the data-richest corner — that corner in fact flips *back* to the prior at five seeds.
 (ii) The in-distribution gap does **not** run away with the break: it carries at most a *small fixed
 offset* ($\approx+0.04$) that does not grow with data and stays inside seed noise. What survives is a
-**near-total, data-proof across-group win** that degrades only to a *tie* — never a clean loss —
-exactly where the symmetry is most broken; and an **in-distribution wash-to-loss** with, at most,
+**near-total, data-proof-*in-$N$* across-group win** that degrades only to a *tie* — never a clean loss —
+exactly where the symmetry is most broken (and, at *fixed epochs*, climbed toward by brute force, §3.7[C]); and an **in-distribution wash-to-loss** with, at most,
 that small break-offset. Open Question #1's "does equivariance help?" gets the two-sided map it
 deserves, and the Bitter-Lesson boundary (§5) is *drawn empirically* rather than asserted.
 Confidence ≈ **0.85** (the across-group near-total win and the data-proof-in-$N$ wall, now hardened
@@ -1174,7 +1224,7 @@ None of the four is a new layer; the contribution is the corner where they meet.
   precision issue (float64 barely helps), but the library-level floor of TFN/NequIP-style nets. The
   closed-loop VN residual there ($\max_i\lvert d_i\rvert=3.5°$) is a CEM **tie-flip floor, not a
   symmetry break** (the single-plan identity still holds to $1.2\times10^{-7}$), so the defensible 3D
-  headline is the *ratio separation* (VN $[0.977,0.999]$ vs MLP $[1.049,1.234]$, disjoint), not a
+  headline is the *ratio separation* (VN $[0.993,1.000]$ vs MLP $[1.038,1.090]$ at $K{=}200$, disjoint), not a
   literal zero.
 - **Exactness requires the world to actually carry the symmetry — and our generators do.** Real
   PushT's *interior* manipulation is $\mathrm{SO}(2)$-equivariant to $10^{-5}$ px; block↔**wall**
@@ -1184,6 +1234,21 @@ None of the four is a new layer; the contribution is the corner where they meet.
   **identically to both arms**; the contribution is not that the data is symmetric (it is, for the
   baseline too) but that the equivariant architecture **inherits** that symmetry *exactly* while the
   higher-capacity baseline, on the very same transitions, **cannot**.
+- **A subtler reliance, disclosed: the synthetic teachers live *inside* the equivariant model class.**
+  Beyond "the world must carry $G$" (above), the across-group results lean on a second assumption we
+  should name. The $\mathrm{SO}(3)$/$\mathrm{SE}(3)$ teachers are **built from the same equivariant
+  primitives the VN uses** — a frozen random Vector-Neuron net (§3.2), or a drift $c_t a$ $+$ torque
+  $c_r(a\times\tilde x)$ $+$ stretch composed from $\mathrm{SO}(3)$-equivariant operations (§3.2, §3.3.1)
+  — so the true dynamics does not merely *carry* the symmetry, it lies *within the equivariant hypothesis
+  class*. That is the right choice for **isolating the symmetry variable** (the §2.2 expressivity caveat:
+  it keeps [B] a fair "equivariance generalises" test, not a "the baseline cannot even fit" artefact), but
+  it flatters the broader *real-world* reading, because a natural world's dynamics need **not** be exactly
+  representable by the prior's primitives. We have one direct probe of the out-of-class case — §3.4.1's
+  trilinear torque uses a cross-product a degree-1 VN cannot form, and there the equivariant model
+  **under-fits in-distribution** (the cap §4 localises). The honest summary: across-group *flatness* is a
+  theorem given (H1)–(H3) and needs no in-class assumption, but the across-group *competence level* we
+  report additionally benefits from teachers that sit inside the class; how much of it survives genuinely
+  out-of-class dynamics is **not measured here**, and belongs to the same open frontier as scaling.
 - **Everything is laptop-scale.** The Bitter Lesson (Sutton) warns that scale often beats
   inductive bias; nothing here speaks to scale. The defensible statement is narrow: *when the
   dynamics genuinely has a symmetry, hard-wiring it lets a latent world model reach competence
@@ -1264,9 +1329,29 @@ None of the four is a new layer; the contribution is the corner where they meet.
   the VN's *weight-independent* float floor ($\sim\!10^{-7}$). The honest split: augmentation
   **approximates** the symmetry, at the price of the same prior *plus* a wider training orbit, and only
   ever buys the *approximate* version; the architecture **is** the symmetry, for free — and only the
-  architecture delivers the float-floor-exact invariance the closed-loop [C] (§3.3) is built on (an MLP
-  with $\Delta_{\mathrm{eq}}\approx0.05$ cannot close an exactly orientation-invariant loop). Five seeds
-  per arm.
+  architecture delivers the float-floor-exact invariance the closed-loop [C] (§3.3) is built on — and we
+  now **test that downstream, head-to-head** (next bullet), rather than merely inferring it from
+  $\Delta_{\mathrm{eq}}$. Five seeds per arm.
+- **Tested downstream, not just asserted: augmentation does *not* close the loop the architecture closes
+  (Step 45).** Whether *exact* equivariance buys the closed-loop [C] invariance that *approximate*
+  (augmentation) equivariance cannot was, until here, an **inference** from $\Delta_{\mathrm{eq}}$. We test
+  it head-to-head on the **real latent world model** (the §3.3.1 point-cloud JEPA $+$ equivariant CEM
+  planner): VN (exact), MLP (no prior), and **MLP$+$aug** (full-$\mathrm{SO}(3)$ rotation augmentation, the
+  recipe above) through the *same* paired closed loop on a **pure-rotation** orbit (translation, handled by
+  the model-independent centroid channel, is removed as a confound), **three seeds, $K{=}96$ tasks/seed**
+  ($288$ pooled). Two findings, both stable across seeds. *(i) Augmentation never even **approximates**
+  equivariance on this model:* the composed $\Delta_{\mathrm{eq}}$ stays $\approx11$ (no *better* than the
+  un-augmented MLP's $\approx4.4$ — $\sim\!10^{6}\times$ the VN's $8\times10^{-6}$ floor), because no amount
+  of rotated *data* makes a plain-MLP latent transform as $\rho(R)$; the simple-state-model's $\sim0.05$
+  (the 2D arm above) does **not** transfer to the encoder$+$predictor JEPA. *(ii) Consequently the
+  augmented MLP still degrades in the closed loop:* its OOD/seen orientation ratio is $1.071\pm0.111$
+  (pooled CI $[1.008,1.119]$, **excludes $1$**; sign $164/288$, $p=0.02$) — augmentation *does* narrow the
+  un-augmented MLP's $\times1.401$ gap substantially, but it does **not** reach the exact VN's $1.000$ (CI
+  $[1.000,1.001]$). So augmentation buys *approximate* across-orbit flatness **by coverage, not by
+  symmetry**, and that approximation carries a statistically-real downstream cost the exact architecture
+  does not — **exactness buys a closed-loop orientation-invariance augmentation cannot**, on the model that
+  actually carries a planner. This turns §3.3's [C] selling point from an assertion into a measured,
+  multi-seed head-to-head (`step45_augmented_mlp_closed_loop.py`, 3 seeds).
 - **The Bitter-Lesson stress test: at *partial* coverage, scale substitutes for neither the coverage nor
   the architecture.** The full-coverage experiment handed augmentation the *whole* group; the realistic regime is
   *partial* coverage — you augment a wedge and hope the model extrapolates the rest. Holding coverage
@@ -1413,8 +1498,11 @@ None of the four is a new layer; the contribution is the corner where they meet.
   controls the **width** half of that confound — its $n_{\text{out}}{=}24$ rung carries the oracle's *exact*
   $72$-wide latent ($=P\cdot3$) yet still sits at $0.247$, and widening to $144$ (past the oracle's $72$) does
   not help, so the cap is the **pooling, not the width**. The convergence guard trips *only* on the MLP
-  control plus one near-floor oracle seed — all four budget rungs converged every seed — so we report
-  **CONFIRMED on the science, INCONCLUSIVE-per-guard** (no guard loosened); confidence $\approx0.85$ (up from
+  control — and that non-convergence is specifically a **VICReg variance collapse**, so the control's
+  $\times8$–$\times10$ across-group degradation conflates the missing prior with training instability, and
+  we read it for *sign*, not magnitude — plus one near-floor oracle seed; all four budget rungs converged
+  every seed, and the localisation itself rests on the **within-equivariant-class** ladders that converged
+  throughout — so we report **CONFIRMED on the science, INCONCLUSIVE-per-guard** (no guard loosened); confidence $\approx0.85$ (up from
   $0.6$ when the cap was only inferred by elimination). Structural invariants — every ladder *and* oracle rung
   stays $\mathrm{SE}(3)\rtimes S_O$-exact, Step 43's oracle lossless at width $72>48$ and Step 44's
   $n_{\text{out}}{=}24$ rung matched to the oracle width $72=P\cdot3$ — in `test_step43_encoder_ladder.py`
@@ -1570,9 +1658,13 @@ recovered to the `e3nn` floor both at initialisation and after training.
 
 We are equally explicit about what the bet does **not** buy. The prior confers **no in-distribution
 edge**: inside the training orbit the two models wash out (§3.7), and the across-group payoff is real
-only to the extent that the world actually respects the symmetry. Under a controlled break the advantage
-degrades gracefully but does not survive (§5); augmentation and scale *approximate* equivariance but
-never reach the exact floor, and soft $\neq$ hard. These are the standing boundaries of the
+only to the extent that the world actually respects the symmetry. And the across-group "wall" the
+baseline hits is a **sample-efficiency barrier at fixed compute, not an impossibility**: handed both the
+data *and* the epochs to converge, brute force does begin to climb it — the baseline's whole-group error
+falls $2.25\to0.64$ from $N{=}512$ to $2048$ (still $2.5\times$ the VN's, at $7.4\times$ the parameters,
+§3.7) — Sutton's Bitter Lesson operating, visibly, inside our own data. Under a controlled break the
+advantage degrades gracefully but does not survive (§5); augmentation and scale *approximate* equivariance
+but never reach the exact floor, and soft $\neq$ hard. These are the standing boundaries of the
 Bitter-Lesson caveat, and we report them as limits, not footnotes.
 
 What remains is to carry the same exactness from these controlled teachers and constructed decision
@@ -1645,6 +1737,7 @@ and, where it asserts a symmetry, the guard test that checks it (under `tests/`)
 | 4 | training-seed error bar | `step17_multiseed_closed_loop` | — |
 | 5 | misspecification boundary | `step16_misspecification` | — |
 | 5 | fair augmentation baseline (2D, 3D) | `step28_fair_augmentation_baseline`, `step28_fair_augmentation_3d` | — |
+| 5 | augmentation vs exactness, closed-loop head-to-head | `step45_augmented_mlp_closed_loop` | — |
 | 5 | controlled scaling sweep (2D, 3D) | `step29_scaling_sweep`, `step29_scaling_sweep_3d` | — |
 | 5 | soft-equivariant dial (2D, 3D) | `step30_soft_equivariant`, `step30_soft_equivariant_3d` | — |
 | 5 | multi-step rollout horizon (2D, 3D) | `step31_rollout_horizon`, `step31_rollout_horizon_3d` | — |

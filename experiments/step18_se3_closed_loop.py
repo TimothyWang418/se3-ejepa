@@ -578,7 +578,15 @@ def main() -> None:
         run_stat = False
     else:
         N_TRAIN, EPOCHS = 1200, 50
-        K, N_OOD, H_GOAL = 24, 4, 6
+        # K (paired base tasks) and N_OOD (OOD orbit elements per task) are overridable via
+        # env, so the headline K=24 run stays bit-for-bit reproducible while a larger-K
+        # confirmation can drive the *conservative, magnitude-blind* sign test decisive --
+        # same protocol, more paired tasks, no guard threshold loosened. The synthetic teacher
+        # makes paired tasks ~free, so K is a compute choice, not a data-scarcity limit.
+        # Default = the frozen v1 values (24, 4, 6).
+        K = int(os.environ.get("STEP18_K", "24"))
+        N_OOD = int(os.environ.get("STEP18_N_OOD", "4"))
+        H_GOAL = 6
         T_MAX, REPLAN, W_T, T_SCALE = 18, 6, 0.5, 0.8
         cem_kw = dict(H=12, n_samples=256, n_iters=5, n_elite=25, sigma0=0.6, w_run=0.3)
         run_stat = True

@@ -18,7 +18,8 @@ group, augmentation narrows the *task* ratio to $\times1.06$–$1.46$ but never 
 (Step 28). **[C]** Under a matching
 equivariant planner the closed-loop pose-control error is *orientation-invariant*: float-floor-exact in
 2D (paired $K{=}48$, seen-vs-OOD angle change $=0$) and statistically flat in 3D SE(3) (VN ratio
-$[0.977,0.999]$, disjoint from the MLP's $[1.049,1.234]$).
+$[0.993,1.000]$ over $K{=}200$ paired tasks, disjoint from the MLP's $[1.038,1.090]$; conservative sign
+test now decisive, $121/200$, $p=3.6\times10^{-3}$).
 
 The remaining steps **locate the boundary** of the bet rather than oversell it — all are written up in
 full in the sections below; this abstract only names them. A sample-efficiency frontier (Step 21), a
@@ -966,31 +967,32 @@ orientation-error ratio**.
 **[E] EXACT — equivariant planner (iso-$\sigma$, unit-**ball** clamp, $R$-rotated noise, latent +
 closed-form centroid cost), held *identical* for both models:**
 
-| over $K{=}24$ paired tasks ($n_{\text{boot}}{=}4000$) | OOD/seen ratio | 95% CI | paired OOD$-$seen angle (deg) |
+| over $K{=}200$ paired tasks ($n_{\text{boot}}{=}4000$) | OOD/seen ratio | 95% CI | paired OOD$-$seen angle (deg) |
 |---|---:|---:|---:|
-| **VN (equivariant)** | $0.989$ | $[0.977,\ 0.999]$ (within $2\%$ of flat) | $-0.27$, CI $[-0.63,-0.03]$, $\max_i\lvert d_i\rvert=3.54$ |
-| **MLP (baseline)** | $1.134$ | $[1.049,\ 1.234]$ (**excludes 1**) | $+9.92$, CI $[+3.80,+15.94]$ |
+| **VN (equivariant)** | $0.996$ | $[0.993,\ 1.000]$ (flat to the upper bound) | $-0.10$, CI $[-0.19,-0.01]$, $\max_i\lvert d_i\rvert=3.79$ |
+| **MLP (baseline)** | $1.064$ | $[1.038,\ 1.090]$ (**excludes 1**) | $+5.06$, CI $[+3.14,+6.96]$ |
 
-The two ratio CIs are **disjoint** ($0.999<1.049$). The VN's deviation is *negative* (OOD marginally
-*better* than seen) and tiny — a tie-flip floor, not a degradation; the MLP's is $+13\%$ and climbing.
+The two ratio CIs are **disjoint** ($1.000<1.038$). The VN's deviation is *negative* (OOD marginally
+*better* than seen) and tiny — a tie-flip floor, not a degradation; the MLP's is $+6\%$ and excludes $1$.
 
-**Distribution-free backstop (honest power for a thin $K$).** $K{=}24$ paired tasks is thin to hang a
-"disjoint CI $\Rightarrow$ decisive" verdict on, so we add two assumption-free tests on the same paired
-design (`step18_se3_closed_loop.py`, the `paired_sign_test`/`paired_permutation_test` helpers). On the
-decisive question — does the MLP degrade **more** per task than the VN — the magnitude-aware **sign-flip
-permutation test** ($20{,}000$ flips, the exact paired null) gives $p_{\text{perm}}=0.004$; the more
-conservative **sign test** is $17/24$, $p=0.064$ — *marginal*, because it throws away the (large)
-magnitude gap and $K$ is small, and the $7$ wrong-sign tasks are ones where the VN's own
-$\le3.5°$ tie-flip noise outweighs the MLP's degradation on that task. Read together —
-disjoint CIs, $p_{\text{perm}}=0.004$, sign $p=0.064$ — the separation is real, but the bootstrap CI is
-*not* doing the work alone, and we flag the thin $K$ rather than overstate it. (The unpaired [S] panel
-below, where both errors are larger, is unambiguous: sign $22/24$, $p_{\text{sign}}=3.6\times10^{-5}$,
-$p_{\text{perm}}=5\times10^{-5}$.)
-By group element the VN orientation error is essentially flat — $\{25.86,25.86,25.86,25.15,25.49\}°$
-across $\{$seen$,g_1,g_2,g_3,g_4\}$ (the first three identical to $10^{-6}$: they share the
-pure-rotation orbit; $g_3,g_4$ carry the large translation, and the small wobble there is the
-tie-flip floor) — while the MLP swings $\{74,84,59,91,102\}°$. VN centroid position error is flat
-$\{0.532,0.532,0.532,0.520,0.524\}$.
+**Distribution-free backstop — run at $K{=}200$ (the teacher is synthetic, so $K$ is a compute choice).**
+An earlier thin $K{=}24$ run left the conservative test marginal; because paired tasks cost only compute,
+we run the headline at $K{=}200$ and add two assumption-free tests on the same paired design
+(`step18_se3_closed_loop.py` with `STEP18_K=200`, the `paired_sign_test`/`paired_permutation_test`
+helpers). On the decisive question — does the MLP degrade **more** per task than the VN — the
+magnitude-aware **sign-flip permutation test** ($20{,}000$ flips, the exact paired null) gives
+$p_{\text{perm}}\le5\times10^{-5}$ (its Monte-Carlo floor); the more conservative, magnitude-blind **sign
+test** is now $121/200$, $p=3.6\times10^{-3}$ — *decisive*, where the same test at $K{=}24$ had been a
+marginal $17/24$, $p=0.064$. More paired data also *sharpens the effect-size estimate downward*, honestly:
+the MLP's degradation settles at ratio $1.064$ (CI $[1.038,1.090]$) against the thinner run's $1.134$,
+still disjoint from the VN's $[0.993,1.000]$. Read together — disjoint CIs,
+$p_{\text{perm}}\le5\times10^{-5}$, sign $p=3.6\times10^{-3}$, all at $K{=}200$ — the separation now holds
+on *every* test, no longer leaning on the bootstrap CI alone. (The unpaired [S] panel below is even
+sharper: sign $157/200$, $p_{\text{sign}}=1.9\times10^{-16}$, $p_{\text{perm}}\le5\times10^{-5}$.)
+By group element the VN orientation error is essentially flat — $\{26.30,26.28,26.30,26.01,26.21\}°$
+across $\{$seen$,g_1,g_2,g_3,g_4\}$ (all within $\sim\!1\%$; the small wobble is the CEM tie-flip floor,
+$g_3,g_4$ carrying the large translation) — while the MLP swings $\{79,86,57,90,104\}°$. VN centroid
+position error is flat $\{0.545,0.545,0.545,0.540,0.544\}$.
 
 **Translation, honestly.** `SE3PointEncoder` is translation-**invariant** (it centres the cloud), so a
 pure-latent cost is translation-blind and SE(3) would silently collapse to SO(3). The fix is a separate
@@ -1001,17 +1003,18 @@ contribution, an approximation that costs control quality, not the theorem). Sam
 (network-independent centroid arithmetic).
 
 **[S] DIAGNOSTIC — verbatim Step 13 planner (box clamp, diagonal $\sigma$, latent-only cost).** Swap
-the equivariant planner back for the generic one and the VN's deviation from flat *grows* — ratio
-$0.886$, CI $[0.825,0.954]$, $\max_i\lvert d_i\rvert=16.0°$ (mean $-3.63°$, CI $[-6.07,-1.31]$),
-$\sim\!5\times$ the [E] residual — while the MLP degrades further (ratio $1.251$, CI $[1.163,1.361]$).
+the equivariant planner back for the generic one and the VN's worst-case residual *grows* — ratio
+$0.991$, CI $[0.957,1.027]$ (still bracketing $1$, unbiased), $\max_i\lvert d_i\rvert=25.0°$ (mean
+$-0.26°$, CI $[-1.31,+0.78]$), $\sim\!7\times$ the [E] residual — while the MLP degrades further (ratio
+$1.166$, CI $[1.138,1.196]$).
 Exactly as in 2D Step 14 [S]: **closed-loop SE(3)-invariance is a property of the model *and* the
 planner together** — the model preserving the symmetry is necessary but not sufficient; a
 non-equivariant planner (a box clamp that is only $C_4$/octahedral-symmetric, a per-component $\sigma$
 refit that does not commute with $R$) re-injects the asymmetry the model removed.
 
 **Verdict — all four guards green:** model-equiv (VN composed $6.1\times10^{-6}\!<\!10^{-4}$) ✓;
-VN-flat (ratio CI upper $0.999<1.05$) ✓; MLP-degrades (ratio CI lower $1.049>1$) ✓; ratio-CIs-disjoint
-($0.999<1.049$) ✓. **PASS.** Confidence ≈ **0.85** on the SE(3) closed-loop [E] — one notch below the
+VN-flat (ratio CI upper $1.000<1.05$) ✓; MLP-degrades (ratio CI lower $1.038>1$) ✓; ratio-CIs-disjoint
+($1.000<1.038$) ✓. **PASS.** Confidence ≈ **0.85** on the SE(3) closed-loop [E] — one notch below the
 2D Step 14 [E]'s $0.9$, precisely because the VN residual is a CEM **tie-flip floor** at the e3nn
 $\sim\!10^{-6}$ equivariance, not the literal float zero 2D achieved (the $1.2\times10^{-7}$
 single-plan unit test is the clean theorem; the closed loop is the realistic one) — and ≈ **0.85** on
@@ -1835,10 +1838,31 @@ MLP breaks (×67 / ×951) ✓; more coverage ⇒ smaller OOD ratio (monotone) �
 ≈ **0.9**. The split this nails down: **augmentation approximates the symmetry; the architecture *is* the
 symmetry.** Augmentation needs the *same* prior (you must know the group) *plus* a wider training orbit,
 and still buys only the *approximate* version — which is exactly why it cannot underwrite the
-float-floor-exact closed-loop [C] (Step 18, §12): an MLP with $\Delta_{\mathrm{eq}}\approx0.05$ cannot
-close an exactly orientation-invariant loop, no matter how much you augment. Guarded inline (five seeds,
+float-floor-exact closed-loop [C] (Step 18, §12). **Step 45 (below) tests that downstream, head-to-head**,
+rather than leaving it an inference from $\Delta_{\mathrm{eq}}$. Guarded inline (five seeds,
 the five assertions above) by `experiments/step28_fair_augmentation_baseline.py` (2D) and
 `experiments/step28_fair_augmentation_3d.py` (3D).
+
+**Step 45 — the downstream head-to-head (does augmentation's approximate symmetry *close the loop*?).**
+Step 28 shows augmentation approximates the *task* metric but never *exactness*; Step 45 settles the
+question the [C] selling point hinges on by running it **downstream**, on the **real latent world model**
+(the Step 13/18 point-cloud JEPA $+$ the Step 18 $\mathrm{SE}(3)$-equivariant CEM planner). Three models —
+VN (exact), MLP (no prior), MLP$+$aug (full-$\mathrm{SO}(3)$ augmentation) — go through the *same* paired
+closed loop on a **pure-rotation** orbit (translation removed via the model-independent centroid channel,
+so the test is purely about rotation), **3 seeds, $K{=}96$ tasks/seed** ($288$ pooled). *(i) Augmentation
+does not even **approximate** equivariance on this model:* composed $\Delta_{\mathrm{eq}}=11.4\pm1.6$ — no
+better than the un-augmented MLP's $4.4\pm0.2$, and $\sim\!10^{6}\times$ the VN's $(8\pm3)\times10^{-6}$
+floor — because no amount of rotated *data* makes a plain-MLP latent transform as $\rho(R)$; the simple
+6-vector state model's $\sim0.05$ (Step 28's 2D arm) does **not** transfer to the encoder$+$predictor
+JEPA. *(ii) So the augmented MLP still degrades in the closed loop:* pooled OOD/seen orientation ratio
+$1.071$, CI $[1.008,1.119]$ (**excludes 1**), sign $164/288$ ($p=0.02$) — augmentation *does* narrow the
+un-augmented MLP's $1.401$ ($[1.361,1.444]$, sign $268/288$) substantially, but never reaches the exact
+VN's $1.000$ ($[1.000,1.001]$). **Augmentation buys *approximate* across-orbit flatness by coverage, not by
+symmetry, and that approximation carries a statistically-real closed-loop cost the exact architecture does
+not** — turning the Step 18 [C] selling point from an inference into a measured, multi-seed head-to-head.
+Guarded by `experiments/step45_augmented_mlp_closed_loop.py` (3 seeds; pooled bootstrap CI $+$
+distribution-free sign test; the exact VN flat, both MLPs degrading, augmentation never exact).
+Confidence ≈ **0.85**.
 
 ---
 
@@ -3089,10 +3113,12 @@ the orbit at init by `tests/test_step38_latent_goal_reaching.py`. *(Statistical 
   under the **full SE(3) group**, on the Step-13 latent JEPA with an SE(3)-equivariant CEM planner
   (iso-$\sigma$, unit-**ball** clamp, $R$-rotated noise, latent + closed-form **centroid** cost — the
   centroid channel makes translation handling *exact by construction*, so SE(3) does not silently
-  collapse to SO(3)). Over $K{=}24$ paired tasks on orbits of $1$ seen $+ 4$ OOD $(R,t)$, the VN's
-  OOD/seen orientation-error ratio is $0.989$, CI $[0.977,0.999]$ (within $2\%$ of flat, the deviation
-  *negative*) while the MLP's is $1.134$, CI $[1.049,1.234]$ (excludes 1) — **disjoint CIs**; [S] (the
-  verbatim non-equivariant planner) grows the VN residual $\sim\!5\times$, re-confirming that
+  collapse to SO(3)). Over $K{=}200$ paired tasks on orbits of $1$ seen $+ 4$ OOD $(R,t)$, the VN's
+  OOD/seen orientation-error ratio is $0.996$, CI $[0.993,1.000]$ (flat to the upper bound, the deviation
+  *negative*) while the MLP's is $1.064$, CI $[1.038,1.090]$ (excludes 1) — **disjoint CIs**, and the
+  conservative magnitude-blind sign test is now decisive ($121/200$, $p=3.6\times10^{-3}$, vs a marginal
+  $17/24$, $p=0.064$ at an earlier $K{=}24$); [S] (the verbatim non-equivariant planner) grows the VN
+  residual $\sim\!7\times$, re-confirming that
   closed-loop invariance needs **model *and* planner** equivariant. The honest difference from 2D: the
   3D VN is equivariant only to e3nn's **architectural $\sim\!10^{-6}$ floor** (not float32 — float64
   barely moves it; predictor exact $\sim\!10^{-8}$, single plan commutes to $1.2\times10^{-7}$ in the
@@ -3243,8 +3269,8 @@ non-tie (Step 12 [C]: VN ×1.09 flat vs MLP ×1.85) and then, under a *paired* d
 equivariant planner, **exact**: the VN's seen-vs-OOD angle change is zero to the float floor
 over 48 tasks while the MLP degrades with a CI excluding 0 (Step 14 [E]) — and that 2D
 closed-loop theorem now **lifts to the full 3D SE(3) group** (Step 18 [E]: VN OOD/seen
-orientation-error ratio statistically flat at $[0.977,0.999]$, disjoint from the MLP's
-$[1.049,1.234]$, with translation handled by an exact closed-form centroid channel), with the
+orientation-error ratio statistically flat at $[0.993,1.000]$ over $K{=}200$ paired tasks, disjoint from
+the MLP's $[1.038,1.090]$, with translation handled by an exact closed-form centroid channel), with the
 honest caveat that in 3D the VN's residual is a CEM **tie-flip floor** at the model's
 $\sim\!10^{-6}$ e3nn equivariance, not the literal float zero 2D reached (the single-plan
 unit test still commutes to $1.2\times10^{-7}$).** What is **not** yet shown: that this converts to a clean *binary task-success* sweep on a real contact-rich
