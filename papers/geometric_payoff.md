@@ -1671,8 +1671,10 @@ degree-2 homogeneity exact, pseudovector sign-flip clean) and `experiments/step2
 The result is a clean, *partial* win — and the partiality is the honest part. **In-distribution**, VN-TP cuts
 the relMSE from VN-MP's $0.331$ to $\mathbf{0.229}$ ($\times1.45$ better), closing **$42\%$** of the
 VN$\to$MLP capacity gap; a residual $\times2.59$ to the unconstrained MLP ($0.089$) remains, so the
-cross-product ceiling was the **dominant, not the sole**, in-distribution bottleneck (the encoder's lossy
-translation-invariant latent and the un-normalised message are further, smaller caps). **Across the collapsed
+cross-product ceiling was the **dominant, not the sole**, in-distribution bottleneck (the residual is the
+encoder's lossy translation-invariant latent; the companion message ladder in §24 later shows that
+normalising the *message* to the unit vector $\hat r$ — the one primitive $1/\lVert r\rVert$ the homogeneous
+predictor cannot form — does **not** close it, ruling the message out and localising the residual to the encoder). **Across the collapsed
 global group**, VN-TP is **exactly flat** ($\times1.00$; post-training composed $\mathrm{SE}(3)$ residual
 $4.0\times10^{-5}$, permutation $0$), while the equally-equipped MLP-MP degrades $\times9.6$ — so the new
 capacity is bought **without** spending any of the 举一反三 (bonus relative-arrangement axis: VN-TP
@@ -2245,7 +2247,8 @@ the recovery-then-**saturation** is a genuine degree signature rather than a cap
 the parameter count is held fixed across the ladder, so the plateau cannot be explained by "ran out of
 parameters." One notch below the rollout theorem (§23) because the knee *location* is empirical
 (latent-space, not the naive point-space degree) and the recovery is partial — a residual $\times2.4$ to the
-MLP remains, the further encoder/message caps Step 27 already named. Step 32 sharpens the design rule into
+MLP remains, which the companion message ladder below (Step 42) pins on the **encoder's lossy latent** rather
+than the predictor or the message. Step 32 sharpens the design rule into
 its final form: when an equivariant model underfits, the fix is a **specific missing primitive** (here the
 cross-product irrep), recoverable at the *first* rung that supplies it and **saturating** thereafter — not
 an open-ended capacity climb, and never at the cost of the across-group guarantee. *Enrich the class by the
@@ -2263,6 +2266,80 @@ primitive the physics needs; keep the prior.* Guarded inline (three seeds, five 
 > 举一反三 is free at every degree. **(right)** the post-training $\mathrm{SE}(3)$ residual stays at the
 > float floor for every rung; only the non-equivariant MLP breaks it. Regenerate with
 > `experiments/step32_tp_degree_ladder.py`.
+
+### The other axis — enriching the *message* saturates too (Step 42), and where the residual actually lives
+
+Step 32 swept the **predictor's** representable degree and found the interaction-cap recovery saturates after
+one cross product. But the degree-1 VN's deeper limitation is that a homogeneous, $\mathrm{SO}(3)$-equivariant
+predictor **cannot synthesise $1/\lVert r\rVert$** at *any* degree: from the raw relative vector $r_{ij}$ it
+forms $r_{ij}\times a_i$ with the right axis but a magnitude off by the sample-varying $\lVert r_{ij}\rVert$,
+whereas the teacher torque $\omega_i=\hat r_{ij}\times a_i$ uses the **unit** direction. The reciprocal norm
+is non-polynomial and homogeneity-breaking — exactly the kind of primitive no representable degree reaches. So
+the natural next question is not "climb the predictor" but **"enrich the message"**: hand the predictor the
+unit edge feature $\hat r_{ij}$ directly (a standard TFN / NequIP / MACE ingredient — *not* the pre-formed
+answer $\omega$), and ask whether the cap Step 32 could not close finally falls. Step 42 holds encoder, VN-TP
+predictor, teacher, data, and training **fixed** and varies **only** the message, at three seeds with **paired
+initialisation** (each variant rebuilt from the same seed, so the identical-capacity pair gets byte-identical
+initial weights — a clean content swap, their epoch-0 losses agreeing to $\sim\!10^{-3}$):
+
+| variant | message | per-obj aug | params | in-dist relMSE (mean $\pm$ seed std) |
+|---|---|---:|---:|---:|
+| **M0-raw** | $[a,\ r_{ij}]$ | $6$ | $65{,}304$ | $0.266\pm0.013$ — un-normalised (Step 24/27/32 baseline) |
+| **M1-unit** | $[a,\ \hat r_{ij}]$ | $6$ | $65{,}304$ | $0.263\pm0.014$ — **$+\,1/\lVert r\rVert$, identical capacity** |
+| **M2-both** | $[a,\ r_{ij},\ \hat r_{ij}]$ | $9$ | $65{,}496$ | $0.269\pm0.024$ — magnitude back on top |
+| MLP-MP | $[a,\ r_{ij}]$ | — | $62{,}304$ | $0.074\pm0.004$ — unconstrained ceiling |
+
+**The honest result: the message lever is null.** Normalising the message closes only $\times1.01$ — about
+$1\%$ of the cap$\to$MLP gap — and the per-seed differences ($\mathrm{M1}-\mathrm{M0}=-0.012,\ +0.005,\
++0.00001$) straddle zero, one seed regressing. M2 (raw magnitude added back) buys nothing, so the message
+**saturates at — indeed before — the unit vector**. M0 and M1 are byte-identical in capacity *and*
+initialisation, so this is as clean a content swap as the architecture allows: the unit direction simply is
+not the missing ingredient.
+
+**This is a triangulation, not a failure.** Two independent levers now stall at the *same* $\sim\!0.20$ floor,
+far above the MLP's $0.074$: climbing the predictor degree (Step 32) and enriching the message to the exact
+teacher primitive (Step 42). The predictor is handed $\hat r$ and *still* cannot beat $0.26$ — because the
+target's $(\hat r_{ij}\times a_i)\times\tilde x_k$ factor must be read out of the encoder's $\ell_{\max}{=}2$
+$\mathrm{SE}(3)$ latent, which has already discarded the point detail the trilinear coupling needs. **The
+dominant residual interaction cap lives in the encoder's lossy latent — not in the predictor, and not in the
+message.** The MLP fits better precisely because it is *not* forced through that equivariant bottleneck — and
+pays with the $\times10.5$ across-group blow-up below.
+
+**And enriching the message is free in 举一反三.** Every message variant is exactly flat across the collapsed
+global group (OOD/seen $\times1.000$; post-training $\mathrm{SE}(3)$ residual $\le6.8\times10^{-5}$,
+permutation $0$, both at init and after training), while the equally-equipped MLP-MP carries OOD/seen
+$\times10.5$ and an $\mathrm{SE}(3)$ residual of $9.2$. So the *safety* half of "enrich the equivariant class,
+don't drop the prior" holds **unconditionally** — you can add the unit edge feature at zero cost to the
+across-group guarantee — and here the *recovery* half simply had nothing to recover, because the prior was
+never the bottleneck.
+
+**Verdict — honest INCONCLUSIVE on recovery, three guards green.** Equivariant at every variant
+($\mathrm{SE}(3)\le6.8\times10^{-5}$, perm $0$) ✓; across-group flat at every variant ($\times1.00$) ✓; MLP
+degrades ($\times10.5$) ✓; **recovery NOT demonstrated** ($\times1.01<1.10$ — reported as-is, no guard
+loosened). Confidence $\approx0.7$ that the message lever is genuinely null *here* (clean, because M0/M1 are a
+paired-init identical-capacity swap); confidence $\approx0.6$ on the stronger reading that the residual is
+therefore the encoder latent (a triangulation across Step 32 $+$ Step 42, corroborated but not proven). One
+honest cross-experiment caveat: Step 42's M0 ($0.266$) is a *different* init draw of the same configuration as
+Step 27's VN-TP ($0.229$); Step 42 is internally paired, so only the within-experiment M0/M1/M2 comparison is
+load-bearing — the two numbers should not be cross-subtracted. The design rule sharpens once more: when an
+equivariant model underfits, **find which stage the missing capacity lives in before enriching it** — Step 32
+rules out predictor degree, Step 42 rules out message content, and what remains is the encoder's latent budget
+(more channels, higher $\ell_{\max}$), still never the prior. Guarded inline (three seeds, four guards) by
+`experiments/step42_tp_message_ladder.py`; the structural invariant — every message variant keeps the whole
+VN-TP pipeline exactly $\mathrm{SE}(3)\rtimes S_O$-equivariant, and $\hat r$ is the scale-invariant feature
+raw $r$ is not — by `tests/test_step42_message_ladder.py`.
+
+![The tensor-product message ladder](figures/step42_tp_message_ladder.png)
+
+> **Figure 5b.** The message ladder — companion to Figure 5, holding the predictor fixed and sweeping only the
+> message content. **(left)** in-distribution relMSE is statistically flat across M0 (raw $r$), M1 (unit
+> $\hat r$), and M2 (both) — normalising the message does *not* recover the cap ($\times1.01$, within seed
+> noise), well above the unconstrained MLP ceiling. **(centre)** the global OOD/seen ratio is $\times1.00$ at
+> every message variant while the MLP carries $\times10.5$ — enriching the message is zero-cost in 举一反三.
+> **(right)** the post-training $\mathrm{SE}(3)$ residual holds the float floor for every variant; only the
+> non-equivariant MLP breaks it. With Figure 5 (the predictor-degree axis), both levers saturate above the
+> MLP, localising the residual interaction cap to the encoder's lossy latent. Regenerate with
+> `experiments/step42_tp_message_ladder.py`.
 
 ---
 
@@ -3097,7 +3174,9 @@ in-distribution degrades $\times17$ — but a vanilla degree-1 Vector-Neuron pre
 bilinear torque, so the *in-distribution* fit is architecture-capped; **Step 27 then builds the
 tensor-product message and recovers $42\%$ of that cap ($\times1.45$) while keeping the $\times1.00$
 generalisation** — though a residual $\times2.59$ to the unconstrained MLP shows the cap was the dominant,
-not the sole, bottleneck); that the **active-inference epistemic drive transfers beyond a *constructed* POMDP**
+not the sole, bottleneck — which Steps 32 and 42 later pin on the encoder's lossy latent, since climbing the
+predictor degree *and* normalising the message both saturate while staying $\times1.00$); that the
+**active-inference epistemic drive transfers beyond a *constructed* POMDP**
 (Step 25 earns a real task win — $55\%$ over a *provable* hedge floor, the whole information-seeking loop
 $\mathrm{SE}(3)$-equivariant — on a constructed cue-foraging task; **Step 34 then removes the noiseless-reveal
 crutch** — a genuinely noisy channel, soft Bayes that never collapses, the *exact* sensor mutual information as

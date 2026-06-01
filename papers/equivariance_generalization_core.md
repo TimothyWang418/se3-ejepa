@@ -607,7 +607,9 @@ the SO(3) cross product, the antisymmetric $\mathbf 1\otimes\mathbf 1\to\mathbf 
 the trilinear torque — lets an *exactly* equivariant predictor (VN-TP) recover $\mathbf{42\%}$ of the cap
 ($0.331\to0.229$, $\times1.45$ better) while staying $\times1.00$ across the collapsed group (post-training
 $\mathrm{SE}(3)$ residual $4.0\times10^{-5}$); a residual $\times2.59$ to the unconstrained MLP shows the
-degree-1 cap was the **dominant, not the sole**, in-distribution bottleneck. The lesson is constructive:
+degree-1 cap was the **dominant, not the sole**, in-distribution bottleneck — and §5 later rules out the two
+candidate residual caps it leaves open (climbing the predictor degree *and* enriching the message both
+saturate), pinning the remainder on the encoder's lossy latent. The lesson is constructive:
 *enrich the equivariant hypothesis class, don't drop the prior.* The cap does **not** touch the [B] result —
 equivariance is about how error
 transforms *across the group*, not in-distribution capacity — so the $\times1.00$-vs-$\times17$ flip stands
@@ -1277,6 +1279,29 @@ mechanism* (the curiosity invariance and its $\beta$-knob), **not** a claimed ex
   **primitive** (one cross-product irrep), recoverable at the *first* rung that supplies it and saturating
   thereafter — not an open-ended capacity climb, and never at the cost of the across-group guarantee. Three
   seeds, with structural invariants checked at every rung.
+- **The recovery has a *second* axis — the message — and it saturates too, localising the residual to the
+  encoder.** Step 32 climbed the *predictor*; the deeper limit is that a homogeneous
+  $\mathrm{SO}(3)$-equivariant predictor cannot form $1/\lVert r\rVert$ at *any* degree — from raw $r_{ij}$ it
+  builds $r_{ij}\times a_i$ with the right axis but the wrong, sample-varying magnitude, while the teacher
+  torque uses the **unit** $\hat r_{ij}$. So we enrich the **message** instead: hand the predictor the unit
+  edge feature $\hat r$ directly (a standard TFN/NequIP/MACE ingredient, *not* the pre-formed answer), holding
+  encoder, predictor, teacher, data and training fixed and sweeping *only* the message at three seeds with
+  **paired init** — M0 $[a,r]$, M1 $[a,\hat r]$ (byte-identical capacity, $65{,}304$ params each — a pure
+  content swap), M2 $[a,r,\hat r]$. *(i) Null recovery:* M0 $0.266\to$ M1 $0.263$ is only $\times1.01$
+  ($\sim1\%$ of the cap$\to$MLP gap, within seed noise — per-seed $\mathrm{M1}-\mathrm{M0}=-0.012,+0.005,+0.00001$,
+  one seed regressing); M2 buys nothing, so the message saturates *at* the unit vector. *(ii) Triangulation:*
+  with Step 32's predictor ladder also saturating, **both** levers stall at the same $\sim0.20$ floor far above
+  the MLP's $0.074$ — the predictor is handed $\hat r$ and *still* cannot beat $0.26$, because the target's
+  $(\hat r_{ij}\times a_i)\times\tilde x_k$ factor must be read from the encoder's lossy $\ell_{\max}{=}2$
+  latent. The dominant residual interaction cap is the **encoder**, not the predictor and not the message.
+  *(iii) Free:* every message variant stays exactly equivariant ($\mathrm{SE}(3)\le6.8\times10^{-5}$, perm $0$)
+  and across-group $\times1.00$ vs the MLP's $\times10.5$ — enriching the message is zero-cost in 举一反三 even
+  though it did not help fit, so the *safety* half of *enrich the class, don't drop the prior* holds
+  unconditionally while the recovery half simply had nothing to recover (the prior was never the bottleneck).
+  Reported as an honest INCONCLUSIVE on recovery (no guard loosened); confidence $\approx0.7$ the message lever
+  is null *here*, $\approx0.6$ on the stronger encoder-localisation reading (a triangulation across Step 32
+  $+$ Step 42). Three seeds; structural invariant (every variant exactly $\mathrm{SE}(3)\rtimes S_O$-equivariant,
+  $\hat r$ scale-invariant where raw $r$ is not) in `test_step42_message_ladder.py`.
 - **The symmetry prior is *discoverable from data*, and falsifiably so.** Every result before this
   *assumes* the group; we test whether the group can instead be **read out of a frozen teacher's
   behaviour**. Parametrise a *generator slate* of $K$ free $3\times3$ matrices $\{\hat G_k\}$ — with **no**
@@ -1507,6 +1532,7 @@ and, where it asserts a symmetry, the guard test that checks it (under `tests/`)
 | 5 | soft-equivariant dial (2D, 3D) | `step30_soft_equivariant`, `step30_soft_equivariant_3d` | — |
 | 5 | multi-step rollout horizon (2D, 3D) | `step31_rollout_horizon`, `step31_rollout_horizon_3d` | — |
 | 5 | tensor-product degree ladder | `step32_tp_degree_ladder` | `test_step32_degree_ladder` |
+| 5 | tensor-product message ladder | `step42_tp_message_ladder` | `test_step42_message_ladder` |
 | 5 | emergent symmetry discovery | `step33_symmetry_discovery` | `test_step33_symmetry_discovery` |
 | 5 | active inference, noisy-channel curiosity | `step34_active_inference_noisy` | `test_step34_active_inference_noisy` |
 | 5 | few-body $\to$ many-body transfer | `step35_many_body` | `test_step35_many_body` |

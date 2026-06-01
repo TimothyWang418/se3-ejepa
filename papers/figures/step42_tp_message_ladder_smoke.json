@@ -1,0 +1,131 @@
+{
+  "mode": "SMOKE",
+  "config": {
+    "VN_VARIANTS": [
+      "M0-raw",
+      "M1-unit",
+      "M2-both"
+    ],
+    "messages": {
+      "M0-raw": "[a, r]",
+      "M1-unit": "[a, r_hat]",
+      "M2-both": "[a, r, r_hat]"
+    },
+    "aug": {
+      "M0-raw": 6,
+      "M1-unit": 6,
+      "M2-both": 9
+    },
+    "SEEDS": [
+      0
+    ],
+    "N_TRAIN": 150,
+    "N_TEST": 64,
+    "EPOCHS": 3,
+    "K_OOD": 2,
+    "VAR_COEF": 0.1,
+    "C_INT": 0.8
+  },
+  "params": {
+    "M0-raw": 65304,
+    "M1-unit": 65304,
+    "M2-both": 65496,
+    "MLP-MP": 62304
+  },
+  "indist_per_seed": {
+    "M0-raw": [
+      0.8120609521865845
+    ],
+    "M1-unit": [
+      0.807506263256073
+    ],
+    "M2-both": [
+      0.8851224184036255
+    ],
+    "MLP-MP": [
+      11.414715766906738
+    ]
+  },
+  "ood_ratio_per_seed": {
+    "M0-raw": [
+      1.0000000366996127
+    ],
+    "M1-unit": [
+      1.0000001107198435
+    ],
+    "M2-both": [
+      1.0000001010108492
+    ],
+    "MLP-MP": [
+      2.2775264706563023
+    ]
+  },
+  "se3_per_seed": {
+    "M0-raw": [
+      2.2239983081817627e-06
+    ],
+    "M1-unit": [
+      2.86102294921875e-06
+    ],
+    "M2-both": [
+      4.678964614868164e-06
+    ],
+    "MLP-MP": [
+      0.9707291126251221
+    ]
+  },
+  "perm_per_seed": {
+    "M0-raw": [
+      0.0
+    ],
+    "M1-unit": [
+      0.0
+    ],
+    "M2-both": [
+      0.0
+    ],
+    "MLP-MP": [
+      0.0
+    ]
+  },
+  "indist_mean": {
+    "M0-raw": 0.8120609521865845,
+    "M1-unit": 0.807506263256073,
+    "M2-both": 0.8851224184036255,
+    "MLP-MP": 11.414715766906738
+  },
+  "indist_std": {
+    "M0-raw": 0.0,
+    "M1-unit": 0.0,
+    "M2-both": 0.0,
+    "MLP-MP": 0.0
+  },
+  "ood_ratio_mean": {
+    "M0-raw": 1.0000000366996127,
+    "M1-unit": 1.0000001107198435,
+    "M2-both": 1.0000001010108492,
+    "MLP-MP": 2.2775264706563023
+  },
+  "se3_mean": {
+    "M0-raw": 2.2239983081817627e-06,
+    "M1-unit": 2.86102294921875e-06,
+    "M2-both": 4.678964614868164e-06,
+    "MLP-MP": 0.9707291126251221
+  },
+  "perm_mean": {
+    "M0-raw": 0.0,
+    "M1-unit": 0.0,
+    "M2-both": 0.0,
+    "MLP-MP": 0.0
+  },
+  "msg_gain": 1.0056404378984576,
+  "gap_closed_frac": -0.00042958004481934,
+  "saturate_frac": -17.040934371523914,
+  "verdict": {
+    "passed": false,
+    "ok_equiv": true,
+    "ok_recovers": false,
+    "ok_global_flat": true,
+    "ok_mlp_degrades": true
+  }
+}
