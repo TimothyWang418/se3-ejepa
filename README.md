@@ -92,10 +92,22 @@ Python **3.11**, CPU / Apple-MPS only (**no CUDA**). Dependencies are managed wi
 ```bash
 cd se3-ejepa
 uv venv                                   # creates .venv with Python 3.11
-uv pip install -r requirements.txt
-# one vendored dep is kept out of git (see requirements.txt header):
-uv pip install -e third_party/stable-worldmodel
+uv pip install -r requirements.txt        # this alone runs all of tests/ + every synthetic step + the figures
 ```
+
+**One optional dependency is *not* bundled here.** `stable-worldmodel` (the **real-PushT**
+simulator) is an external, non-PyPI package kept out of git (see the `requirements.txt` header); it
+is needed *only* by the experiments that drive the real PushT environment — the ones that call
+`make_env()` / `swm.World` (e.g. `step8`–`step10`, `step12`, `step14`). If you have it, install it
+editable:
+
+```bash
+uv pip install -e <path-to>/stable-worldmodel   # only for the real-PushT steps
+```
+
+Everything that does **not** touch real PushT — the full `tests/` suite, the synthetic
+$\mathrm{SO}(2)$/$\mathrm{SO}(3)$/$\mathrm{SE}(3)$ experiments, and the figures — imports and runs on
+`requirements.txt` alone.
 
 All experiments are deterministic given their seeds; the **[A]/[B]** claims are *theorems* and hold at
 init and post-training regardless of seed.
@@ -107,12 +119,16 @@ init and post-training regardless of seed.
 Most steps finish in minutes on a single CPU; the heavier 3D steps accept `STEP{n}_SMOKE=1` for a fast
 wiring check. The SDL/objc dylib warnings on macOS are harmless (filter with `2>/dev/null`).
 
+> The two **real-PushT** steps below (`step8`, `step12`) need the optional `stable-worldmodel`
+> dependency from **Setup**; everything else here — all of `tests/`, the synthetic
+> $\mathrm{SO}(2)$/$\mathrm{SO}(3)$/$\mathrm{SE}(3)$ steps, and the figures — runs on `requirements.txt` alone.
+
 ```bash
 PRE="SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1"
 
 # --- [A]+[B]+[C] core, in order of strength ---
-$PRE .venv/bin/python experiments/step8_sample_efficiency.py        # synthetic SO(2): efficiency + 举一反三
-$PRE .venv/bin/python experiments/step12_pose_control.py            # real PushT SO(2): decomposed mechanism
+$PRE .venv/bin/python experiments/step8_sample_efficiency.py        # synthetic SO(2): efficiency + 举一反三   [needs stable-worldmodel]
+$PRE .venv/bin/python experiments/step12_pose_control.py            # real PushT SO(2): decomposed mechanism    [needs stable-worldmodel]
 $PRE .venv/bin/python experiments/step13_se3_latent_jepa.py         # 3D SO(3): the lift (STEP13_SMOKE=1)
 $PRE .venv/bin/python experiments/step18_se3_closed_loop.py         # 3D SE(3) closed-loop [C], paired bootstrap (STEP18_SMOKE=1)
 

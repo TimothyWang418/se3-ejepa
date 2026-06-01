@@ -61,7 +61,14 @@ import torch  # noqa: E402
 from torch import nn  # noqa: E402
 
 from src.models.structured import VNLinear, VNReLU  # noqa: E402
-from stable_worldmodel.envs.pusht.env import PushT  # noqa: E402
+
+try:  # noqa: E402
+    from stable_worldmodel.envs.pusht.env import PushT
+except ModuleNotFoundError:  # vendored dep (see requirements.txt / .gitignore) is absent on a
+    PushT = None             # fresh clone. Only this module's *own* real-PushT runs need it; the
+    # many downstream steps that ``from step10_pusht_closed_loop import n_params`` (a generic
+    # parameter counter) must still import cleanly without it. make_env() raises a clear error
+    # if PushT is actually used while the dep is missing.
 
 # ----------------------------------------------------------------------------- #
 # constants
@@ -185,7 +192,14 @@ def n_params(m: nn.Module) -> int:
 # ----------------------------------------------------------------------------- #
 # task generation + data collection on the real env
 # ----------------------------------------------------------------------------- #
-def make_env() -> PushT:
+def make_env() -> "PushT":
+    if PushT is None:
+        raise ModuleNotFoundError(
+            "stable_worldmodel is required to run the real-PushT experiments. Install the "
+            "vendored dependency with `uv pip install -e third_party/stable-worldmodel` "
+            "(see requirements.txt). Steps that only need the generic `n_params` counter "
+            "import this module fine without it."
+        )
     return PushT(render_mode="rgb_array")
 
 
