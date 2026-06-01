@@ -7,131 +7,33 @@ group, does *hard-wiring* that symmetry into a latent world model let it learn f
 and generalise zero-shot to configurations it never saw — 举一反三 — rather than relying on scale?
 Across $35$ steps on a laptop (CPU/MPS, no CUDA) we build a latent JEPA with an equivariant encoder
 (Vector Neurons in 2D, `e3nn` in 3D) and a jointly-equivariant predictor, and pit it against a
-$4.5$–$7.4\times$ parameter-richer non-equivariant baseline of the *same* hypothesis class. Three facts
+$4.5$–$7.4\times$ parameter-richer, identically-trained non-equivariant baseline (no rotation
+augmentation). Three facts
 recur, each guarded by an equivariance unit test at init **and** after training. **[A]** The learned
 model stays equivariant to $\sim\!10^{-6}$ post-training, not merely at initialisation. **[B]** One-step
 prediction error is *exactly flat* across the whole group — a theorem, since orthogonal $\rho(R)$
-cancels in the relMSE ratio — giving an OOD/seen factor of $\times1.00$ versus the baseline's
-$\times13.8$ (2D latent), $\times17.2$ (3D SO(3)) and $\times157$ (full SE(3)). **[C]** Under a matching
+cancels in the relMSE ratio — giving an OOD/seen factor of $\times1.00$ versus the *non-augmented*
+baseline's $\times13.8$ (2D latent), $\times17.2$ (3D SO(3)) and $\times157$ (full SE(3)); given the
+group, augmentation narrows the *task* ratio to $\times1.06$–$1.46$ but never the float-floor exactness
+(Step 28). **[C]** Under a matching
 equivariant planner the closed-loop pose-control error is *orientation-invariant*: float-floor-exact in
 2D (paired $K{=}48$, seen-vs-OOD angle change $=0$) and statistically flat in 3D SE(3) (VN ratio
-$[0.977,0.999]$, disjoint from the MLP's $[1.049,1.234]$). The later steps *locate the boundary* of the
-bet rather than oversell it: a sample-efficiency frontier (Step 21) shows the payoff is a descending
-whole-group curve against a baseline *wall*; a symmetry-break $\times$ data phase diagram (Step 22) shows
-the prior wins $24/25$ cells — near-total and **data-proof** across the group — yet is a **wash-to-loss
-in-distribution**, its lone exception a statistical tie on the most-broken row (not a clean corner); and
-a large-$N$ fixed-epochs test (Step 23) confirms the in-distribution gap does *not* run away with the
-break even at $N{=}2048$; and an
-object-*interaction* rung (Step 24) collapses the scene symmetry to the global diagonal
-$\mathrm{SE}(3)\rtimes S_O$ and shows the **interpolation/extrapolation flip** in one panel — a plain MLP
-fits the bilinear coupling *better* in-distribution (a degree-1 Vector-Neuron cap, the 3D echo of §18) yet
-only the equivariant model is flat across the collapsed group ($\times1.00$ vs $\times17$), and a
-tensor-product upgrade (Step 27) that supplies the missing cross-product irrep recovers $42\%$ of that cap
-($\times1.45$ better fit) while staying exactly flat — *enrich the equivariant class, don't drop the prior*;
-and an
-**active-inference** rung (Steps 20, 25) carries the bet into a *decision* problem — the agent's curiosity
-(ensemble disagreement) is an exact $\mathrm{SE}(3)$-invariant, and in an ambiguous-goal cue-foraging POMDP
-an Expected-Free-Energy planner in the equivariant latent cuts a reward-only planner's true-goal error by
-$55\%$, past a *provable* hedge floor, purely by seeking information — the whole loop staying
-$\mathrm{SE}(3)$-equivariant. A final **optimiser** rung (Step 26) closes the natural reviewer worry that a
-geometry-blind optimiser (Adam) might silently erode the $\sim\!10^{-6}$ equivariance one step at a time
-(the Lau–Su *Symmetry-Compatible-Optimizer* warning): it does **not** for our model, because Vector-Neuron /
-`e3nn` weights parametrise the intertwiner space **intrinsically** ($W=M\otimes I_d$ for *any* $M$), so the
-residual is identically zero for any weights and Muon $=$ Adam $=$ SGD $=$ floor at init *and* post-train; the
-warning bites only *extrinsically*-constrained equivariance — a free dense layer merely *initialised* in the
-commutant drifts off it under noisy Adam ($\sim\!10^{-2}$), where a symmetry-compatible optimiser helps only
-*modestly* ($\sim$2–4$\times$) and an intrinsic parametrisation is the real fix. Finally a three-experiment
-**Bitter-Lesson stress test** (Steps 28–30) confronts the prior with its sharpest rival — *data*: rotation
-augmentation handed the *whole* group closes the across-group *task* metric but plateaus $\sim\!10^5\times$
-above the exact-equivariance floor (Step 28); at *partial* coverage, $\times16$ data and $\times300$
-parameters close **neither** the task gap nor exactness (Step 29); and a **soft-equivariant**
-Residual-Pathway model on a *controllably broken* world (Step 30) is a continuous dial between the two
-extremes — it buys the capacity to absorb the break, but spends across-group reach **and** float-floor
-exactness to do it, monotonically, so the exact-and-flat-for-free corner stays the architecture's alone.
-A closing **multi-step** rung (Step 31) answers the natural worry that every step before it measured only
-*one-step* prediction while a world model is used by *rollout*: equivariance is closed under composition, so
-the $H$-fold rollout operator is equivariant by induction, and the VN rollout stays across-group **flat**
-($\times1.00$) and float-floor-exact ($\le\!2\times10^{-7}$) at **every** horizon $H\in\{1,\dots,16\}$ in both
-2D and 3D, while the free MLP re-injects the break each step — its composed equivariance residual compounds
-*monotonically* ($\sim\!2$–$4\times10^{-2}$ at $H{=}1$ to $\sim\!4\times10^{-1}$ at $H{=}16$) — so the
-one-step prior pays a **multi-step** guarantee at the horizon the model is actually planned with.
-A final **degree-ladder** rung (Step 32) sweeps Step 27's single tensor-product point into a curve —
-holding depth, width, and (near-)parameter count fixed while varying *only* the representable polynomial
-degree $d_{\max}=2^{L}$ ($L\in\{0,1,2,3\}$): the in-distribution fit recovers in a single step at the first
-cross-product rung ($\times1.36$, $38\%$ of the degree-1$\to$MLP gap) and then **saturates** dead-flat
-($d_{\max}{=}4,8$ buy nothing) — a *degree* signature (a missing primitive), not a capacity ramp — while
-every rung stays across-group $\times1.00$ and float-floor-equivariant ($\le\!10^{-4}$) and the
-$2.4\times$-larger free MLP fits better in-distribution but degrades $\times10.5$ across the group.
-A capstone **symmetry-discovery** rung (Step 33) turns the bet's *premise* into a measurement: parametrising
-a free generator slate and minimising a frozen teacher's finite-transform equivariance residual — with **no**
-antisymmetry, Lie bracket, or $\mathfrak{so}(3)$ structure imposed — recovers the prior *from data alone*,
-reading the symmetry **dimension** straight off a residual jump (TRUE $\mathrm{SO}(3)$: floor through $K{=}3$,
-a $\times9\times10^{9}$ jump at $K{=}4\Rightarrow\dim=3$) and watching $\mathfrak{so}(3)$ **emerge** unbidden
-(antisymmetry $6\times10^{-7}$, bracket-closure $2\times10^{-6}$, structure-constant norm $\|c\|=\sqrt3$ to
-seven figures); and it is **falsifiable** — a $z$-broken world *cannot* fake the algebra at $K{=}3$
-($\times1.6\times10^{10}$ worse) yet correctly recovers its lone surviving $L_z$ at $K{=}1$, a dim-$1$ read
-robust across an $8\times$ range of break strength — so the thesis's opening "*if* the world has a symmetry"
-becomes something the data can be made to **prove or refute**, not merely assume.
-A **noisy-active-inference** rung (Step 34) removes the one crutch that made the Step 25 win cheap — its
-*noiseless* one-bit reveal — by routing the cue through a binary symmetric channel with crossover
-$\epsilon(d)=\tfrac12-(\tfrac12-\epsilon_0)e^{-d^2/2\delta^2}$ and driving the planner by the **exact**
-mutual information $\mathrm{IG}=\mathcal H(p)-\mathbb E_o[\mathcal H(p')]=I(b;o\mid d)$ (a function of $\hat z$
-only through the invariant latent distance, hence $\mathrm{SE}(3)$-invariant to $7\times10^{-7}$); the one
-design decision is a **belief-entropy gate** $g_{\rm epi}=\mathcal H(p)/\ln2$ that re-arms Step 25's
-*self-extinguishing* drive, which $z$-scoring alone destroys once soft Bayes can no longer reach $\{0,1\}$.
-The win **survives the noise** ($\times0.614$ true-goal-error cut, $\mathrm{CI}[0.499,0.749]$, past the same
-provable hedge floor), it **recovers Step 25 exactly** as the noise floor vanishes ($\epsilon_0\!\to\!0$:
-$\mathrm{EFE}=0.333\approx$ oracle), and — the built-in **falsifiable negative** — the win **disappears** when
-the channel goes useless ($\epsilon_0\!=\!0.45$: $\mathrm{EFE}=0.723\approx$ reward-only $0.663$), with sensing
-effort climbing monotonically $5.6\!\to\!15.7$ as the cue degrades — the whole noisy loop still
-$\mathrm{SE}(3)$-equivariant where the free MLP shatters it ($\mathrm{IG}$-invariance $0.17$).
-A **combinatorial** rung (Step 35) opens a *second, discrete* generalisation axis orthogonal to the
-group — object **cardinality** $O$: train the interacting world model at a **single** count $O{=}3$ and
-test zero-shot at $O\in\{1,\dots,6\}$. The design decision that lets a one-count predictor transfer is a
-**count-stable mean message** $\bar r_i=\tfrac1{O-1}\sum_{j\ne i}\hat r_{ij}$ — a *mean* of unit vectors
-lives in the unit ball ($\lVert\bar r_i\rVert\le1$, contracting $1.0\to0.94$ as $O{:}2\to6$) at every
-count, where a *sum* would grow with $O$ — so the slot model is **flat across the interacting family**
-$O\ge2$ (VN-MP $\times1.09$, and the equally-equipped *non*-equivariant MLP-MP $\times1.05$: the count
-transfer is bought by **factorisation**, not the prior), while the equivariance prior adds the *second*
-axis the MLP cannot — **exact** global-$\mathrm{SO}(3)$ 举一反三 at **every** unseen count (VN-MP
-$\times1.00$ vs MLP-MP $\times2.83$), the architecture staying $\mathrm{SE}(3)\rtimes S_O$-equivariant at a
-count it **never trained on** ($O{=}5$: SE(3) $1.8\times10^{-5}$, perm $7\times10^{-7}$); the lone
-non-interacting limit $O{=}1$ (message $\equiv0$, an unseen input, and no torque so the latent step
-shrinks $3.8\times$) is a *documented boundary* at $\times2.47$ that still beats no-change ($0.50<1$), not
-folded into the headline — so two independent generalisation axes, **discrete count $\times$ continuous
-rotation**, are met at once and only by the geometric model (channel-necessity is the inherited degree-1
-cross-product cap, a modest $\times3.46$).
-A **discovery$\to$exploit** rung (Step 36) turns the *measurement* of Step 33 into a *method*: every
-across-group win above came from a symmetry **hand-wired** into the architecture, but Step 33 had already
-*rediscovered* a frozen teacher's $\mathfrak{so}(3)$ from a blank slate of learnable matrices — so now
-**distil those discovered generators into a free MLP predictor** as a soft equivariance regulariser
-$\lambda\sum_k\mathbb{E}\lVert\rho(g_k)f(z,a)-f(\rho(g_k)z,g_ka)\rVert^2$ along the discovered finite flows
-$g_k=\exp(\theta\hat G_k)$ (one frozen equivariant encoder shared across five predictor arms). The design
-decision that makes it a working method rather than a token gain is to **decouple the distillation flow
-range from discovery** — discovery needs only a $\pm49^\circ$ wedge to *detect* broken symmetry, but
-exploitation must *enforce* it over the whole $1$-parameter subgroup, so $\theta_{\max}^{\text{distill}}
-=\pi\sqrt2$ sweeps a full half-turn per axis ($\mathrm{tr}\,\exp(\pi\sqrt2\,\hat G)=-1$, the antipode).
-Distilling the **discovered** $\mathfrak{so}(3)$ then closes $54\%$ of the free MLP's excess OOD gap (free
-$\times2.25\to$ distilled $\times1.09\to$ VN $\times1.00$) and drops the predictor equivariance residual
-$\times8.0$ ($3.69\to0.459$), **as flat as** distilling the hand-wired oracle ($\times1.06$ — the Step-33
-discovery costs nothing), while a *partial* discovery transfers *exactly* what it found (the discovered
-$\mathfrak{so}(2)_z$ helps the z-axis OOD $+46\%$ vs off-axis $+17\%$); the honest limit is that soft
-distillation **approximates** — distilled OOD $0.632$ is still $>2\times$ the VN floor $0.300$ — so the
-prior is shown **learnable AND exploitable**, with a documented soft-vs-hard gap rather than the
-float-floor exactness of the built-in one.
-A **generic-search** rung (Step 37) discharges the *last* crutch of the active-inference win — that Steps 25/34
-ran on a **constructed** POMDP with a *mirror* goal pair (a single hidden bit): replacing it with a generic
-$K$-target constellation (no antipodal pair at any $K$ — $0$ violations over $2000$ draws — a genuine $K$-ary
-categorical belief) and driving the planner by the **exact** categorical mutual information
-$\mathrm{IG}=\mathcal H(p)-\mathbb E_o[\mathcal H(p')]=I(b;o\mid d)$ of a $K$-ary symmetric channel (useless floor
-$\epsilon_\star=(K{-}1)/K$; Step 34's binary cue recovered as the $K{=}2$ case to $10^{-7}$), the
-$\mathrm{SE}(3)$-invariant curiosity reads the one off-path cue and **attains the oracle floor**
-($\mathrm{EFE}=0.387\approx$ oracle $0.376$, gap-CI includes $0$; $\times0.565$ vs the reward-only hedge),
-**scaling with $K$** (wins at $K{=}3,4,5$); the advantage is pinned to the *separable affordance* — not the
-mirror — by **two** falsifiable negatives that both fire: the win vanishes when the cue goes useless
-($\epsilon_0=\tfrac23$, ratio $1.00$) **and** when the affordance collapses to sense$=$commit (ratio $1.25$),
-while the whole loop stays exactly $\mathrm{SE}(3)$-equivariant ($\mathrm{IG}$-field $6\times10^{-6}$, plan-equiv
-$2\times10^{-8}$) where the free MLP shatters it ($0.29$) — *active inference as geometry, de-constructed*.
+$[0.977,0.999]$, disjoint from the MLP's $[1.049,1.234]$).
+
+The remaining steps **locate the boundary** of the bet rather than oversell it — all are written up in
+full in the sections below; this abstract only names them. A sample-efficiency frontier (Step 21), a
+symmetry-break $\times$ data phase diagram (Step 22) and a large-$N$ fixed-epochs test (Step 23) together
+show the across-group win is **near-total and data-proof at fixed compute** (the prior wins $24/25$ phase
+cells) yet a **wash-to-loss in-distribution**. Capacity/degree probes (Steps 24, 27, 32) trace the
+in-distribution gap to a missing cross-product irrep that *enriching the equivariant class* — not dropping
+the prior — partly recovers, every rung still $\times1.00$ across the group. Active-inference rungs
+(Steps 20, 25, 34, 37) earn a real task win from an exactly $\mathrm{SE}(3)$-invariant epistemic drive past
+a *provable* hedge floor, surviving noisy- and generic-search de-constructions. An optimiser probe
+(Step 26), a Bitter-Lesson data-vs-prior stress test (Steps 28--30), a multi-step rollout guarantee
+(Step 31), a from-data symmetry **discovery** rung (Step 33) with its **discover$\to$exploit** distillation
+(Step 36), and a combinatorial count-generalisation axis (Step 35) complete the evidence trail; the
+per-step numbers, equivariance residuals and falsifiable negatives all live below.
+
 Honest scope: everything is laptop-scale and silent on whether scale eventually beats the prior *at sizes
 beyond a laptop* (Sutton's Bitter Lesson); the guarantee is exact only where the world's symmetry is real,
 and the across-group payoff is **not** an in-distribution sample-efficiency edge.
@@ -209,6 +111,21 @@ Equivariance guard tests therefore assert a *tolerance* (typically $\le 10^{-4}$
 comfortably above (ii) yet orders of magnitude below any learned
 symmetry-breaking signal. Where the literal value matters we print it.
 
+**How to read the `Confidence ≈ x` verdicts.** $\approx0.9$–$0.95$ — a theorem realised to its
+float/equivariance floor, with a paired or multi-seed error bar I would stake on. $\approx0.8$–$0.85$
+— the same mechanism, but the *measurement* carries a residual I cannot fully kill (a CEM tie-flip
+floor, a single-pair closed loop, the 3D statistical-vs-literal gap). $\approx0.6$–$0.7$ — a
+*generalisation beyond what was measured* (e.g. "no in-distribution edge persists at scale"):
+directionally supported, not proven. $\approx0.5$ — a frankly speculative reading, flagged as such.
+
+**And how to read the `group/seen` $=1.0000$ rows.** Because the isometry argument *forces* the
+across-group ratio to exactly $1$ whenever the model is equivariant (Proposition 1, core §2.2), a
+measured $\times1.00$ is an **implementation check** — confirmation that the encoder/predictor really
+are equivariant in code, no bug — **not** the headline result. The two contentful claims are **(a)**
+that the symmetry **survives a real training run** ($\sim\!10^{-6}$ residual after optimisation, claim
+[A]), and **(b)** that the non-equivariant baseline, fed the *same data*, blows up
+($\times13$–$\times157$). The theorem turns $\times1.00$ from a finding into a falsifiable prediction.
+
 ---
 
 ## 1. Foundation (one-line recap)
@@ -226,7 +143,7 @@ worth building if exactness pays off in learning. Steps 8–9 are that test.
 
 ---
 
-## 2. Sample efficiency + 举一反三, one-step prediction
+## 2. Sample efficiency + 举一反三, one-step prediction (Step 8)
 
 **Design (controlled head-to-head).** Instantiate a *world* whose one-step dynamics
 $s'=T(s,a)$ is *exactly* SO(2)-equivariant by making $T$ a **frozen random VN net
@@ -288,11 +205,11 @@ conclusion is not an artefact of synthetic inputs.
 
 **Step 8 verdict.** When the world is equivariant, the geometric prior converts
 exactness into (i) ~16× sample efficiency and (ii) zero-shot generalisation across
-the rotation group. Confidence ≈ **0.9**.
+the rotation group. Confidence ≈ **0.9**. *(Base: one trained teacher–student VN/MLP pair; the dedicated 5-seed robustness bar is Step 17.)*
 
 ---
 
-## 3. Closed-loop few-shot planning + 举一反三 (CEM-MPC)
+## 3. Closed-loop few-shot planning + 举一反三 (CEM-MPC) (Step 9)
 
 Step 8 proved the benefit for *one-step* prediction. A world model earns its name
 only if it can **plan**: roll its own dynamics forward over a horizon and act.
@@ -366,11 +283,11 @@ planning actually needs.
 
 **Step 9 verdict.** The geometric prior turns "practice in one direction" into "act
 in all directions" — sample-efficient generalisation demonstrated in **closed loop**,
-not just one-step regression. Confidence ≈ **0.9** on the exactly-equivariant task.
+not just one-step regression. Confidence ≈ **0.9** on the exactly-equivariant task. *(Base: a single trained pair under CEM-MPC; the paired-task closed-loop power analysis follows in Step 14.)*
 
 ---
 
-## 4. External validity: closed-loop control on *real* PushT
+## 4. External validity: closed-loop control on *real* PushT (Step 10)
 
 Steps 8–9 proved the payoff on dynamics that are *exactly* SO(2)-equivariant **by
 construction** (frozen random VN teacher / damped point mass). The honest question is
@@ -457,11 +374,11 @@ non-obvious finding [A]; the equivariant prior delivers **clean prediction-level
 on this real system** (×16 OOD, VN flat) [B]; but at laptop scale the advantage **does not
 yet show up in closed-loop task success** on position-only pushing [C] — an honest null,
 with a concrete mechanism and a concrete fix. Confidence ≈ **0.9** on [A]/[B] (prediction);
-the closed-loop task-success question is **open**, not refuted.
+the closed-loop task-success question is **open**, not refuted. *(Base: one trained pair on real PushT; the [C] null is single-pair, with paired/multi-seed power arriving in Steps 14/17.)*
 
 ---
 
-## 5. The end-to-end equivariant *latent* JEPA (举一反三 in latent space)
+## 5. The end-to-end equivariant *latent* JEPA (举一反三 in latent space) (Step 11)
 
 Steps 8–10 all learned an **explicit-coordinate** forward model $M:(s,a)\mapsto s'$
 that predicts the next *physical* state, and planned against a cost on the block's
@@ -561,11 +478,11 @@ thesis — "predict in an abstract, geometric latent space" — *realised*, not 
 Closed-loop *task success* remains the same honest open question as Step 10: the latent
 planner works, but the OOD advantage is below the noise floor on position-only pushing.
 Confidence ≈ **0.9** on the representation-level result ([A]+[B]); the closed-loop
-task-success gap stays **open**.
+task-success gap stays **open**. *(Base: one trained equivariant encoder+predictor on real PushT, single pair; the representation-level numbers are exact-by-construction, not a seed average.)*
 
 ---
 
-## 6. The contact test: does the prediction gap convert under *pose* control?
+## 6. The contact test: does the prediction gap convert under *pose* control? (Step 12)
 
 Steps 10–11 ended on one honest open question. On real PushT the equivariant model
 shows clean prediction-level 举一反三 (×16 OOD), but it did **not** convert to a
@@ -611,7 +528,10 @@ Two facts, both honest:
 - **The VN is identical to five digits across all four quadrants on every channel**
   (×1.00) — exact equivariance realised. It is also *better in-distribution* on the block
   channels than the 5.6×-larger MLP ($0.563$ vs $0.77$): the prior fits contact dynamics
-  more sample-efficiently (echoing Step 8).
+  more sample-efficiently *at this scale* (echoing Step 8) — a *task- and scale-specific* edge,
+  not a general one. On the controlled frontier (Step 21) the higher-capacity baseline fits the
+  wedge at least as well, so the durable claim is always the across-group ratio, not the
+  in-distribution level.
 - **OOD, the MLP keeps its self-motion model usable** (`agent_pos` $0.089\ll1$) **but its
   model of the block breaks** — `block_dir` crosses $1$ (worse than no-change) at $2.33$,
   worst in exactly the channel a pose task depends on. This *quantifies* the Step 10/11
@@ -654,11 +574,11 @@ converts this into the **first closed-loop OOD signal that isn't a tie** — equ
 orientation control flat across the circle (×1.09) vs the baseline degrading (×1.85) —
 though not into a clean binary task-success win at laptop scale. Confidence ≈ **0.9** on
 [A]+[B]; ≈ **0.6** on the [C] angle-control signal (right direction, modest $N$, an
-in-distribution-fit confound on the absolute level).
+in-distribution-fit confound on the absolute level). *(Base: one trained pair; the [C] OOD ratio gets its dedicated 5-seed error bar in Step 17 and its paired-task power in Step 14.)*
 
 ---
 
-## 7. The SO(3) lift: does end-to-end latent 举一反三 survive one dimension up?
+## 7. The SO(3) lift: does end-to-end latent 举一反三 survive one dimension up? (Step 13)
 
 Steps 10–12 all live in 2D / SO(2) on PushT. But the thesis is about *geometry*, and the
 architecture the project is actually building (CLAUDE.md Phase 4) is **SE(3)** on 3D point
@@ -722,7 +642,9 @@ One-step **latent** relMSE on the *same* held-out set rotated into each orientat
 The VN is **flat to four digits across the entire group** — same axis/new angle, brand-new
 axes, random SO(3) — exact 举一反三; and it is also **better in-distribution** than the
 7.4×-larger baseline ($0.228$ vs $0.307$: the prior fits the dynamics more sample-efficiently,
-echoing Steps 8/12). The MLP fits the seen wedge ($0.307$) but **breaks OOD**, crossing $1$
+echoing Steps 8/12) — again a *task- and scale-specific* edge, not a general one (Step 21's
+controlled frontier has the higher-capacity baseline fitting the wedge at least as well; the
+durable claim is the across-group ratio). The MLP fits the seen wedge ($0.307$) but **breaks OOD**, crossing $1$
 (worse than no-change) and peaking at $5.28$ — and its worst bins are the **new-axis**
 rotations ($x\,90°$), exactly the directions the $z$-wedge never exercised. This is Step 11
 reproduced one dimension up, in a strictly larger group.
@@ -750,15 +672,16 @@ thesis claims**: the *learned* 3D latent inherits exact SO(3) equivariance after
 ($3.0\times10^{-5}$), its planning cost is rotation-invariant ($10^{-7}$ vs the baseline's
 $0.85$), and latent prediction is 举一反三 across the whole group from a single $z$-wedge
 (VN flat ×1.00; MLP ×17.2, worst on new axes) — with **7.4× fewer parameters** *and* a better
-in-distribution fit. This is the Steps 10–11 mechanism confirmed **in 3D / SO(3)**, the
+in-distribution fit *at this scale* (a task-specific edge, see above — not a general
+in-distribution claim). This is the Steps 10–11 mechanism confirmed **in 3D / SO(3)**, the
 project's actual target geometry. The honest negative is [C]: purely-latent planning toward a
 goal *cloud* gets no traction for either model — a planner/decoder limitation, not an
 equivariance one (the VN still fails flat across the group). Confidence ≈ **0.9** on [A']+[B]
-(exact, decisive); the [C] latent planner is an acknowledged gap.
+(exact, decisive); the [C] latent planner is an acknowledged gap. *(Base: one trained 3D pair; the [A']+[B] numbers are exact-by-construction; the [C] negative is resolved later in Step 38 over $K{=}24$ paired orbit tasks.)*
 
 ---
 
-## 8. The paired power test: converting the prediction gap into an *exact* closed-loop result
+## 8. The paired power test: converting the prediction gap into an *exact* closed-loop result (Step 14)
 
 Step 12 [C] gave the first closed-loop OOD signal that wasn't a tie, but it was an
 *unpaired* comparison (2 seeds × 15 tasks/bin) with two honest weaknesses: the absolute
@@ -849,7 +772,7 @@ $K{=}48$), ≈ **0.85** on [S] (the model/planner-jointly-equivariant finding).
 
 ---
 
-## 9. Completing the group: SE(3) $=$ SO(3) $\ltimes\ \mathbb{R}^3$ (translation 举一反三)
+## 9. Completing the group: SE(3) $=$ SO(3) $\ltimes\ \mathbb{R}^3$ (translation 举一反三) (Step 15)
 
 The project is named for **SE(3)**, but every generalisation test so far isolated the
 *rotation* subgroup: Steps 10–12 are SO(2), Step 13 is SO(3). Translation — the other half of
@@ -908,7 +831,7 @@ closing the gap between the project's named target geometry and what had been te
 
 ---
 
-## 10. Robustness sweep: how much symmetry-breaking can the prior tolerate? (the Bitter-Lesson boundary)
+## 10. Robustness sweep: how much symmetry-breaking can the prior tolerate? (the Bitter-Lesson boundary) (Step 16)
 
 **Honest scoping of "Task 4."** The original Phase-4 plan named a *real 3D manipulation simulator*
 (ManiSkill / RLBench) as the next validation. Those renderers need CUDA / EGL and **do not run on
@@ -969,11 +892,11 @@ ahead even when the broken component is $\approx\!1.4\times$ the symmetric one �
 shrinks as the world's symmetry erodes, exactly as theory predicts. We do **not** claim the prior
 always wins; we show it tolerates more misspecification than one might fear, and we push the bracket
 out to $\mathrm{noneq}\approx1.42$ without finding the crossover at this scale. Confidence ≈ **0.85**;
-the real-3D-sim validation that "Task 4" named remains genuine future work, gated on GPU hardware.
+the real-3D-sim validation that "Task 4" named remains genuine future work, gated on GPU hardware. *(Statistical base: a single trained VN/MLP pair at seed 0, swept over a 12-rung misspecification grid — a deterministic sweep, not a seed average; the order-of-magnitude OOD-margin trend, not any single rung, is the claim.)*
 
 ---
 
-## 11. The training-seed error bar (multi-seed closed-loop OOD degradation)
+## 11. The training-seed error bar (multi-seed closed-loop OOD degradation) (Step 17)
 
 Step 12 [C] and Step 14 both reported the closed-loop OOD contrast from **one** trained VN and
 **one** trained MLP (Step 14 added a paired bootstrap over $K{=}48$ *tasks*, but still on a single
@@ -1008,7 +931,7 @@ statistical picture. Confidence ≈ **0.85**.
 
 ---
 
-## 12. The SE(3) closed-loop lift (the [C]/[E] theorem in 3D)
+## 12. The SE(3) closed-loop lift (the [C]/[E] theorem in 3D) (Step 18)
 
 Step 14 made the closed-loop orientation invariance **exact** — but in **2D / SO(2)**, on PushT.
 The project's *named* geometry is **SE(3)**. Step 18 lifts the entire [E]/[S] paired design to **3D
@@ -1043,13 +966,26 @@ orientation-error ratio**.
 **[E] EXACT — equivariant planner (iso-$\sigma$, unit-**ball** clamp, $R$-rotated noise, latent +
 closed-form centroid cost), held *identical* for both models:**
 
-| over $K{=}24$ paired tasks | OOD/seen ratio | 95% CI | paired OOD$-$seen angle (deg) |
+| over $K{=}24$ paired tasks ($n_{\text{boot}}{=}4000$) | OOD/seen ratio | 95% CI | paired OOD$-$seen angle (deg) |
 |---|---:|---:|---:|
 | **VN (equivariant)** | $0.989$ | $[0.977,\ 0.999]$ (within $2\%$ of flat) | $-0.27$, CI $[-0.63,-0.03]$, $\max_i\lvert d_i\rvert=3.54$ |
 | **MLP (baseline)** | $1.134$ | $[1.049,\ 1.234]$ (**excludes 1**) | $+9.92$, CI $[+3.80,+15.94]$ |
 
 The two ratio CIs are **disjoint** ($0.999<1.049$). The VN's deviation is *negative* (OOD marginally
 *better* than seen) and tiny — a tie-flip floor, not a degradation; the MLP's is $+13\%$ and climbing.
+
+**Distribution-free backstop (honest power for a thin $K$).** $K{=}24$ paired tasks is thin to hang a
+"disjoint CI $\Rightarrow$ decisive" verdict on, so we add two assumption-free tests on the same paired
+design (`step18_se3_closed_loop.py`, the `paired_sign_test`/`paired_permutation_test` helpers). On the
+decisive question — does the MLP degrade **more** per task than the VN — the magnitude-aware **sign-flip
+permutation test** ($20{,}000$ flips, the exact paired null) gives $p_{\text{perm}}=0.004$; the more
+conservative **sign test** is $17/24$, $p=0.064$ — *marginal*, because it throws away the (large)
+magnitude gap and $K$ is small, and the $7$ wrong-sign tasks are ones where the VN's own
+$\le3.5°$ tie-flip noise outweighs the MLP's degradation on that task. Read together —
+disjoint CIs, $p_{\text{perm}}=0.004$, sign $p=0.064$ — the separation is real, but the bootstrap CI is
+*not* doing the work alone, and we flag the thin $K$ rather than overstate it. (The unpaired [S] panel
+below, where both errors are larger, is unambiguous: sign $22/24$, $p_{\text{sign}}=3.6\times10^{-5}$,
+$p_{\text{perm}}=5\times10^{-5}$.)
 By group element the VN orientation error is essentially flat — $\{25.86,25.86,25.86,25.15,25.49\}°$
 across $\{$seen$,g_1,g_2,g_3,g_4\}$ (the first three identical to $10^{-6}$: they share the
 pure-rotation orbit; $g_3,g_4$ carry the large translation, and the small wobble there is the
@@ -1079,11 +1015,11 @@ VN-flat (ratio CI upper $0.999<1.05$) ✓; MLP-degrades (ratio CI lower $1.049>1
 2D Step 14 [E]'s $0.9$, precisely because the VN residual is a CEM **tie-flip floor** at the e3nn
 $\sim\!10^{-6}$ equivariance, not the literal float zero 2D achieved (the $1.2\times10^{-7}$
 single-plan unit test is the clean theorem; the closed loop is the realistic one) — and ≈ **0.85** on
-the model-and-planner [S] finding, mirroring Step 14.
+the model-and-planner [S] finding, mirroring Step 14. *(Statistical base: $K{=}24$ paired seen-vs-OOD tasks from one trained VN/MLP pair; the disjoint CIs are reinforced by a sign/permutation backstop — see the [E] table's honest-power note.)*
 
 ---
 
-## 13. Object-centric compositionality: which prior buys which generalisation? ($\mathrm{SE}(3)^O\rtimes S_O$)
+## 13. Object-centric compositionality: which prior buys which generalisation? ($\mathrm{SE}(3)^O\rtimes S_O$) (Step 19)
 
 Steps 13–18 proved the claims for a **single** rigid body under $\mathrm{SE}(3)$. The world has *many*
 objects, and CLAUDE.md Open Question #3 asks the next thing directly: *how do compositional /
@@ -1157,11 +1093,11 @@ global breaks) ✓; leakage (slots $0$, global $0.94$) ✓; orientation (VN flat
 arrangement (both slots flat, global degrades) ✓. **PASS.** Confidence ≈ **0.8** that the two priors are
 separable and each buys its named half of the scene group — one notch below Step 18 because the
 *interaction-free* teacher is a real scope limit, not because any panel is weak (the separations are
-large and the structural half is exact).
+large and the structural half is exact). *(Statistical base: $K{=}6$ paired OOD orientation/arrangement tasks from one trained set of priors.)*
 
 ---
 
-## 14. Active inference in the equivariant latent — the curiosity invariance and its task payoff
+## 14. Active inference in the equivariant latent — the curiosity invariance and its task payoff (Steps 20, 25)
 
 Steps 13–19 built the *pragmatic* half of the loop — perceive, predict, and act toward a goal — and
 proved its exact $\mathrm{SE}(3)$-equivariance. Friston's active inference adds the *other* half: an
@@ -1253,7 +1189,7 @@ $\beta$-knob (epi & prag rise) ✓; plan equivariance ($6\times10^{-8}$) ✓. **
 *invariance theorem and tractability* ≈ **0.9** (it is exact by construction and survives training, with
 a control that fails); confidence that the epistemic term *converts to a task win* under partial
 observability ≈ **0.85** (now demonstrated in §14.1, on a constructed POMDP); overall ≈ **0.85** — the
-geometry is certain and the active-inference payoff is now a result, on a constructed task.
+geometry is certain and the active-inference payoff is now a result, on a constructed task. *(Statistical base: Step 20's curiosity-invariance is exact by construction on a single trained pair; the §14.1 / Step 25 task win is over $K{=}24$ paired POMDP tasks.)*
 
 ### 14.1 The payoff: active inference earns a task win under partial observability
 
@@ -1302,7 +1238,7 @@ Muon/AdamW + EMA + VICReg; $\beta{=}12$, $w_t{=}2$, $T_{\max}{=}18$):
 | **EFE** ($\beta{=}12$) | $\mathbf{0.269}$ CI$[0.230,0.313]$ | $12.8°$ | $\mathbf{0.92}$ |
 | oracle (told $b$) | $0.214$ CI$[0.174,0.256]$ | $10.5°$ | — |
 
-The reward-only error sits exactly at the analytic hedge floor ($0.592\approx d{=}0.569$); the EFE planner
+The reward-only error is consistent within noise with the analytic hedge floor (the CI $[0.508,0.670]$ contains $d{=}0.569$); the EFE planner
 removes $\mathbf{55\%}$ of it (ratio $0.454$ CI$[0.364,0.572]$; paired drop $+0.323$ CI$[+0.224,+0.416]$,
 excluding $0$) and lands within $0.054$ CI$[+0.006,+0.109]$ of the oracle. The mechanism is unambiguous:
 the EFE agent senses the cue on $0.92$ of episodes, the reward-only agent on $0.21$ (accidental brush-by
@@ -1339,12 +1275,12 @@ part. Confidence ≈ **0.85** that the constructed win is correct and the loop-l
 benchmark (still open). The **noisy-observation** half of this caveat is now **discharged by Step 34**
 (§26): replacing the noiseless one-bit reveal with a genuinely noisy binary channel — soft Bayes that never
 collapses, the *exact* sensor mutual information as the drive — the win **survives** ($\times0.614$, closing
-to within noise of the oracle), recovers this section exactly as the noise floor $\epsilon_0\to0$, and
+to within noise of the oracle), recovers this section's structure as the noise floor $\epsilon_0\to0$ (a fresh draw, not the identical number), and
 **vanishes** when the channel goes useless ($\epsilon_0=\tfrac12$); the whole loop stays $\mathrm{SE}(3)$-exact.
 
 ---
 
-## 15. The sample-efficiency frontier: equivariance as a learning curve, not a point (Open Question #1)
+## 15. The sample-efficiency frontier: equivariance as a learning curve, not a point (Open Question #1) (Step 21)
 
 Every step so far measured generalisation at a *single* training-set size. Step 21 sweeps it and
 draws the **frontier** — test error vs the number of interactions $N$ — because that frontier is the
@@ -1364,7 +1300,9 @@ optimisation steps; 3 seeds; same `train_jepa` (EMA target + VICReg + Muon/AdamW
 With $E(Rx)=\rho(R)E(x)$, $f(\rho z,Ra)=\rho f(z,a)$ and $\rho(R)$ orthogonal, the relMSE numerator
 $\lVert\rho(R)(f(E(x),a)-E(x'))\rVert^2$ and denominator $\lVert\rho(R)(E(x')-E(x))\rVert^2$ are both
 $\rho$-invariant, so $\mathrm{relMSE}(Rx,Ra,Rx')=\mathrm{relMSE}(x,a,x')$ for **all** $R$, **all
-weights, all $N$, even at init**. Measured `group/seen` $=1.0000$ at all six $N$ (the VN `seen` and
+weights, all $N$, even at init**. Call this the **orthogonal-cancellation theorem**; every
+"$\times1.00$ / exactly-flat across-group" number later in this log is an *instance* of it, not an
+independent finding. Measured `group/seen` $=1.0000$ at all six $N$ (the VN `seen` and
 `group` columns coincide identically). The non-equivariant MLP has no such cancellation.
 
 ### [B] The frontier (the decisive table)
@@ -1415,11 +1353,11 @@ group-frontier (VN reaches the group target; MLP never) ✓. **PASS.** Confidenc
 frontier and the wall* ≈ **0.9** (a quantitative face of the equivariance theorem, init-and-post
 guarded in `tests/test_sample_efficiency_frontier.py`); confidence that "no in-distribution edge"
 *generalises* beyond this teacher/capacity regime ≈ **0.6** (it is the honest reading here, but
-architecture-dependent). The cleanest statement of Open Question #1 the project can make.
+architecture-dependent). The cleanest statement of Open Question #1 the project can make. *(Statistical base: 3 seeds at each point of the data-size grid. The order-of-magnitude separation — VN $\le\!1.1\times$ vs the MLP's $14.5\times$ wall — dwarfs 3-seed scatter, but this is a 3-seed sweep, not a 5-seed average; read the wall as decisive and the exact frontier crossing as qualitative.)*
 
 ---
 
-## 16. The symmetry-break × data phase diagram: locating the Bitter-Lesson boundary
+## 16. The symmetry-break × data phase diagram: locating the Bitter-Lesson boundary (Steps 22–23)
 
 Steps 16 and 21 each swept *one* axis of the geometric bet and pinned the other: Step 16 swept the
 **symmetry break** $g$ (a fixed lab-$z$ field added to the exact-SO(3) Step-13 teacher) at a single
@@ -1459,7 +1397,7 @@ Winner per cell (lower `ood` relMSE); the single MLP win in bold:
 The geometric prior wins the across-group metric **everywhere except a single cell on the most-broken
 row**, $(g{=}0.8, N{=}256)$, and even there it is a dead heat (VN `ood` $0.778$ vs MLP $0.751$, margin
 $0.027$). Two structural facts drive it:
-- **The MLP wall is data-proof.** Along the $g{=}0$ column its across-group error is
+- **The MLP wall is data-proof at fixed compute.** Along the $g{=}0$ column its across-group error is
   $\{1.70,1.76,1.44,1.54,2.25\}$ — flat-high and, if anything, *rising* with $N$: more wedge data never
   lowers it, because whole-group competence needs the off-wedge *orientations* a wedge never shows.
   (The VN column descends $0.80\!\to\!0.44$ — the Step-21 frontier, here as one slice.)
@@ -1496,7 +1434,7 @@ converged baseline. **Step 23 (subsection [D] below) tests exactly that and find
 not grow.** This is an honest correction to the single-slice story, not a hidden one.
 
 **Step 22 verdict.** The $g\times N$ plane *locates* the geometric payoff rather than asserting it.
-Across the group it is a **data-proof, near-total win** (VN 24/25; the lone exception a dead-heat cell
+Across the group it is a **data-proof (at fixed compute), near-total win** (VN 24/25; the lone exception a dead-heat cell
 on the most-broken row, not a clean loss); in-distribution, capacity wins early at every $g$
 ($N^\star=32$). *The metric decides — and that is the result:* where you must generalise across a group
 the world (approximately) has, hard-coding it turns a thin data slice into whole-orbit competence that
@@ -1570,7 +1508,7 @@ large $N$, not conjectured away as a small-$N$ artifact. Guarded with the per-$(
 
 ---
 
-## 17. Object *interaction*: the scene symmetry collapses, and the interpolation/extrapolation flip
+## 17. Object *interaction*: the scene symmetry collapses, and the interpolation/extrapolation flip (Steps 24, 27)
 
 Step 19 proved compositional 举一反三 for objects that **do not interact** — the teacher was a direct
 sum, with the large per-object symmetry $\mathrm{SE}(3)^O\rtimes S_O$ — and named the next rung itself: an
@@ -1623,8 +1561,8 @@ models the message still earns its place: VN-MP ($0.331$) beats the channel-blin
 $\times1.36$ — *the relative-pose channel is necessary even in-distribution*, the Step-19 channel result one
 rung up, isolated (VN-MP and VN-Set differ in nothing else). **Out-of-group [G]** — rotate the *whole scene*
 by a random $\mathrm{SO}(3)$ off the training $z$-wedge (a genuine symmetry of the interacting teacher after
-the collapse) — **the order inverts**: both equivariant models are *exactly flat* ($\times1.000$; a theorem,
-since orthogonal $\rho(R)$ cancels in the relMSE ratio), while the MLP that won [I] degrades $\times17$, to
+the collapse) — **the order inverts**: both equivariant models are *exactly flat* ($\times1.000$; the
+orthogonal-cancellation theorem of §15 [A]), while the MLP that won [I] degrades $\times17$, to
 $1.13$ — *worse than predicting no latent change*. The better interpolator is the catastrophically worse
 extrapolator. This isolates the equivariance prior with message and factorization identical, and it is the
 cleanest single-panel statement of the whole project's thesis: **capacity wins in-distribution; the prior
@@ -1693,7 +1631,7 @@ $\times1.00$, MLP-MP $\times17$) ✓; equivariance control bites (MLP-MP $\mathr
 **PASS.** Confidence ≈ **0.8** that the collapse-to-diagonal story and the interpolation/extrapolation flip
 are real and clean — one notch below the single-body steps because the vanilla-VN cross-product cap makes the
 *in-distribution* fit (not the OOD flatness) architecture-limited, and the relative-arrangement axis is
-learned rather than exact.
+learned rather than exact. *(Statistical base: $K{=}6$ paired OOD tasks from one trained set of message-passing models.)*
 
 ![The interpolation/extrapolation flip](figures/step24_object_interaction.png)
 
@@ -1757,7 +1695,7 @@ the way it is.
 
 ---
 
-## 19. Does the *optimiser* break equivariance? intrinsic vs extrinsic
+## 19. Does the *optimiser* break equivariance? intrinsic vs extrinsic (Step 26)
 
 Every step above probed equivariance **after** training and found it intact to $\sim10^{-6}$ — but a
 recent result (Lau & Su, *A Symmetry-Compatible Principle for Optimizer Design*, arXiv:2605.18106)
@@ -1776,7 +1714,13 @@ subspace* of weight space. There are two ways to be in $\mathcal C$:
   $M$ and acts as $W=M\otimes I_d$ with $\rho$ on the spatial axis, landing in $\mathcal C$ for **every**
   $M$ (e3nn `o3.Linear`/TensorProduct are identical — any path weight is an intertwiner). The
   parametrisation's *entire image is* $\mathcal C$, so the equivariance residual is identically zero for
-  any weights — **any** optimiser keeps it exact. This is the same commutant/Schur fact as §18, read
+  any weights — **any** optimiser keeps it exact. The same closure covers the **nonlinearities**, so the
+  guarantee is the whole network's, not just its linear pieces: a VN net is an alternating composition of
+  these intrinsic linear maps with *equivariant nonlinearities* — `VNReLU` gates each vector channel by an
+  *invariant* inner product read off a direction that is itself $M\otimes I_d$, and `e3nn` gated /
+  tensor-product layers are per-path scalars on Clebsch–Gordan-fixed couplings — each equivariant for
+  *every* value of its parameters, so **no** parameter anywhere, linear or not, has a gradient direction
+  that leaves the equivariant family. This is the same commutant/Schur fact as §18, read
   from the optimiser side: §18 shows the intrinsic class is *restricted* (degree-1, no $Jv$ in 2D, no
   cross-product in 3D); Step 26 shows that same restriction is *exactly* what makes it optimiser-proof.
 - **Extrinsic**: hold a *free* dense $W$ and merely *initialise* it inside $\mathcal C$. Now equivariance
@@ -1830,11 +1774,11 @@ The takeaway for the thesis: the project's $\sim10^{-6}$ equivariance is **not**
 careful optimiser choice protects — it is intrinsic to the Vector-Neuron / `e3nn` parametrisation, and so the
 Symmetry-Compatible-Optimizer warning, though real, does not touch our numbers. Guarded by
 `tests/test_step26_optimizer_equivariance.py` (commutant construction exact; intrinsic immunity under both
-optimisers; extrinsic-Adam drift under noise; the real VN model optimiser-agnostic init+post; MLP control bites).
+optimisers; extrinsic-Adam drift under noise; the real VN model optimiser-agnostic init+post; MLP control bites). *(Statistical base: a single trained model at seed 0 — this is a deterministic optimiser-equivariance probe, not a seed average; the row result is exact by the commutant construction.)*
 
 ---
 
-## 20. The fair augmentation baseline: does augmentation buy what equivariance gives free?
+## 20. The fair augmentation baseline: does augmentation buy what equivariance gives free? (Step 28)
 
 The single sharpest objection to this whole note is the *fair-baseline* one. The equivariant prior
 encodes "the world is symmetric"; **rotation data augmentation** encodes the same thing — so perhaps the
@@ -1898,7 +1842,7 @@ the five assertions above) by `experiments/step28_fair_augmentation_baseline.py`
 
 ---
 
-## 21. The Bitter-Lesson stress test: can size × data substitute for the prior?
+## 21. The Bitter-Lesson stress test: can size × data substitute for the prior? (Step 29)
 
 Step 28 handed augmentation the *whole* group and found it closes the across-group *task* metric but never
 the *exactness*. The Bitter-Lesson rejoinder (Sutton, 2019) is that the 2D arm was too easy and that
@@ -1977,7 +1921,7 @@ $16\times$ the data, buys neither. Guarded inline (five seeds, four assertions) 
 
 ---
 
-## 22. The soft-equivariant model: a tunable dial, not a free lunch
+## 22. The soft-equivariant model: a tunable dial, not a free lunch (Step 30)
 
 Steps 28–29 pitted two *extremes* against each other — the hard Vector-Neuron prior vs the free MLP — and
 asked whether **data** (augmentation, scale) could lift the free model into the hard model's corner. It
@@ -2087,7 +2031,7 @@ Guarded inline (five seeds, five assertions) by `experiments/step30_soft_equivar
 
 ---
 
-## 23. Does one-step equivariance buy multi-step *rollout* generalisation for free?
+## 23. Does one-step equivariance buy multi-step *rollout* generalisation for free? (Step 31)
 
 Every metric so far (Steps 8–30) measured a **single** step $f(s,a)$. But a world model is *used* by
 rolling it forward: planning and imagination are $H$-step rollouts. The honest question is whether the
@@ -2168,7 +2112,7 @@ be used at, with no extra training, data, or tuning. Guarded inline (five seeds,
 
 ---
 
-## 24. Is the recovery a *degree* signature (a missing primitive) or a capacity ramp?
+## 24. Is the recovery a *degree* signature (a missing primitive) or a capacity ramp? (Step 32)
 
 Step 27 (§17.1) was a single architectural *point*: one tensor-product stack recovered $42\%$ of the
 degree-1 cap. It could not separate the two explanations of *why*. Is the missing ingredient a specific
@@ -2222,8 +2166,8 @@ Global $\mathrm{SO}(3)$ OOD/seen ratio ($1.00$ = flat across orientations):
 |---|---:|---:|---:|---:|---:|
 | OOD/seen | $\times1.000$ | $\times1.000$ | $\times1.000$ | $\times1.000$ | $\times10.5$ |
 
-Every rung is **exactly flat** — the same orthogonal-cancellation theorem (orthogonal $\rho(R)$ divides
-out of the relMSE ratio) that holds at degree-1 rides through every cross-product block unchanged. So
+Every rung is **exactly flat** — the same orthogonal-cancellation theorem (§15 [A]) that holds at
+degree-1 rides through every cross-product block unchanged. So
 climbing the degree ladder buys in-distribution capacity **without spending a drop of across-group
 reach**: 举一反三 is free at $d_{\max}=1,2,4,8$ alike, while the $2.4\times$-larger MLP that fits better
 in-distribution ($0.080$) degrades $\times10.5$ off the training wedge.
@@ -2244,7 +2188,12 @@ trade away exactness: $L3$ ($d_{\max}{=}8$) is as exactly equivariant as $L0$ ($
 
 **Verdict — all five guards green:** ladder equivariant at every rung ($\mathrm{SE}(3)\le9.3\times10^{-5}$,
 perm $0$) ✓; recovers ($\times1.36>1.3$) ✓; saturates (top rung $+1\%\ll25\%$ of the recovery) ✓; every
-rung across-group flat ($\times1.00$) ✓; MLP degrades ($\times10.5$) ✓. **PASS.** Confidence ≈ **0.8** that
+rung across-group flat ($\times1.00$) ✓; MLP degrades ($\times10.5$) ✓. **PASS** — *but read the seed budget
+honestly:* **three seeds, no per-rung CI.** The "saturates" guard is a fixed-threshold heuristic on the
+*means* (top rung $+1\%$ of the recovery), not a tested null, and the per-rung scatter is wide
+($L2\,{=}\,0.206\pm0.051$ overlaps $L1\,{=}\,0.194\pm0.024$). So the plateau is a **qualitative** shape claim;
+the section's *quantitative* weight rests on the five-seed Steps 42–44 (message, encoder capacity, output
+budget), whose nulls carry CIs. Confidence ≈ **0.8** that
 the recovery-then-**saturation** is a genuine degree signature rather than a capacity ramp — clean because
 the parameter count is held fixed across the ladder, so the plateau cannot be explained by "ran out of
 parameters." One notch below the rollout theorem (§23) because the knee *location* is empirical
@@ -2377,10 +2326,12 @@ the relMSE to $\sim\!0.003$ — closing $156\%$ of the gap, past even the *non-e
 interaction cap is therefore the encoder's **lossy output latent** (the $16$-vector pooling that has already
 discarded the point detail the trilinear $(\hat r_{ij}\times a_i)\times\tilde x_k$ coupling needs), **not** its
 internal width or angular resolution (the ladder), and not the predictor (Step 32) or the message (Step 42).
-The triangulation is complete. One honest cross-space caveat, carried verbatim from the experiment: the
-oracle's relMSE is computed in **point space** (the $72$-d centred cloud), not in E0's $96$-d latent, so the
-$0.003$ reads as *"solved" vs. E0's "still $\sim\!0.25$"* — a localiser, not a fourth point on a single
-recovery curve to be subtracted against E0.
+The triangulation converges — and **Step 44 below pulls the one lever this leaves**, the encoder's *output*
+budget, confirming it is the **pooling, not the width**. One honest cross-space caveat, carried verbatim from
+the experiment: the oracle's relMSE is computed in **point space** (the $72$-d centred cloud), not in E0's
+$96$-d latent, so the $0.003$ reads as *"solved" vs. E0's "still $\sim\!0.25$"* — a localiser, not a fourth
+point on a single recovery curve to be subtracted against E0. The oracle is therefore both *lossless* **and**
+*ordered*; Step 44's same-width $n_{\text{out}}{=}24$ rung isolates which half is load-bearing.
 
 **And bypassing the encoder is free in 举一反三.** The oracle keeps the across-group guarantee exactly:
 post-training $\mathrm{SE}(3)$ residual $1.8\times10^{-6}$ ([A]), OOD/seen ratio $\times1.00$ ([B]), permutation
@@ -2419,12 +2370,71 @@ $\mathrm{SE}(3)$-equivariant centred cloud — by `tests/test_step43_encoder_lad
 > residual holds the float floor ($\le5.4\times10^{-5}$) for every variant including the oracle
 > ($1.8\times10^{-6}$); only the non-equivariant MLP breaks it. With Figures 5 and 5b, all three levers
 > (predictor degree, message, encoder capacity) saturate while a lossless oracle solves the task — localising
-> the residual interaction cap to the encoder's lossy latent, not the prior. Regenerate with
+> the residual interaction cap to the encoder's lossy pooled latent, not the prior. Regenerate with
 > `experiments/step43_encoder_ladder.py`.
+
+### The *output* budget is not the cap — the pooling is (Step 44)
+
+Step 43 left one honest gap. Its lossless oracle ($72$ ordered numbers) beat the best encoder rung at a
+latent of only $48$, so the oracle's win conflated two things: it is **lossless** *and* it is **wider**.
+Step 44 removes that confound with a dedicated **output-budget** sweep. At fixed internals
+($\ell_{\max}{=}2$, $\mathrm{mul}{=}8$, so the summed descriptor $h$ is held at $\dim(h){=}72$) it widens
+*only* the readout $\texttt{lin\_out}\colon h\mapsto 3\,n_{\text{out}}$, sweeping
+$n_{\text{out}}\in\{16,24,32,48\}$ (per-object latent $48\to144$) against the same lossless oracle and MLP
+control (five seeds, $120$ epochs).
+
+| rung | $n_{\text{out}}$ | per-obj dim | params | in-dist relMSE (mean $\pm$ seed std) |
+|---|---:|---:|---:|---|
+| **B16** | $16$ | $48$ | $65{,}304$ | $0.253\pm0.015$ — the E0 cap, reproduced |
+| **B24** | $24$ | $72$ | $67{,}928$ | $0.247\pm0.035$ — **same width as the oracle**, still capped |
+| **B32** | $32$ | $96$ | $70{,}552$ | $0.237\pm0.037$ |
+| **B48** | $48$ | $144$ | $75{,}800$ | $0.227\pm0.032$ — widest, $21\%$ of the gap |
+| **ORACLE-unit** | — | $72$ | $65{,}408$ | $0.00258\pm0.0005$ — solved, $206\%$ of the gap |
+| MLP-MP | — | — | $62{,}304$ | $0.131\pm0.014$ — unconstrained ceiling |
+
+**The reading is `budget_not_cap`.** Tripling the readout (per-object $48\to144$) closes only $21\%$ of the
+E0$\to$MLP gap and does **not** cleanly saturate — the residual-shrink ratio
+$(\text{B24}\to\text{B48})/(\text{B16}\to\text{B24})=3.2>1$, a gentle monotone nudge, not the sharp
+recover-then-flatten of a degree signature, nor a clean plateau. The decisive contrast is at
+$n_{\text{out}}{=}24$: that rung carries the oracle's *exact* $72$-wide latent ($=P\cdot3$) yet sits at
+$0.247$ while the oracle solves at $0.003$ — at **equal width**, ordered-lossless beats pooled-lossy by two
+orders of magnitude, and widening *past* the oracle's width (to $144$) does not help. So the binding cap is
+the **permutation-invariant sum-pool upstream of the readout**, not the readout's width — exactly the
+localisation Step 43 inferred, now with the width half of the confound removed.
+
+**Free in 举一反三, as always.** Every budget rung (and the oracle) holds OOD/seen $\times1.00$ and a
+post-training $\mathrm{SE}(3)$ residual $\le1.6\times10^{-4}$ (oracle $1.8\times10^{-6}$), perm $0$; only the
+non-equivariant MLP control degrades ($\times8.2$, $\mathrm{SE}(3)$ residual $18.9$). Widening the output
+budget, like enriching the message (Step 42) or bypassing the encoder (Step 43), spends **no** equivariance.
+
+**Verdict — `budget_not_cap` CONFIRMED on the science, INCONCLUSIVE-per-guard.** Equivariant at every
+variant ✓; across-group flat at every variant ✓; MLP degrades ✓; *conclusive* on the budget-vs-cap question
+✓. The convergence guard reads $\mathrm{ok\_converged}{=}\text{false}$ — but it trips **only** on the
+non-equivariant MLP control (its VICReg variance collapses) plus one near-floor oracle seed ($0.138$); all
+four budget rungs converged at every seed (max $0.077$). We do **not** loosen the guard: the science is
+clean (the budget rungs converged), the flag is merely conservative for bundling the control. Confidence
+$\approx0.85$ that the cap is the pooled latent, not the output budget. Guarded inline (five seeds) by
+`experiments/step44_encoder_output_budget.py`; the structural invariants — every variant
+$\mathrm{SE}(3)\rtimes S_O$-exact, the sweep moves only $\texttt{lin\_out}$ downstream of a fixed
+$\dim(h){=}72$ pool, and B24's width matches the oracle's $72=P\cdot3$ — by
+`tests/test_step44_encoder_output_budget.py`.
+
+![The encoder output-budget sweep](figures/step44_encoder_output_budget.png)
+
+> **Figure 5d.** The output-budget sweep — does widening the readout drop the floor? **(left)**
+> in-distribution relMSE vs output budget $n_{\text{out}}\in\{16,24,32,48\}$: the budget rungs (blue) only
+> inch down from the $0.253$ cap (grey) to $0.227$ — $21\%$ of the way to the MLP ceiling (red, $0.131$) —
+> while the lossless oracle (green) sits at $0.003$; the yellow line marks $n_{\text{out}}{=}24$, where the
+> readout width $3\,n_{\text{out}}$ equals the oracle's, so B24-vs-oracle is a *same-width* ordered-vs-pooled
+> contrast. **(centre)** the global OOD/seen ratio is $\times1.00$ at every budget *and* the oracle, while
+> the MLP carries $\times8.2$. **(right)** the post-training $\mathrm{SE}(3)$ residual holds the float floor
+> ($\le1.6\times10^{-4}$, oracle $1.8\times10^{-6}$) for every equivariant variant; only the MLP breaks it.
+> Widening the *output* budget neither drops the floor nor spends equivariance — the cap is the pooling
+> upstream. Regenerate with `experiments/step44_encoder_output_budget.py`.
 
 ---
 
-## 25. Is the symmetry *prior* itself recoverable from data, or must it be hand-wired?
+## 25. Is the symmetry *prior* itself recoverable from data, or must it be hand-wired? (Step 33)
 
 Every step so far *assumes* the group and asks what hard-wiring it buys. Step 33 asks the question
 underneath the whole bet: if a world carries a symmetry, can its generators be **discovered from a frozen
@@ -2523,7 +2533,7 @@ guards, $\beta$-sweep) by `experiments/step33_symmetry_discovery.py`; structural
 
 ---
 
-## 26. Does the active-inference win survive when the cue is *noisy* (a de-constructed task)?
+## 26. Does the active-inference win survive when the cue is *noisy* (a de-constructed task)? (Step 34)
 
 Step 25 (§14.1) earned its task win on a cue that, *once sensed*, revealed the goal **exactly** — a noiseless
 one-bit collapse. The fair de-construction question is whether the win was an artefact of that clean reveal or
@@ -2535,8 +2545,8 @@ with a **floor** $\epsilon_0>0$: even at the cue the bit can lie. Belief updates
 epistemic drive is no longer a "novelty" proxy but the **exact mutual information** of one sense,
 $$\mathrm{IG}(p;\epsilon)=\mathcal H(p)-\mathbb E_{o}\big[\mathcal H(p')\big]=I(b;o\mid d)\ \ge\ 0,$$
 which equals the soft-Bayes expected belief-entropy reduction to $10^{-7}$ (verified against the loop's actual
-`bayes_update`), **recovers Step 25 exactly** as $\epsilon_0\to0$ ($\mathrm{IG}\to\mathcal H(p)$, the noiseless
-information), and **vanishes** at $\epsilon=\tfrac12$ (a useless channel). Crucially $\mathrm{IG}$ depends on the
+`bayes_update`), **recovers Step 25's noiseless drive exactly** as $\epsilon_0\to0$ ($\mathrm{IG}\to\mathcal H(p)$, the noiseless
+information — an exact limit of the drive *functional*, distinct from the empirical task number below), and **vanishes** at $\epsilon=\tfrac12$ (a useless channel). Crucially $\mathrm{IG}$ depends on the
 latent only through the **invariant** distance $d$, so the whole epistemic field stays exactly
 $\mathrm{SE}(3)$-invariant. Same encoder, equivariant planner, and $K{=}24$ ambiguous-goal POMDPs as Step 25;
 five noise floors swept.
@@ -2582,11 +2592,14 @@ Sweeping the floor $\epsilon_0$ from $0$ (Step 25 limit) to $\tfrac12$ (useless 
 | oracle | $0.269$ | $0.269$ | $0.269$ | $0.269$ | $0.269$ | $0.269$ |
 | #senses | $5.6$ | $5.6$ | $7.9$ | $11.1$ | $13.8$ | $15.7$ |
 
-At $\epsilon_0=0$ the agent **recovers Step 25** — EFE $0.333\approx$ oracle $0.269$ — and at $\epsilon_0=0.45$
+At $\epsilon_0=0$ the agent **recovers Step 25's structure** (a fresh draw at $K{=}16$, not the identical
+number) — EFE $0.333\approx$ oracle $0.269$ — and at $\epsilon_0=0.45$
 the win **vanishes** — EFE $0.723\approx$ reward-only $0.663$: the built-in falsifiable negative fires exactly
 when the channel stops carrying information. (The sweep's per-cell power is lower than the headline's — $K{=}16$
-vs $K{=}24$ — so its $\epsilon_0{=}0.15$ point, $0.508$, is a noisier estimate of the same quantity the headline
-pins at $0.381$; what the sweep establishes is the *shape* — two correct limits with monotone degradation
+vs $K{=}24$, which is also why the sweep oracle $0.269$ and the headline oracle $0.319$ differ — so its
+$\epsilon_0{=}0.15$ point, $0.508$ CI$[0.379,0.694]$, is a noisier estimate of the same quantity the headline
+pins at $0.381$ CI$[0.313,0.451]$; the two CIs **overlap** ($[0.379,0.451]$), so sweep and headline are
+statistically consistent. What the sweep establishes is the *shape* — two correct limits with monotone degradation
 between them.)
 
 ### [C] Graded accumulation, and the loop stays exactly geometric
@@ -2611,7 +2624,7 @@ rather than a novelty proxy. *Curiosity that is literally information, gated by 
 and invariant by construction.* Guarded inline (five noise floors, seven guards) by
 `experiments/step34_active_inference_noisy.py`; the noisy channel, the exact-MI limits, the
 $\mathrm{IG}={}$soft-Bayes-entropy-drop identity, and the $\mathrm{SE}(3)$-invariance of the information field by
-`tests/test_step34_active_inference_noisy.py`.
+`tests/test_step34_active_inference_noisy.py`. *(Statistical base: $K{=}24$ paired POMDP tasks; the "five noise floors" above is the sensor-noise sweep axis, not a seed count.)*
 
 ![Active inference under a noisy cue: the win survives, de-constructed](figures/step34_active_inference_noisy.png)
 
@@ -2627,7 +2640,7 @@ $\mathrm{IG}={}$soft-Bayes-entropy-drop identity, and the $\mathrm{SE}(3)$-invar
 
 ---
 
-## 27. Does the latent world model transfer across a *combinatorial* axis (object count) it never trains on?
+## 27. Does the latent world model transfer across a *combinatorial* axis (object count) it never trains on? (Step 35)
 
 Every generalisation result so far has lived on the **continuous** group: rotate/translate the scene and the
 prediction follows. Step 35 opens an **orthogonal, discrete** axis — the **number of interacting objects** $O$ —
@@ -2707,7 +2720,7 @@ dynamics are a known synthetic teacher rather than a learned one. *The count-sta
 across the combinatorial axis; equivariance is what makes that bridge survive a rotation.* Guarded inline (three
 models, eight guards) by `experiments/step35_many_body.py`; the count-stable mean message in the unit ball, the
 $\mathrm{SE}(3)\rtimes S_O$-equivariance of the teacher at unseen counts, the $O=2$/$O=1$ boundaries, and the
-whole-pipeline equivariance at $O=5$ by `tests/test_step35_many_body.py`.
+whole-pipeline equivariance at $O=5$ by `tests/test_step35_many_body.py`. *(Statistical base: $K{=}6$ paired tasks over the interacting many-body family; the "three models" above is the architecture axis, not a seed count.)*
 
 ![Combinatorial 举一反三: one training count determines the many-body family](figures/step35_many_body.png)
 
@@ -2723,7 +2736,7 @@ whole-pipeline equivariance at $O=5$ by `tests/test_step35_many_body.py`.
 
 ---
 
-## 28. Can a symmetry *discovered* from data be *distilled* into a free predictor to buy back the across-group 举一反三?
+## 28. Can a symmetry *discovered* from data be *distilled* into a free predictor to buy back the across-group 举一反三? (Step 36)
 
 Every across-group win in this log has come from a symmetry that was **hand-wired** into the architecture (VN/e3nn): build $\mathrm{SO}(3)$ in, and latent prediction is exactly equivariant by construction, so 举一反三 across the whole group is float-floor exact and **free** — but you must *know* the group in advance and bake it in. Step 33 broke that prerequisite: from a **blank slate** of $K$ learnable $3\times3$ matrices it *rediscovered* a frozen teacher's symmetry algebra ($\mathfrak{so}(3)$, $\dim 3$, on the true teacher; $\mathfrak{so}(2)_z$, $\dim 1$, on a rotation-broken one) with nothing antisymmetric or bracket-closing imposed. That was **measurement**. Step 36 asks the obvious follow-up that turns measurement into a **method**: *now that the generators are discovered, can you USE them?* Concretely — **don't postulate the prior, discover it (Step 33), then distil the discovered generators into a free MLP predictor as a soft regulariser.** Does discovered-symmetry distillation buy a free predictor most of the $\times1.00$ that the hard-wired VN gets for nothing?
 
@@ -2749,7 +2762,7 @@ Discovery only needs a *modest* angle to *detect* asymmetry ($\theta_{\max}=1.2$
 
 **[S] the honest limit — soft $\neq$ hard.** The distilled MLP is much flatter than free but does **not** reach the VN floor: distilled OOD $0.632$ is still $>2\times$ the VN's $0.300$. Soft regularisation *approximates* equivariance; it does not *enforce* it the way the built-in prior does (the same soft-vs-hard gap as Step 30's dial). This is descriptive, not a failure — it is the price of not knowing the group a priori.
 
-**Verdict — all six gating reads green.** Discovery real ✓; VN exact ($\times1.00$) ✓; free breaks ($\times2.25$) ✓; method closes $54\%$ of the gap and drops the residual $\times8.0$ ✓; discovery $\approx$ oracle ✓; partial$\to$partial ✓. **PASS.** Confidence ≈ **0.8** that a symmetry *discovered* from data (Step 33) and distilled into a free predictor recovers most of the across-group 举一反三 the hard-wired VN gets for free — closing more than half the OOD gap, matching the hand-wired oracle, and transferring *exactly* the symmetry discovered (partial $\mathfrak{so}(2)_z\to$ partial flatness). One notch below the cleanest steps for an honest reason: soft distillation approximates, it does not reach the float-floor exactness of the built-in prior, and the encoder here is the hand-wired-equivariant Step-13 one (frozen) — we test whether a *free predictor* can inherit a discovered symmetry, not whether a free *encoder* can. *Step 33 measured the group; Step 36 shows the measurement is usable — the prior is learnable AND exploitable, with a documented soft-vs-hard gap.* Guarded inline (five arms, six guards) by `experiments/step36_discover_exploit.py`; the oracle $\mathfrak{so}(3)$ algebra, the full-subgroup finite flows, the orthogonality of $\rho$, and the distillation residual separating VN (float floor) from a free MLP at random init by `tests/test_step36_discover_exploit.py`.
+**Verdict — all six gating reads green.** Discovery real ✓; VN exact ($\times1.00$) ✓; free breaks ($\times2.25$) ✓; method closes $54\%$ of the gap and drops the residual $\times8.0$ ✓; discovery $\approx$ oracle ✓; partial$\to$partial ✓. **PASS.** Confidence ≈ **0.8** that a symmetry *discovered* from data (Step 33) and distilled into a free predictor recovers most of the across-group 举一反三 the hard-wired VN gets for free — closing more than half the OOD gap, matching the hand-wired oracle, and transferring *exactly* the symmetry discovered (partial $\mathfrak{so}(2)_z\to$ partial flatness). One notch below the cleanest steps for an honest reason: soft distillation approximates, it does not reach the float-floor exactness of the built-in prior, and the encoder here is the hand-wired-equivariant Step-13 one (frozen) — we test whether a *free predictor* can inherit a discovered symmetry, not whether a free *encoder* can. *Step 33 measured the group; Step 36 shows the measurement is usable — the prior is learnable AND exploitable, with a documented soft-vs-hard gap.* Guarded inline (five arms, six guards) by `experiments/step36_discover_exploit.py`; the oracle $\mathfrak{so}(3)$ algebra, the full-subgroup finite flows, the orthogonality of $\rho$, and the distillation residual separating VN (float floor) from a free MLP at random init by `tests/test_step36_discover_exploit.py`. *(Statistical base: a single trained pipeline at seed 0 (frozen Step-13 encoder + a distilled free predictor) with multi-restart symmetry discovery — a deterministic discover→distill probe, not a seed average.)*
 
 ![A discovered symmetry, distilled into a free predictor, buys most of the hard-wired across-group generalisation](figures/step36_discover_exploit.png)
 
@@ -2757,7 +2770,7 @@ Discovery only needs a *modest* angle to *detect* asymmetry ($\theta_{\max}=1.2$
 
 ---
 
-## 29. Does the active-inference win transfer beyond a *constructed* POMDP? (a generic $K$-target search)
+## 29. Does the active-inference win transfer beyond a *constructed* POMDP? (a generic $K$-target search) (Step 37)
 
 Step 25's caveat had **two** crutches, not one. Step 34 (§26) removed the first — the *noiseless* reveal — by
 routing the cue through a noisy channel. But Step 25/34 still ran on a **constructed** POMDP with the *other*
@@ -2854,7 +2867,7 @@ the one off-path cue and attains the oracle floor on a generic search.* Guarded 
 two falsifiable negatives, eight guards) by `experiments/step37_active_inference_search.py`; the $K$-ary symmetric
 channel, the categorical-MI exact limits, the $\mathrm{IG}={}$soft-Bayes-entropy-drop identity, the
 $K{=}2\to$Step-34 reduction, the affordance-collapse reduction to a binary channel, the no-mirror constellation,
-and the $\mathrm{SE}(3)$-invariance of the categorical-MI field by `tests/test_step37_active_inference_search.py`.
+and the $\mathrm{SE}(3)$-invariance of the categorical-MI field by `tests/test_step37_active_inference_search.py`. *(Statistical base: $24$ paired identification tasks; the $K$-sweep above is over target-cardinality $K\in\{3,4,5\}$ — distinct from the task count — re-trained over an $18$-task $\times\,2$-seed sweep.)*
 
 ![Active inference on a generic K-target search: the win survives the mirror's removal](figures/step37_active_inference_search.png)
 
@@ -2871,7 +2884,7 @@ and the $\mathrm{SE}(3)$-invariance of the categorical-MI field by `tests/test_s
 
 ---
 
-## 30. The one outright failure, resolved: decoder-free latent-goal *reaching*, made exactly equivariant
+## 30. The one outright failure, resolved: decoder-free latent-goal *reaching*, made exactly equivariant (Step 38)
 
 Across $37$ steps there was exactly **one** outright negative: Step 13's panel [C], purely-latent
 decoder-free planning toward a goal *cloud*. An open-loop CEM-MPC against the terminal latent cost
@@ -2967,7 +2980,7 @@ geometry was never the problem.* Guarded inline (four-rung ablation ladder, sign
 ceiling/oracle references, paired orbit CIs, three panels) by `experiments/step38_latent_goal_reaching.py`;
 the latent-Procrustes residual-angle recovery of $\lvert R\rvert$, the $\mathrm{SE}(3)$-invariance of both
 goal costs, the composed-equivariance separation of VN from a free MLP, and exact reaching-transfer across
-the orbit at init by `tests/test_step38_latent_goal_reaching.py`.
+the orbit at init by `tests/test_step38_latent_goal_reaching.py`. *(Statistical base: $K{=}24$ paired orbit tasks from one trained decoder-free planner.)*
 
 ![Decoder-free latent-goal reaching: the only outright failure, cured and made exactly equivariant](figures/step38_latent_goal_reaching.png)
 
@@ -3184,8 +3197,8 @@ the orbit at init by `tests/test_step38_latent_goal_reaching.py`.
   `tests/test_step38_latent_goal_reaching.py`.
 - **The sample-efficiency *frontier*, and an honest in-distribution null (Step 21).** Sweeping the
   training-set size $N$ on the Step-13 wedge teacher draws two learning curves per model. The VN's
-  whole-group curve **equals its in-wedge curve at every $N$ and at init** (`group/seen`$=1.0000$, the
-  relMSE's orthogonal $\rho(R)$ cancelling in numerator and denominator) and **descends** with wedge
+  whole-group curve **equals its in-wedge curve at every $N$ and at init** (`group/seen`$=1.0000$, by the
+  orthogonal-cancellation theorem) and **descends** with wedge
   data ($0.939\!\to\!0.433$, whole-group competence at $N\approx120$); the MLP fits the wedge but its
   whole-group error is a **wall** (`group/seen` $2.3\!\to\!14.5$, never reaching the target at any $N$).
   The honest half I will not hide: *in-distribution the higher-capacity MLP fits the wedge at least as
@@ -3196,7 +3209,7 @@ the orbit at init by `tests/test_step38_latent_goal_reaching.py`.
   across-group frontier/wall, ≈ **0.6** that the in-distribution null generalises beyond this teacher.
 - **The payoff *located* on the whole symmetry × data plane (Step 22).** Steps 16 and 21 each moved one
   knob; Step 22 fills the $g\times N$ grid and scores both metrics at every cell. *Across the group* the
-  prior wins **24 of 25 cells** — the MLP wall is **data-proof** (g=0 column flat-high $1.4$–$2.3$, not
+  prior wins **24 of 25 cells** — the MLP wall is **data-proof at fixed compute** (g=0 column flat-high $1.4$–$2.3$, not
   falling with $N$) and the only exception is a dead-heat cell on the most-broken row,
   $(g{=}0.8,N{=}256)$, where the now-large *orientation-free* lab term lets capacity edge level with
   the prior (VN $0.778$ vs MLP $0.751$, margin $0.027$) as the VN's own across-group floor rises
@@ -3279,7 +3292,7 @@ of it scales. Those are the next tests — not foregone conclusions.
 
 The environment (Python 3.11, PyTorch 2.12, `e3nn` 0.6.0, NumPy 2.4; dependencies pinned in `requirements.txt` and managed with `uv`, not pip; no CUDA — every experiment runs on a laptop CPU/MPS), the seed and determinism protocol, the figure-regeneration scripts, the module layout under `src/`, and the full result → experiment → guard-test mapping are collected once in the core paper's Appendix A. The exactness facts ([A] post-training equivariance, [B] across-group relMSE flatness) are *theorems* (§0): they hold at initialisation and after training independent of seed, while the closed-loop confidence intervals are over fixed task and CEM seeds (paired designs). Each heavier 3D / sweep experiment also accepts a `STEP{n}_SMOKE=1` flag for a fast wiring check, and every structural claim has a matching `tests/test_*.py` guard that checks equivariance / invariance **at initialisation and after training** and fails the non-equivariant control.
 
-References throughout this appendix are by experiment ("Step N"). The index below resolves each to the section that discusses it and to the script under `experiments/` that produces it.
+References throughout this appendix are by experiment ("Step N"); document sections are numbered independently and cited as "§N" (each section header is also tagged with its Step, e.g. "## 16. … (Steps 22–23)"). The index below resolves every Step to the section that discusses it and to the script under `experiments/` that produces it.
 
 | Step | § | Experiment (`experiments/`) |
 |------|------|------|
