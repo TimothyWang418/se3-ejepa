@@ -2281,54 +2281,54 @@ is non-polynomial and homogeneity-breaking — exactly the kind of primitive no 
 the natural next question is not "climb the predictor" but **"enrich the message"**: hand the predictor the
 unit edge feature $\hat r_{ij}$ directly (a standard TFN / NequIP / MACE ingredient — *not* the pre-formed
 answer $\omega$), and ask whether the cap Step 32 could not close finally falls. Step 42 holds encoder, VN-TP
-predictor, teacher, data, and training **fixed** and varies **only** the message, at three seeds with **paired
+predictor, teacher, data, and training **fixed** and varies **only** the message, at five seeds with **paired
 initialisation** (each variant rebuilt from the same seed, so the identical-capacity pair gets byte-identical
 initial weights — a clean content swap, their epoch-0 losses agreeing to $\sim\!10^{-3}$):
 
 | variant | message | per-obj aug | params | in-dist relMSE (mean $\pm$ seed std) |
 |---|---|---:|---:|---:|
-| **M0-raw** | $[a,\ r_{ij}]$ | $6$ | $65{,}304$ | $0.266\pm0.013$ — un-normalised (Step 24/27/32 baseline) |
-| **M1-unit** | $[a,\ \hat r_{ij}]$ | $6$ | $65{,}304$ | $0.263\pm0.014$ — **$+\,1/\lVert r\rVert$, identical capacity** |
-| **M2-both** | $[a,\ r_{ij},\ \hat r_{ij}]$ | $9$ | $65{,}496$ | $0.269\pm0.024$ — magnitude back on top |
+| **M0-raw** | $[a,\ r_{ij}]$ | $6$ | $65{,}304$ | $0.259\pm0.016$ — un-normalised (Step 24/27/32 baseline) |
+| **M1-unit** | $[a,\ \hat r_{ij}]$ | $6$ | $65{,}304$ | $0.253\pm0.017$ — **$+\,1/\lVert r\rVert$, identical capacity** |
+| **M2-both** | $[a,\ r_{ij},\ \hat r_{ij}]$ | $9$ | $65{,}496$ | $0.260\pm0.023$ — magnitude back on top |
 | MLP-MP | $[a,\ r_{ij}]$ | — | $62{,}304$ | $0.074\pm0.004$ — unconstrained ceiling |
 
-**The honest result: the message lever is null.** Normalising the message closes only $\times1.01$ — about
-$1\%$ of the cap$\to$MLP gap — and the per-seed differences ($\mathrm{M1}-\mathrm{M0}=-0.012,\ +0.005,\
-+0.00001$) straddle zero, one seed regressing. M2 (raw magnitude added back) buys nothing, so the message
+**The honest result: the message lever is null.** Normalising the message closes only $\times1.02$ — about
+$3\%$ of the cap$\to$MLP gap — and the per-seed differences ($\mathrm{M1}-\mathrm{M0}=-0.012,\ +0.005,\
++0.000,\ -0.023,\ -0.000$) straddle zero, one seed regressing. M2 (raw magnitude added back) buys nothing, so the message
 **saturates at — indeed before — the unit vector**. M0 and M1 are byte-identical in capacity *and*
 initialisation, so this is as clean a content swap as the architecture allows: the unit direction simply is
 not the missing ingredient.
 
 **This is a triangulation, not a failure.** Two independent levers now stall at the *same* $\sim\!0.20$ floor,
 far above the MLP's $0.074$: climbing the predictor degree (Step 32) and enriching the message to the exact
-teacher primitive (Step 42). The predictor is handed $\hat r$ and *still* cannot beat $0.26$ — because the
+teacher primitive (Step 42). The predictor is handed $\hat r$ and *still* sits at the $\sim\!0.25$ cap — because the
 target's $(\hat r_{ij}\times a_i)\times\tilde x_k$ factor must be read out of the encoder's $\ell_{\max}{=}2$
 $\mathrm{SE}(3)$ latent, which has already discarded the point detail the trilinear coupling needs. **The
 dominant residual interaction cap lives in the encoder's lossy latent — not in the predictor, and not in the
 message.** The MLP fits better precisely because it is *not* forced through that equivariant bottleneck — and
-pays with the $\times10.5$ across-group blow-up below.
+pays with the $\times10.2$ across-group blow-up below.
 
 **And enriching the message is free in 举一反三.** Every message variant is exactly flat across the collapsed
-global group (OOD/seen $\times1.000$; post-training $\mathrm{SE}(3)$ residual $\le6.8\times10^{-5}$,
+global group (OOD/seen $\times1.000$; post-training $\mathrm{SE}(3)$ residual $\le1.1\times10^{-4}$,
 permutation $0$, both at init and after training), while the equally-equipped MLP-MP carries OOD/seen
-$\times10.5$ and an $\mathrm{SE}(3)$ residual of $9.2$. So the *safety* half of "enrich the equivariant class,
+$\times10.2$ and an $\mathrm{SE}(3)$ residual of $8.8$. So the *safety* half of "enrich the equivariant class,
 don't drop the prior" holds **unconditionally** — you can add the unit edge feature at zero cost to the
 across-group guarantee — and here the *recovery* half simply had nothing to recover, because the prior was
 never the bottleneck.
 
 **Verdict — honest INCONCLUSIVE on recovery, three guards green.** Equivariant at every variant
-($\mathrm{SE}(3)\le6.8\times10^{-5}$, perm $0$) ✓; across-group flat at every variant ($\times1.00$) ✓; MLP
-degrades ($\times10.5$) ✓; **recovery NOT demonstrated** ($\times1.01<1.10$ — reported as-is, no guard
+($\mathrm{SE}(3)\le1.1\times10^{-4}$, perm $0$) ✓; across-group flat at every variant ($\times1.00$) ✓; MLP
+degrades ($\times10.2$) ✓; **recovery NOT demonstrated** ($\times1.02<1.10$ — reported as-is, no guard
 loosened). Confidence $\approx0.7$ that the message lever is genuinely null *here* (clean, because M0/M1 are a
 paired-init identical-capacity swap); confidence $\approx0.6$ on the stronger reading that the residual is
 therefore the encoder latent (a triangulation across Step 32 $+$ Step 42, corroborated here and **confirmed
 directly by the encoder ladder $+$ lossless oracle of Step 43 below**). One
-honest cross-experiment caveat: Step 42's M0 ($0.266$) is a *different* init draw of the same configuration as
+honest cross-experiment caveat: Step 42's M0 ($0.259$) is a *different* init draw of the same configuration as
 Step 27's VN-TP ($0.229$); Step 42 is internally paired, so only the within-experiment M0/M1/M2 comparison is
 load-bearing — the two numbers should not be cross-subtracted. The design rule sharpens once more: when an
 equivariant model underfits, **find which stage the missing capacity lives in before enriching it** — Step 32
 rules out predictor degree, Step 42 rules out message content, and what remains is the encoder's latent budget
-(more channels, higher $\ell_{\max}$), still never the prior. Guarded inline (three seeds, four guards) by
+(more channels, higher $\ell_{\max}$), still never the prior. Guarded inline (five seeds, four guards) by
 `experiments/step42_tp_message_ladder.py`; the structural invariant — every message variant keeps the whole
 VN-TP pipeline exactly $\mathrm{SE}(3)\rtimes S_O$-equivariant, and $\hat r$ is the scale-invariant feature
 raw $r$ is not — by `tests/test_step42_message_ladder.py`.
@@ -2337,9 +2337,9 @@ raw $r$ is not — by `tests/test_step42_message_ladder.py`.
 
 > **Figure 5b.** The message ladder — companion to Figure 5, holding the predictor fixed and sweeping only the
 > message content. **(left)** in-distribution relMSE is statistically flat across M0 (raw $r$), M1 (unit
-> $\hat r$), and M2 (both) — normalising the message does *not* recover the cap ($\times1.01$, within seed
+> $\hat r$), and M2 (both) — normalising the message does *not* recover the cap ($\times1.02$, within seed
 > noise), well above the unconstrained MLP ceiling. **(centre)** the global OOD/seen ratio is $\times1.00$ at
-> every message variant while the MLP carries $\times10.5$ — enriching the message is zero-cost in 举一反三.
+> every message variant while the MLP carries $\times10.2$ — enriching the message is zero-cost in 举一反三.
 > **(right)** the post-training $\mathrm{SE}(3)$ residual holds the float floor for every variant; only the
 > non-equivariant MLP breaks it. With Figure 5 (the predictor-degree axis), both levers saturate above the
 > MLP, localising the residual interaction cap to the encoder's lossy latent. Regenerate with
@@ -2352,7 +2352,7 @@ message content (Step 42). By elimination the residual interaction cap should li
 touched — the shared encoder's **lossy** $\mathrm{SE}(3)$ latent, which pools $P{=}24$ points per object onto
 $16$ type-1 vectors ($48$ numbers, against the $72$ of the raw centred cloud). Step 43 tests that directly,
 two ways, holding the VN-TP predictor, the raw M0 message, the teacher, the data, and the training **fixed**
-(three seeds, $80$ epochs): **(A)** a *capacity ladder* that scales the encoder's **internal** width and
+(five seeds, $80$ epochs): **(A)** a *capacity ladder* that scales the encoder's **internal** width and
 angular resolution at a **fixed $16$-vector output budget** ($\mathrm{mul}\in\{8,16,32\}$,
 $\ell_{\max}\in\{2,3\}$); and **(B)** a *lossless, parameter-free oracle* that **bypasses** the encoder —
 feeding the true per-object centred point cloud $\tilde x_k=x_k-\bar x$ (translation-invariant,
@@ -2361,41 +2361,41 @@ only the latent's losslessness differs.
 
 | variant | latent | per-obj dim | params | in-dist relMSE (mean $\pm$ seed std) |
 |---|---|---:|---:|---:|
-| **E0-base** | enc $\ell_{\max}2$, mul $8$ | $48$ | $65{,}304$ | $0.263\pm0.009$ — the cap (Step 24/27/32/42 baseline) |
-| **E1-mul16** | enc $\ell_{\max}2$, mul $16$ | $48$ | $67{,}568$ | $0.228\pm0.021$ |
-| **E2-mul32** | enc $\ell_{\max}2$, mul $32$ | $48$ | $73{,}248$ | $0.227\pm0.035$ — **best rung, $21\%$ of the gap** |
-| **E3-lmax3** | enc $\ell_{\max}3$, mul $8$ | $48$ | $65{,}888$ | $0.248\pm0.029$ |
-| **ORACLE-raw** | centred points $\tilde x_k$ | $72$ | $65{,}408$ | $0.00358\pm0.00007$ — **$153\%$ of the gap** |
-| **ORACLE-unit** | centred points, $\hat r$ msg | $72$ | $65{,}408$ | $0.00269\pm0.00041$ — **the decisive control** |
-| MLP-MP | (no latent bottleneck) | — | $62{,}304$ | $0.093\pm0.007$ — unconstrained ceiling |
+| **E0-base** | enc $\ell_{\max}2$, mul $8$ | $48$ | $65{,}304$ | $0.255\pm0.014$ — the cap (Step 24/27/32/42 baseline) |
+| **E1-mul16** | enc $\ell_{\max}2$, mul $16$ | $48$ | $67{,}568$ | $0.207\pm0.031$ — **best rung, $29\%$ of the gap** |
+| **E2-mul32** | enc $\ell_{\max}2$, mul $32$ | $48$ | $73{,}248$ | $0.215\pm0.032$ |
+| **E3-lmax3** | enc $\ell_{\max}3$, mul $8$ | $48$ | $65{,}888$ | $0.232\pm0.036$ |
+| **ORACLE-raw** | centred points $\tilde x_k$ | $72$ | $65{,}408$ | $0.00336\pm0.00032$ — **$155\%$ of the gap** |
+| **ORACLE-unit** | centred points, $\hat r$ msg | $72$ | $65{,}408$ | $0.00281\pm0.00037$ — **the decisive control** |
+| MLP-MP | (no latent bottleneck) | — | $62{,}304$ | $0.093\pm0.005$ — unconstrained ceiling |
 
 **The honest result: the ladder saturates, the oracle solves.** Tripling the encoder's hidden multiplicity and
-raising $\ell_{\max}$ moves the cap from $0.263$ to at best $0.227$ — closing only $21\%$ of the E0$\to$MLP gap,
+raising $\ell_{\max}$ moves the cap from $0.255$ to at best $0.207$ — closing only $29\%$ of the E0$\to$MLP gap,
 the *same* saturation Step 32 and Step 42 hit. But the lossless oracle, handed the full per-object geometry
 through the **identical** degree-3 predictor (at an essentially identical $\sim\!65$k-parameter budget), drives
-the relMSE to $\sim\!0.003$ — closing $153\%$ of the gap, past even the *non-equivariant* MLP. The residual
+the relMSE to $\sim\!0.003$ — closing $156\%$ of the gap, past even the *non-equivariant* MLP. The residual
 interaction cap is therefore the encoder's **lossy output latent** (the $16$-vector pooling that has already
 discarded the point detail the trilinear $(\hat r_{ij}\times a_i)\times\tilde x_k$ coupling needs), **not** its
 internal width or angular resolution (the ladder), and not the predictor (Step 32) or the message (Step 42).
 The triangulation is complete. One honest cross-space caveat, carried verbatim from the experiment: the
 oracle's relMSE is computed in **point space** (the $72$-d centred cloud), not in E0's $96$-d latent, so the
-$0.003$ reads as *"solved" vs. E0's "still $\sim\!0.26$"* — a localiser, not a fourth point on a single
+$0.003$ reads as *"solved" vs. E0's "still $\sim\!0.25$"* — a localiser, not a fourth point on a single
 recovery curve to be subtracted against E0.
 
 **And bypassing the encoder is free in 举一反三.** The oracle keeps the across-group guarantee exactly:
 post-training $\mathrm{SE}(3)$ residual $1.8\times10^{-6}$ ([A]), OOD/seen ratio $\times1.00$ ([B]), permutation
-residual $0$ — indistinguishable from the encoder rungs ($\mathrm{SE}(3)\le6.7\times10^{-5}$, $\times1.00$),
-while the lossless-*but-non-equivariant* MLP carries OOD/seen $\times9.9$ and an $\mathrm{SE}(3)$ residual of
-$10.7$. So **lossless, exactly equivariant, and flat coexist** — the way to lift the cap is to *widen the latent
+residual $0$ — indistinguishable from the encoder rungs ($\mathrm{SE}(3)\le5.4\times10^{-5}$, $\times1.00$),
+while the lossless-*but-non-equivariant* MLP carries OOD/seen $\times10.0$ and an $\mathrm{SE}(3)$ residual of
+$11.1$. So **lossless, exactly equivariant, and flat coexist** — the way to lift the cap is to *widen the latent
 budget*, not to drop the prior.
 
 **Verdict — encoder localisation CONFIRMED, four guards green.** Equivariant at every variant
-($\mathrm{SE}(3)\le6.7\times10^{-5}$, perm $0$) ✓; across-group flat at every variant ($\times1.00$) ✓; MLP
-degrades ($\times9.9$) ✓; **and the lossless oracle closes the gap** ($153\%>50\%$) ✓. One honest convergence
+($\mathrm{SE}(3)\le5.4\times10^{-5}$, perm $0$) ✓; across-group flat at every variant ($\times1.00$) ✓; MLP
+degrades ($\times10.0$) ✓; **and the lossless oracle closes the gap** ($156\%>50\%$) ✓. One honest convergence
 caveat: the global plateau witness flags $\mathrm{ok\_converged}{=}\text{false}$, driven **entirely by the
-MLP** (its VICReg variance collapses — a different optimisation regime, $|\Delta\text{pred}|=27.9\%$ over the
-last $20\%$ of training); every *equivariant* variant plateaued (E0 $6.9\%$, E1 $2.1\%$, E2 $3.1\%$, E3
-$3.8\%$, ORACLE-raw $7.5\%$), and the **decisive ORACLE-unit plateaued cleanly at $5.3\%$** — so the verdict is
+MLP** (its VICReg variance collapses — a different optimisation regime, $|\Delta\text{pred}|=27.8\%$ over the
+last $20\%$ of training); every *equivariant* variant sits under the $10\%$ convergence bar (E0 $5.6\%$, E1 $2.0\%$, E2 $2.4\%$, E3
+$4.4\%$, ORACLE-raw $8.3\%$), and the **decisive ORACLE-unit at $8.2\%$** — so the verdict is
 read off converged models, the flag merely conservative for including the non-control MLP. Confidence
 $\approx0.85$ that the residual interaction cap is the encoder's lossy latent (up from Step 42's $\approx0.6$:
 the oracle turns the triangulation's *inference* into a direct, falsifiable test — the ladder could have
@@ -2403,7 +2403,7 @@ recovered the cap and did not, the oracle could have stalled and did not). The d
 form: when an equivariant model underfits, **find which stage is lossy before enriching anything** — Step 32
 clears the predictor, Step 42 the message, Step 43's ladder the encoder's *internal* capacity, and what
 remains — proven by the oracle — is the encoder's **output latent budget** (more channels, higher
-$\ell_{\max}$ *at the output*), still never the prior. Guarded inline (three seeds, four guards) by
+$\ell_{\max}$ *at the output*), still never the prior. Guarded inline (five seeds, four guards) by
 `experiments/step43_encoder_ladder.py`; the structural invariants — every equivariant variant (ladder *and*
 oracle) stays $\mathrm{SE}(3)\rtimes S_O$-exact, and the oracle latent is the lossless ($72>48$),
 $\mathrm{SE}(3)$-equivariant centred cloud — by `tests/test_step43_encoder_ladder.py`.
@@ -2412,11 +2412,11 @@ $\mathrm{SE}(3)$-equivariant centred cloud — by `tests/test_step43_encoder_lad
 
 > **Figure 5c.** The encoder ladder $+$ oracle bypass — the third and decisive axis. **(left)** in-distribution
 > relMSE: the encoder rungs E0–E3 (blue) saturate near the cap as internal capacity grows at a fixed
-> $16$-vector latent budget (best rung closes $21\%$ of the gap to the MLP), while the lossless point-cloud
-> oracle (green) collapses to $\sim\!0.003$ — closing $153\%$, past the MLP ceiling. **(centre)** the global
+> $16$-vector latent budget (best rung closes $29\%$ of the gap to the MLP), while the lossless point-cloud
+> oracle (green) collapses to $\sim\!0.003$ — closing $156\%$, past the MLP ceiling. **(centre)** the global
 > OOD/seen ratio is $\times1.00$ for every equivariant variant — *including* the oracle — while the MLP carries
-> $\times9.9$: bypassing the encoder is zero-cost in 举一反三. **(right)** the post-training $\mathrm{SE}(3)$
-> residual holds the float floor ($\le6.7\times10^{-5}$) for every variant including the oracle
+> $\times10.0$: bypassing the encoder is zero-cost in 举一反三. **(right)** the post-training $\mathrm{SE}(3)$
+> residual holds the float floor ($\le5.4\times10^{-5}$) for every variant including the oracle
 > ($1.8\times10^{-6}$); only the non-equivariant MLP breaks it. With Figures 5 and 5b, all three levers
 > (predictor degree, message, encoder capacity) saturate while a lossless oracle solves the task — localising
 > the residual interaction cap to the encoder's lossy latent, not the prior. Regenerate with

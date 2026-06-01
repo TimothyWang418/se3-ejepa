@@ -268,7 +268,10 @@ def main() -> None:
     if SMOKE:
         SEEDS, N_TRAIN, N_TEST, EPOCHS, K_OOD = (0,), 150, 64, 3, 2
     else:
-        SEEDS, N_TRAIN, N_TEST, EPOCHS, K_OOD = (0, 1, 2), 1500, 400, 60, 6
+        # hardened 2026-06-01: 5 seeds so the M0->M1 null carries a credible error bar — the most
+        # reviewer-attackable claim in the triangulation (a null with one seed regressing at n=3). The
+        # null holds at n=5: M0 0.259 -> M1 0.253 (x1.02, 3% of the gap), still within seed noise.
+        SEEDS, N_TRAIN, N_TEST, EPOCHS, K_OOD = (0, 1, 2, 3, 4), 1500, 400, 60, 6
     SEEDS = tuple(int(s) for s in os.environ.get("STEP42_SEEDS", ",".join(map(str, SEEDS))).split(","))
     N_TRAIN = int(os.environ.get("STEP42_NTRAIN", N_TRAIN))
     EPOCHS = int(os.environ.get("STEP42_EPOCHS", EPOCHS))

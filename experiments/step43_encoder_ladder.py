@@ -320,7 +320,12 @@ def main() -> None:
         # and verify convergence explicitly below (a loss plateau over the last 20% of training). This
         # de-risks the decisive failure mode: an UNDER-trained oracle would look falsely capped and could
         # flip the verdict to a spurious INCONCLUSIVE.
-        SEEDS, N_TRAIN, N_TEST, EPOCHS, K_OOD = (0, 1, 2), 1500, 400, 80, 6
+        # hardened 2026-06-01: 5 seeds — the encoder rungs carry real seed variance (E1/E2 ~0.03), so the
+        # ladder-saturation headline needed a credible error bar. Worth it: at n=3 the best rung was
+        # E2-mul32 @ 0.227 (21% of gap); at n=5 it is E1-mul16 @ 0.207 (29%) — the rung *and* the fraction
+        # were noise-fragile, exactly what the extra seeds were meant to expose. The verdict is unchanged
+        # (ladder still saturates << oracle): the oracle is already crisp (std ~3e-4), closing 156% at n=5.
+        SEEDS, N_TRAIN, N_TEST, EPOCHS, K_OOD = (0, 1, 2, 3, 4), 1500, 400, 80, 6
     SEEDS = tuple(int(s) for s in os.environ.get("STEP43_SEEDS", ",".join(map(str, SEEDS))).split(","))
     N_TRAIN = int(os.environ.get("STEP43_NTRAIN", N_TRAIN))
     EPOCHS = int(os.environ.get("STEP43_EPOCHS", EPOCHS))

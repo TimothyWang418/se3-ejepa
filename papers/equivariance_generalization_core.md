@@ -1287,43 +1287,43 @@ mechanism* (the curiosity invariance and its $\beta$-knob), **not** a claimed ex
   builds $r_{ij}\times a_i$ with the right axis but the wrong, sample-varying magnitude, while the teacher
   torque uses the **unit** $\hat r_{ij}$. So we enrich the **message** instead: hand the predictor the unit
   edge feature $\hat r$ directly (a standard TFN/NequIP/MACE ingredient, *not* the pre-formed answer), holding
-  encoder, predictor, teacher, data and training fixed and sweeping *only* the message at three seeds with
+  encoder, predictor, teacher, data and training fixed and sweeping *only* the message at five seeds with
   **paired init** — M0 $[a,r]$, M1 $[a,\hat r]$ (byte-identical capacity, $65{,}304$ params each — a pure
-  content swap), M2 $[a,r,\hat r]$. *(i) Null recovery:* M0 $0.266\to$ M1 $0.263$ is only $\times1.01$
-  ($\sim1\%$ of the cap$\to$MLP gap, within seed noise — per-seed $\mathrm{M1}-\mathrm{M0}=-0.012,+0.005,+0.00001$,
+  content swap), M2 $[a,r,\hat r]$. *(i) Null recovery:* M0 $0.259\to$ M1 $0.253$ is only $\times1.02$
+  ($\sim3\%$ of the cap$\to$MLP gap, within seed noise — per-seed $\mathrm{M1}-\mathrm{M0}=-0.012,+0.005,+0.000,-0.023,-0.000$,
   one seed regressing); M2 buys nothing, so the message saturates *at* the unit vector. *(ii) Triangulation:*
   with Step 32's predictor ladder also saturating, **both** levers stall at the same $\sim0.20$ floor far above
-  the MLP's $0.074$ — the predictor is handed $\hat r$ and *still* cannot beat $0.26$, because the target's
+  the MLP's $0.074$ — the predictor is handed $\hat r$ and *still* sits at the $\sim0.25$ cap, because the target's
   $(\hat r_{ij}\times a_i)\times\tilde x_k$ factor must be read from the encoder's lossy $\ell_{\max}{=}2$
   latent. The dominant residual interaction cap is the **encoder**, not the predictor and not the message.
-  *(iii) Free:* every message variant stays exactly equivariant ($\mathrm{SE}(3)\le6.8\times10^{-5}$, perm $0$)
-  and across-group $\times1.00$ vs the MLP's $\times10.5$ — enriching the message is zero-cost in 举一反三 even
+  *(iii) Free:* every message variant stays exactly equivariant ($\mathrm{SE}(3)\le1.1\times10^{-4}$, perm $0$)
+  and across-group $\times1.00$ vs the MLP's $\times10.2$ — enriching the message is zero-cost in 举一反三 even
   though it did not help fit, so the *safety* half of *enrich the class, don't drop the prior* holds
   unconditionally while the recovery half simply had nothing to recover (the prior was never the bottleneck).
   Reported as an honest INCONCLUSIVE on recovery (no guard loosened); confidence $\approx0.7$ the message lever
   is null *here*, $\approx0.6$ on the stronger encoder-localisation reading (a triangulation across Step 32
-  $+$ Step 42, **confirmed directly by Step 43 below**). Three seeds; structural invariant (every variant
+  $+$ Step 42, **confirmed directly by Step 43 below**). Five seeds; structural invariant (every variant
   exactly $\mathrm{SE}(3)\rtimes S_O$-equivariant, $\hat r$ scale-invariant where raw $r$ is not) in
   `test_step42_message_ladder.py`.
 - **The encoder *is* the bottleneck — a lossless oracle closes what the predictor, message, and encoder ladder
   cannot (Step 43).** Steps 32 and 42 left the residual cap *inferred* on the encoder by elimination; Step 43
-  tests it directly, holding the VN-TP predictor, M0 message, teacher, data, and training fixed (three seeds,
+  tests it directly, holding the VN-TP predictor, M0 message, teacher, data, and training fixed (five seeds,
   $80$ epochs) along **two** axes. *(A) Capacity ladder:* scale the encoder's **internal** width/angular
   resolution at a **fixed $16$-vector output budget** ($\mathrm{mul}\in\{8,16,32\}$, $\ell_{\max}\in\{2,3\}$) —
-  the cap moves $0.263\to$ at best $0.227$ (E2-mul32), closing only $21\%$ of the E0$\to$MLP gap: *internal*
+  the cap moves $0.255\to$ at best $0.207$ (E1-mul16), closing only $29\%$ of the E0$\to$MLP gap: *internal*
   encoder capacity saturates like the predictor and the message. *(B) Lossless oracle:* **bypass** the encoder
   entirely, feeding the true per-object centred cloud $\tilde x_k=x_k-\bar x$ ($72$ numbers, vs the encoder's
   lossy $48$) into the **same degree-3 predictor** at a matched $\sim65$k params — relMSE collapses to
-  $0.00269\pm0.0004$, closing $\mathbf{153\%}$ of the gap, *past* even the non-equivariant MLP. *(i) Localised:*
+  $0.00281\pm0.0004$, closing $\mathbf{156\%}$ of the gap, *past* even the non-equivariant MLP. *(i) Localised:*
   the residual interaction cap is the encoder's lossy **output latent** (the $16$-vector pooling that discards
   the point detail the trilinear $(\hat r_{ij}\times a_i)\times\tilde x_k$ coupling needs), not its internal
   capacity, not the predictor (Step 32), not the message (Step 42) — the triangulation is complete. *(ii) Free:*
   the oracle stays exactly equivariant (post-training $\mathrm{SE}(3)\,1.8\times10^{-6}$, perm $0$) and
   across-group $\times1.00$ — *lossless, equivariant, and flat coexist* — while the lossless-but-non-equivariant
-  MLP carries $\times9.9$; the fix is to **widen the latent budget, not drop the prior**. Honest caveats: the
-  oracle relMSE is in point space (read as *solved* vs E0's *still $\sim0.26$*, not subtracted against E0), and
-  the global plateau witness flags non-convergence driven *entirely by the MLP* ($27.9\%$) while the decisive
-  oracle plateaued at $5.3\%$ — verdict CONFIRMED, four guards green (no guard loosened); confidence
+  MLP carries $\times10.0$; the fix is to **widen the latent budget, not drop the prior**. Honest caveats: the
+  oracle relMSE is in point space (read as *solved* vs E0's *still $\sim0.25$*, not subtracted against E0), and
+  the global plateau witness flags non-convergence driven *entirely by the MLP* ($27.8\%$) while the decisive
+  oracle plateaued at $8.2\%$ — verdict CONFIRMED, four guards green (no guard loosened); confidence
   $\approx0.85$ (up from $0.6$). Structural invariants — ladder *and* oracle stay $\mathrm{SE}(3)\rtimes S_O$-exact,
   oracle latent lossless ($72>48$) — in `test_step43_encoder_ladder.py`.
 - **The symmetry prior is *discoverable from data*, and falsifiably so.** Every result before this
