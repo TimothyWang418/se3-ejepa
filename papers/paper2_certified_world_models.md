@@ -9,8 +9,8 @@ created: 2026-06-02
 > ## ⚠️ FOR REVIEW — structural choices flagged (delete this block before any submission)
 >
 > This is a **new, additive** first draft of *paper2* — the certificate paper — assembled from the proposal
-> [[proposals/paper2-certified-compositional-jepa.md]] and the five experiments that now back it
-> (Steps 47, 49, 50, 51, 52). **Nothing else was touched**: the three v1/v2 papers
+> [[proposals/paper2-certified-compositional-jepa.md]] and the eight experiments that now back it
+> (Steps 47, 49, 50, 51, 52, 53, 57, 58). **Nothing else was touched**: the three v1/v2 papers
 > ([[equivariance_generalization_core.md]], [[geometric_payoff.md]], [[equivariant_lejepa.md]],
 > [[main_compact.md]]) and the frozen arXiv bundles are undisturbed. Wiring this into `arxiv/build.py` is a
 > separate, explicit step you can greenlight later.
@@ -271,6 +271,23 @@ not assumed.
 
 ![Step 53 — left: equivariant out-of-wedge error grows $\propto\epsilon_{\text{world}}$ (Theorem B's $\epsilon$ term); right: the equivariant model beats the MLP out-of-wedge up to a symmetry-content threshold, then crosses over.](figures/step53_approximate_symmetry.png)
 
+### 4.6 The certificate is actionable — discover the generators, then generate
+
+A certificate is most useful if you need neither know the group in advance nor a decoder to act on it. Two
+results (re-framed from the companion line) close that loop. **Discovery** (Steps 33, 36): from a blank slate of
+$K$ learnable $3\times3$ matrices — nothing antisymmetric or bracket-closing imposed — gradient descent
+*rediscovers* a frozen teacher's symmetry algebra ($\mathfrak{so}(3)$, dimension 3, on a rotationally-symmetric
+teacher; the smaller $\mathfrak{so}(2)_z$, dimension 1, on a rotation-broken one — it reports the *surviving*
+group and refuses to invent the rest), and **distilling those discovered generators into a free MLP predictor
+buys back most of the across-group generalization** the hard-wired equivariant model gets for nothing (closing
+more than half the OOD gap, matching the hand-wired oracle, transferring *exactly* the symmetry discovered). So
+the generating set $S$ that anchors the configuration axis need not be postulated — it can be *measured*, falsifiably.
+**Generation** (Step 38): given $S$, one can *traverse the certified orbit* to an unseen composed goal and execute
+it **closed-loop without a decoder** — latent-goal reaching driven purely by the equivariance theorem over $K{=}24$
+paired seen-vs-OOD $\mathrm{SE}(3)$-orbit tasks, succeeding on the OOD orbit exactly as on the seen one (the closed-loop
+$[C]$ guarantee). Together: *discover $S$ → certify $\langle S\rangle$ → generate (orbit-traverse to an unseen task)
+→ act* — the certificate is not merely descriptive but a usable plan-and-execute criterion.
+
 ---
 
 ## 5. Why this is new (precise delta vs prior work)
@@ -337,19 +354,27 @@ certificate for equivariant models.
 
 ## 6. Limitations and honesty
 
-- **Toy scale.** All five experiments are CPU/1-GPU-scale proofs of principle. We claim a *mechanism and a tool*,
+- **Toy scale.** All eight experiments are CPU/1-GPU-scale proofs of principle. We claim a *mechanism and a tool*,
   not a scaled-SOTA benchmark. The certificate's value is the *kind* of statement it makes, demonstrated cleanly.
+- **Theorem B is a spectral *bound*, not a tightness proof.** Promoting the scalar Lipschitz constant to the
+  Jacobian spectrum $\{e^{\lambda_j}\}$ gives the certified-horizon *form* $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$;
+  it is the load-bearing theory and we **measure its consequences** (Steps 47, 52 recover the spectrum and the law
+  to $0.1\%$), but we do not claim the constant $c_j$ or the bound is tight. It is honest as a scaling law, not as
+  an exact inequality.
+- **§4.6 (discovery + generation) re-frames companion-line results** (Steps 33/36/38), not fresh paper2 runs:
+  the discovery/distillation/decoder-free-reach experiments were built for the companion paper and are cited here
+  to show the certificate is *actionable*; they are not new evidence produced for this paper.
 - **Approximate symmetry — measured, with the boundary made explicit.** Real-world symmetry is approximate;
   §4.5 (Step 53) measures the resulting degradation directly — it is **graceful** (out-of-wedge error
   $\propto\epsilon_{\text{world}}$, exactly Theorem B's $\epsilon_{\max}$ term) and the equivariant certificate
   remains valuable only **up to a symmetry-content threshold** ($\epsilon_{\text{world}}\approx0.01\text{–}0.06$),
-  beyond which structure stops paying. The Noether hinge's **lift to a 3D contact interaction is now partly
-  measured** (§4.3, Step 57): the Noether-content half lifts ($R^2{=}0.86$), but the clean containment is
-  2D-specific because in 3D angular momentum is a conserved $\ell{=}1$ vector — so the open item is now precise: a
-  *3D-aware* containment statement $\text{slow}\subseteq(\text{invariant}\oplus\text{conserved-equivariant})$. What
-  remains genuinely **not yet done** is lifting the hinge (§3) to the
-  controlled $\mathrm{SO}(2)$ system to a contact-rich, approximately-symmetric *embodied* model — the primary
-  next experiment, flagged openly, not hidden.
+  beyond which structure stops paying. The Noether hinge's **lift to a 3D contact interaction is measured**
+  (§4.3, Steps 57–58): the Noether-content half lifts ($R^2{=}0.86$), and the 3D containment is now *exact* once
+  stated correctly — $\text{slow}\subseteq(\text{invariant}\oplus\text{conserved-equivariant})$, with energy linear
+  in the $\ell{=}0$ block and angular momentum recovered at $R^2{=}1.00$ by the degree-2 cross-product of the
+  $\ell{=}1$ block (Step 58). What remains genuinely **not yet done** is lifting this from a clean two-body
+  *toy* contact system to a **real, contact-rich embodied** model (a robot / pixel world), where symmetry is
+  approximate and the latent is learned end-to-end — the primary next experiment, flagged openly, not hidden.
 - **The hinge is a measured conjecture.** Confirmed on a controlled system, with the honest non-converse
   (invariant $\not\Rightarrow$ slow). We do not claim a proof that learning *must* place conserved quantities in
   the invariant block — only that, where the dynamics are symmetric, it *does* in our experiments.
@@ -362,9 +387,10 @@ certificate for equivariant models.
 
 For equivariant world models, structure delivers a *kind* of result scaling cannot: a **predictability
 certificate** — a provable, computable, training-free region across configuration, horizon, and resolution. We
-proved the master theorem, exhibited the certified region as the coarse-invariant-slow-low-composition corner,
-measured the Noether hinge that unifies the symmetry and time axes, and showed that an $84\times$-scaled
-non-equivariant model buys interpolation but never the certificate. *Scale buys interpolation; structure buys a
+established the master theorem (Theorem A — the exact configuration certificate — proved; Theorem B — the spectral
+horizon×resolution law — stated as a bound and measured), exhibited the certified region as the
+coarse-invariant-slow-low-composition corner, measured the Noether hinge that unifies the symmetry and time axes,
+and showed that an $84\times$-scaled non-equivariant model buys interpolation but never the certificate. *Scale buys interpolation; structure buys a
 certificate.* The same criterion that tells you which compositions a robot policy will handle zero-shot also tells
 you why eclipses are forecastable for millennia and weather is not — one structural law, read across domains.
 
