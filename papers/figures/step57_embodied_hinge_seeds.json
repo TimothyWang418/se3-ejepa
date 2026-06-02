@@ -1,0 +1,54 @@
+{
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "runs": [
+    {
+      "passed": false,
+      "train_loss": 0.012889134630424017,
+      "scal_resid": 5.684341886080802e-14,
+      "vec_resid": 1.7763568394002505e-15,
+      "r2_invariant": 0.8571235535237275,
+      "r2_equivariant": 0.05418942664094589,
+      "slow_invariant": 0.02383774019747789,
+      "slow_equivariant": 0.025977585361340646,
+      "beta": 0.0,
+      "ds": 12,
+      "dv": 10,
+      "smoke": false,
+      "seed": 0
+    },
+    {
+      "passed": false,
+      "train_loss": 0.050081116620485464,
+      "scal_resid": 8.526512829121202e-14,
+      "vec_resid": 1.7763568394002505e-15,
+      "r2_invariant": 0.8018468480701663,
+      "r2_equivariant": 0.059904354837615026,
+      "slow_invariant": 0.03829852108399297,
+      "slow_equivariant": 0.05593774926005194,
+      "beta": 0.0,
+      "ds": 12,
+      "dv": 10,
+      "smoke": false,
+      "seed": 1
+    },
+    {
+      "passed": false,
+      "train_loss": 1.7102242635887699,
+      "scal_resid": 6.821210263296962e-13,
+      "vec_resid": 2.9976021664879227e-14,
+      "r2_invariant": 0.5964096936765881,
+      "r2_equivariant": 0.05683245450346458,
+      "slow_invariant": 0.0326000014222397,
+      "slow_equivariant": 0.059225481082656274,
+      "beta": 0.0,
+      "ds": 12,
+      "dv": 10,
+      "smoke": false,
+      "seed": 2
+    }
+  ]
+}

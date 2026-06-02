@@ -1,7 +1,7 @@
 ---
 title: "A Predictability Certificate for Equivariant World Models"
 subtitle: "Scale buys interpolation, structure buys a certificate — what an equivariant latent world model can *certifiably* predict across configuration, horizon, and resolution"
-status: DRAFT (assembled 2026-06-02 from the paper2 proposal + Steps 47/49/50/51/52) — NOT wired into the arXiv build
+status: DRAFT (assembled 2026-06-02 from the paper2 proposal + Steps 47/49/50/51/52/53/57/58) — NOT wired into the arXiv build
 target_venue: NeurIPS / ICLR (mechanism-and-theory paper, JEPA-style)
 created: 2026-06-02
 ---
@@ -46,11 +46,12 @@ $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$ set by its Lyapunov exponent — s
 **coarse-invariant, slow, low-composition** corner. We confirm all three axes empirically at small scale:
 (i) a model trained on $6$ generators of $\mathbb{Z}_2^6$ is certified over all $2^6{=}64$ compositions to
 machine zero while a matched MLP degrades monotonically; (ii) a learned predictor recovers the chaotic Lyapunov
-exponent to $0.1\%$ and its certified horizon obeys the $\log(1/\epsilon)$ law; (iii) on an $\mathrm{SO}(2)$
+exponent to $0.2\%$ and its certified horizon obeys the $\log(1/\epsilon)$ law; (iii) on an $\mathrm{SO}(2)$
 mechanical system the conserved (slowest) quantities organize into the architecturally invariant channels — a
 measured **Noether hinge** linking the symmetry axis to the time axis; and (iv) a non-equivariant MLP **scaled
-$84\times$** buys in-distribution interpolation — even beating the equivariant model there — yet its error climbs
-$170\text{–}2700\times$ over the unseen orbit and never reaches the equivariant floor. *Scale buys interpolation;
+across an $88\times$ parameter range** buys in-distribution interpolation — even beating the equivariant model
+there — yet over the unseen orbit the best-scaled MLP stays $10\text{–}155\times$ above the equivariant floor
+(across 3 seeds) and never reaches it. *Scale buys interpolation;
 structure buys a certificate.* The contribution is a tool: a single criterion for *what* an equivariant world
 model can certifiably predict, and a structural reading of *why* celestial mechanics is predictable for millennia
 while weather dies at two weeks.
@@ -111,6 +112,10 @@ error. We use four assumptions, each *checkable on the $k$ generators*:
 - **(A3) The group is a symmetry of the *dynamics*:** $\Phi(g_i\cdot x,\,\sigma(g_i)a)=g_i\cdot\Phi(x,a)$ — so
   rolling out the *transformed* state equals transforming the *rolled-out* state, $(g_i\cdot x)^{\text{true}}_T=g_i\cdot x^{\text{true}}_T$ under $\sigma(g_i)\vec a$.
 - **(A4) $\rho(g_i)$ orthogonal:** $\rho(g_i)^\top\rho(g_i)=I$ (norm-preserving on $\mathcal Z$).
+- **(A5) (closed-loop clause only) equivariant planner + invariant cost:** the planner's action map satisfies
+  $\pi(\rho(g_i)z,\rho(g_i)z^\star)=\sigma(g_i)\,\pi(z,z^\star)$ and the cost is $\rho$-invariant,
+  $J(\rho(g_i)z;\rho(g_i)z^\star)=J(z;z^\star)$. (Needed *only* for the closed-loop $J$ identity, not for the
+  prediction-error identity; Step 38 (§4.6) instantiates exactly such a planner.)
 
 **Axis 1 — Configuration. Lemma 1 (composition closure).** If (A1)–(A4) hold on each generator $g_i\in S$, they
 hold on every word $w\in\langle S\rangle$, and $\rho$ restricted to $\langle S\rangle$ is an orthogonal-matrix
@@ -137,7 +142,8 @@ $$
 **(iv) Cancellation.** Subtracting (iii) from (ii) and using (A4),
 $\mathrm{Err}_T(w\cdot x;\sigma(w)\vec a)=\lVert\rho(w)\big[f^{(T)}(E(x);\vec a)-E(x^{\text{true}}_T)\big]\rVert
 =\lVert f^{(T)}(E(x);\vec a)-E(x^{\text{true}}_T)\rVert=\mathrm{Err}_T(x;\vec a)$. The closed-loop identity is the
-same computation with the $\rho$-invariant cost $J$ and a planner whose action selection commutes with $\sigma(w)$. $\square$
+same computation under **(A5)**: the equivariant planner (lifted to words by Lemma 1) selects the $\sigma(w)$-image
+of the same actions, and the $\rho$-invariant cost is unchanged. $\square$
 
 *Remark (scope).* Theorem A needs **(A3)** — the group must be a symmetry of the *dynamics*, not merely of the
 encoder. Where the dynamics break the symmetry, the certificate degrades by the amount of that break (Theorem B,
@@ -159,7 +165,7 @@ We claim this as a **bound on the form**, not a tight inequality: the $c_j$ are 
 $$
 T_j(\epsilon)\ \sim\ \tfrac{1}{\lambda_j}\,\log\tfrac{1}{\epsilon}\quad(\lambda_j>0),\qquad T_j=\infty\ (\lambda_j\le0),
 $$
-which §4.2 recovers to $0.1\%$. At $\epsilon_{\max},\delta\to0$ (exact equivariance) the configuration term
+which §4.2 recovers to $0.2\%$. At $\epsilon_{\max},\delta\to0$ (exact equivariance) the configuration term
 vanishes and Theorem A is recovered.
 
 **Corollary (the certified region).** $\mathcal C=\{(w,T,\epsilon):|\Delta\mathrm{Err}|\le\epsilon\}$ is the
@@ -237,7 +243,7 @@ checks $\Rightarrow 2^k$ certified set" made literal, with genuine learning and 
 **Step 52 (3 seeds).** A learned one-step predictor on a designed multi-Lyapunov system — a conserved invariant
 ($\lambda=-\infty$), a contracting channel ($\lambda=\ln0.75$), a neutral $\mathrm{SO}(2)$ rotor ($\lambda=0$), and
 a chaotic angle-doubling channel $z\mapsto z^2$ ($\lambda=\ln2$) — rolled out autoregressively. The model
-**recovers the chaotic Lyapunov exponent to $0.1\%$** ($\hat\lambda=0.691\text{–}0.692$ vs $\ln2=0.693$), and its
+**recovers the chaotic Lyapunov exponent to $0.2\%$** ($\hat\lambda=0.691\text{–}0.692$ vs $\ln2=0.693$), and its
 per-channel certified horizon obeys $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$: the chaotic "fine detail" is
 certifiable only $3\text{–}10$ steps and its horizon grows *only logarithmically* as $\epsilon$ coarsens
 (measured slope $\mathrm{d}T/\mathrm{d}\log\epsilon = 1.3\text{–}1.6 \approx 1/\lambda=1.44$), while the
@@ -252,9 +258,9 @@ This is the predictability staircase — long horizon $\Rightarrow$ coarse + inv
 $L$ are invariant scalars; the orbital phase is fast), a learned equivariant autoencoder-with-latent-dynamics
 (a hand-rolled $2$D Vector-Neuron model) spontaneously organizes the conserved quantities into its
 architecturally-invariant ($\ell{=}0$) block: regression $R^2$ for $(E,L)$ is **$0.92\text{–}0.99$ from the
-invariant block vs $\le0.01$ from the equivariant ($\ell{=}1$) block**, and the slowest mode the invariant block
-admits ($\approx0.01$) is $\sim\!15\times$ slower than anything the equivariant block admits ($0.145$, which equals
-the orbital phase velocity $2\sin(\omega\Delta t/2)$). The payoff is the certificate: the equivariant model's
+invariant block vs $\le0.012$ from the equivariant ($\ell{=}1$) block**, and the slowest mode the invariant block
+admits ($0.009\text{–}0.031$ across seeds) is $4.7\text{–}17\times$ slower than anything the equivariant block
+admits ($0.145$, which equals the orbital phase velocity $2\sin(\omega\Delta t/2)$). The payoff is the certificate: the equivariant model's
 slow subspace **is** its invariant subspace, whose out-of-distribution group-action residual is
 $\sim\!10^{-16}$ — *exact and architectural, for all of $\mathrm{SO}(2)$*. A matched MLP also learns $E,L$
 ($R^2=0.99$) but smears them across directions that **drift by $\approx1.17$** under the same group action, and
@@ -288,10 +294,10 @@ form to that paper's bilinear cap.
 **Step 51 (3 seeds).** Train on a $50^\circ$ wedge of an $\mathrm{SO}(2)$ orbit; test around the full circle. The
 exactly-equivariant model's error is **flat over the entire orbit** (out-of-wedge / in-wedge ratio
 $1.1\text{–}1.2$) — a certificate that holds from partial data by the identity $\mathrm{err}(R_\theta s)=\mathrm{err}(s)$.
-A non-equivariant MLP **scaled $84\times$ in parameters** ($4\mathrm{k}\to337\mathrm{k}$) buys real
-*interpolation* — its in-wedge error drops $30\text{–}166\times$ and even **beats** the $56\times$-smaller
-equivariant model in-distribution — but its error still climbs $170\text{–}2700\times$ out-of-wedge, and the
-largest MLP remains $10\text{–}155\times$ worse than the equivariant model there. Scaling $84\times$ barely moves
+A non-equivariant MLP **scaled across an $88\times$ parameter range** ($3.8\mathrm{k}\to337\mathrm{k}$) buys real
+*interpolation* — its in-wedge error drops $31\text{–}166\times$ and even **beats** the $56\times$-smaller
+equivariant model in-distribution — but out-of-wedge the largest MLP remains $10\text{–}155\times$ worse than the
+equivariant model (across 3 seeds) and never reaches its floor. Scaling $88\times$ barely moves
 the out-of-wedge floor; the walls never flatten. The fair nuance — *scale can win in-distribution* — is exactly
 why the contribution is the **certificate** (an orbit-wide guarantee from partial data), not a per-point accuracy
 contest.
@@ -402,7 +408,7 @@ certificate for equivariant models.
 - **Theorem B is a spectral *bound*, not a tightness proof.** Promoting the scalar Lipschitz constant to the
   Jacobian spectrum $\{e^{\lambda_j}\}$ gives the certified-horizon *form* $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$;
   it is the load-bearing theory and we **measure its consequences** (Steps 47, 52 recover the spectrum and the law
-  to $0.1\%$), but we do not claim the constant $c_j$ or the bound is tight. It is honest as a scaling law, not as
+  to $0.2\%$), but we do not claim the constant $c_j$ or the bound is tight. It is honest as a scaling law, not as
   an exact inequality.
 - **§4.6 (discovery + generation) re-frames companion-line results** (Steps 33/36/38), not fresh paper2 runs:
   the discovery/distillation/decoder-free-reach experiments were built for the companion paper and are cited here
@@ -442,7 +448,7 @@ We stress-tested the claims adversarially; the strongest objections and our hone
    horizon, the **horizon×resolution** stratification (Theorem B), and the **Noether hinge** unifying the
    configuration and time axes. A guarantee over an exponential region across three axes is not the single-element
    statement.
-3. **"Scale was only swept to 337k parameters."** True — the out-of-wedge floor *plateaus* over the $84\times$ we
+3. **"Scale was only swept to 337k parameters."** True — the out-of-wedge floor *plateaus* over the $88\times$ we
    test (Step 51). The "scale never reaches the certificate" claim rests on an **architectural** fact, not an
    infinite sweep: no finite non-equivariant network satisfies the exact identity $\mathrm{err}(R\!\cdot\!x)=\mathrm{err}(x)$,
    so its orbit-flatness can shrink with scale but never reach the equivariant floor by construction. We
@@ -465,7 +471,7 @@ certificate** — a provable, computable, training-free region across configurat
 established the master theorem (Theorem A — the exact configuration certificate — proved; Theorem B — the spectral
 horizon×resolution law — stated as a bound and measured), exhibited the certified region as the
 coarse-invariant-slow-low-composition corner, measured the Noether hinge that unifies the symmetry and time axes,
-and showed that an $84\times$-scaled non-equivariant model buys interpolation but never the certificate. *Scale buys interpolation; structure buys a
+and showed that an $88\times$-scaled non-equivariant model buys interpolation but never the certificate. *Scale buys interpolation; structure buys a
 certificate.* The same criterion that tells you which compositions a robot policy will handle zero-shot also tells
 you why eclipses are forecastable for millennia and weather is not — one structural law, read across domains.
 
@@ -478,12 +484,14 @@ you why eclipses are forecastable for millennia and weather is not — one struc
 | Exact-flatness + spectrum | `experiments/step47_certificate.py` | `tests/test_step47_certificate.py` | 3 | relMSE $\times1.00$ flat ($m{=}0..8$); 48/96 contractive |
 | $\mathbb{Z}_2^6$ exponential cert | `experiments/step49_iching_certificate.py` | — | 1 | $6$ generators $\to$ all $64$; worst relMSE $\sim10^{-33}$ |
 | Noether hinge | `experiments/step50_noether_hinge.py` | `tests/test_step50_noether_hinge.py` | 3 | $R^2$ $0.92$–$0.99$ vs $\le0.01$; cert $10^{-16}$ vs $1.17$ |
-| Structure vs scale | `experiments/step51_structure_vs_scale.py` | — | 3 | flat $1.1$–$1.2$ vs MLP $170$–$2700\times$; $10$–$155\times$ |
+| Structure vs scale | `experiments/step51_structure_vs_scale.py` | — | 3 | equiv flat $1.1$–$1.2$; in-wedge gain $31$–$166\times$; best MLP $10$–$155\times$ above equiv floor out-of-wedge |
 | Horizon × resolution | `experiments/step52_horizon_resolution.py` | `tests/test_step52_horizon_resolution.py` | 3 | $\hat\lambda{=}0.69$ vs $\ln2$; slope $\approx1/\lambda$ |
 | Approximate symmetry | `experiments/step53_approximate_symmetry.py` | — | 3 | cert exact at $\beta{=}0$ ($68$–$320\times$); graceful $\propto\epsilon$ (corr $0.88$–$0.98$); threshold $\epsilon\approx0.01$–$0.06$ |
-| Embodied/contact hinge lift | `experiments/step57_embodied_hinge.py` | — | 1 | Noether content lifts (invariant $R^2{=}0.86$ vs $0.05$); clean containment 2D-specific (3D $L$ is a conserved $\ell{=}1$ vector) |
-| 3D-aware containment | `experiments/step58_3d_containment.py` | — | 1 | $E$→ℓ=0 linear ($R^2{=}0.91$); $L$ bilinear → ℓ=1 degree-2 cross ($R^2{=}1.00$); slow ⊆ (invariant ⊕ conserved-equivariant) exact |
+| Embodied/contact hinge lift | `experiments/step57_embodied_hinge.py` | — | 3 | **gate INCONCLUSIVE on clean containment** (slow$_\text{inv}$ $0.024$–$0.038\approx$ slow$_\text{eq}$ $0.026$–$0.059$); Noether content half lifts (invariant $R^2{=}0.60$–$0.86$ vs $\le0.06$); resolved by Step 58 |
+| 3D-aware containment | `experiments/step58_3d_containment.py` | — | 3 | $E$→ℓ=0 linear ($R^2{=}0.62$–$0.91$); $L$ bilinear → ℓ=1 degree-2 cross ($R^2{=}1.00$, range $0.998$–$1.000$); slow ⊆ (invariant ⊕ conserved-equivariant) |
 
 Every experiment sets random seeds explicitly, prints an `INCONCLUSIVE` verdict rather than loosen a gate, and
-writes its figure + JSON to `papers/figures/`. The full test suite (81 tests) passes together; `tests/conftest.py`
+writes its figure + JSON to `papers/figures/`. **Multi-seed reproducibility:** the steps marked "3" commit
+per-seed JSONs `papers/figures/step5*_seeds.json` (seeds 0/1/2), regenerated by `experiments/aggregate_seeds.py`;
+every range quoted above is the seed min–max from those files. The full test suite (81 tests) passes together; `tests/conftest.py`
 isolates the float64 experiments from the float32 codebase.

@@ -1,0 +1,60 @@
+{
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "runs": [
+    {
+      "passed": true,
+      "train_loss": 0.012889134630424017,
+      "drift_E": 0.0007089943923911832,
+      "drift_L": 1.7358294913085967e-16,
+      "r2_E_invariant": 0.9074444582929053,
+      "r2_E_equivariant": 0.060664153118952235,
+      "r2_L_invariant": 0.023416869095401898,
+      "r2_L_linear_eq": 0.040174697097167034,
+      "r2_L_cross_deg2": 0.9999714343682141,
+      "r2_Lmag_invariant": 0.507260462626892,
+      "slow_invariant": 0.02383774019747789,
+      "slow_equivariant": 0.025977585361340646,
+      "beta": 0.0,
+      "smoke": false,
+      "seed": 0
+    },
+    {
+      "passed": false,
+      "train_loss": 0.050081116620485464,
+      "drift_E": 0.0007089943923911832,
+      "drift_L": 1.7358294913085967e-16,
+      "r2_E_invariant": 0.7259625956094122,
+      "r2_E_equivariant": 0.06665889927770952,
+      "r2_L_invariant": 0.013502927417692545,
+      "r2_L_linear_eq": 0.05156909507193338,
+      "r2_L_cross_deg2": 0.999904831473069,
+      "r2_Lmag_invariant": 0.35457548481724044,
+      "slow_invariant": 0.03829852108399297,
+      "slow_equivariant": 0.05593774926005194,
+      "beta": 0.0,
+      "smoke": false,
+      "seed": 1
+    },
+    {
+      "passed": false,
+      "train_loss": 1.7102242635887699,
+      "drift_E": 0.0007089943923911832,
+      "drift_L": 1.7358294913085967e-16,
+      "r2_E_invariant": 0.6230870492369867,
+      "r2_E_equivariant": 0.06537232921382452,
+      "r2_L_invariant": 0.0156726092554406,
+      "r2_L_linear_eq": 0.052402706807910114,
+      "r2_L_cross_deg2": 0.9982622141316853,
+      "r2_Lmag_invariant": 0.32894560722094424,
+      "slow_invariant": 0.0326000014222397,
+      "slow_equivariant": 0.059225481082656274,
+      "beta": 0.0,
+      "smoke": false,
+      "seed": 2
+    }
+  ]
+}
