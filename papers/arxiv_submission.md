@@ -29,21 +29,23 @@ only descends into the full results log / theory note if they want the receipts.
 **Scope: what is in v1 vs. v2.** The frozen upload bundle (`arxiv/arxiv_upload.tar.gz`, the one
 submitted manually) is the **Steps 3–38** build: core main body + payoff appendix (Steps 3–38) + the
 LeJEPA supplement (Directions 1–4). Since that bundle was cut, the *source* program has advanced to
-**Step 44** (Step 42 tensor-product-message ladder, Step 43 encoder-capacity / lossless-oracle ladder,
-Step 44 encoder-output-budget confirmation) and absorbed the review-driven revisions; those are **v2**,
+**Step 46** (Step 42 tensor-product-message ladder, Step 43 encoder-capacity / lossless-oracle ladder,
+Step 44 encoder-output-budget confirmation, Step 46 multi-head equivariant attention-pool cure) and absorbed the review-driven revisions; those are **v2**,
 regenerated from source via `arxiv/build.py` *without* disturbing the frozen v1 tarball. So **v1 =
-Steps 3–38 + Directions 1–4**; **Steps 42–44 + the review fixes = v2**. (v1 ships the full
+Steps 3–38 + Directions 1–4**; **Steps 42–46 + the review fixes = v2**. (v1 ships the full
 `equivariance_generalization_core.md` as the main body; the slimmer `main_compact.md` is an additive
 draft — a candidate v2 main text, not wired into `build.py` today.)
 
 Combined size: core 1408 lines / 3 figure embeds + 2 cross-references; payoff 3327 lines / 11 figure
-embeds / 0 wikilinks; the LeJEPA supplement adds **no new figure files**. **Eleven unique figure files total** (`killer_figure`, `where_the_bet_pays`,
+embeds / 0 wikilinks; the LeJEPA supplement adds **no new figure files**. **Fifteen unique figure files total** (`killer_figure`, `where_the_bet_pays`,
 `step23_indist_largeN`, `step24_object_interaction`, `step32_tp_degree_ladder`,
 `step33_symmetry_discovery`, `step34_active_inference_noisy`, `step35_many_body`,
-`step36_discover_exploit`, `step37_active_inference_search`, `step38_latent_goal_reaching` — all in
+`step36_discover_exploit`, `step37_active_inference_search`, `step38_latent_goal_reaching`,
+`step42_tp_message_ladder`, `step43_encoder_ladder`, `step44_encoder_output_budget`,
+`step45_augmented_vs_exact`, `step46_pooling_cure` — all in
 `papers/figures/` as PNG; `killer_figure`, `where_the_bet_pays`, `step24_object_interaction` also as
 PDF). The core's 3 embeds (`killer_figure`, `where_the_bet_pays`, `step23_indist_largeN`) are all a
-subset of the payoff's 11, so the union is 11 distinct files. All math is standard `$...$` / `$$...$$`,
+subset of the payoff's set, so the union is 15 distinct files. All math is standard `$...$` / `$$...$$`,
 which pandoc converts natively.
 
 ---

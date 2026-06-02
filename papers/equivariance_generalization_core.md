@@ -717,10 +717,16 @@ is *delivered* here, not just *stated*:** the only lever that fully closes the g
 oracle*, and it does so by feeding the predictor the true centred point cloud — i.e. by **bypassing the
 encoder's pooled latent entirely**, deleting the very bottleneck that makes this a *latent* (the "J" in
 JEPA) model. Every architecture-preserving lever we actually built — predictor degree, message, encoder
-width, output budget — closes at most $21$–$42\%$ and stalls at relMSE $\sim0.20$–$0.23$ (against the
-MLP's $0.07$–$0.13$). So the design rule's *diagnosis* is firm — the cap is the permutation-invariant
-pooling — but its *prescription*, a pooling operator lossless enough yet still an abstract latent, is an
-**open problem we localise, not one we solve here**. The cap does **not** touch the [B] result —
+width, output budget, and a multi-head equivariant *attention* pool that directly enriches the aggregator
+(Step 46) — stays exactly equivariant and global-flat yet stalls at relMSE $\sim0.19$–$0.23$ (against the
+MLP's $0.07$–$0.13$). The attention pool is the best of them: it improves monotonically with heads to close
+$\sim38\%$ of the gap to the MLP (beating the sum-pool ladder's $29\%$), while staying float-floor exact
+($\mathrm{SE}(3)$ residual $\le 5.4\times10^{-5}$) and flat ($\times1.00$) — yet it still falls far short of
+the lossless oracle. So the design rule's *diagnosis* is firm — the cap is the permutation-invariant
+pooling — and its most direct *prescription*, a richer equivariant aggregator, **helps but does not close
+the gap**: the residual is the latent's *fixed abstract size* — the compression itself — not the aggregation
+rule. A pooling operator lossless enough yet still a fixed-size abstract latent is an
+**open problem we sharpen, not one we solve here**. The cap does **not** touch the [B] result —
 equivariance is about how error
 transforms *across the group*, not in-distribution capacity — so the $\times1.00$-vs-$\times17$ flip stands
 independent of the cap. Full treatment, figures, the third (relative-arrangement) OOD axis, and the
@@ -1455,7 +1461,7 @@ None of the four is a new layer; the contribution is the corner where they meet.
   thereafter — not an open-ended capacity climb, and never at the cost of the across-group guarantee.
   **Three seeds, no per-rung CI — read this ladder as a *qualitative* shape claim**: the $+1\%$ top rung sits
   inside the per-rung seed scatter (std $\approx0.05$), so the saturation is the *shape* of the recovery
-  curve, not a tested null. The section's *quantitative* weight rests on the five-seed Steps 42–44; here the
+  curve, not a tested null. The section's *quantitative* weight rests on the five-seed Steps 42–44 and 46; here the
   structural invariants (equivariance, perm, $\times1.00$) are checked at every rung.
 - **The recovery has a *second* axis — the message — and it saturates too, localising the residual to the
   encoder.** Step 32 climbed the *predictor*; the deeper limit is that a homogeneous
@@ -1516,7 +1522,15 @@ None of the four is a new layer; the contribution is the corner where they meet.
   $0.6$ when the cap was only inferred by elimination). Structural invariants — every ladder *and* oracle rung
   stays $\mathrm{SE}(3)\rtimes S_O$-exact, Step 43's oracle lossless at width $72>48$ and Step 44's
   $n_{\text{out}}{=}24$ rung matched to the oracle width $72=P\cdot3$ — in `test_step43_encoder_ladder.py`
-  and `test_step44_encoder_output_budget.py`.
+  and `test_step44_encoder_output_budget.py`. *(iii) The cure, tested (Step 46, five seeds):* the natural
+  prescription — replace the sum-pool with a richer **still-exactly-equivariant** aggregator — was built and
+  run. A multi-head **attention pool** (invariant $\ell{=}0$ scores, $\mathrm{softmax}$ over points, $K$
+  weighted sums recombined by an `o3.Linear`; float-floor $\mathrm{SE}(3)$+permutation-exact in
+  `test_step46_attn_pool_equivariance.py`) is the best architecture-preserving lever to date — monotone in
+  heads ($0.255\to0.194$ at $K{=}8$), closing $\sim38\%$ of the gap to the MLP vs the sum-pool ladder's
+  $29\%$, staying $\times1.00$ flat — **yet it does not close the gap** (the lossless oracle sits at $0.003$).
+  The residual is therefore the latent's *fixed abstract size* — the compression itself — not the aggregation
+  rule: the open problem is **sharpened, not solved**.
 - **The symmetry prior is *discoverable from data*, and falsifiably so.** Every result before this
   *assumes* the group; we test whether the group can instead be **read out of a frozen teacher's
   behaviour**. Parametrise a *generator slate* of $K$ free $3\times3$ matrices $\{\hat G_k\}$ — with **no**

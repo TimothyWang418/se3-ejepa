@@ -47,6 +47,14 @@ papers/arxiv/figures/
 papers/arxiv/*.log
 papers/arxiv/main.xdv
 papers/arxiv/*.otf
+# v2 deliverables are likewise regenerable build outputs (build.py with TARBALL
+# redirected to the _v2 name) — frozen on disk for manual upload, not versioned, same as v1.
+papers/arxiv/main_v2.tex
+papers/arxiv/main_v2.pdf
+papers/arxiv/arxiv_upload_v2.tar.gz
+# smoke-test result dumps under papers/figures/ are throwaway (real runs drop the non-smoke name)
+papers/figures/*_smoke.json
+papers/figures/*_smoke.png
 
 # --- OS / editor cruft ---
 .DS_Store

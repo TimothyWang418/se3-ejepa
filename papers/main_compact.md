@@ -108,11 +108,12 @@ realised control trajectory at orientation $g$ is exactly $\rho(g)$ applied to t
 3D/$\mathrm{SE}(3)$**. We then extract a **design rule** for the regime where the equivariant class
 *under-fits in-distribution*: do not relax the prior (that would forfeit [B], which is free), but
 **localise which lossy component caps the fit and widen it**, read off a *recovery-then-saturation*
-fingerprint. Across four sweeps the predictor degree recovers-then-saturates (a missing cross-product
+fingerprint. Across five sweeps the predictor degree recovers-then-saturates (a missing cross-product
 primitive), the message is null ($\times1.02$), and a *lossless* point-cloud oracle through the *same*
 predictor **solves** the task ($>\!150\%$ of the gap, past the MLP) while neither the encoder's internal
-capacity ($29\%$) nor its output budget (swept $3\times$, $21\%$) recovers — localising the residual cap on
-the **encoder's lossy *pooled* latent, not its width**. We are explicit about scope (§7):
+capacity ($29\%$) nor its output budget (swept $3\times$, $21\%$) nor a richer equivariant attention pool
+($38\%$, Step 46) recovers — localising the residual cap on the **encoder's lossy *fixed-size* pooled
+latent, not its width or aggregation rule**. We are explicit about scope (§7):
 no binary task-success claim, [C] needs a matching planner, and against Sutton's Bitter Lesson
 augmentation/scale/soft-equivariance each close at most the across-group *task* metric, never the
 architecture's float-floor *exactness*.
@@ -189,9 +190,10 @@ five digits; [C] is that *same* theorem applied to the realised closed-loop traj
   design treat a rotated reorientation task as a genuine experimental control.
 - **A *design rule* for the in-distribution cap (§4 — new).** When the equivariant class under-fits
   in-distribution, *enrich the class, don't drop the prior*: a lossless oracle (decisive) plus a
-  recovery-then-saturation triangulation (predictor degree / message / encoder capacity / output budget)
-  **localises the residual cap to the encoder's lossy *pooled* latent**, and the across-group [B]
-  exactness is unaffected throughout.
+  recovery-then-saturation triangulation (predictor degree / message / encoder capacity / output budget /
+  a tested multi-head attention-pool cure) **localises the residual cap to the encoder's lossy *fixed-size*
+  pooled latent** — the cure helps ($38\%$, the best equivariant lever) but does not close it, sharpening the
+  open problem to the compression itself — and the across-group [B] exactness is unaffected throughout.
 - **An honest Bitter-Lesson bracket (§5, §7).** Augmentation given the whole group, scale at partial
   coverage, and a soft-equivariant interpolation each close at most the across-group *task* metric, never
   the architecture's float-floor *exactness*.
@@ -453,7 +455,7 @@ missing irrep and then **saturates**; a **capacity** bottleneck keeps closing wi
   capacity climb. Every rung is across-group $\times1.00$ vs the $2.4\times$-larger MLP's $\times10.5$.
   *(**Three seeds, no per-rung CI — read as qualitative.** The flat top ($+1\%$) is within seed noise
   (per-rung std $\approx0.05$), so the saturation is a shape claim, not a tested null; the quantitative
-  weight of this section rests on the five-seed Steps 42–44 below.)*
+  weight of this section rests on the five-seed Steps 42–44 and 46 below.)*
 
 - **Axis 2 — the message (Step 42).** A homogeneous predictor cannot form $1/\lVert r\rVert$ at *any*
   degree, so we hand it the **unit** edge feature $\hat r$ directly (a standard TFN/NequIP/MACE ingredient,
@@ -483,7 +485,11 @@ missing irrep and then **saturates**; a **capacity** bottleneck keeps closing wi
 **encoder's lossy *pooled* latent** — the permutation-invariant sum-pool that discards the point detail
 the trilinear $(\hat r_{ij}\times a_i)\times\tilde x_k$ coupling needs — **not** its internal capacity
 (Step 43), **not** its output budget (Step 44), **not** the predictor degree (Axis 1), **not** the message
-(Axis 2). *Honest caveats:* the oracle relMSE lives in **ordered point space** (read it as *solved* vs
+(Axis 2). And the most direct cure — a richer **still-exactly-equivariant** aggregator (Step 46: a
+multi-head attention pool, float-floor $\mathrm{SE}(3)$+permutation-exact) — is the best
+architecture-preserving lever yet ($0.255\!\to\!0.194$, monotone in heads, $\sim38\%$ of the gap vs the
+sum-pool ladder's $29\%$, staying $\times1.00$) but **still does not close it**: the residual is the
+latent's *fixed abstract size*, not the aggregation rule. *Honest caveats:* the oracle relMSE lives in **ordered point space** (read it as *solved* vs
 E0's *still $\sim\!0.25$*, not subtracted against E0), so the oracle is both *lossless* **and** *ordered*;
 Step 44 controls the **width** half of that confound — its $n_{\text{out}}{=}24$ rung carries the oracle's
 *exact* $72$-wide latent yet still sits at $0.247$, and widening to $144$ (past the oracle's $72$) does not
@@ -503,9 +509,11 @@ so we report **CONFIRMED on the science, INCONCLUSIVE-per-guard** (no threshold 
 > **permutation-invariant pooling**, not the predictor, the message, the encoder width, or the output
 > budget. But be honest about the *prescription*: the only lever that fully closes the gap is the
 > **lossless oracle**, and it does so by **bypassing the pooled latent entirely** — i.e. by deleting the
-> bottleneck that makes this a *latent* (the "J" in JEPA) model — while every width/budget lever that
-> *keeps* the pooling closes at most $21$–$42\%$. So a pooling operator that is lossless enough yet stays
-> an abstract latent is an **open problem we localise, not one we solve here.** What *does* hold
+> bottleneck that makes this a *latent* (the "J" in JEPA) model — while every architecture-preserving lever
+> that *keeps* a fixed-size abstract pooled latent (width, budget, **and a richer multi-head equivariant
+> attention pool — Step 46, the most direct cure, built and run**) closes at most $\sim38\%$. So a pooling
+> operator that is lossless enough yet stays a fixed-size abstract latent is an **open problem we sharpen
+> (now with the attention-pool cure measured), not one we solve here.** What *does* hold
 > unconditionally is the **safety half** — *enriching the class never costs 举一反三* (every rung above
 > stays $\times1.00$ across the group) — so the search for that operator runs entirely inside the
 > equivariant class.
@@ -657,6 +665,7 @@ preserved **unchanged** in the comprehensive supplement. One-line pointers:
 *Spine experiments cited in the main text:* `step10/11/12/14` ([A]/[B]/[C], 2D), `step13/15/18` (3D
 SE(3)), `step24` (interaction rung), `step27` (TP fix), `step32` (degree ladder), `step42` (message
 ladder), `step43` (encoder capacity ladder + lossless oracle), `step44` (encoder output-budget sweep),
-`step28/29/30/31` (Bitter-Lesson bracket), `step45` (closed-loop augmentation-vs-exactness head-to-head). Each
+`step28/29/30/31` (Bitter-Lesson bracket), `step45` (closed-loop augmentation-vs-exactness head-to-head),
+`step46` (pooling cure: multi-head equivariant attention pool). Each
 structural claim has a matching guard test (`tests/test_step*.py`) checking equivariance/invariance at
 initialisation **and** after training, with a non-equivariant control that fails.

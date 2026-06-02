@@ -313,10 +313,16 @@ class SetSE3Encoder(nn.Module):
     copies of $R$ (orthogonal) and the JEPA cost is rotation-invariant per object.
     """
 
-    def __init__(self, n_obj: int = N_OBJ, n_out_vec: int = N_OUT_VEC, lmax: int = 2, mul: int = 8):
+    def __init__(self, n_obj: int = N_OBJ, n_out_vec: int = N_OUT_VEC, lmax: int = 2, mul: int = 8,
+                 pool: str = "sum", n_heads: int = 4):
         super().__init__()
         self.n_obj = n_obj
-        self.obj_enc = SE3PointEncoder(n_out_vec=n_out_vec, lmax=lmax, mul=mul)
+        # `pool` threads through to the per-object SE3PointEncoder: "sum" (default, the
+        # published mean-field aggregate) or "attn" (Step 46's multi-head equivariant
+        # attention pool — the design-rule cure for the lossy sum). Default "sum" keeps
+        # every existing experiment byte-for-byte unchanged.
+        self.obj_enc = SE3PointEncoder(n_out_vec=n_out_vec, lmax=lmax, mul=mul,
+                                       pool=pool, n_heads=n_heads)
         self.latent_dim = n_obj * self.obj_enc.latent_dim
 
     def forward(self, S: torch.Tensor) -> torch.Tensor:

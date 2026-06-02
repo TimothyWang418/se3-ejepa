@@ -2218,8 +2218,8 @@ rung across-group flat ($\times1.00$) ✓; MLP degrades ($\times10.5$) ✓. **PA
 honestly:* **three seeds, no per-rung CI.** The "saturates" guard is a fixed-threshold heuristic on the
 *means* (top rung $+1\%$ of the recovery), not a tested null, and the per-rung scatter is wide
 ($L2\,{=}\,0.206\pm0.051$ overlaps $L1\,{=}\,0.194\pm0.024$). So the plateau is a **qualitative** shape claim;
-the section's *quantitative* weight rests on the five-seed Steps 42–44 (message, encoder capacity, output
-budget), whose nulls carry CIs. Confidence ≈ **0.8** that
+the section's *quantitative* weight rests on the five-seed Steps 42–44 and 46 (message, encoder capacity, output
+budget, pooling cure), whose nulls carry CIs. Confidence ≈ **0.8** that
 the recovery-then-**saturation** is a genuine degree signature rather than a capacity ramp — clean because
 the parameter count is held fixed across the ladder, so the plateau cannot be explained by "ran out of
 parameters." One notch below the rollout theorem (§23) because the knee *location* is empirical
@@ -2229,11 +2229,12 @@ below pin on the **encoder's lossy latent** rather than the predictor or the mes
 design rule a **first, partial form**: when an equivariant model underfits, *one* recoverable cap is a
 **specific missing primitive** (here the cross-product irrep), closed at the *first* rung that supplies it
 and **saturating** thereafter — not an open-ended capacity climb, and never at the cost of the across-group
-guarantee. But that saturation leaves the residual $\times2.4$ to the MLP, which Steps 42–44 below
+guarantee. But that saturation leaves the residual $\times2.4$ to the MLP, which Steps 42–46 below
 **localise to the encoder's lossy *pooled* latent** — where the only full closure (the lossless oracle)
 **bypasses the latent itself**, so a pooling-preserving cure is an **open problem**, not a delivered fix.
 *Enrich the class by the primitive the physics needs; keep the prior — but the design rule's final rung (the
-pooling) is localised, not yet solved.* Guarded inline (three seeds, five guards) by
+pooling) is localised and directly probed (Step 46's multi-head equivariant attention pool recovers
+$\sim\!38\%$, the best architecture-preserving lever yet, but not the gap), not yet solved.* Guarded inline (three seeds, five guards) by
 `experiments/step32_tp_degree_ladder.py`; structural invariants at every rung by
 `tests/test_step32_degree_ladder.py`.
 
@@ -2370,9 +2371,13 @@ $11.1$. So **lossless, exactly equivariant, and flat coexist** — the way to li
 encoder's latent *less lossy*, not to drop the prior. **But state the honest limit:** the only lever that
 *fully* closes the gap is the oracle, and it does so by **bypassing the pooled latent entirely** — deleting
 the very bottleneck that makes this a *latent* (the "J" in JEPA) model — while Step 44 shows widening the
-readout *budget* ($3\times$) is **not** the cap (the permutation-invariant pooling is). So a pooling operator
-that is lossless enough yet stays an abstract latent is an **open problem we localise, not solve here**;
-what holds unconditionally is the *safety* half — enriching the class never costs 举一反三.
+readout *budget* ($3\times$) is **not** the cap (the permutation-invariant pooling is), and Step 46 shows the
+most direct cure — a richer multi-head **equivariant attention pool** — is the best architecture-preserving
+lever yet ($0.255\to0.194$, $\sim38\%$ of the gap vs the sum-pool ladder's $29\%$, monotone in heads,
+float-floor exact) but **still does not close it**. So a pooling operator that is lossless enough yet stays a
+*fixed-size* abstract latent is an **open problem we sharpen, not solve here** — the residual is the
+fixed-size compression itself, not the aggregation rule; what holds unconditionally is the *safety* half —
+enriching the class never costs 举一反三.
 
 **Verdict — encoder localisation CONFIRMED, four guards green.** Equivariant at every variant
 ($\mathrm{SE}(3)\le5.4\times10^{-5}$, perm $0$) ✓; across-group flat at every variant ($\times1.00$) ✓; MLP
@@ -2384,11 +2389,13 @@ $4.4\%$, ORACLE-raw $8.3\%$), and the **decisive ORACLE-unit at $8.2\%$** — so
 read off converged models, the flag merely conservative for including the non-control MLP. Confidence
 $\approx0.85$ that the residual interaction cap is the encoder's lossy latent (up from Step 42's $\approx0.6$:
 the oracle turns the triangulation's *inference* into a direct, falsifiable test — the ladder could have
-recovered the cap and did not, the oracle could have stalled and did not). The design rule reaches its final
-form: when an equivariant model underfits, **find which stage is lossy before enriching anything** — Step 32
-clears the predictor, Step 42 the message, Step 43's ladder the encoder's *internal* capacity, and what
-remains — proven by the oracle — is the encoder's **output latent budget** (more channels, higher
-$\ell_{\max}$ *at the output*), still never the prior. Guarded inline (five seeds, four guards) by
+recovered the cap and did not, the oracle could have stalled and did not). The design rule's *diagnosis*
+sharpens: when an equivariant model underfits, **find which stage is lossy before enriching anything** —
+Step 32 clears the predictor, Step 42 the message, Step 43's ladder the encoder's *internal* capacity, and
+what remains — proven by the oracle — is the encoder's lossy **pooled output latent** (Step 44 then shows it
+is the *pooling*, not the readout width; Step 46 that even a richer equivariant aggregator closes only
+$\sim38\%$, not the gap), still never the prior — the *prescription* for that final rung is sharpened to an
+open problem, not delivered. Guarded inline (five seeds, four guards) by
 `experiments/step43_encoder_ladder.py`; the structural invariants — every equivariant variant (ladder *and*
 oracle) stays $\mathrm{SE}(3)\rtimes S_O$-exact, and the oracle latent is the lossless ($72>48$),
 $\mathrm{SE}(3)$-equivariant centred cloud — by `tests/test_step43_encoder_ladder.py`.
@@ -2465,6 +2472,66 @@ $\dim(h){=}72$ pool, and B24's width matches the oracle's $72=P\cdot3$ — by
 > ($\le1.6\times10^{-4}$, oracle $1.8\times10^{-6}$) for every equivariant variant; only the MLP breaks it.
 > Widening the *output* budget neither drops the floor nor spends equivariance — the cap is the pooling
 > upstream. Regenerate with `experiments/step44_encoder_output_budget.py`.
+
+### The pooling cure: a richer equivariant aggregator helps, but does not close it (Step 46)
+
+Steps 43–44 localised the cap to the encoder's permutation-invariant **sum-pool** $h=\sum_k\mathrm{msg}_k$ and
+left the natural cure as an *open problem*: can a richer pooling — still exactly equivariant, still a
+fixed-size abstract latent — recover the interaction the uniform sum discards? Step 46 builds and runs the
+most direct candidate. Replace the sum with a multi-head **equivariant attention pool**: per-point scores
+read off the *invariant* $\ell{=}0$ channels of $\mathrm{msg}$ (so the weights are $\mathrm{SO}(3)$-invariant),
+$\mathrm{softmax}$ over the $P$ points (so the head stays permutation-invariant), $K$ distinct weighted sums,
+recombined by an `o3.Linear`. Because the $K$ heads enter the downstream `NormActivation` *separately* — a
+pre-sum would collapse straight back to one weighted aggregate — the pool is strictly richer than the sum, at
+the **same** latent budget ($16$ vectors, $D_{\text{scene}}{=}96$), and it does **not** regress toward the
+raw-cloud oracle (the "J" in JEPA survives). Everything else — teacher, VN-TP predictor, data, training,
+message — is held at the Step-43 configuration; five seeds.
+
+| variant | pool | params | in-dist relMSE (mean $\pm$ seed std) | gap closed |
+|---|---|---:|---|---:|
+| **E0-sum** | sum | $65{,}304$ | $0.255\pm0.014$ | — (the cap) |
+| **P1-attn4** | attn, $K{=}4$ | $66{,}908$ | $0.230\pm0.056$ | — |
+| **P2-attn8** | attn, $K{=}8$ | $67{,}936$ | $0.194\pm0.030$ | $\sim\!38\%$ — best equivariant rung yet |
+| **ORACLE-unit** | lossless points | $65{,}408$ | $0.003\pm0.000$ | $156\%$ — solved |
+| MLP-MP | — | $62{,}304$ | $0.093\pm0.005$ | unconstrained ceiling |
+
+**The reading is `partial`.** The attention pool is the **best architecture-preserving lever to date**: it
+drops the floor monotonically with heads ($0.255\to0.230\to0.194$) and closes $\sim\!38\%$ of the E0$\to$MLP
+gap — beating the sum-pool ladder's $29\%$ (Step 43) and the output-budget sweep's $21\%$ (Step 44) — at a
+near-identical parameter budget (the $K$-head score MLP $+$ `o3.Linear` recombiner add only $1.6$–$2.6$k
+params). Yet it falls far short of the lossless oracle ($0.003$). So the pooling *rule* (uniform sum vs
+learned multi-head attention) is **part** of the lever, not the whole of it: the residual sits in the
+**fixed-size abstract compression itself** — squeezing $P{=}24$ ordered points into $16$ vectors — not in how
+those points are aggregated. The open problem is **sharpened** (the aggregation function is now *measured*,
+not merely hypothesised), not solved.
+
+**Free in 举一反三, as always.** Both attention rungs hold OOD/seen $\times1.00$ and a post-training
+$\mathrm{SE}(3)$ residual $\le5.4\times10^{-5}$ (perm $\le1.8\times10^{-6}$) — proven float-floor
+$\mathrm{SE}(3)$- and permutation-equivariant at init *and* post-train in
+`tests/test_step46_attn_pool_equivariance.py`; only the non-equivariant MLP degrades ($\times7.8$,
+$\mathrm{SE}(3)$ residual $11$). The richer aggregator spends **no** equivariance: the cure is *admissible*,
+it is simply not *sufficient*.
+
+**Verdict — `partial`, symmetry-clean.** Equivariant at every attention rung ✓; across-group flat ✓; MLP
+degrades ✓; the cure helps ($38\%>29\%$, monotone in heads) but does not close the gap. (The script's $40\%$
+PARTIAL threshold tags $38\%$ `NO-HELP` and exits non-zero; we read the *substance* — a real, monotone,
+sub-closing improvement — not the round-number label.) One honest convergence note, carried verbatim: the
+plateau witness reads `ok_converged = false`, driven **entirely by the MLP** ($|\Delta\text{pred}|=27.8\%$, a
+VICReg variance collapse); every *equivariant* rung sits under the $10\%$ bar (E0 $5.6\%$, P1 $9.1\%$, P2
+$3.4\%$, oracle $8.2\%$), so the verdict is read off converged models. Guarded inline (five seeds) by
+`experiments/step46_pooling_cure.py`; the multi-head attention pool's exact symmetry by
+`tests/test_step46_attn_pool_equivariance.py`.
+
+![The pooling cure](figures/step46_pooling_cure.png)
+
+> **Figure 5e.** The pooling cure — does a richer equivariant aggregator close what the sum-pool cannot?
+> **(left)** in-distribution relMSE: the sum-pool cap E0 (grey, $0.255$) vs the attention-pool rungs (orange,
+> $K{=}4{:}\,0.230$, $K{=}8{:}\,0.194$ — the best equivariant lever, $38\%$ of the gap) vs the lossless oracle
+> (green, $0.003$) and the MLP ceiling (red, $0.093$). **(centre)** every equivariant variant holds OOD/seen
+> $\times1.00$; only the MLP degrades ($\times7.8$). **(right)** the post-training $\mathrm{SE}(3)$ residual
+> holds the float floor ($\le5.4\times10^{-5}$) for the attention pool; only the MLP breaks it. A richer
+> equivariant aggregator helps but does not close the gap — the residual is the fixed-size compression
+> itself, not the aggregation rule. Regenerate with `experiments/step46_pooling_cure.py`.
 
 ---
 

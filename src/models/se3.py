@@ -86,11 +86,14 @@ class SE3PointEncoder(nn.Module):
         n_radial: int = 8,
         r_max: float = 2.0,
         n_out_scalar: int = 0,
+        pool: str = "sum",
+        n_heads: int = 4,
     ):
         super().__init__()
         self.n_out_vec = n_out_vec
         self.n_out_scalar = n_out_scalar
         self.latent_dim = n_out_scalar + 3 * n_out_vec
+        self.pool = pool
 
         # --- irreps ---------------------------------------------------------
         self.irreps_sh = o3.Irreps.spherical_harmonics(lmax)  # 1x0e+1x1o+...
@@ -146,6 +149,53 @@ class SE3PointEncoder(nn.Module):
         )
         self.register_buffer("basis_xyz", torch.linalg.inv(M).T)  # (3, 3)
 
+        # --- pooling over points -------------------------------------------
+        # "sum"  : the original permutation-invariant mean-field aggregate
+        #          ``msg.sum(dim=1)`` (byte-for-byte the published encoder).
+        # "attn" : multi-head *equivariant* attention pooling — the design-rule
+        #          "enrich the aggregator, keep the prior" cure for the lossy
+        #          sum-pool (Steps 42-44 localized the residual interaction cap
+        #          to this single aggregate). Per-point attention scores are read
+        #          off the *invariant* (l=0) channels of ``msg`` (so the weights
+        #          are SO(3)-invariant), softmax-normalized over the N points
+        #          (so the head is permutation-invariant), and applied as K
+        #          distinct weighted sums of the equivariant per-point features
+        #          ``msg`` (so each head stays equivariant). An ``o3.Linear``
+        #          then recombines the K heads; because the heads enter the
+        #          downstream ``NormActivation`` *separately* (not pre-summed),
+        #          the pool is strictly richer than a single weighted sum —
+        #          which would collapse back to one aggregate. No irrep widening:
+        #          the latent is the same fixed-size abstract ``{n_out_vec}x1o``
+        #          (it does NOT regress toward the raw-cloud oracle).
+        if pool not in ("sum", "attn"):
+            raise ValueError(f"unknown pool={pool!r} (expected 'sum' or 'attn')")
+        if pool == "attn":
+            self.n_heads = n_heads
+            self._mul0 = mul  # # of l=0 (invariant) channels in irreps_hidden (first `mul` dims)
+            self.attn_score = nn.Sequential(
+                nn.Linear(mul, 64), nn.SiLU(), nn.Linear(64, n_heads)
+            )
+            # K stacked copies of irreps_hidden (matches torch.cat over heads,
+            # each head a full irreps_hidden block in its native order) -> hidden.
+            irreps_cat = o3.Irreps("+".join([str(self.irreps_hidden)] * n_heads))
+            self.attn_combine = o3.Linear(irreps_cat, self.irreps_hidden)
+
+    def _pool(self, msg: torch.Tensor) -> torch.Tensor:
+        r"""Aggregate per-point equivariant features ``(B, N, hidden) -> (B, hidden)``.
+
+        Permutation-invariant and SE(3)-equivariant for both modes. ``"sum"`` is the
+        mean-field aggregate; ``"attn"`` uses $K$ heads of invariant-scored attention
+        (weights from the $\ell=0$ block, $\mathrm{softmax}$ over the $N$ points) and an
+        ``o3.Linear`` recombination — strictly richer than a single weighted sum.
+        """
+        if self.pool == "sum":
+            return msg.sum(dim=1)  # (B, hidden) permutation-invariant aggregate
+        # "attn": K-head equivariant attention pooling
+        inv = msg[..., : self._mul0]  # (B, N, mul) invariant l=0 part -> invariant scores
+        w = torch.softmax(self.attn_score(inv), dim=1)  # (B, N, K) softmax over points
+        heads = torch.einsum("bnk,bnd->bkd", w, msg)  # (B, K, hidden): K weighted sums
+        return self.attn_combine(heads.reshape(heads.shape[0], -1))  # (B, hidden)
+
     def _encode(self, pos: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         r"""Shared encoder body. ``(B, N, 3) -> (scalars, vectors)``.
 
@@ -170,7 +220,7 @@ class SE3PointEncoder(nn.Module):
 
         node = r.new_ones(*r.shape[:-1], 1)  # (B, N, 1) scalar seed
         msg = self.tp(node, sh, weights)  # (B, N, hidden_dim) equivariant
-        h = msg.sum(dim=1)  # (B, hidden_dim) permutation-invariant aggregate
+        h = self._pool(msg)  # (B, hidden_dim) permutation-invariant aggregate ("sum" | "attn")
 
         h = self.act1(h)
         h = self.lin1(h)
