@@ -1,0 +1,17 @@
+{
+  "passed": true,
+  "train_loss": 0.012889134630424017,
+  "drift_E": 0.0007089943923911832,
+  "drift_L": 1.7358294913085967e-16,
+  "r2_E_invariant": 0.9074444582929053,
+  "r2_E_equivariant": 0.060664153118952235,
+  "r2_L_invariant": 0.023416869095401898,
+  "r2_L_linear_eq": 0.040174697097167034,
+  "r2_L_cross_deg2": 0.9999714343682141,
+  "r2_Lmag_invariant": 0.507260462626892,
+  "slow_invariant": 0.02383774019747789,
+  "slow_equivariant": 0.025977585361340646,
+  "beta": 0.0,
+  "smoke": false,
+  "seed": 0
+}
