@@ -1610,6 +1610,19 @@ decisive result [G] is *independent* of this cap: even handicapped to $0.33$ in-
 **only** model that 举一反三 across the group, while the un-handicapped MLP that fit to $0.067$ collapses
 $\times17$. The prior's value is the extrapolation flatness, not the interpolation fit.
 
+**This profile is independently visible in concurrent work — and it is the signature of a geometric prior, not a
+weakness.** LDA ("The Lie We Tell", Chuang et al., 2026) names the **Euclidean Fallacy** — flattening an
+$\mathrm{SE}(3)$ pose into a flat $\mathbb{R}^{12}$ vector breaks the manifold constraint, coordinate-change
+equivariance, and geodesic optimality — and corrects it by score-matching *on* $\mathrm{SE}(3)$ (tangent-space
+score, exp-map retract). Its problem statement **is** our motivation, landed on the diffusion-policy side; and its
+reported gains are precisely our profile — *modest in absolute accuracy, robust under OOD/constraints* (CALVIN
+average task length $3.27\to3.51$, $+7.3\%$), the same shape as our $\times1.36$. We read that the same way we
+read our own number: a geometric prior buys a *kind* of guarantee — across-group / OOD consistency — not a uniform
+accuracy jump, so "nice, not decisive" average deltas are exactly what one should expect and report. (LDA is also a
+useful boundary marker for this project's *contrarian* claim: it confirms the **geometry** thesis while sitting on
+the **generative/diffusion** side we argue is the wrong abstraction level — an ally on one axis, an opponent on the
+other.)
+
 ### 17.1. The tensor-product message recovers most of the cap, *keeping* equivariance
 
 The §17 cap is a missing **primitive**, so the fix is to supply it, not to abandon the prior. The SO(3)
