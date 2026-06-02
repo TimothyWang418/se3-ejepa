@@ -1456,6 +1456,19 @@ every $g$, monotone honest knob), hardened over **five seeds**, are guarded in
 ≈ **0.85** on the across-group near-total win and the data-proof-in-$N$ wall; ≈ **0.6** that the
 extreme-break tie generalises beyond this teacher/capacity/compute regime.
 
+**A second phase diagram — the advantage grows with group complexity (Step 55, `experiments/step55_group_complexity_phase.py`).**
+Step 22 sweeps symmetry-*break* $\times$ data; a complementary axis is symmetry-*size*. On the I Ching
+$\mathbb{Z}_2^k$ testbed (group $|G|=2^k$, $k$ single-line-flip generators) we sweep group complexity $k\in\{2,\dots,8\}$
+against training coverage $m_{\text{train}}$ (max composition length seen). The exact-equivariant per-line
+predictor is certified over all $2^k$ compositions from the $k$ generators ($m_{\text{train}}{=}1$) for **every**
+$k$ — worst-unseen relMSE $\le10^{-32}$ throughout — so its certificate is a single point $(m_{\text{train}}{=}1)$
+valid across the whole complexity axis. The non-equivariant MLP trained on the same generators **fails** zero-shot
+(worst-unseen relMSE $0.13\!\to\!0.49$ as $k:2\to8$) and needs $m_{\text{train}}$ to grow with $k$ to recover the
+compositions; the structural advantage at $m_{\text{train}}{=}1$ is $\sim\!10^{11}\times$ at every $k$. So the
+across-group payoff does not merely *survive* larger groups — it **widens** with group complexity, because $k$
+generator checks certify an exponentially larger set. (Toy, single-seed-deterministic; complements the
+five-seed Step 22 plane.)
+
 ### [D] The large-$N$ in-distribution test: the gap still does not widen
 
 [C] left one escape open: maybe the in-distribution gap *would* widen with $g$ if $N$ went past the
