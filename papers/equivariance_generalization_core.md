@@ -739,7 +739,13 @@ the lossless oracle. So the design rule's *diagnosis* is firm — the cap is the
 pooling — and its most direct *prescription*, a richer equivariant aggregator, **helps but does not close
 the gap**: the residual is the latent's *fixed abstract size* — the compression itself — not the aggregation
 rule. A pooling operator lossless enough yet still a fixed-size abstract latent is an
-**open problem we sharpen, not one we solve here**. The cap does **not** touch the [B] result —
+**open problem we sharpen, not one we solve here**. *(The oracle-bypass move itself — swap in the exact
+dynamics and ask what is still missing — is independently used by concurrent work: IMWM (Gao et al., 2026)
+runs the same diagnostic and finds a finite-budget planner still fails with the **oracle** model, localising
+**its** residual to the planner's **search** (proposal-sampling volume) rather than the representation. The two
+are complementary bottlenecks, not rivals — our residual is representational, theirs is the search budget — and
+a lossless oracle is the right instrument for isolating whichever one a given system actually hits.)* The cap
+does **not** touch the [B] result —
 equivariance is about how error
 transforms *across the group*, not in-distribution capacity — so the $\times1.00$-vs-$\times17$ flip stands
 independent of the cap. Full treatment, figures, the third (relative-arrangement) OOD axis, and the
@@ -1211,6 +1217,19 @@ where they meet.
   extrapolability that a data-driven low-dimensional structure does not supply. (The representation-
   geometry axis is developed in the LeJEPA supplement; here it bears only on *why* the symmetry prior
   buys 举一反三.)
+- **The same "don't flatten geometry" principle, independently, on the action side (LDA).** LDA
+  (Chuang et al., 2026) names the **Euclidean Fallacy** — representing an $\mathrm{SE}(3)$ pose as a flat
+  $\mathbb{R}^{12}$ vector breaks the manifold constraint, the coordinate-change equivariance, and geodesic
+  optimality — and corrects it by score-matching *on* $\mathrm{SE}(3)$ (left-invariant SDE, tangent-space
+  score, exp-map retract). Its problem statement **is** our motivation, landed on the policy/diffusion side
+  rather than the JEPA-encoder side, and is strong external support for "keep geometric quantities on their
+  manifold." Two honest notes on the relationship: (i) LDA is a *diffusion policy* — the generative direction
+  this project is deliberately contrarian to — so it corroborates our **geometry** thesis while sitting on the
+  side we argue against on *abstraction level*; (ii) its reported gains are characteristically equivariant —
+  *modest in absolute accuracy, robust under OOD/constraints* (CALVIN task length $3.27\to3.51$, $+7.3\%$),
+  the same profile as our Vector-Neuron $\times1.36$. We read that profile not as weakness but as the
+  signature of a geometric prior: it buys *consistency across the group*, not a uniform accuracy jump — which
+  is exactly why the across-group flatness of §2.2, not a benchmark delta, is the right thing to report.
 
 **The underexplored corner this note targets.** Equivariant *layers* exist; equivariant *RL* exists;
 *JEPA* exists. What is largely missing is their conjunction: an *exactly* SE(3)-equivariant

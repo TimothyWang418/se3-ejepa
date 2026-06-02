@@ -587,7 +587,12 @@ non-abelian, continuous, embodied $\mathrm{SE}(3)$ instance. A parallel concurre
 representation-geometry side, UR-JEPA (Le 2026), shows a data-discovered **anisotropic** latent can beat
 the isotropic-Gaussian target — but the *source* of the anisotropy matters: ours is **group-prescribed**
 ($f(g\!\cdot\!x)=\rho(g)f(x)$) and carries the across-group extrapolation guarantee of §2.2 that a
-data-driven low-dimensional structure does not.
+data-driven low-dimensional structure does not. Two further concurrent works bear on us: LDA (Chuang
+et al. 2026) names the **Euclidean Fallacy** of flattening $\mathrm{SE}(3)$ poses into $\mathbb{R}^{12}$
+and corrects it by score-matching *on* the manifold — our exact motivation, on the (diffusion) policy side
+rather than the JEPA encoder, with the same modest-accuracy-but-OOD-robust profile as our VN $\times1.36$;
+and IMWM (Gao et al. 2026) uses the **same oracle-bypass diagnostic** as our §5, localising *its* residual
+to planner **search** rather than (as ours) the encoder's pooled representation — a complementary bottleneck.
 
 **What is new is the conjunction, on four counts.** (1) The *combination itself* — an exactly
 $\mathrm{SE}(3)$-equivariant JEPA latent world model whose symmetry survives a real training run and

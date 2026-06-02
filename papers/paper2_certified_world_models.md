@@ -262,15 +262,51 @@ the multi-step, full-monoid generalization of $[B]$; Theorem B adds the horizon�
 composition-closure lemma turns $k$ generator checks into an exponential certified set. The $[A]/[B]/[C]$ results
 are the $|w|{=}1$, single-resolution corner of the certified region.
 
-**Equivariant predictors and zero-shot generalization.** Block-rotation predictors (BRo-JEPA) and unitary-predictor
-world models (UWM-JEPA) report striking zero-shot transfer across a cyclic / unitary group; our orthogonal-$\rho$
-Theorem A explains *why* (the representation cancels inside the norm) and the closure lemma explains *how far*
-(the whole generated monoid, from the generators). Their settings are special cases ($\rho$ orthogonal /
-$\rho$ unitary).
+**Equivariant predictors — BRo-JEPA, UWM-JEPA (a corroboration, and a shared caveat).** Block-rotation predictors
+(BRo-JEPA, $\mathbb{Z}/10\mathbb{Z}$ on MNIST, $99.46\%$ zero-shot) and unitary-predictor world models (UWM-JEPA,
+$U(d)$) independently report striking zero-shot transfer by *matching the predictor to a group structure* — exactly
+our thesis on different groups. **What they offer us:** cross-group evidence; and our Theorem A explains *why* their
+zero-shot works (the representation cancels inside the norm — orthogonal for BRo, unitary for UWM) while the closure
+lemma explains *how far* (the whole generated monoid from the generators — BRo verifies the cyclic case, our Step 49
+the exponential $\mathbb{Z}_2^k$ case). **The challenge they raise (which we share and state):** BRo's circular
+structure is hand-constructed and its predictor shape matches the answer — the same "constructed-teacher" sweetness
+as our toy worlds (§6). We do not hide behind their numbers; we cite them as a *mechanism* corroboration, not a
+scale result.
 
-**Latent-geometry regularizers (LeJEPA, UR-JEPA).** These shape the latent's *second-order* geometry (isotropy /
-uniform rectifiability) to avoid collapse. Our certificate is orthogonal and complementary: it is a *first-order,
-per-situation guarantee* derived from the group action, not a distributional prior on the embedding.
+**Latent-geometry regularizers — LeJEPA, and UR-JEPA's challenge.** LeJEPA pushes the latent toward an isotropic
+Gaussian (SIGReg); **UR-JEPA (Le, 2026) directly challenges that target**, arguing isotropy conflicts with the
+manifold hypothesis and that a *data-discovered* anisotropy (uniform rectifiability) is better. This is the
+sharpest question posed to our latent-geometry line, and we answer it head-on (companion paper, and Step 54/56
+here): our latent's anisotropy is neither isotropic (LeJEPA) nor data-discovered (UR-JEPA) but **group-prescribed**
+— the covariance is *pinned to the representation* $\rho$ ($\rho\Sigma\rho^\top=\Sigma$; measured residual
+$3\times10^{-4}$ vs a non-equivariant MLP's $1.04$). Crucially, we **concede UR-JEPA its point and sharpen ours**:
+in a head-to-head (Step 56) the data-fit anisotropy *is* best **in-distribution**, but **only the group-prescribed
+anisotropy transfers out of distribution** ($\sim\!320\times$). The certificate is therefore complementary to both
+— a *first-order, per-situation* guarantee from the group, not a *second-order* distributional prior — and it tells
+you precisely *when* a discovered anisotropy will fail to generalize (off the training orbit).
+
+**Oracle-bypass diagnostics — IMWM (an independent validation, and a complementary bottleneck).** IMWM (Gao et al.,
+2026) uses the *same* falsifiable move as our Steps 43/47 — **replace the learned model with the exact/oracle
+dynamics and see what is still missing** — and finds a finite-budget planner *still fails*. **What it offers us:**
+independent corroboration that "swap in the perfect model" is the right instrument. **The distinction (and our
+response):** IMWM attributes the residual to **search** (proposal-sampling volume); our oracle-bypass attributes it
+to **representation** (permutation-invariant encoder pooling). These are *complementary* bottlenecks, not rivals —
+a predictability certificate bounds the *model's* error over $\langle S\rangle\times T\times\epsilon$; it makes no
+claim about the planner's search, and IMWM's result is a useful reminder that a perfect certificate still needs an
+adequate search budget downstream. We state this scope explicitly (§6).
+
+**Geometry on the action side — LDA (an ally on geometry, an opponent on generation).** LDA ("The Lie We Tell",
+Chuang et al., 2026) names the **Euclidean Fallacy** — flattening an $\mathrm{SE}(3)$ pose into $\mathbb{R}^{12}$
+breaks the manifold constraint, the coordinate-change equivariance, and geodesic optimality — and fixes it by
+running diffusion *on* $\mathrm{SE}(3)$ (tangent-space score, exp-map retract). **What it offers us:** a strong
+external statement of our core motivation — *don't flatten geometric quantities* — now landed on the action/policy
+side. **The tension it raises:** LDA is a *diffusion policy* (the generative direction this project is contrarian
+to), so it is simultaneously an ally (geometry) and an opponent (generation); and its gains are "nice, not
+decisive" (CALVIN task length $3.27\to3.51$, $+7.3\%$), the same *equivariant-method picture* as our Vector-Neuron
+$\times1.36$ — modest absolute accuracy, stability under OOD/constraints. Our certificate framing *explains* that
+picture: a geometric prior buys a *kind* of guarantee (consistency across the group / OOD), not a uniform
+accuracy jump, so "nice not decisive" average numbers are exactly what one should expect — and the certificate, not
+the benchmark delta, is the right thing to report.
 
 **Predictability horizons (chaos / NWP).** The $T(\epsilon)\sim\log(1/\epsilon)/\lambda$ law is classical for
 dynamical systems; our contribution is to (i) *measure it on a learned latent world model*, (ii) tie its slow
