@@ -38,6 +38,7 @@ from step50_noether_hinge import (  # noqa: E402
 def test_certificate_is_architectural_for_equivariant_model() -> None:
     r"""At init (no training): encoder scalars are SO(2)-invariant and vectors rotate, to the float floor;
     the invariant subspace's OOD group residual is ~0 for the whole group. A fresh MLP's directions are not."""
+    torch.set_default_dtype(torch.float64)               # step50's math is float64 (robust to test import order)
     torch.manual_seed(0)
     eq = EquivWorldModel().eval()
     St = make_orbits(64, 6, seed=7)[0]                   # test states (first of the (s_t, s_{t+1}) pair)
@@ -70,6 +71,7 @@ def test_certificate_is_architectural_for_equivariant_model() -> None:
 def test_noether_content_and_slow_subset_invariant() -> None:
     r"""After brief training: the invariant (scalar) block recovers $(E,L)$ far better than the vector block,
     and the slowest mode it admits is far slower than the equivariant block's (slow ⊆ invariant)."""
+    torch.set_default_dtype(torch.float64)
     torch.manual_seed(0)
     S_t, S_tp1 = make_orbits(200, 12, seed=0)
     St, St1 = make_orbits(120, 12, seed=999)

@@ -41,6 +41,7 @@ from step47_certificate import apply_word  # noqa: E402
 def _certificate_spread(name, n_words=12, max_len=4, seed=0):
     r"""Return (max relMSE deviation from base over words, max SE(3) residual over words) for a model
     built at init (equivariance is architectural — no training required)."""
+    torch.set_default_dtype(torch.float32)               # step43/24 use float32 (robust to test import order)
     torch.manual_seed(seed)
     model = build_model(name).eval()
     S, A, S2 = make_interacting_transitions(48, seed=123)
