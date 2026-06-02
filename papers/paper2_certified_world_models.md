@@ -231,6 +231,15 @@ block too carries a slow conserved mode. The clean 2D containment (where $L$ is 
 $\text{slow}\subseteq(\text{invariant}\oplus\text{conserved-equivariant})$. The hinge's Noether-content claim is
 dimension-robust; its clean-containment form is 2D-specific — a sharpening of scope, not a failure.
 
+*The 3D containment, resolved precisely (Step 58).* The conserved physics splits by isotypic *type* **and**
+polynomial *degree*: $E$ (an invariant quadratic) is recovered linearly from the $\ell{=}0$ block ($R^2{=}0.91$),
+while $L=\sum_i r_i\times v_i$ (a conserved $\ell{=}1$ vector) is **bilinear** — not linear in either block
+($\le0.04$) but recovered at $R^2{=}1.00$ by the **degree-2 cross-product** readout of the $\ell{=}1$ block. So
+$\text{slow}\subseteq(\text{invariant}\oplus\text{conserved-equivariant})$ holds exactly in 3D, with the
+equivariant conserved part accessed at degree 2 — and that $r\times v$ is exactly the cross-product the
+companion paper's degree-1 Vector-Neuron could not form (its tensor-product-message fix), tying the hinge's 3D
+form to that paper's bilinear cap.
+
 ### 4.4 Structure vs scale — *scale buys interpolation; structure buys a certificate*
 
 **Step 51 (3 seeds).** Train on a $50^\circ$ wedge of an $\mathrm{SO}(2)$ orbit; test around the full circle. The
@@ -372,6 +381,7 @@ you why eclipses are forecastable for millennia and weather is not — one struc
 | Horizon × resolution | `experiments/step52_horizon_resolution.py` | `tests/test_step52_horizon_resolution.py` | 3 | $\hat\lambda{=}0.69$ vs $\ln2$; slope $\approx1/\lambda$ |
 | Approximate symmetry | `experiments/step53_approximate_symmetry.py` | — | 3 | cert exact at $\beta{=}0$ ($68$–$320\times$); graceful $\propto\epsilon$ (corr $0.88$–$0.98$); threshold $\epsilon\approx0.01$–$0.06$ |
 | Embodied/contact hinge lift | `experiments/step57_embodied_hinge.py` | — | 1 | Noether content lifts (invariant $R^2{=}0.86$ vs $0.05$); clean containment 2D-specific (3D $L$ is a conserved $\ell{=}1$ vector) |
+| 3D-aware containment | `experiments/step58_3d_containment.py` | — | 1 | $E$→ℓ=0 linear ($R^2{=}0.91$); $L$ bilinear → ℓ=1 degree-2 cross ($R^2{=}1.00$); slow ⊆ (invariant ⊕ conserved-equivariant) exact |
 
 Every experiment sets random seeds explicitly, prints an `INCONCLUSIVE` verdict rather than loosen a gate, and
 writes its figure + JSON to `papers/figures/`. The full test suite (81 tests) passes together; `tests/conftest.py`

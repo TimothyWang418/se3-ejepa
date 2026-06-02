@@ -29,6 +29,7 @@ All CPU/1-GPU-scale, seeded, honestly gated (a run prints `INCONCLUSIVE` rather 
 | **52** | **Horizon × resolution** staircase (推背图) | recovers chaotic $\hat\lambda{=}0.69$ to 0.1%; $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$ (slope 1.3–1.6); chaotic 3–10 steps, slow ≥90 (3 seeds) | `test_step52_horizon_resolution.py` | `620845b` `217ed0d` |
 | **53** | **Approximate symmetry** (P4) | exact cert at β=0 (68–320×); graceful $\propto\epsilon_{\text{world}}$ (corr 0.88–0.98); symmetry-content **threshold** $\epsilon\approx0.01$–0.06 (3 seeds) | — | `df1ae98` |
 | **57** | **Embodied/contact hinge lift** (3D, two-body contact) | Noether content **lifts** (invariant $R^2{=}0.86$ vs 0.05); clean containment **2D-specific** (3D $L$ = conserved $\ell{=}1$ vector → slow ⊆ invariant⊕conserved-equivariant) | — | `3763aad` |
+| **58** | **3D-aware containment** (resolves 57) | conserved physics splits by type+degree: $E$→ℓ=0 linear ($R^2{=}0.91$); $L$ bilinear→ℓ=1 degree-2 cross ($R^2{=}1.00$); both conserved → slow ⊆ (invariant ⊕ conserved-equivariant) **exact**; ties to old-paper degree-1 cross-product cap | — | this batch |
 
 Unit-test isolation: `tests/conftest.py` pins float32 around every test; float64 experiments opt in. Full suite **81 passed**.
 
@@ -64,7 +65,7 @@ built artifact stale-by-design.
 
 1. **Title** (user) — current "A Predictability Certificate for Equivariant World Models"; alts in proposal §9.
 2. **Wire paper2 into the shared arXiv build** (user) — preserve frozen v1/v2; separate combined doc / tarball.
-3. **3D-aware containment** — a precise statement $\text{slow}\subseteq(\text{invariant}\oplus\text{conserved-equivariant})$ + measure it (follow-up to Step 57).
+3. ~~**3D-aware containment**~~ ✅ **done (Step 58)**: $\text{slow}\subseteq(\text{invariant}\oplus\text{conserved-equivariant})$ measured exactly ($E$→ℓ=0 linear, $L$→ℓ=1 degree-2 cross, $R^2{=}1.00$).
 4. **P5** — discovery + generation (re-frame Steps 33/36/38).
 5. **Proof prose** — tighten §2–3 (P0 remainder).
 
