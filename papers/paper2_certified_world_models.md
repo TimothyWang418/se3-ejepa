@@ -46,7 +46,7 @@ $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$ set by its Lyapunov exponent — s
 **coarse-invariant, slow, low-composition** corner. We confirm all three axes empirically at small scale:
 (i) a model trained on $6$ generators of $\mathbb{Z}_2^6$ is certified over all $2^6{=}64$ compositions to
 machine zero while a matched MLP degrades monotonically; (ii) a learned predictor recovers the chaotic Lyapunov
-exponent to $0.2\%$ and its certified horizon obeys the $\log(1/\epsilon)$ law; (iii) on an $\mathrm{SO}(2)$
+exponent to within $\sim0.4\%$ (3 seeds) and its certified horizon obeys the $\log(1/\epsilon)$ law; (iii) on an $\mathrm{SO}(2)$
 mechanical system the conserved (slowest) quantities organize into the architecturally invariant channels — a
 measured **Noether hinge** linking the symmetry axis to the time axis; and (iv) a non-equivariant MLP **scaled
 across an $88\times$ parameter range** buys in-distribution interpolation — even beating the equivariant model
@@ -105,7 +105,8 @@ $w=g_{i_1}\cdots g_{i_m}$, length $|w|=m$) act on states by $g\cdot x$, on laten
 and on actions by $\sigma(g)$. Write $f^{(T)}(z;\vec a)$ for the $T$-step latent rollout under actions
 $\vec a=(a_1,\dots,a_T)$, $x^{\text{true}}_T$ for the $T$-step true state, and
 $\mathrm{Err}_T(x;\vec a)=\lVert f^{(T)}(E(x);\vec a)-E(x^{\text{true}}_T)\rVert$ for the whole-pipeline prediction
-error. We use four assumptions, each *checkable on the $k$ generators*:
+error, where $\lVert\cdot\rVert$ is the Euclidean norm on $\mathcal Z$ (the experiments use relMSE, its square).
+We use four assumptions, each *checkable on the $k$ generators*:
 
 - **(A1) Encoder equivariance:** $E(g_i\cdot x)=\rho(g_i)\,E(x)$.
 - **(A2) Predictor equivariance:** $f(\rho(g_i)z,\,\sigma(g_i)a)=\rho(g_i)\,f(z,a)$.
@@ -139,7 +140,7 @@ f^{(T+1)}(\rho(w)z;\sigma(w)\vec a)=f\!\big(f^{(T)}(\rho(w)z;\sigma(w)\vec a),\,
 $$
 **(ii) Predicted latent at $w\cdot x$.** $f^{(T)}(E(w\cdot x);\sigma(w)\vec a)\overset{\text{(A1)}}{=}f^{(T)}(\rho(w)E(x);\sigma(w)\vec a)\overset{\text{(i)}}{=}\rho(w)\,f^{(T)}(E(x);\vec a)$.
 **(iii) Target at $w\cdot x$.** $E\big((w\cdot x)^{\text{true}}_T\big)\overset{\text{(A3)}}{=}E\big(w\cdot x^{\text{true}}_T\big)\overset{\text{(A1)}}{=}\rho(w)\,E(x^{\text{true}}_T)$.
-**(iv) Cancellation.** Subtracting (iii) from (ii) and using (A4),
+**(iv) Cancellation.** Subtracting (iii) from (ii) and using (A4) (an orthogonal $\rho$ preserves the Euclidean norm),
 $\mathrm{Err}_T(w\cdot x;\sigma(w)\vec a)=\lVert\rho(w)\big[f^{(T)}(E(x);\vec a)-E(x^{\text{true}}_T)\big]\rVert
 =\lVert f^{(T)}(E(x);\vec a)-E(x^{\text{true}}_T)\rVert=\mathrm{Err}_T(x;\vec a)$. The closed-loop identity is the
 same computation under **(A5)**: the equivariant planner (lifted to words by Lemma 1) selects the $\sigma(w)$-image
@@ -165,7 +166,7 @@ We claim this as a **bound on the form**, not a tight inequality: the $c_j$ are 
 $$
 T_j(\epsilon)\ \sim\ \tfrac{1}{\lambda_j}\,\log\tfrac{1}{\epsilon}\quad(\lambda_j>0),\qquad T_j=\infty\ (\lambda_j\le0),
 $$
-which §4.2 recovers to $0.2\%$. At $\epsilon_{\max},\delta\to0$ (exact equivariance) the configuration term
+which §4.2 recovers to within $0.4\%$ (3 seeds). At $\epsilon_{\max},\delta\to0$ (exact equivariance) the configuration term
 vanishes and Theorem A is recovered.
 
 **Corollary (the certified region).** $\mathcal C=\{(w,T,\epsilon):|\Delta\mathrm{Err}|\le\epsilon\}$ is the
@@ -173,9 +174,11 @@ vanishes and Theorem A is recovered.
 (configuration) and the spectrum $\{\lambda_j\}$ (horizon/resolution). With *exact* equivariance
 ($\epsilon_{\max},\delta\sim10^{-6}$ by Theorem A) the configuration axis is unbounded and only the spectrum limits
 horizon × resolution — a **trade-off** $\text{horizon}\times\text{demanded-resolution}\lesssim\text{const}(\{\lambda_j\})$.
-This is the formal content of "ultra-long forecasts must be coarse": eclipses for millennia, weather at $\sim$two
-weeks, and long-range prophetic texts (the 推背图 / *Tuibei-tu* tradition) that assert only regime-level change —
-structurally the *correct* move.
+This is the formal content of "ultra-long forecasts must be coarse": eclipses for millennia (conserved $\lambda\le0$
+actions), weather at $\sim$two weeks (chaotic $\lambda>0$).^[An interpretive aside, secondary to the spectral law:
+a long-range text that asserts only *regime-level* change rather than dated specifics — e.g. the 推背图 /
+*Tuibei-tu* tradition — is, structurally, making the *correct* move for a high-$\lambda$ system, where only the
+coarse/invariant component is certifiable.]
 
 ---
 
@@ -192,22 +195,28 @@ axis the **same** structure is a Noether-type bridge:
 This is **not automatic** — invariant $\ne$ conserved in general — so we treat it as a *falsifiable, measured*
 conjecture, with two sharp caveats that keep it honest.
 
-**The direction that holds.** The defensible statement is the inclusion **slow $\subseteq$ invariant**, not the
-converse: the conserved (slowest) modes live *inside* the invariant subspace, but not every invariant channel is
-slow (a rotation-invariant $|r|^2$ oscillates). The mechanism is Noether's: a continuous symmetry of the dynamics
-yields a conserved current, and a conserved quantity of a symmetric system is invariant — so *conserved $\Rightarrow$
-invariant*, hence the slow (conserved) subspace sits within the invariant isotypic component.
+**The direction that holds.** The defensible statement is the inclusion **slow $\subseteq$ invariant $\oplus$
+conserved-equivariant**, not the converse: the conserved (slowest) modes live in the invariant-or-conserved
+subspace, but not every invariant channel is slow (a rotation-invariant $|r|^2$ oscillates). The mechanism is
+Noether's: a continuous symmetry of the dynamics yields a conserved current. A conserved *scalar* charge
+($\ell{=}0$ Casimir, e.g. energy) **is** group-invariant; a conserved *non-scalar* charge (e.g. 3D angular
+momentum $L$, an $\ell{=}1$ vector) is *equivariant*, **not** invariant. So the slow (conserved) subspace lies in
+$\text{invariant}\oplus\text{conserved-equivariant}$, which **collapses to the invariant isotypic component
+exactly when every conserved charge is a scalar** — the 2D case below, where the clean $\text{slow}\subseteq\text{invariant}$
+holds literally.
 
 **The dimension refinement (measured, §4.3).** In 2D ($\mathrm{SO}(2)$, Step 50) both conserved quantities — energy
 $E$ and angular momentum $L$ — are *scalars*, so $\text{slow}\subseteq\text{invariant}$ literally. In 3D ($\mathrm{SO}(3)$,
 Steps 57–58) angular momentum $L=\sum_i r_i\times v_i$ is a conserved $\ell{=}1$ **vector**, so the clean 2D
 containment generalises to
 $$ \text{slow}\ \subseteq\ \text{invariant}\ \oplus\ \text{conserved-equivariant}, $$
-with the equivariant conserved part accessed at *polynomial degree 2* (the cross product). We confirm both forms
-empirically: the invariant block carries $E$ ($R^2{=}0.9$–$1.0$) and is exactly group-invariant ($\sim10^{-16}$,
-$\forall$ the group); in 3D the $\ell{=}1$ block carries $L$ at $R^2{=}1.0$ via its degree-2 cross-product readout
-(§4.3). The hinge is thus a *measured* bridge — Noether content dimension-robust, its containment form refined,
-both stated as confirmed, not assumed.
+with the equivariant conserved part accessed at *polynomial degree 2* (the cross product). We measure both forms:
+in 2D the invariant block carries $(E,L)$ at $R^2{=}0.92$–$0.99$ and is exactly group-invariant ($\sim10^{-16}$,
+$\forall$ the group; §4.3); in 3D energy is recovered *linearly* from the $\ell{=}0$ block ($R^2{=}0.62$–$0.91$
+across seeds) while $L$ is recovered at $R^2{=}1.00$ via the degree-2 cross-product readout of the $\ell{=}1$ block
+(§4.3). The hinge is thus a *measured* bridge — Noether content dimension-robust, its containment form refined —
+with the per-seed ranges and gate verdicts reported honestly in §4.3 (the 3D contact gate is INCONCLUSIVE on clean
+containment; the robust, load-bearing result is the degree-2 $L$ recovery), not assumed.
 
 ---
 
@@ -233,7 +242,7 @@ $\{\pm1\}^6=\mathbb{Z}_2^6$, with the $6$ changing-lines as the generating set. 
 per-line predictor $f(z,a)_i=h_\theta(a_i)\odot z_i$ on **only the $6$ single-line generators** ($+$ identity,
 $7$ of $64$ actions) certifies it over **all $2^6{=}64$ compositions** to machine zero (worst relMSE
 $\sim10^{-33}$; equivariance residual exactly $0$), while a non-equivariant MLP trained on the same $7$ actions
-degrades monotonically with composition length ($1.6\times10^{-5}$ seen $\to 0.59$ at six flips). "$k$ generator
+degrades monotonically with composition length ($1.6\text{–}1.7\times10^{-5}$ seen $\to 0.59$ at six flips). "$k$ generator
 checks $\Rightarrow 2^k$ certified set" made literal, with genuine learning and an honest contrast.
 
 ![Step 49 — $\mathbb{Z}_2^6$: training on $6$ generators certifies all $64$ compositions (equivariant, machine zero) while the MLP degrades with composition length.](figures/step49_iching_certificate.png)
@@ -243,11 +252,13 @@ checks $\Rightarrow 2^k$ certified set" made literal, with genuine learning and 
 **Step 52 (3 seeds).** A learned one-step predictor on a designed multi-Lyapunov system — a conserved invariant
 ($\lambda=-\infty$), a contracting channel ($\lambda=\ln0.75$), a neutral $\mathrm{SO}(2)$ rotor ($\lambda=0$), and
 a chaotic angle-doubling channel $z\mapsto z^2$ ($\lambda=\ln2$) — rolled out autoregressively. The model
-**recovers the chaotic Lyapunov exponent to $0.2\%$** ($\hat\lambda=0.691\text{–}0.692$ vs $\ln2=0.693$), and its
-per-channel certified horizon obeys $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$: the chaotic "fine detail" is
-certifiable only $3\text{–}10$ steps and its horizon grows *only logarithmically* as $\epsilon$ coarsens
-(measured slope $\mathrm{d}T/\mathrm{d}\log\epsilon = 1.3\text{–}1.6 \approx 1/\lambda=1.44$), while the
-conserved/contracting (slow) channels stay certified for the **entire $90$-step rollout** ($\ge12\times$ longer).
+**recovers the chaotic Lyapunov exponent to within $0.4\%$** ($\hat\lambda=0.690\text{–}0.692$ across 3 seeds vs
+$\ln2=0.693$), and its per-channel certified horizon obeys $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$: the
+chaotic "fine detail" is certifiable only $3\text{–}10$ steps over the full $\epsilon$ grid and its horizon grows
+*only logarithmically* as $\epsilon$ coarsens (measured slope $\mathrm{d}T/\mathrm{d}\log\epsilon = 1.3\text{–}1.6
+\approx 1/\lambda=1.44$), while the **contracting channel stays certified for the entire $90$-step rollout at every
+$\epsilon$** (the conserved/rotor channels too, except at the finest $\epsilon{=}0.005$ where they fall to
+$\sim40$–$90$ steps); at $\epsilon{=}0.05$ the slow channels outlast the chaotic detail by $12\text{–}15\times$.
 This is the predictability staircase — long horizon $\Rightarrow$ coarse + invariant only.
 
 ![Step 52 — left: rollout error growth = the Lyapunov spectrum; right: the certified-horizon staircase $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$.](figures/step52_horizon_resolution.png)
@@ -260,8 +271,10 @@ $L$ are invariant scalars; the orbital phase is fast), a learned equivariant aut
 architecturally-invariant ($\ell{=}0$) block: regression $R^2$ for $(E,L)$ is **$0.92\text{–}0.99$ from the
 invariant block vs $\le0.012$ from the equivariant ($\ell{=}1$) block**, and the slowest mode the invariant block
 admits ($0.009\text{–}0.031$ across seeds) is $4.7\text{–}17\times$ slower than anything the equivariant block
-admits ($0.145$, which equals the orbital phase velocity $2\sin(\omega\Delta t/2)$). The payoff is the certificate: the equivariant model's
-slow subspace **is** its invariant subspace, whose out-of-distribution group-action residual is
+admits ($0.145$, which equals the orbital phase velocity $2\sin(\omega\Delta t/2)$). Operationally we read the
+containment off this min-mode gap — the $\ell{=}1$ block's *slowest* achievable mode is already fast, so no slow
+direction escapes the invariant block in this system — rather than a direct subspace test. The payoff is the
+certificate: the equivariant model's slow subspace **is** its invariant subspace, whose out-of-distribution group-action residual is
 $\sim\!10^{-16}$ — *exact and architectural, for all of $\mathrm{SO}(2)$*. A matched MLP also learns $E,L$
 ($R^2=0.99$) but smears them across directions that **drift by $\approx1.17$** under the same group action, and
 carries no certificate. The honest non-converse is visible in the data (a fast $|r|^2$ scalar is invariant yet
@@ -272,8 +285,8 @@ oscillates): slow $\subseteq$ invariant, not $=$.
 *Lift toward embodied/contact, and a principled 3D subtlety (Step 57).* Pushing the hinge to a more embodied
 regime — two bodies in a 3D well with a **soft pairwise repulsion (contact)**, an $\mathrm{SO}(3)$-equivariant
 $\ell{=}0\oplus\ell{=}1$ Vector-Neuron model — gives a **partial lift, honestly reported**. The *Noether-content*
-half lifts: the invariant $\ell{=}0$ block recovers the conserved $(E,\text{contact-distance})$ at $R^2{=}0.86$ vs
-$0.05$ for the $\ell{=}1$ block, even with 3D contact. But the clean *containment* "slow $\subseteq$ invariant"
+half lifts: the invariant $\ell{=}0$ block recovers the conserved $(E,\text{contact-distance})$ at
+$R^2{=}0.60\text{–}0.86$ (3 seeds) vs $\le0.06$ for the $\ell{=}1$ block, even with 3D contact. But the clean *containment* "slow $\subseteq$ invariant"
 does **not** lift (invariant slowest mode $0.024\approx0.026$ equivariant) — for a principled reason: **in 3D,
 angular momentum $L=\sum_i r_i\times v_i$ is a conserved $\ell{=}1$ *vector* (equivariant)**, so the equivariant
 block too carries a slow conserved mode. The clean 2D containment (where $L$ is a scalar) becomes, in 3D,
@@ -281,13 +294,16 @@ $\text{slow}\subseteq(\text{invariant}\oplus\text{conserved-equivariant})$. The 
 dimension-robust; its clean-containment form is 2D-specific — a sharpening of scope, not a failure.
 
 *The 3D containment, resolved precisely (Step 58).* The conserved physics splits by isotypic *type* **and**
-polynomial *degree*: $E$ (an invariant quadratic) is recovered linearly from the $\ell{=}0$ block ($R^2{=}0.91$),
-while $L=\sum_i r_i\times v_i$ (a conserved $\ell{=}1$ vector) is **bilinear** — not linear in either block
-($\le0.04$) but recovered at $R^2{=}1.00$ by the **degree-2 cross-product** readout of the $\ell{=}1$ block. So
+polynomial *degree*: $E$ (an invariant quadratic) is recovered linearly from the $\ell{=}0$ block
+($R^2{=}0.62\text{–}0.91$ across seeds), while $L=\sum_i r_i\times v_i$ (a conserved $\ell{=}1$ vector) is
+**bilinear** — not linear in either block ($\le0.04$) but recovered at $R^2{=}1.00$ (range $0.998\text{–}1.000$,
+the robust load-bearing result) by the **degree-2 cross-product** readout of the $\ell{=}1$ block. So
 $\text{slow}\subseteq(\text{invariant}\oplus\text{conserved-equivariant})$ holds exactly in 3D, with the
 equivariant conserved part accessed at degree 2 — and that $r\times v$ is exactly the cross-product the
 companion paper's degree-1 Vector-Neuron could not form (its tensor-product-message fix), tying the hinge's 3D
-form to that paper's bilinear cap.
+form to that paper's bilinear cap. (The full Step-58 pass-gate, which additionally demands $E$ $R^2{>}0.8$ in the
+$\ell{=}0$ block, is met on $1/3$ seeds — surfaced as honestly as Step 57's INCONCLUSIVE; the degree-2 $L$
+recovery is robust across all three.)
 
 ### 4.4 Structure vs scale — *scale buys interpolation; structure buys a certificate*
 
@@ -333,8 +349,9 @@ more than half the OOD gap, matching the hand-wired oracle, transferring *exactl
 the generating set $S$ that anchors the configuration axis need not be postulated — it can be *measured*, falsifiably.
 **Generation** (Step 38): given $S$, one can *traverse the certified orbit* to an unseen composed goal and execute
 it **closed-loop without a decoder** — latent-goal reaching driven purely by the equivariance theorem over $K{=}24$
-paired seen-vs-OOD $\mathrm{SE}(3)$-orbit tasks, succeeding on the OOD orbit exactly as on the seen one (the closed-loop
-$[C]$ guarantee). Together: *discover $S$ → certify $\langle S\rangle$ → generate (orbit-traverse to an unseen task)
+paired seen-vs-OOD $\mathrm{SE}(3)$-orbit tasks, closing $\sim0.59$ of the orientation gap on the best deployable
+variant and — the load-bearing point — achieving the *same* success on the unseen (OOD) orbit as on the seen one
+(OOD/seen ratio $1.000$; the closed-loop $[C]$ guarantee): *exact transfer*, not high absolute success. Together: *discover $S$ → certify $\langle S\rangle$ → generate (orbit-traverse to an unseen task)
 → act* — the certificate is not merely descriptive but a usable plan-and-execute criterion.
 
 ---
@@ -366,8 +383,9 @@ sharpest question posed to our latent-geometry line, and we answer it head-on (c
 here): our latent's anisotropy is neither isotropic (LeJEPA) nor data-discovered (UR-JEPA) but **group-prescribed**
 — the covariance is *pinned to the representation* $\rho$ ($\rho\Sigma\rho^\top=\Sigma$; measured residual
 $3\times10^{-4}$ vs a non-equivariant MLP's $1.04$). Crucially, we **concede UR-JEPA its point and sharpen ours**:
-in a head-to-head (Step 56) the data-fit anisotropy *is* best **in-distribution**, but **only the group-prescribed
-anisotropy transfers out of distribution** ($\sim\!320\times$). The certificate is therefore complementary to both
+in a head-to-head (Step 56, single seed, illustrative) the data-fit anisotropy *is* best **in-distribution**, but
+**only the group-prescribed anisotropy transfers out of distribution** (a $\sim\!320\times$ OOD gap, consistent
+with the $3$-seed $68\text{–}320\times$ of Step 53 and $10\text{–}155\times$ of Step 51). The certificate is therefore complementary to both
 — a *first-order, per-situation* guarantee from the group, not a *second-order* distributional prior — and it tells
 you precisely *when* a discovered anisotropy will fail to generalize (off the training orbit).
 
@@ -399,6 +417,13 @@ dynamical systems; our contribution is to (i) *measure it on a learned latent wo
 subspace to the group-invariant subspace (the Noether hinge), and (iii) fold it into a single multi-axis
 certificate for equivariant models.
 
+**What would falsify the framing.** The certificate is not an after-the-fact rationalization: it makes refutable
+predictions. A *finite, non-equivariant* network that attains exact orbit-flatness ($\mathrm{err}(R\!\cdot\!x)=\mathrm{err}(x)$
+to machine precision over a full orbit) would break Theorem A's architectural premise; a symmetric-dynamics system
+whose conserved/slow modes land *outside* the invariant $\oplus$ conserved-equivariant subspace would break the
+Noether hinge; and a channel whose certified horizon failed to scale as $\log(1/\epsilon)/\lambda_j$ would break
+Theorem B. We have not observed these, but they are the experiments that would sink the thesis.
+
 ---
 
 ## 6. Limitations and honesty
@@ -408,20 +433,27 @@ certificate for equivariant models.
 - **Theorem B is a spectral *bound*, not a tightness proof.** Promoting the scalar Lipschitz constant to the
   Jacobian spectrum $\{e^{\lambda_j}\}$ gives the certified-horizon *form* $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$;
   it is the load-bearing theory and we **measure its consequences** (Steps 47, 52 recover the spectrum and the law
-  to $0.2\%$), but we do not claim the constant $c_j$ or the bound is tight. It is honest as a scaling law, not as
-  an exact inequality.
+  to within $0.4\%$), but we do not claim the constant $c_j$ or the bound is tight. It is honest as a scaling law,
+  not as an exact inequality. One further scope note: Step 52 measures the *scalar* law on a learned one-step map;
+  the *isotypic* refinement (channels chosen by $\ell$-type, which ties the spectrum to equivariance and the
+  Noether hinge) is asserted, not separately measured — Step 47 splits contractive vs. expansive but does not
+  resolve the spectrum by $\ell$-type.
 - **§4.6 (discovery + generation) re-frames companion-line results** (Steps 33/36/38), not fresh paper2 runs:
   the discovery/distillation/decoder-free-reach experiments were built for the companion paper and are cited here
-  to show the certificate is *actionable*; they are not new evidence produced for this paper.
+  to show the certificate is *actionable*; they are not new evidence produced for this paper. The decoder-free
+  reach is *exact transfer* (OOD/seen ratio $1.000$) at a *partial* absolute success ($\sim0.59$ of the
+  orientation gap on the best deployable variant); we report the transfer ratio as the load-bearing claim, not
+  absolute task success.
 - **Approximate symmetry — measured, with the boundary made explicit.** Real-world symmetry is approximate;
   §4.5 (Step 53) measures the resulting degradation directly — it is **graceful** (out-of-wedge error
   $\propto\epsilon_{\text{world}}$, exactly Theorem B's $\epsilon_{\max}$ term) and the equivariant certificate
   remains valuable only **up to a symmetry-content threshold** ($\epsilon_{\text{world}}\approx0.01\text{–}0.06$),
   beyond which structure stops paying. The Noether hinge's **lift to a 3D contact interaction is measured**
-  (§4.3, Steps 57–58): the Noether-content half lifts ($R^2{=}0.86$), and the 3D containment is now *exact* once
+  (§4.3, Steps 57–58): the Noether-content half lifts ($R^2{=}0.60\text{–}0.86$ across seeds; the clean-containment
+  gate is INCONCLUSIVE), and the 3D containment is now *exact* once
   stated correctly — $\text{slow}\subseteq(\text{invariant}\oplus\text{conserved-equivariant})$, with energy linear
-  in the $\ell{=}0$ block and angular momentum recovered at $R^2{=}1.00$ by the degree-2 cross-product of the
-  $\ell{=}1$ block (Step 58). What remains genuinely **not yet done** is lifting this from a clean two-body
+  in the $\ell{=}0$ block ($R^2{=}0.62\text{–}0.91$) and angular momentum recovered at $R^2{=}1.00$ by the degree-2
+  cross-product of the $\ell{=}1$ block (Step 58, robust across all 3 seeds). What remains genuinely **not yet done** is lifting this from a clean two-body
   *toy* contact system to a **real, contact-rich embodied** model (a robot / pixel world), where symmetry is
   approximate and the latent is learned end-to-end — the primary next experiment, flagged openly, not hidden.
 - **The hinge is a measured conjecture.** Confirmed on a controlled system, with the honest non-converse
@@ -439,7 +471,8 @@ We stress-tested the claims adversarially; the strongest objections and our hone
    *dynamics* — orbital/conservative systems, free space, idealised manipulation. Everywhere else one is in
    Theorem B's regime, and our contribution there is to **quantify** the degradation: §4.5 (Step 53) shows it is
    *graceful* (out-of-wedge error $\propto\epsilon_{\text{world}}$) up to a measured symmetry-content threshold
-   ($\epsilon_{\text{world}}\approx0.06$), beyond which structure stops paying. The honest reading is "exact on
+   ($\epsilon_{\text{world}}\approx0.01\text{–}0.06$, seed-dependent — one seed crosses over as early as
+   $\epsilon\approx0.008$), beyond which structure stops paying. The honest reading is "exact on
    symmetric dynamics; gracefully approximate, with a measured boundary, elsewhere" — which is *more* useful than
    an unconditional claim.
 2. **"Theorem A is just equivariance restated."** The *one-element* fact (equivariant model ⇒ orbit-constant
@@ -468,12 +501,36 @@ We stress-tested the claims adversarially; the strongest objections and our hone
 
 For equivariant world models, structure delivers a *kind* of result scaling cannot: a **predictability
 certificate** — a provable, computable, training-free region across configuration, horizon, and resolution. We
-established the master theorem (Theorem A — the exact configuration certificate — proved; Theorem B — the spectral
-horizon×resolution law — stated as a bound and measured), exhibited the certified region as the
-coarse-invariant-slow-low-composition corner, measured the Noether hinge that unifies the symmetry and time axes,
-and showed that an $88\times$-scaled non-equivariant model buys interpolation but never the certificate. *Scale buys interpolation; structure buys a
-certificate.* The same criterion that tells you which compositions a robot policy will handle zero-shot also tells
+established the master theorem (Theorem A — the exact configuration certificate — proved, its closed-loop clause
+under the assumed equivariant-planner condition (A5); Theorem B — the spectral horizon×resolution law — stated as a
+bound and measured), exhibited the certified region as the coarse-invariant-slow-low-composition corner, measured
+the Noether hinge that unifies the symmetry and time axes, and showed that an $88\times$-scaled non-equivariant
+model buys interpolation but never the certificate — an *architectural* impossibility (no finite non-equivariant
+net satisfies $\mathrm{err}(R\!\cdot\!x)=\mathrm{err}(x)$), not merely an unfinished sweep. *Scale buys
+interpolation; structure buys a certificate.* The same criterion that tells you which compositions a robot policy will handle zero-shot also tells
 you why eclipses are forecastable for millennia and weather is not — one structural law, read across domains.
+
+---
+
+## References
+
+Concurrent and prior work referenced above (arXiv identifiers from the project's source notes; external numbers are
+quoted from the cited works):
+
+- **BRo-JEPA** — block-rotation $\mathbb{Z}/10\mathbb{Z}$ predictor; $99.46\%$ best-config zero-shot on MNIST
+  modular arithmetic. arXiv:2606.01372.
+- **UWM-JEPA** — unitary-predictor ($U(d)$) belief-space world model. arXiv:2605.25313.
+- **UR-JEPA** (Le, 2026) — uniform-rectifiability latent regularizer; manifold-hypothesis critique of isotropic
+  SIGReg. arXiv:2606.01443.
+- **IMWM** (Gao et al., 2026) — oracle-bypass diagnosis localizing the residual to planner *search*.
+  arXiv:2606.01626.
+- **LDA / "The Lie We Tell"** (Chuang et al., 2026) — the *Euclidean Fallacy*; $\mathrm{SE}(3)$-intrinsic diffusion
+  policy; CALVIN average task length $3.27\to3.51$ ($+7.3\%$). arXiv:2606.01847.
+- **LeJEPA** (Balestriero & LeCun, 2025) — SIGReg / isotropic-Gaussian self-supervised objective (the
+  latent-geometry target that UR-JEPA, and our group-prescribed anisotropy, depart from).
+
+The $T(\epsilon)\sim\log(1/\epsilon)/\lambda$ predictability-horizon law is classical (Lyapunov / Lorenz; standard
+numerical-weather-prediction practice).
 
 ---
 
@@ -483,7 +540,7 @@ you why eclipses are forecastable for millennia and weather is not — one struc
 |---|---|---|---|---|
 | Exact-flatness + spectrum | `experiments/step47_certificate.py` | `tests/test_step47_certificate.py` | 3 | relMSE $\times1.00$ flat ($m{=}0..8$); 48/96 contractive |
 | $\mathbb{Z}_2^6$ exponential cert | `experiments/step49_iching_certificate.py` | — | 1 | $6$ generators $\to$ all $64$; worst relMSE $\sim10^{-33}$ |
-| Noether hinge | `experiments/step50_noether_hinge.py` | `tests/test_step50_noether_hinge.py` | 3 | $R^2$ $0.92$–$0.99$ vs $\le0.01$; cert $10^{-16}$ vs $1.17$ |
+| Noether hinge | `experiments/step50_noether_hinge.py` | `tests/test_step50_noether_hinge.py` | 3 | $R^2$ $0.92$–$0.99$ vs $\le0.012$; cert $10^{-16}$ vs $1.17$ |
 | Structure vs scale | `experiments/step51_structure_vs_scale.py` | — | 3 | equiv flat $1.1$–$1.2$; in-wedge gain $31$–$166\times$; best MLP $10$–$155\times$ above equiv floor out-of-wedge |
 | Horizon × resolution | `experiments/step52_horizon_resolution.py` | `tests/test_step52_horizon_resolution.py` | 3 | $\hat\lambda{=}0.69$ vs $\ln2$; slope $\approx1/\lambda$ |
 | Approximate symmetry | `experiments/step53_approximate_symmetry.py` | — | 3 | cert exact at $\beta{=}0$ ($68$–$320\times$); graceful $\propto\epsilon$ (corr $0.88$–$0.98$); threshold $\epsilon\approx0.01$–$0.06$ |
@@ -491,7 +548,8 @@ you why eclipses are forecastable for millennia and weather is not — one struc
 | 3D-aware containment | `experiments/step58_3d_containment.py` | — | 3 | $E$→ℓ=0 linear ($R^2{=}0.62$–$0.91$); $L$ bilinear → ℓ=1 degree-2 cross ($R^2{=}1.00$, range $0.998$–$1.000$); slow ⊆ (invariant ⊕ conserved-equivariant) |
 
 Every experiment sets random seeds explicitly, prints an `INCONCLUSIVE` verdict rather than loosen a gate, and
-writes its figure + JSON to `papers/figures/`. **Multi-seed reproducibility:** the steps marked "3" commit
-per-seed JSONs `papers/figures/step5*_seeds.json` (seeds 0/1/2), regenerated by `experiments/aggregate_seeds.py`;
-every range quoted above is the seed min–max from those files. The full test suite (81 tests) passes together; `tests/conftest.py`
-isolates the float64 experiments from the float32 codebase.
+writes its figure + JSON to `papers/figures/`. **Multi-seed reproducibility:** Steps 50/51/52/53/57/58 commit
+per-seed JSONs `papers/figures/step5*_seeds.json` (seeds 0/1/2), regenerated by `experiments/aggregate_seeds.py`,
+and every range quoted from them is the seed min–max; Step 47 self-aggregates its 3 seeds into the means reported
+in `step47_certificate.json` (no per-seed range committed; §4.1 quotes no range). The full test suite (81 tests)
+passes together; `tests/conftest.py` isolates the float64 experiments from the float32 codebase.
