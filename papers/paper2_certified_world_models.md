@@ -235,6 +235,22 @@ contest.
 
 ![Step 51 — left: error over the $\mathrm{SO}(2)$ orbit (equivariant flat; MLPs dip below it in-wedge then climb out); right: out-of-wedge error vs MLP scale plateaus far above the equivariant floor.](figures/step51_structure_vs_scale.png)
 
+### 4.5 Approximate symmetry — graceful degradation and a measured threshold
+
+**Step 53 (3 seeds).** We break the *world's* $\mathrm{SO}(2)$ symmetry with an anisotropy knob $\beta$ (the
+potential becomes $V=\tfrac12(x^2+(1+2\beta)y^2)$, so angular momentum is no longer conserved) and re-run the
+wedge-train / full-circle-test. Three findings, robust across seeds: (i) at $\beta{=}0$ the certificate is exact
+— the equivariant model is **$68\text{–}320\times$ better out-of-wedge** than the MLP; (ii) as the measured world
+symmetry-defect $\epsilon_{\text{world}}$ grows, the equivariant out-of-wedge error grows **smoothly and
+monotonically** (correlation $+0.88\text{–}0.98$ — Theorem B's $\epsilon_{\max}$ term, a *graceful* slope, not a
+cliff); and (iii) the equivariant model keeps beating the non-equivariant one up to a **measured
+symmetry-content threshold** ($\epsilon_{\text{world}}\approx0.01\text{–}0.06$), beyond which the (now-wrong)
+symmetry assumption hurts more than it helps. So *approximate* symmetry buys an *approximate* certificate with
+exactly the error budget the theory predicts — and the boundary where structure stops paying is itself measured,
+not assumed.
+
+![Step 53 — left: equivariant out-of-wedge error grows $\propto\epsilon_{\text{world}}$ (Theorem B's $\epsilon$ term); right: the equivariant model beats the MLP out-of-wedge up to a symmetry-content threshold, then crosses over.](figures/step53_approximate_symmetry.png)
+
 ---
 
 ## 5. Why this is new (precise delta vs prior work)
@@ -267,10 +283,13 @@ certificate for equivariant models.
 
 - **Toy scale.** All five experiments are CPU/1-GPU-scale proofs of principle. We claim a *mechanism and a tool*,
   not a scaled-SOTA benchmark. The certificate's value is the *kind* of statement it makes, demonstrated cleanly.
-- **Approximate symmetry is the open risk.** Real-world symmetry is approximate; Theorem B *quantifies* the
-  resulting degradation (the $\epsilon_{\max}$ term), and our prior work measures graceful degradation under broken
-  symmetry, but **lifting the Noether hinge (§3) from the controlled $\mathrm{SO}(2)$ system to a contact-rich,
-  approximately-symmetric embodied model is not yet done.** It is the primary next experiment, not a hidden gap.
+- **Approximate symmetry — measured, with the boundary made explicit.** Real-world symmetry is approximate;
+  §4.5 (Step 53) measures the resulting degradation directly — it is **graceful** (out-of-wedge error
+  $\propto\epsilon_{\text{world}}$, exactly Theorem B's $\epsilon_{\max}$ term) and the equivariant certificate
+  remains valuable only **up to a symmetry-content threshold** ($\epsilon_{\text{world}}\approx0.01\text{–}0.06$),
+  beyond which structure stops paying. What is **not yet done** is lifting the Noether hinge (§3) from the
+  controlled $\mathrm{SO}(2)$ system to a contact-rich, approximately-symmetric *embodied* model — the primary
+  next experiment, flagged openly, not hidden.
 - **The hinge is a measured conjecture.** Confirmed on a controlled system, with the honest non-converse
   (invariant $\not\Rightarrow$ slow). We do not claim a proof that learning *must* place conserved quantities in
   the invariant block — only that, where the dynamics are symmetric, it *does* in our experiments.
@@ -300,6 +319,7 @@ you why eclipses are forecastable for millennia and weather is not — one struc
 | Noether hinge | `experiments/step50_noether_hinge.py` | `tests/test_step50_noether_hinge.py` | 3 | $R^2$ $0.92$–$0.99$ vs $\le0.01$; cert $10^{-16}$ vs $1.17$ |
 | Structure vs scale | `experiments/step51_structure_vs_scale.py` | — | 3 | flat $1.1$–$1.2$ vs MLP $170$–$2700\times$; $10$–$155\times$ |
 | Horizon × resolution | `experiments/step52_horizon_resolution.py` | `tests/test_step52_horizon_resolution.py` | 3 | $\hat\lambda{=}0.69$ vs $\ln2$; slope $\approx1/\lambda$ |
+| Approximate symmetry | `experiments/step53_approximate_symmetry.py` | — | 3 | cert exact at $\beta{=}0$ ($68$–$320\times$); graceful $\propto\epsilon$ (corr $0.88$–$0.98$); threshold $\epsilon\approx0.01$–$0.06$ |
 
 Every experiment sets random seeds explicitly, prints an `INCONCLUSIVE` verdict rather than loosen a gate, and
 writes its figure + JSON to `papers/figures/`. The full test suite (81 tests) passes together; `tests/conftest.py`
