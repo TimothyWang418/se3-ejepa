@@ -1,6 +1,6 @@
 ---
 title: "A Predictability Certificate for Equivariant World Models"
-subtitle: "Configuration × horizon × resolution: what an equivariant latent world model can *certifiably* predict — and why scale cannot buy a certificate"
+subtitle: "Scale buys interpolation, structure buys a certificate — what an equivariant latent world model can *certifiably* predict across configuration, horizon, and resolution"
 status: DRAFT (assembled 2026-06-02 from the paper2 proposal + Steps 47/49/50/51/52) — NOT wired into the arXiv build
 target_venue: NeurIPS / ICLR (mechanism-and-theory paper, JEPA-style)
 created: 2026-06-02
