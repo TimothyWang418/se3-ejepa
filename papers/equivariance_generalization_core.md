@@ -135,6 +135,19 @@ closed-loop trajectory.
   brute-force scale at partial coverage, and a soft-equivariant interpolation each close at most
   the across-group *task* metric, never the architecture's float-floor *exactness*.
 
+**Where the structure enters — two orthogonal axes, one representation.** A structured prior can be
+injected into a JEPA at two independent places: the **predictor**, which fixes the *latent dynamics*
+$z\mapsto f(z,a)$, and the **latent regulariser**, which fixes the *representation geometry* of the
+embedding. These are separable design choices, and concurrent work tends to occupy exactly one of them —
+a structured predictor with an unstructured latent law, or a structured latent law with an unstructured
+predictor. The lever here is that a *single* orthogonal group representation $\rho(g)$ shapes **both**
+axes at once: it makes the predictor a $G$-intertwiner (so [B]'s isometry theorem holds, §2.2) and, in
+the LeJEPA-style supplement, it replaces the isotropic-Gaussian latent target with the block-isotropic
+target Schur's lemma forces on a $G$-invariant law. The present note develops the predictor axis (and its
+closed-loop corollary) in full; the representation-geometry axis is treated in the companion
+LeJEPA supplement. We flag the two-axis view here only as positioning — it is not a separate claim, and
+nothing below depends on it.
+
 ---
 
 ## 2. Setup and the exact-flatness guarantee
@@ -1173,6 +1186,31 @@ where they meet.
   result (few-body $\to$ many-body, §5) that is the discrete sibling of their $2\to4$ — so a
   natural synthesis is a simplex-style $S_P$ entity code layered *over* SE(3)-equivariant per-entity
   latents.
+- **The same predictor-side principle recurs across other groups — concurrent, independent.** Two
+  contemporaneous works (both 2026-05/06) instantiate the same mechanism — *a structured,
+  group-representation predictor in the latent buys zero-shot generalisation* — on different groups.
+  BRo-JEPA (Jha et al., 2026) puts a **block-rotation predictor** on the cyclic group
+  $\mathbb{Z}/10\mathbb{Z}$, learning modular arithmetic in a JEPA latent so that an unseen operation
+  $k$ extrapolates for free via $R(\theta)^k=R(k\theta)$; UWM-JEPA (Radha & Goktas, 2026) uses a learned
+  **unitary predictor** $U=\exp(-iH\Delta t)$ on the unitary group $U(d)$ to roll a belief-state latent
+  forward without dissipating it. Each is the same statement as our [B] on a different group — discrete
+  abelian ($\mathbb{Z}/10\mathbb{Z}$) and continuous unitary ($U(d)$) — and a single
+  representation-on-the-latent framework $z\mapsto\rho(g)z$ subsumes all three as the abstract form (with
+  $\rho$ orthogonal in our case and BRo-JEPA's, unitary in UWM-JEPA's). We give the
+  $\mathrm{SE}(3)$ instance: **non-abelian, continuous, and embodied** (closed-loop control on a
+  contact-rich simulator and on 3D point clouds), the corner those two do not occupy.
+- **A concurrent latent-geometry result sharpens the boundary of *why* the prior helps.** UR-JEPA
+  (Le, 2026, also 2026-05) attacks the LeJEPA representation-geometry target from a different
+  direction — it shows a latent that lies on a low-dimensional manifold (an **anisotropic** law) can
+  beat the isotropic-Gaussian target on standard self-supervised probes. We read this as a useful
+  delimiter rather than a competitor: it establishes that *anisotropy can be beneficial*, but the
+  **source** of the anisotropy decides whether it extrapolates. UR-JEPA's anisotropy is
+  data-discovered (descriptive low-dimensional structure, no group semantics); ours is
+  **group-prescribed** — $f(g\!\cdot\!x)=\rho(g)f(x)$ pins the latent's shape to the world's
+  representation and carries the across-group flatness guarantee of §2.2, an out-of-distribution
+  extrapolability that a data-driven low-dimensional structure does not supply. (The representation-
+  geometry axis is developed in the LeJEPA supplement; here it bears only on *why* the symmetry prior
+  buys 举一反三.)
 
 **The underexplored corner this note targets.** Equivariant *layers* exist; equivariant *RL* exists;
 *JEPA* exists. What is largely missing is their conjunction: an *exactly* SE(3)-equivariant
@@ -1625,7 +1663,10 @@ None of the four is a new layer; the contribution is the corner where they meet.
   (this is **Proposition 2**'s exploit half made concrete — at the penalty's zero the free predictor meets
   Proposition 1's (H3) over the *discovered* subgroup, so [B] rides across it, in the soft limit),
   matching the oracle and transferring exactly what it found — with a documented soft-vs-hard gap, not float-floor
-  exactness. Six guards.
+  exactness. Six guards. (For contrast, concurrent BRo-JEPA (Jha et al., 2026) *hand-feeds* the period —
+  its block-rotation angle is fixed to the known $\mathbb{Z}/10\mathbb{Z}$ generator, i.e. exploit-only;
+  the discover-then-exploit rung here instead *recovers* the generators from interaction before
+  exploiting them.)
 - **The active-inference win transfers beyond a *constructed* POMDP — the de-construction completed.**
   The noisy-cue rung removed §3.5.1's *noiseless* crutch; the **other** crutch was the *constructed mirror* — a hidden
   *bit* with two opposite goals whose midpoint is the start, hand-tuned so the one cue sat exactly transverse.

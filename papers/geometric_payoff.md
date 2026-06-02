@@ -2615,7 +2615,11 @@ and the teacher here is a known synthetic dynamics rather than a learned one. Th
 carries a symmetry group" — is therefore **not** an assumption we must smuggle in: on a symmetric world the
 generators, the dimension, and the whole algebra fall out of the data, and on a broken world the procedure
 correctly reports the *smaller* surviving group and refuses to invent the rest. *Discover the prior, don't
-just postulate it — and trust it only because it can be proven wrong.* Guarded inline (five seeds, six
+just postulate it — and trust it only because it can be proven wrong.* (Concurrent BRo-JEPA (Jha et al.,
+2026), which also buys zero-shot generalisation from a structured latent predictor, sits on the other side
+of this line: its block-rotation angle is *fixed* to the known $\mathbb{Z}/10\mathbb{Z}$ generator — the
+period is hand-fed, exploit-only — whereas the discovery here *recovers* the generators from the world's
+behaviour before any are exploited.) Guarded inline (five seeds, six
 guards, $\beta$-sweep) by `experiments/step33_symmetry_discovery.py`; structural invariants by
 `tests/test_step33_symmetry_discovery.py`.
 

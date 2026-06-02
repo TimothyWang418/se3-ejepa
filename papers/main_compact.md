@@ -198,6 +198,7 @@ five digits; [C] is that *same* theorem applied to the realised closed-loop traj
   coverage, and a soft-equivariant interpolation each close at most the across-group *task* metric, never
   the architecture's float-floor *exactness*.
 
+
 ---
 
 ## 2. The exact-flatness guarantee
@@ -577,7 +578,16 @@ video model permutation-equivariant over agents via a simplex rotary encoding an
 player transfer — independent, at-scale corroboration of *"an exact symmetry prior determines the model
 off the training slice"*, but in **pixel space at full generative cost** and a discrete $S_P$; ours is a
 **decoder-free abstract latent** carrying the continuous $\mathrm{SE}(3)$ exactly. The two are
-complementary (our object-centric variant already factors $\mathrm{SE}(3)^O\rtimes S_O$).
+complementary (our object-centric variant already factors $\mathrm{SE}(3)^O\rtimes S_O$). The same
+predictor-side principle recurs on other groups in concurrent, independent work (2026-05/06): BRo-JEPA
+(Jha et al. 2026) on the cyclic group $\mathbb{Z}/10\mathbb{Z}$ (a block-rotation predictor, zero-shot
+modular arithmetic) and UWM-JEPA (Radha & Goktas 2026) on the unitary group $U(d)$ (a learned unitary
+predictor) — a single representation $\rho(g)$ subsumes all three (orthogonal for ours/BRo, unitary for UWM), and ours is the
+non-abelian, continuous, embodied $\mathrm{SE}(3)$ instance. A parallel concurrent result on the
+representation-geometry side, UR-JEPA (Le 2026), shows a data-discovered **anisotropic** latent can beat
+the isotropic-Gaussian target — but the *source* of the anisotropy matters: ours is **group-prescribed**
+($f(g\!\cdot\!x)=\rho(g)f(x)$) and carries the across-group extrapolation guarantee of §2.2 that a
+data-driven low-dimensional structure does not.
 
 **What is new is the conjunction, on four counts.** (1) The *combination itself* — an exactly
 $\mathrm{SE}(3)$-equivariant JEPA latent world model whose symmetry survives a real training run and

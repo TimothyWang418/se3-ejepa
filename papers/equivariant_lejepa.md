@@ -149,6 +149,19 @@ symmetry and PSD-ness of $\Sigma$ pass to $B_i$. $\qquad\blacksquare$
   block and test each toward an isotropic Gaussian of its **own** scale $\sigma_i^2$, leaving the
   cross-block scales free. This is the maximum-entropy $G$-invariant Gaussian at given per-irrep
   variances — the equivariant analogue of "isotropic Gaussian."
+- **What carries block-SIGReg's correctness — the exogenous partition, not within-block isotropy.**
+  A SIGReg-style test is a battery of *one-dimensional* projection Gaussianity checks, and a 1-D
+  projection is **blind to within-block manifold structure**: by the Diaconis–Freedman projection
+  phenomenon, almost every low-dimensional projection of a high-dimensional law looks near-Gaussian even
+  when the joint law concentrates on a curved low-dimensional set (concurrent UR-JEPA (Le, 2026) uses
+  exactly this to argue SIGReg's 1-D test cannot *see* the manifold structure it leaves intact). The
+  same blindness applies *inside* each block: block-SIGReg's 1-D tests cannot certify that the law is
+  genuinely isotropic within a block. Its correctness therefore rests **not** on any claim that
+  within-block isotropy is itself optimal, but on the **group-prescribed, exogenous block partition by
+  isotypic components** — the blocks come from $\rho$'s representation theory (Prop. 1), are fixed before
+  any data is seen, and are what make block-isotropy the right *target*; the within-block normality test
+  only standardises each block's marginal, it does not justify the partition. This is the precise sense
+  in which our anisotropy is prescriptive rather than discovered.
 - **Identifiability refinement (the prize) — stated precisely.** Three groups must be kept apart, and
   an earlier draft conflated them. Let $\Sigma$ be block-isotropic with **distinct** per-irrep scales
   $\sigma_i^2$. The residual gauge is the set of orthogonal $Q$ relating two equally-valid solutions:
@@ -612,7 +625,13 @@ diagnostic**, not a pass/fail gate — per the standing rule, a run that fails t
   here: the specific refinement (turn $O(n)$-up-to into $\rho(G)$-up-to; block-isotropy as the SIGReg
   target; $G$-invariant-cost planning) is provable now, with two experiments already instantiating it —
   the $G$-invariant-cost planner (§5) and the degree ladder (§6). The identifiability paper it builds on
-  is recent (arXiv:2605.26379, 2026-05-25).
+  is recent (arXiv:2605.26379, 2026-05-25). A concurrent data-driven alternative, UR-JEPA (Le, 2026),
+  shapes the latent toward a low-dimensional manifold of *intrinsic dimension* $n$ — but that $n$ is a
+  **load-bearing hyperparameter** (it reports a catastrophic collapse at $n{=}4$). Our anisotropy carries
+  no such knob: the block structure is fixed by the representation $\rho$ (the irrep dimensions $d_i$ and
+  multiplicities $m_i$ are read off $G$, not tuned), so **there is no $n$ to choose** — the
+  dimensionality of each block is dictated by representation theory rather than selected against a
+  validation set.
 - **Degenerate cases — now demonstrated, not just feared.** Equal per-irrep scales collapse the gauge
   refinement back to $O(n)$ (§7 [A]: gauge $231$); the clean $\rho(G)$-commutant result needs
   *distinct* scales / multiplicity-freeness. Crucially, §7 showed pure SSL does **not** by itself
