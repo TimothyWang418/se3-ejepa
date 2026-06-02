@@ -3,7 +3,7 @@ r"""Build the **paper2** arXiv source bundle (separate from the old-paper arxiv/
 
 Single source: ``papers/paper2_certified_world_models.md``. Mirrors ``papers/arxiv/build.py`` (XeLaTeX target;
 ships Termes + Fandol OTFs by filename so 推背图 / 举一反三 render identically locally and on arXiv) but for one
-document. Strips the FOR-REVIEW block (meant to be deleted before submission). Does NOT touch the old paper's
+document. Also refreshes the tracked standalone PDF from the same clean source. Does NOT touch the old paper's
 arxiv/ frozen bundles.
 
 Run:  .venv/bin/python papers/arxiv_paper2/build_paper2.py
@@ -29,7 +29,7 @@ PREAMBLE = HERE / "preamble_extra.tex"
 README_JSON = HERE / "00README.json"
 ARXIV_FIGURES = HERE / "figures"
 TARBALL = HERE / "arxiv_paper2_upload.tar.gz"
-TITLE = "A Predictability Certificate for Equivariant World Models"
+TITLE = "Certified World Models: Predictability Across Configuration, Horizon, and Resolution"
 
 FONT_BASENAMES = ["texgyretermes-regular.otf", "texgyretermes-bold.otf", "texgyretermes-italic.otf",
                   "texgyretermes-bolditalic.otf", "texgyretermes-math.otf"]
@@ -37,16 +37,16 @@ CJK_FONT_BASENAMES = ["FandolSong-Regular.otf", "FandolSong-Bold.otf"]
 
 
 def build_combined() -> None:
-    r"""Read the paper2 draft, drop the YAML frontmatter + the FOR-REVIEW blockquote, keep everything from the
-    Abstract onward. (Title/subtitle are re-supplied via pandoc metadata.)"""
+    r"""Read the paper2 draft, drop the YAML frontmatter, keep everything from the Abstract onward.
+    (Title/subtitle are re-supplied via pandoc metadata.)"""
     md = SRC_MD.read_text(encoding="utf-8")
     # strip leading YAML frontmatter
     md = re.sub(r"\A---\n.*?\n---\n", "", md, count=1, flags=re.DOTALL)
-    # drop everything before "## Abstract" (the FOR-REVIEW blockquote)
+    # keep from "## Abstract" onward
     idx = md.find("## Abstract")
     assert idx != -1, "could not find '## Abstract' anchor"
     body = md[idx:]
-    assert "FOR REVIEW" not in body, "FOR-REVIEW block leaked into the bundle"
+    assert "FOR REVIEW" not in body, "internal FOR-REVIEW scaffolding leaked into the bundle"
     assert "[[" not in body, "stale wikilink remains"
     COMBINED.write_text(body, encoding="utf-8")
     n_cjk = sum(1 for c in body if "㐀" <= c <= "鿿")
@@ -79,7 +79,6 @@ def write_preamble() -> None:
         "\\newunicodechar{⊕}{\\ensuremath{\\oplus}}\n"
         "\\newunicodechar{⊗}{\\ensuremath{\\otimes}}\n"
         "\\newunicodechar{ℓ}{\\ensuremath{\\ell}}\n"
-        "\\newunicodechar{⚠}{\\ensuremath{\\triangle}}\n"   # only reached by the review-copy FOR-REVIEW block
         "\\usepackage{xeCJK}\n"
         "\\setCJKmainfont{FandolSong-Regular.otf}[Path=./, BoldFont=FandolSong-Bold.otf, AutoFakeSlant=0.15]\n",
         encoding="utf-8",
@@ -91,8 +90,7 @@ def run_pandoc() -> None:
         "pandoc", str(COMBINED), "--standalone", "-o", str(MAIN_TEX),
         "-H", str(PREAMBLE),
         "--metadata", f"title={TITLE}",
-        "--metadata", "subtitle=Scale buys interpolation, structure buys a certificate — "
-                      "across configuration, horizon, and resolution",
+        "--metadata", "subtitle=Scale buys interpolation; structure buys a certificate.",
         "--metadata", "author=Hongbo Wang",
         "--metadata", "date=",
     ], check=True)
@@ -105,47 +103,22 @@ def run_pandoc() -> None:
     print(f"main.tex: {tex.count(chr(10)) + 1} lines")
 
 
-def build_review_pdf() -> None:
-    r"""Also emit the **tracked** standalone review copy ``papers/paper2_certified_world_models.pdf`` from the SAME
-    single source — but KEEPING the FOR-REVIEW block that the arXiv bundle strips. Obsidian wikilinks are flattened
-    to plain text and the ⚠️ variation selector is dropped so the block typesets cleanly. Soft-fails (warns + skips)
-    if tectonic is unavailable, so the arXiv-bundle build never depends on a local LaTeX engine."""
-    review_md = HERE / "_paper2_review.md"
-    review_tex = HERE / "review.tex"
-    review_pdf = HERE / "review.pdf"
+def build_standalone_pdf() -> None:
+    r"""Compile the **tracked** standalone PDF ``papers/paper2_certified_world_models.pdf`` from the SAME clean
+    source as the arXiv bundle — there is no longer a review/submission split (the FOR-REVIEW block is gone). It
+    simply compiles the already-built ``main.tex`` and copies the result out. Soft-fails (warns + skips) if tectonic
+    is unavailable, so the arXiv-bundle build never depends on a local LaTeX engine."""
     standalone = PAPERS / "paper2_certified_world_models.pdf"
-
-    md = SRC_MD.read_text(encoding="utf-8")
-    md = re.sub(r"\A---\n.*?\n---\n", "", md, count=1, flags=re.DOTALL)   # strip YAML, KEEP FOR-REVIEW + body
-    assert "FOR REVIEW" in md, "review copy must retain the FOR-REVIEW block"
-    md = md.replace("️", "")                                         # drop emoji variation selector (no glyph)
-    # flatten Obsidian wikilinks [[path/name.md]] -> name (basename, no .md) so they read cleanly on paper
-    md = re.sub(r"\[\[([^\]]+)\]\]", lambda m: m.group(1).rsplit("/", 1)[-1].removesuffix(".md"), md)
-    review_md.write_text(md, encoding="utf-8")
-
-    subprocess.run([
-        "pandoc", str(review_md), "--standalone", "-o", str(review_tex), "-H", str(PREAMBLE),
-        "--metadata", f"title={TITLE}",
-        "--metadata", "subtitle=Scale buys interpolation, structure buys a certificate — "
-                      "across configuration, horizon, and resolution",
-        "--metadata", "author=Hongbo Wang", "--metadata", "date=",
-    ], check=True)
-    review_tex.write_text(review_tex.read_text(encoding="utf-8").replace(
-        "\\author{Hongbo Wang}",
-        "\\author{Hongbo Wang \\\\\n  \\small Department of Mathematics, "
-        "Stony Brook University, Stony Brook, NY 11794, USA}", 1), encoding="utf-8")
-
+    main_pdf = HERE / "main.pdf"
     try:
-        subprocess.run(["tectonic", review_tex.name], cwd=HERE, check=True, capture_output=True, text=True)
+        subprocess.run(["tectonic", MAIN_TEX.name], cwd=HERE, check=True, capture_output=True, text=True)
     except (FileNotFoundError, subprocess.CalledProcessError) as e:
         tail = (getattr(e, "stderr", "") or str(e)).strip().splitlines()
-        print(f"  [skip] standalone review PDF not rebuilt (tectonic unavailable/failed): {tail[-1] if tail else e}")
-        for f in (review_md, review_tex):
-            f.unlink(missing_ok=True)
+        print(f"  [skip] standalone PDF not rebuilt (tectonic unavailable/failed): {tail[-1] if tail else e}")
         return
-    shutil.copy2(review_pdf, standalone)
-    print(f"{standalone.name}: review copy rebuilt (FOR-REVIEW kept), {standalone.stat().st_size / 1024:.0f} KiB")
-    for f in (review_md, review_tex, review_pdf, HERE / "review.log", HERE / "review.xdv"):
+    shutil.copy2(main_pdf, standalone)
+    print(f"{standalone.name}: rebuilt from clean source, {standalone.stat().st_size / 1024:.0f} KiB")
+    for f in (HERE / "main.log", HERE / "main.xdv"):
         f.unlink(missing_ok=True)
 
 
@@ -208,4 +181,4 @@ if __name__ == "__main__":
     figs = copy_figures()
     copy_fonts()
     make_tarball(figs)
-    build_review_pdf()   # also refresh the tracked standalone review PDF from the same single source
+    build_standalone_pdf()   # also refresh the tracked standalone PDF from the same clean source

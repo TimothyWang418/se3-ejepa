@@ -1,6 +1,6 @@
 # paper2 — Record / Experiment Ledger (single source of truth)
 
-> Living record for **paper2 = "A Predictability Certificate for Equivariant World Models"**. Tracks every
+> Living record for **paper2 = "Certified World Models: Predictability Across Configuration, Horizon, and Resolution"**. Tracks every
 > experiment, its result/seeds/test/commit, the proposal phase status, the concurrent-work positioning, and the
 > open items. Draft + figures live in `papers/paper2_certified_world_models.md` (+ `.pdf`); design rationale in
 > `papers/proposals/paper2-certified-compositional-jepa.md`. Last updated 2026-06-02.
@@ -80,11 +80,19 @@ Two multi-agent panels (3 distinct-lens skeptics + adjudicator each):
   narrowed; Err$_T$ norm pinned; isotypic-refinement-unmeasured flagged; a **falsifiability** paragraph added to
   §5; a **References** block with verified arXiv IDs (BRo 2606.01372, UWM 2605.25313, UR 2606.01443, IMWM
   2606.01626, LDA 2606.01847) added. 81 tests pass; both PDFs recompiled (12 pp) + visually QA'd.
+- **Round 3 — JEPA-style restructure** (user feedback: internal "Step N" / scaffolding shouldn't be in the paper).
+  Retitled to the colon form *"Certified World Models: Predictability Across Configuration, Horizon, and Resolution"*;
+  re-laid into a JEPA layout (Abstract · 1 Intro · 2 Setup · 3 Certificate · 4 Hinge · 5 Experiments · 6 Related
+  Work · 7 Limitations · 8 Conclusion · Refs · Appendix A); all body "Step N" → **Experiment 1–8** + descriptive
+  names, figures → **Figure 1–5**, code filenames moved to the Appendix-A reproducibility table; the **FOR-REVIEW**
+  block and the "Sharpest objections" Q&A scaffolding removed (substance folded into Limitations); the 推背图 name
+  dropped from the footnote (celestial-mechanics-vs-weather kept) so the English paper carries 0 CJK. `build_paper2.py`
+  simplified — no review/submission split, the standalone PDF is now the same clean source. 11 pp, 81 tests pass.
 
 ## 6. Open items
 
-1. ~~**Title**~~ ✅ **decided** (`390a773`, user 2026-06-02): "A Predictability Certificate for Equivariant World Models" (subtitle "Scale buys interpolation, structure buys a certificate — across configuration, horizon, and resolution"); alts kept in proposal §9.
-2. **Upload** (user-gated, manual) — paper2 bundle is **built & scripted**: `papers/arxiv_paper2/build_paper2.py` (single source) → `arxiv_paper2_upload.tar.gz` + the tracked standalone review PDF, both refreshed `48fb2a9`. Old paper: `arxiv/arxiv_upload_v2.tar.gz` (frozen-v1 untouched, md5 087af50e). Optional before submit: cover letter, category cs.LG×cs.RO, compact-main+supplement split.
+1. ~~**Title**~~ ✅ **decided** (user 2026-06-02; colon form chosen in Round 3): "Certified World Models: Predictability Across Configuration, Horizon, and Resolution" (subtitle/tagline "Scale buys interpolation; structure buys a certificate.").
+2. **Upload** (user-gated, manual) — paper2 bundle is **built & scripted**: `papers/arxiv_paper2/build_paper2.py` (single clean source → `arxiv_paper2_upload.tar.gz` + the tracked standalone PDF). Old paper: `arxiv/arxiv_upload_v2.tar.gz` (frozen-v1 untouched, md5 087af50e). Optional before submit: cover letter, category cs.LG×cs.RO, compact-main+supplement split.
 3. ~~**3D-aware containment**~~ ✅ **done (Step 58, `695143d`)**: $\text{slow}\subseteq(\text{invariant}\oplus\text{conserved-equivariant})$ measured exactly ($E$→ℓ=0 linear, $L$→ℓ=1 degree-2 cross, $R^2{=}1.00$).
 4. ~~**P5 — discovery + generation**~~ ✅ re-framed Steps 33/36/38 into draft §4.6 (companion-line, not new evidence).
 5. ~~**Proof prose**~~ ✅ §2–3 tightened (`de7b7e4`) + Thm A closed-loop assumption (A5) made explicit (`48fb2a9`).
@@ -98,5 +106,7 @@ Two multi-agent panels (3 distinct-lens skeptics + adjudicator each):
 `3763aad` Step57 fold · `03f5f84` payoff LDA · `d6d46b2` record ledger · `390a773` title + standalone bundle ·
 `695143d` Step58 · `a07d9af` Step58 fold · `9c4c95c` red-team polish · `de7b7e4` §2–3 proof prose + 拷打 block ·
 `48fb2a9` 拷打 panel fixes (reproducible 3-seed numbers + ⊕ render + scripted review PDF) · `85a32f2` record sync ·
-*(this batch)* round-2 拷打 fixes (prose↔seed-range alignment, §3 Noether-mechanism consistency, References block).
+`51b5d82` round-2 拷打 fixes (prose↔seed-range alignment, §3 Noether-mechanism consistency, References block) ·
+*(this batch)* Round-3 JEPA restructure (retitle to colon form, de-Step → Experiment 1–8 / Figure 1–5, Related Work,
+FOR-REVIEW + 推背图-name removed, build script simplified).
 (Vault wiki ingest `0b0fe54`, local-only.)
