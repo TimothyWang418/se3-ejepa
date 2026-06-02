@@ -162,6 +162,17 @@ symmetry and PSD-ness of $\Sigma$ pass to $B_i$. $\qquad\blacksquare$
   any data is seen, and are what make block-isotropy the right *target*; the within-block normality test
   only standardises each block's marginal, it does not justify the partition. This is the precise sense
   in which our anisotropy is prescriptive rather than discovered.
+  - **The prescriptive signature is directly measurable (Step 54, `experiments/step54_latent_spectrum_v2.py`).**
+    On a genuinely rotation-symmetric distribution (the $\mathrm{SO}(2)$ central-force data of Step 50, sampled
+    isotropically) an equivariant encoder's latent law is exactly $\rho$-invariant, so its covariance must
+    **commute with the group representation**, $\rho(R)\,\Sigma\,\rho(R)^\top=\Sigma$ (Schur). We verify this:
+    the equivariant latent's $\rho$-invariance residual $\lVert\rho\Sigma\rho^\top-\Sigma\rVert_F/\lVert\Sigma\rVert_F$
+    is $\approx3\times10^{-4}$ — **$\sim\!3000\times$ below** an identically-trained non-equivariant MLP's
+    ($1.04$) — and each $\ell{=}1$ block's $2\times2$ self-covariance is isotropic (anisotropy $0.005$). The
+    covariance is *pinned to $\rho$* by the architecture, a group-given second-moment signature the MLP has no
+    reason to exhibit. (An earlier attempt, Step 48, was honestly inconclusive — $\times2$ only — because the
+    interacting-teacher data there was **not** rotation-symmetric; the fix was a symmetric distribution, not a
+    new metric.)
 - **Identifiability refinement (the prize) — stated precisely.** Three groups must be kept apart, and
   an earlier draft conflated them. Let $\Sigma$ be block-isotropic with **distinct** per-irrep scales
   $\sigma_i^2$. The residual gauge is the set of orthogonal $Q$ relating two equally-valid solutions:

@@ -1,0 +1,14 @@
+{
+  "equivariant": {
+    "rho_inv_residual": 0.0003328455033082001,
+    "ell1_anisotropy": 0.005336949051313596
+  },
+  "MLP": {
+    "rho_inv_residual": 1.0374197304696797,
+    "ell1_anisotropy": NaN
+  },
+  "passed": true,
+  "ratio": 3116.820627464134,
+  "smoke": false,
+  "seed": 0
+}
