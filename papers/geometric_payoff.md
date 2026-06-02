@@ -13,7 +13,9 @@ recur, each guarded by an equivariance unit test at init **and** after training.
 model stays equivariant to $\sim\!10^{-6}$ post-training, not merely at initialisation. **[B]** One-step
 prediction error is *exactly flat* across the whole group — a theorem, since orthogonal $\rho(R)$
 cancels in the relMSE ratio — giving an OOD/seen factor of $\times1.00$ versus the *non-augmented*
-baseline's $\times13.8$ (2D latent), $\times17.2$ (3D SO(3)) and $\times157$ (full SE(3)); given the
+baseline's $\times13.8$ (2D latent), $\times17.2$ (3D SO(3)) and $\times157$ (full SE(3) — that last
+factor a raw-coordinate *translation*-extrapolation blow-up, not a learned-rotation effect: the
+equivariant model handles translation exact-by-centring); given the
 group, augmentation narrows the *task* ratio to $\times1.06$–$1.46$ but never the float-floor exactness
 (Step 28). **[C]** Under a matching
 equivariant planner the closed-loop pose-control error is *orientation-invariant*: float-floor-exact in
@@ -2223,12 +2225,15 @@ the parameter count is held fixed across the ladder, so the plateau cannot be ex
 parameters." One notch below the rollout theorem (§23) because the knee *location* is empirical
 (latent-space, not the naive point-space degree) and the recovery is partial — a residual $\times2.4$ to the
 MLP remains, which the companion message ladder (Step 42) and the encoder ladder $+$ lossless oracle (Step 43)
-below pin on the **encoder's lossy latent** rather than the predictor or the message. Step 32 sharpens the
-design rule into
-its final form: when an equivariant model underfits, the fix is a **specific missing primitive** (here the
-cross-product irrep), recoverable at the *first* rung that supplies it and **saturating** thereafter — not
-an open-ended capacity climb, and never at the cost of the across-group guarantee. *Enrich the class by the
-primitive the physics needs; keep the prior.* Guarded inline (three seeds, five guards) by
+below pin on the **encoder's lossy latent** rather than the predictor or the message. Step 32 gives the
+design rule a **first, partial form**: when an equivariant model underfits, *one* recoverable cap is a
+**specific missing primitive** (here the cross-product irrep), closed at the *first* rung that supplies it
+and **saturating** thereafter — not an open-ended capacity climb, and never at the cost of the across-group
+guarantee. But that saturation leaves the residual $\times2.4$ to the MLP, which Steps 42–44 below
+**localise to the encoder's lossy *pooled* latent** — where the only full closure (the lossless oracle)
+**bypasses the latent itself**, so a pooling-preserving cure is an **open problem**, not a delivered fix.
+*Enrich the class by the primitive the physics needs; keep the prior — but the design rule's final rung (the
+pooling) is localised, not yet solved.* Guarded inline (three seeds, five guards) by
 `experiments/step32_tp_degree_ladder.py`; structural invariants at every rung by
 `tests/test_step32_degree_ladder.py`.
 
@@ -2361,8 +2366,13 @@ point on a single recovery curve to be subtracted against E0. The oracle is ther
 post-training $\mathrm{SE}(3)$ residual $1.8\times10^{-6}$ ([A]), OOD/seen ratio $\times1.00$ ([B]), permutation
 residual $0$ — indistinguishable from the encoder rungs ($\mathrm{SE}(3)\le5.4\times10^{-5}$, $\times1.00$),
 while the lossless-*but-non-equivariant* MLP carries OOD/seen $\times10.0$ and an $\mathrm{SE}(3)$ residual of
-$11.1$. So **lossless, exactly equivariant, and flat coexist** — the way to lift the cap is to *widen the latent
-budget*, not to drop the prior.
+$11.1$. So **lossless, exactly equivariant, and flat coexist** — the way to lift the cap is to make the
+encoder's latent *less lossy*, not to drop the prior. **But state the honest limit:** the only lever that
+*fully* closes the gap is the oracle, and it does so by **bypassing the pooled latent entirely** — deleting
+the very bottleneck that makes this a *latent* (the "J" in JEPA) model — while Step 44 shows widening the
+readout *budget* ($3\times$) is **not** the cap (the permutation-invariant pooling is). So a pooling operator
+that is lossless enough yet stays an abstract latent is an **open problem we localise, not solve here**;
+what holds unconditionally is the *safety* half — enriching the class never costs 举一反三.
 
 **Verdict — encoder localisation CONFIRMED, four guards green.** Equivariant at every variant
 ($\mathrm{SE}(3)\le5.4\times10^{-5}$, perm $0$) ✓; across-group flat at every variant ($\times1.00$) ✓; MLP

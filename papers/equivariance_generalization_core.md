@@ -1090,7 +1090,7 @@ together in Figure 2.
 
 ![Where the geometric bet pays off](figures/where_the_bet_pays.png)
 
-> **Figure 2.** Where the geometric bet pays off — a near-total, data-proof win *across the group*,
+> **Figure 2.** Where the geometric bet pays off — a near-total, data-proof-*in-$N$* win *across the group*,
 > a wash-to-loss *in-distribution*. **(left)** The sample-efficiency frontier under an exactly
 > $\mathrm{SO}(3)$ teacher: latent 1-step relMSE vs training-set size $N$, the VN's whole-group curve
 > descending while the baseline's is a wall. **(middle)** The symmetry-break $g$ × data $N$
