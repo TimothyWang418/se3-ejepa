@@ -1,0 +1,15 @@
+{
+  "passed": false,
+  "train_loss": 0.012889134630424017,
+  "scal_resid": 5.684341886080802e-14,
+  "vec_resid": 1.7763568394002505e-15,
+  "r2_invariant": 0.8571235535237275,
+  "r2_equivariant": 0.05418942664094589,
+  "slow_invariant": 0.02383774019747789,
+  "slow_equivariant": 0.025977585361340646,
+  "beta": 0.0,
+  "ds": 12,
+  "dv": 10,
+  "smoke": false,
+  "seed": 0
+}
