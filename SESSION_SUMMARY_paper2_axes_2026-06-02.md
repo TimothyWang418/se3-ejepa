@@ -57,7 +57,22 @@ are untouched; **not wired into the arXiv build** (a separate explicit step).
 4. **arXiv v2** of the *old* paper still awaits your manual upload (`arxiv_upload_v2.tar.gz`) — unchanged from
    this session; I can't submit for you.
 
+## Addendum — "把能做的都做了" batch (old-paper experiments A4/B2/B3 + paper2 PDF)
+Cleared every remaining doable task (the only pending one, #154, genuinely needs your title/framing sign-off):
+
+| # | Step | Result |
+|---|---|---|
+| A4 (#148) | **54** | Equivariant latent covariance is a $G$-invariant operator: $\rho$-residual **3e-4 vs MLP 1.04 (~3100×)**, ℓ=1 blocks isotropic. Rescues the honestly-shelved Step 48 — the fix was symmetric data, not a new metric. → `equivariant_lejepa.md`. |
+| B2 (#149) | **55** | Group-complexity × coverage phase diagram on $\mathbb{Z}_2^k$: equivariant certified over all $2^k$ from $k$ generators for **every** $k{=}2..8$; MLP fails; advantage **~$10^{11}\times$**, **widens** with group size. → `geometric_payoff.md` §16. |
+| B3 (#150) | **56** | Prescriptive vs descriptive anisotropy OOD: **in-distribution the data-fit (UR-JEPA-style) anisotropy is best**, but **OOD only the group anisotropy transfers (320×)** — the advantage is specifically OOD. → `equivariant_lejepa.md`. |
+| #154 (part) | — | **Standalone paper2 DRAFT PDF** built (`papers/paper2_certified_world_models.pdf`, 8 pp, pandoc→tectonic). Shared-build merge + final title still yours. |
+
+All 3 folds are **additive**; the **frozen v1/v2 arXiv bundles were NOT rebuilt** (your call). Full suite still **81 passed**.
+Commits: `ae60ed3` A4 · `389c8e2` B2 · `a632a64` B3 · `c709363` PDF.
+
 ## Honest open hinges (flagged in the draft, unchanged)
 - The Noether hinge is **measured & confirmed on a controlled $\mathrm{SO}(2)$ system**, with the honest
   non-converse (invariant $\not\Rightarrow$ slow). Lifting it to *approximate* symmetry is open (P4).
-- All five experiments are **toy/1-GPU-scale** proofs of principle — a *mechanism* paper, stated openly.
+- All five paper2 experiments are **toy/1-GPU-scale** proofs of principle — a *mechanism* paper, stated openly.
+- The old-paper A4/B2/B3 results are folded into the markdown but the **arXiv v2 bundle is not rebuilt** — when
+  you want them in a submission, that (and any re-fold into `main_compact.md`) is a deliberate next step.
