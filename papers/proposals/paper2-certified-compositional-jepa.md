@@ -1,5 +1,6 @@
 # Proposal — Certified Compositional 举一反三: Structure as an Alternative to Scale
 
+> **Codename: paper2** — parked 2026-06-02 (direction approved; revisit after the "structure-of-prediction" discussion — incl. the I Ching $\mathbb{Z}_2^6$ hexagram space as a clean compositional-certificate testbed, à la BRo-JEPA's modular arithmetic).
 > **Status**: research proposal (north-star for the next paper). Draft 2026-06-02.
 > **One-line thesis**: *Structure buys something scale provably cannot — a certificate.* A (possibly **discovered**) symmetry group lets an equivariant latent world model **certify** zero-shot generalization over an **exponentially large compositional** set of situations — multi-step and closed-loop — with a graceful, measured degradation under approximate symmetry. No amount of scaling provides such a certificate.
 
