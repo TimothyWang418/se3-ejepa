@@ -173,6 +173,18 @@ symmetry and PSD-ness of $\Sigma$ pass to $B_i$. $\qquad\blacksquare$
     reason to exhibit. (An earlier attempt, Step 48, was honestly inconclusive — $\times2$ only — because the
     interacting-teacher data there was **not** rotation-symmetric; the fix was a symmetric distribution, not a
     new metric.)
+  - **Prescriptive vs descriptive, head-to-head OOD (Step 56, `experiments/step56_anisotropy_source_ood.py`).**
+    The fair question is not "anisotropy yes/no" but *which source of anisotropy transfers*. On the Step 51
+    wedge→orbit task we compare three latent-anisotropy sources at fixed task/capacity: **isotropic** (an MLP
+    with a $\Sigma\to\sigma^2I$ penalty, LeJEPA-spirit), **descriptive** (a plain MLP, anisotropy fit from data —
+    UR-JEPA-spirit), and **prescriptive** (the equivariant model, anisotropy from $\rho$). The result concedes
+    UR-JEPA its point and sharpens ours: **in-distribution the data-fit (descriptive) anisotropy is best**
+    (in-wedge relMSE $5.0\times10^{-6}$, below both isotropic $1.1\times10^{-4}$ and even prescriptive
+    $8.9\times10^{-6}$ — a data-discovered anisotropy *does* help on the training slice), but **out of
+    distribution only the group-prescribed anisotropy transfers** — prescriptive OOD relMSE $1.1\times10^{-5}$
+    is $\sim\!320\times$ below the best data-driven latent's ($3.4\times10^{-3}$). A discovered anisotropy is fit
+    to the slice you trained on; the group's anisotropy is a property of the symmetry and is valid across the
+    whole orbit. *The structural advantage is specifically an OOD-transfer advantage, not an in-distribution one.*
 - **Identifiability refinement (the prize) — stated precisely.** Three groups must be kept apart, and
   an earlier draft conflated them. Let $\Sigma$ be block-isotropic with **distinct** per-irrep scales
   $\sigma_i^2$. The residual gauge is the set of orthogonal $Q$ relating two equally-valid solutions:
