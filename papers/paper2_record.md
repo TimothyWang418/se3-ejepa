@@ -29,18 +29,19 @@ All CPU/1-GPU-scale, seeded, honestly gated (a run prints `INCONCLUSIVE` rather 
 | **52** | **Horizon × resolution** staircase (推背图) | recovers chaotic $\hat\lambda{=}0.69$ to 0.1%; $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$ (slope 1.3–1.6); chaotic 3–10 steps, slow ≥90 (3 seeds) | `test_step52_horizon_resolution.py` | `620845b` `217ed0d` |
 | **53** | **Approximate symmetry** (P4) | exact cert at β=0 (68–320×); graceful $\propto\epsilon_{\text{world}}$ (corr 0.88–0.98); symmetry-content **threshold** $\epsilon\approx0.01$–0.06 (3 seeds) | — | `df1ae98` |
 | **57** | **Embodied/contact hinge lift** (3D, two-body contact) | Noether content **lifts** (invariant $R^2{=}0.86$ vs 0.05); clean containment **2D-specific** (3D $L$ = conserved $\ell{=}1$ vector → slow ⊆ invariant⊕conserved-equivariant) | — | `3763aad` |
-| **58** | **3D-aware containment** (resolves 57) | conserved physics splits by type+degree: $E$→ℓ=0 linear ($R^2{=}0.91$); $L$ bilinear→ℓ=1 degree-2 cross ($R^2{=}1.00$); both conserved → slow ⊆ (invariant ⊕ conserved-equivariant) **exact**; ties to old-paper degree-1 cross-product cap | — | this batch |
+| **58** | **3D-aware containment** (resolves 57) | conserved physics splits by type+degree: $E$→ℓ=0 linear ($R^2{=}0.62$–$0.91$); $L$ bilinear→ℓ=1 degree-2 cross ($R^2{=}1.00$, range $0.998$–$1.000$); both conserved → slow ⊆ (invariant ⊕ conserved-equivariant) **exact**; ties to old-paper degree-1 cross-product cap | — | `695143d` (3 seeds) |
 
 Unit-test isolation: `tests/conftest.py` pins float32 around every test; float64 experiments opt in. Full suite **81 passed**.
+Multi-seed reproducibility: `experiments/aggregate_seeds.py` re-runs steps 50/51/52/53/57/58 at seeds {0,1,2} and commits per-seed `papers/figures/step5*_seeds.json` (`48fb2a9`); every range quoted above and in the draft is the seed min–max from those files. Single-seed `step5*.json/.png` stay canonical at the default seed 0.
 
 ## 3. Proposal phase status (P0–P5)
 
-- **P0 — Master theorem** ✅ closure test (Step 47) + Thm A confirmed + Thm B spectrum measured + hinge measured (Step 50). *Remaining: tighten §2–3 proof prose.*
+- **P0 — Master theorem** ✅ closure test (Step 47) + Thm A confirmed + Thm B spectrum measured + hinge measured (Step 50). *§2–3 proof prose tightened (`de7b7e4`); Thm A closed-loop now under explicit assumption (A5) (`48fb2a9`).*
 - **P1 — Config axis** ✅ Step 47 (×1.00) + Step 49 (exponential 6→64).
 - **P2 — Horizon × resolution** ✅ hinge (Step 50) + $T_j(\epsilon)$ staircase (Step 52). *Embodied lift attempted (Step 57): Noether content lifts; clean containment is 2D-specific.*
 - **P3 — Structure vs scale** ✅ Step 51. *Remaining: discrete-config-axis scale replicate.*
 - **P4 — Approximate-symmetry degradation** ✅ Step 53 (graceful + threshold).
-- **P5 — Discovery + generation** ⏳ not started (re-frames existing Steps 33/36/38).
+- **P5 — Discovery + generation** ✅ re-framed existing Steps 33/36/38 into draft §4.6 (cited as companion-line results that show the certificate is *actionable*, not as new evidence produced by this paper).
 
 ## 4. Concurrent-work positioning (where each is answered)
 
@@ -63,15 +64,18 @@ built artifact stale-by-design.
 
 ## 6. Open items
 
-1. **Title** (user) — current "A Predictability Certificate for Equivariant World Models"; alts in proposal §9.
-2. **Wire paper2 into the shared arXiv build** (user) — preserve frozen v1/v2; separate combined doc / tarball.
-3. ~~**3D-aware containment**~~ ✅ **done (Step 58)**: $\text{slow}\subseteq(\text{invariant}\oplus\text{conserved-equivariant})$ measured exactly ($E$→ℓ=0 linear, $L$→ℓ=1 degree-2 cross, $R^2{=}1.00$).
-4. **P5** — discovery + generation (re-frame Steps 33/36/38).
-5. **Proof prose** — tighten §2–3 (P0 remainder).
+1. ~~**Title**~~ ✅ **decided** (`390a773`, user 2026-06-02): "A Predictability Certificate for Equivariant World Models" (subtitle "Scale buys interpolation, structure buys a certificate — across configuration, horizon, and resolution"); alts kept in proposal §9.
+2. **Upload** (user-gated, manual) — paper2 bundle is **built & scripted**: `papers/arxiv_paper2/build_paper2.py` (single source) → `arxiv_paper2_upload.tar.gz` + the tracked standalone review PDF, both refreshed `48fb2a9`. Old paper: `arxiv/arxiv_upload_v2.tar.gz` (frozen-v1 untouched, md5 087af50e). Optional before submit: cover letter, category cs.LG×cs.RO, compact-main+supplement split.
+3. ~~**3D-aware containment**~~ ✅ **done (Step 58, `695143d`)**: $\text{slow}\subseteq(\text{invariant}\oplus\text{conserved-equivariant})$ measured exactly ($E$→ℓ=0 linear, $L$→ℓ=1 degree-2 cross, $R^2{=}1.00$).
+4. ~~**P5 — discovery + generation**~~ ✅ re-framed Steps 33/36/38 into draft §4.6 (companion-line, not new evidence).
+5. ~~**Proof prose**~~ ✅ §2–3 tightened (`de7b7e4`) + Thm A closed-loop assumption (A5) made explicit (`48fb2a9`).
+6. **P3 remainder** (optional hardening) — a discrete-config-axis scale replicate (Step 51 is the continuous-$\mathrm{SO}(2)$ version; Step 49 already covers the discrete $\mathbb{Z}_2^6$ *certificate*, so this is gilding).
 
 ## 7. Commit index (this session, all pushed to `main`)
 
 `204a0a5` Step49 · `14cf87a` Step50+test · `3be4fd0` Step51 · `620845b` Step52 · `217ed0d` Step52-test+conftest ·
 `1b56ba8` paper2 draft · `ec71667`/`4b640bf` session summaries · `df1ae98` Step53 · `ae60ed3` Step54(A4) ·
 `389c8e2` Step55(B2) · `a632a64` Step56(B3) · `c709363` paper2 PDF · `a082eda` 4-paper positioning ·
-`3763aad` Step57 fold · `03f5f84` payoff LDA. (Vault wiki ingest `0b0fe54`, local-only.)
+`3763aad` Step57 fold · `03f5f84` payoff LDA · `d6d46b2` record ledger · `390a773` title + standalone bundle ·
+`695143d` Step58 · `a07d9af` Step58 fold · `9c4c95c` red-team polish · `de7b7e4` §2–3 proof prose + 拷打 block ·
+`48fb2a9` 拷打 panel fixes (reproducible 3-seed numbers + ⊕ render + scripted review PDF). (Vault wiki ingest `0b0fe54`, local-only.)
