@@ -220,6 +220,17 @@ oscillates): slow $\subseteq$ invariant, not $=$.
 
 ![Step 50 — left: the slowest latent modes live in the invariant ($\ell{=}0$) block; right: the certificate — the invariant subspace stays group-invariant to $10^{-16}$ where the MLP's slow directions drift by $\sim\!1$.](figures/step50_noether_hinge.png)
 
+*Lift toward embodied/contact, and a principled 3D subtlety (Step 57).* Pushing the hinge to a more embodied
+regime — two bodies in a 3D well with a **soft pairwise repulsion (contact)**, an $\mathrm{SO}(3)$-equivariant
+$\ell{=}0\oplus\ell{=}1$ Vector-Neuron model — gives a **partial lift, honestly reported**. The *Noether-content*
+half lifts: the invariant $\ell{=}0$ block recovers the conserved $(E,\text{contact-distance})$ at $R^2{=}0.86$ vs
+$0.05$ for the $\ell{=}1$ block, even with 3D contact. But the clean *containment* "slow $\subseteq$ invariant"
+does **not** lift (invariant slowest mode $0.024\approx0.026$ equivariant) — for a principled reason: **in 3D,
+angular momentum $L=\sum_i r_i\times v_i$ is a conserved $\ell{=}1$ *vector* (equivariant)**, so the equivariant
+block too carries a slow conserved mode. The clean 2D containment (where $L$ is a scalar) becomes, in 3D,
+$\text{slow}\subseteq(\text{invariant}\oplus\text{conserved-equivariant})$. The hinge's Noether-content claim is
+dimension-robust; its clean-containment form is 2D-specific — a sharpening of scope, not a failure.
+
 ### 4.4 Structure vs scale — *scale buys interpolation; structure buys a certificate*
 
 **Step 51 (3 seeds).** Train on a $50^\circ$ wedge of an $\mathrm{SO}(2)$ orbit; test around the full circle. The
@@ -323,7 +334,11 @@ certificate for equivariant models.
   §4.5 (Step 53) measures the resulting degradation directly — it is **graceful** (out-of-wedge error
   $\propto\epsilon_{\text{world}}$, exactly Theorem B's $\epsilon_{\max}$ term) and the equivariant certificate
   remains valuable only **up to a symmetry-content threshold** ($\epsilon_{\text{world}}\approx0.01\text{–}0.06$),
-  beyond which structure stops paying. What is **not yet done** is lifting the Noether hinge (§3) from the
+  beyond which structure stops paying. The Noether hinge's **lift to a 3D contact interaction is now partly
+  measured** (§4.3, Step 57): the Noether-content half lifts ($R^2{=}0.86$), but the clean containment is
+  2D-specific because in 3D angular momentum is a conserved $\ell{=}1$ vector — so the open item is now precise: a
+  *3D-aware* containment statement $\text{slow}\subseteq(\text{invariant}\oplus\text{conserved-equivariant})$. What
+  remains genuinely **not yet done** is lifting the hinge (§3) to the
   controlled $\mathrm{SO}(2)$ system to a contact-rich, approximately-symmetric *embodied* model — the primary
   next experiment, flagged openly, not hidden.
 - **The hinge is a measured conjecture.** Confirmed on a controlled system, with the honest non-converse
@@ -356,6 +371,7 @@ you why eclipses are forecastable for millennia and weather is not — one struc
 | Structure vs scale | `experiments/step51_structure_vs_scale.py` | — | 3 | flat $1.1$–$1.2$ vs MLP $170$–$2700\times$; $10$–$155\times$ |
 | Horizon × resolution | `experiments/step52_horizon_resolution.py` | `tests/test_step52_horizon_resolution.py` | 3 | $\hat\lambda{=}0.69$ vs $\ln2$; slope $\approx1/\lambda$ |
 | Approximate symmetry | `experiments/step53_approximate_symmetry.py` | — | 3 | cert exact at $\beta{=}0$ ($68$–$320\times$); graceful $\propto\epsilon$ (corr $0.88$–$0.98$); threshold $\epsilon\approx0.01$–$0.06$ |
+| Embodied/contact hinge lift | `experiments/step57_embodied_hinge.py` | — | 1 | Noether content lifts (invariant $R^2{=}0.86$ vs $0.05$); clean containment 2D-specific (3D $L$ is a conserved $\ell{=}1$ vector) |
 
 Every experiment sets random seeds explicitly, prints an `INCONCLUSIVE` verdict rather than loosen a gate, and
 writes its figure + JSON to `papers/figures/`. The full test suite (81 tests) passes together; `tests/conftest.py`
