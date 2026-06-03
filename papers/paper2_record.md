@@ -108,6 +108,26 @@ Two multi-agent panels (3 distinct-lens skeptics + adjudicator each):
 `695143d` Step58 · `a07d9af` Step58 fold · `9c4c95c` red-team polish · `de7b7e4` §2–3 proof prose + 拷打 block ·
 `48fb2a9` 拷打 panel fixes (reproducible 3-seed numbers + ⊕ render + scripted review PDF) · `85a32f2` record sync ·
 `51b5d82` round-2 拷打 fixes (prose↔seed-range alignment, §3 Noether-mechanism consistency, References block) ·
-*(this batch)* Round-3 JEPA restructure (retitle to colon form, de-Step → Experiment 1–8 / Figure 1–5, Related Work,
-FOR-REVIEW + 推背图-name removed, build script simplified).
+`42fe352` Round-3 JEPA restructure (colon title, de-Step → Experiment 1–8 / Figure 1–5, Related Work, build simplified) ·
+`fb8ce72` **Experiment 9** (certificate on real PushT contact dynamics; weakness #1) ·
+*(this batch)* weakness #2 theory (Lemma 2 characterization + §3.3 quantitative separation).
 (Vault wiki ingest `0b0fe54`, local-only.)
+
+## 8. Objective-critique weakness fixes (user: "一一解决")
+
+The four real weaknesses from the honest assessment, and their fix status:
+
+1. ~~**All experiments toy / constructed-teacher**~~ ✅ **mitigated** (`fb8ce72`, Experiment 9): certificate holds
+   on a *learned* model of *real* PushT pymunk contact physics (orbit-flat ratio 1.00, resid ~1e-7, competitive
+   in-dist; no MLP scale 1.7k→272k reaches the floor, 2.1–3.9×, 3 seeds). Residual: structured-state not pixels,
+   single SO(2) task, modest gap — stated in §7.
+2. ~~**Theorem A "light" / "just equivariance restated"**~~ ✅ **this batch**: added **Lemma 2** (converse —
+   orbit-constant error against every equivariant target ⟺ equivariance, so the certificate *characterizes*
+   equivariance and the impossibility is a theorem) + **§3.3 quantitative separation** (structure certifies the
+   ε-independent orbit; best L-Lipschitz learner certifies only an ε/L-tube). Adversarially vetted (a skeptic agent
+   killed the first folklore version and steered to the Lipschitz one). Honestly framed as a characterization +
+   separation, not deep machinery.
+3. **Hinge (most novel) least substantiated** ⏳ next: promote to a theorem under explicit assumptions (linearized
+   group-commuting dynamics ⟹ slow ⊆ invariant⊕conserved-equivariant via Schur + Noether), measured beyond.
+4. **Contribution is a perspective, not a method** ⏳ next: ship a concrete `certify()` procedure (algorithm box)
+   + keep the falsifiability paragraph; reframe as "new result + usable tool."

@@ -58,9 +58,12 @@ The certificate has three orthogonal axes:
 Our contributions are:
 
 1. **A three-axis master theorem** (§3): composition closure ($k$ checks $\Rightarrow$ an exponential set), an
-   exact certificate under exact equivariance (Theorem A), and a spectral degradation law
+   exact certificate under exact equivariance (Theorem A) together with its **converse** (Lemma 2: the certificate
+   is *equivalent* to equivariance, so no non-equivariant model has it at any size), and a spectral degradation law
    $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$ (Theorem B) whose certified region is the
-   coarse-invariant-slow-low-$|w|$ corner.
+   coarse-invariant-slow-low-$|w|$ corner — with a **quantitative scale-vs-structure separation** (§3.3: structure
+   certifies the whole $\epsilon$-independent orbit; the best $L$-Lipschitz non-equivariant learner certifies only
+   an $\epsilon/L$-tube around its data).
 2. **The Noether hinge** (§4): the conjecture — *measured and confirmed on controlled systems* — that the
    group-invariant channels are the dynamically slow (long-horizon-certifiable) ones, linking the configuration
    axis to the horizon axis.
@@ -153,6 +156,26 @@ dynamics break the symmetry, the certificate degrades by the amount of that brea
 *constant across the orbit*, not made small: $\mathrm{Err}_T(x)$ itself can be large, and we report absolute errors
 alongside ratios throughout (§7).
 
+Theorem A is sufficient; the next lemma shows equivariance is also *necessary* for the guarantee, so the certificate
+is not merely a consequence of equivariance but is **equivalent** to it — which is what makes the impossibility for
+non-equivariant models a theorem rather than a slogan.
+
+**Lemma 2 (the certificate characterizes equivariance).** Let $\rho:G\to O(\mathcal Z)$ act *freely* on an open
+$U\subseteq\mathcal Z$, and let $\mathcal D_G$ be the equivariant maps $\mathcal Z\to\mathcal Z$. If a predictor
+$f$'s one-step error $\lVert f-\Phi\rVert$ is orbit-constant on $U$ for **every** target $\Phi\in\mathcal D_G$, then
+$f$ is equivariant on $U$.
+*Proof.* Fix $z\in U$, $g$ with $\rho(g)z\in U$. For any $c\in\mathcal Z$, freeness makes
+$\Phi(\rho(h)z):=\rho(h)c$ well-defined on the orbit of $z$ (extend by $0$ elsewhere; both pieces lie in
+$\mathcal D_G$ as $\rho(g)0=0$). Orbit-constancy gives $\lVert f(z)-c\rVert=\lVert f(\rho(g)z)-\rho(g)c\rVert
+=\lVert\rho(g)^{-1}f(\rho(g)z)-c\rVert$ (orthogonality of $\rho(g)$) for **all** $c$; two points equidistant to
+every $c$ coincide, so $f(\rho(g)z)=\rho(g)f(z)$. $\square$
+*(For $G$ compact with closed orbits the interpolant can be taken continuous, so the statement holds against
+continuous dynamics, not only the full algebraic class.)* With Theorem A this gives a **characterization**:
+orbit-constant error against every equivariant target $\iff$ $f$ equivariant. Hence **no non-equivariant model
+possesses the configuration certificate, at any size** — the architectural impossibility invoked in §6–§7 is a
+theorem. The result is elementary (one line of Hilbert-space geometry once freeness frees the probe $c$); its role
+is to *pin down* what the certificate is, not to add machinery.
+
 ### 3.2 The horizon and resolution axes (Theorem B)
 
 **Theorem B (spectral degradation).** Relax exactness: suppose the per-generator encoder residual is
@@ -187,6 +210,30 @@ $\text{horizon}\times\text{demanded-resolution}\lesssim\text{const}(\{\lambda_j\
 $\sim$two weeks (chaotic $\lambda>0$).^[An interpretive aside, secondary to the spectral law: a long-range text that
 asserts only *regime-level* change rather than dated specifics is, structurally, making the *correct* move for a
 high-$\lambda$ system, where only the coarse/invariant component is certifiable.]
+
+### 3.3 Scale versus structure, quantified
+
+The tagline *scale buys interpolation; structure buys a certificate* can be made precise as a statement about the
+**certified region** — the inputs a learner can guarantee, in the worst case over targets consistent with what it
+observed on a training set $T$. Formally $\mathcal C=\{z:\inf_{f}\sup_{\Phi}\lVert f(z)-\Phi(z)\rVert\le\epsilon\}$,
+where $f$ ranges over the learner's hypotheses (exact on $T$) and $\Phi$ over the admissible targets agreeing on
+$T$.
+
+**Proposition (separation).** *(Structure.)* Under the equivariant prior ($\Phi\in\mathcal D_G$, $f$ equivariant
+and exact on $T$, $S$ generating $G$), Theorem A makes the error orbit-constant, so $\mathcal C\supseteq G\cdot T$:
+the **entire orbit is certified to error $0$, independent of $\epsilon$**, from the $k=|S|$ generator checks.
+*(Scale/data.)* Under the equivariance-free prior of $L$-Lipschitz targets consistent on $T$, the McShane
+extensions $\Phi_\pm(z)=\min/\max_{t\in T}\big(\Phi(t)\pm L\,\mathrm{dist}(z,t)\big)$ are admissible and differ at
+$z$ by up to $2L\,\mathrm{dist}(z,T)$, so every learner has minimax error $\ge L\,\mathrm{dist}(z,T)$ and
+$\mathcal C\subseteq\{z:\mathrm{dist}(z,T)\le\epsilon/L\}$ — an $\epsilon/L$-tube around the training set that
+**collapses to $T$ as $\epsilon\to0$**.
+
+The separation is sharp in its dependence on $\epsilon$: a point at orbit-distance $D$ from $T$ — the unseen far
+end of the wedge in Experiments 7 and 9 — is certified by *structure* for **every** $\epsilon>0$, but by
+*scale/data* only once $\epsilon\ge LD$. Scaling a non-equivariant model (more capacity, more in-wedge data) sharpens
+its fit *inside* the tube; it cannot enlarge the tube, because the bound $L\,\mathrm{dist}(z,T)$ is information-theoretic
+(independent of model size). This is the precise content of the empirical curves: the equivariant model is flat over
+the whole orbit while every baseline scale climbs once $\mathrm{dist}(z,T)$ exceeds $\epsilon/L$.
 
 ---
 
@@ -455,9 +502,10 @@ certificate for equivariant models.
   (unseen/seen ratio $1.000$) at a *partial* absolute success ($\sim0.59$ of the orientation gap). We report the
   transfer ratio as the load-bearing claim, not absolute task success.
 - **"Flat" is not "good."** A constant error across the group says nothing about its magnitude; Theorem A certifies
-  *consistency*, and the "scale never reaches the certificate" claim is an *architectural* fact — no finite
-  non-equivariant network satisfies $\mathrm{err}(R\cdot x)=\mathrm{err}(x)$, so its orbit-flatness can shrink with
-  scale but never reach the equivariant floor — rather than the conclusion of a finite sweep.
+  *consistency*, and the "scale never reaches the certificate" claim is an *architectural* fact, **proved** in
+  Lemma 2 (orbit-constant error against every equivariant target $\iff$ equivariance) and quantified in §3.3 (a
+  non-equivariant $L$-Lipschitz learner certifies only an $\epsilon/L$-tube around the data) — not the conclusion of
+  a finite sweep.
 
 **Falsifiability.** The framing makes refutable predictions, not after-the-fact rationalizations. A finite
 non-equivariant network attaining exact orbit-flatness would break Theorem A's architectural premise; a
@@ -472,10 +520,12 @@ would break Theorem B. We have not observed these; they are the experiments that
 For equivariant world models, structure delivers a *kind* of result scaling cannot: a **predictability
 certificate** — a provable, computable, training-free region across configuration, horizon, and resolution. We
 established the master theorem (Theorem A, the exact configuration certificate, proved — its closed-loop clause
-under the assumed equivariant-planner condition; Theorem B, the spectral horizon $\times$ resolution law, stated as
-a bound and measured), exhibited the certified region as the coarse-invariant-slow-low-composition corner, measured
-the Noether hinge that unifies the symmetry and time axes, and showed that an $88\times$-scaled non-equivariant
-model buys interpolation but never the certificate — an architectural impossibility, not an unfinished sweep.
+under the assumed equivariant-planner condition; Lemma 2, its converse, characterizing the certificate *as*
+equivariance; Theorem B, the spectral horizon $\times$ resolution law, stated as a bound and measured), exhibited
+the certified region as the coarse-invariant-slow-low-composition corner, measured the Noether hinge that unifies
+the symmetry and time axes, and showed — empirically and via the quantitative separation of §3.3 — that an
+$88\times$-scaled non-equivariant model buys interpolation but never the certificate, an architectural
+impossibility rather than an unfinished sweep.
 *Scale buys interpolation; structure buys a certificate.* The same criterion that tells you which compositions a
 robot policy will handle zero-shot also tells you why eclipses are forecastable for millennia while weather is not —
 one structural law, read across domains.
