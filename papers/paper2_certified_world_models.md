@@ -24,7 +24,10 @@ $\log(1/\epsilon)$ law; on an $\mathrm{SO}(2)$ mechanical system the conserved (
 the architecturally invariant channels — a measured **Noether hinge** linking the configuration axis to the horizon
 axis; and a non-equivariant network scaled across an $88\times$ parameter range buys in-distribution interpolation
 (even beating the equivariant model there) yet over the unseen orbit stays $10\text{–}155\times$ above the
-equivariant floor and never reaches it. *Scale buys interpolation; structure buys a certificate.* The result is a
+equivariant floor and never reaches it. Finally, on **real PushT contact dynamics** — physics simulated by an
+engine we did not author — a learned equivariant world model's multi-step rollout error is *exactly* flat over the
+orbit and competitive in-distribution, while no non-equivariant baseline across a $160\times$ parameter ladder
+reaches its out-of-distribution floor. *Scale buys interpolation; structure buys a certificate.* The result is a
 single criterion for *what* an equivariant world model can certifiably predict, and a structural reading of *why*
 celestial mechanics is forecastable for millennia while weather is not.
 
@@ -62,7 +65,8 @@ Our contributions are:
    group-invariant channels are the dynamically slow (long-horizon-certifiable) ones, linking the configuration
    axis to the horizon axis.
 3. **Empirical confirmation of all three axes at small scale** (§5), including the headline contrast *scale buys
-   interpolation; structure buys a certificate*.
+   interpolation; structure buys a certificate*, and a keystone validation on **real physics-engine contact
+   dynamics** (PushT) where the certificate holds for a *learned* model of dynamics we did not design.
 
 We are explicit about scope (§7): this is a mechanism-and-theory paper with $1$–$2$-GPU proof-of-principle, not a
 scaled benchmark, and the hinge's lift to *approximate* symmetry is open.
@@ -346,6 +350,32 @@ and — the load-bearing point — achieving the *same* success on the unseen or
 ratio $1.000$): *exact transfer*, not high absolute success. Together: *discover $S$ $\to$ certify $\langle S\rangle$
 $\to$ generate $\to$ act* — the certificate is not merely descriptive but a usable plan-and-execute criterion.
 
+### 5.7 Beyond toys: the certificate on real contact dynamics
+
+**Experiment 9 (PushT, real physics-engine contact dynamics).** Every experiment so far uses dynamics we
+*constructed* to be equivariant — the standing concern that the symmetry is built into a toy. We close that gap on
+**PushT**, a planar pushing benchmark whose contact dynamics are produced by a 2D physics engine we did not author.
+In the interior (the block kept away from the workspace walls) the dynamics are genuinely $\mathrm{SO}(2)$-equivariant
+— rotating the whole scene rotates the physics. On a $\pm50^\circ$ wedge of real interior transitions we train an
+$\mathrm{SO}(2)$-equivariant world model — an invariant-scalar-gated Vector-Neuron, exactly equivariant to residual
+$\sim10^{-7}$, so its contact features (agent–block distance and contact angle) live in the invariant pathway — and,
+as a *fair* baseline, non-equivariant MLPs across a $160\times$ parameter ladder ($1.7\mathrm{k}\to272\mathrm{k}$);
+both are trained one-step with identical data, optimiser, and cosine schedule. We then roll each model out $H{=}10$
+steps and measure rollout relMSE across the full orbit of scene orientations (rotating a held-out real test set, as
+in Experiment 7).
+
+Three findings, robust across 3 seeds (Figure 6): (i) the equivariant model's rollout error is **exactly flat over
+the orbit** (out-of-wedge / in-wedge ratio $1.00$ at every horizon) — the certificate, now on a *learned* model of
+*real* contact physics; (ii) it is **competitive in-distribution** (in-wedge relMSE $0.13\text{–}0.15$ vs the best
+MLP's $0.14\text{–}0.19$), so the certificate is not bought by being a worse predictor — "flat" is also "good"
+here; and (iii) **no MLP scale reaches the equivariant floor out-of-wedge** — even the $272\mathrm{k}$-parameter MLP
+($16\times$ the equivariant model's size) stays $2.1\text{–}3.9\times$ above it. The gap is smaller than the toy's
+because a single PushT step is easy to predict in-distribution; the certificate's value is precisely that it
+survives the *rollout*, out of distribution, where scale does not follow. This is the keystone non-toy result: the
+configuration certificate holds for a learned model of dynamics we did not design.
+
+![Experiment 9 (PushT, real contact dynamics). Left: $10$-step rollout relMSE over the orbit of scene orientations — the learned $\mathrm{SO}(2)$-equivariant model is exactly flat (ratio $1.00$) and competitive in-distribution, while non-equivariant baselines dip in-wedge then climb out. Right: across a $160\times$ parameter ladder no baseline reaches the equivariant floor out-of-wedge, at any rollout horizon.](figures/step59_pusht_certificate.png)
+
 ---
 
 ## 6. Related Work
@@ -400,8 +430,11 @@ certificate for equivariant models.
 
 ## 7. Limitations
 
-- **Toy scale.** All experiments are CPU/$1$-GPU proofs of principle. We claim a mechanism and a tool, demonstrated
-  cleanly — not a scaled benchmark.
+- **Scale and scope.** All experiments are CPU/$1$-GPU. Experiment 9 validates the central claim on a real
+  physics-engine contact simulator (PushT) — dynamics we did not author — but still on *structured state* (not
+  pixels), a single $\mathrm{SO}(2)$ task, and at a *modest* out-of-distribution gap ($2\text{–}4\times$, large
+  only because a single PushT step is easy to predict in-distribution). We claim a mechanism and a tool,
+  demonstrated cleanly, not a scaled benchmark.
 - **Scope of the exact certificate.** Theorem A requires (A3): the group must be a symmetry of the *dynamics*, not
   merely the encoder. The exact certificate therefore holds where the group is a genuine dynamical symmetry
   (orbital and conservative systems, free space, idealized manipulation). Everywhere else one is in Theorem B's
@@ -474,12 +507,12 @@ numerical-weather-prediction practice).
 ## Appendix A. Reproducibility
 
 Every experiment sets random seeds explicitly, prints an `INCONCLUSIVE` verdict rather than loosen a gate, and
-writes its figure and JSON to `papers/figures/`. Experiments 4–8 and the configuration-flatness experiment commit
-per-seed JSONs (`papers/figures/step5*_seeds.json`, seeds $0/1/2$), regenerated by
+writes its figure and JSON to `papers/figures/`. The multi-seed steps commit per-seed JSONs
+(`papers/figures/step5*_seeds.json` and `step59_pusht_certificate_seeds.json`, seeds $0/1/2$), regenerated by
 `experiments/aggregate_seeds.py`; every range quoted above is the seed min–max from those files. The
-configuration-flatness experiment self-aggregates its three seeds into the means in `step47_certificate.json`. The
-full test suite ($81$ tests) passes together; `tests/conftest.py` isolates the float64 experiments from the float32
-codebase.
+configuration-flatness experiment (Experiment 1) self-aggregates its three seeds into the means in
+`step47_certificate.json`. The full test suite passes together; `tests/conftest.py` isolates the float64
+experiments from the float32 codebase.
 
 | Exp. | Result | Code | Test | Seeds | Headline number |
 |---|---|---|---|---|---|
@@ -491,3 +524,4 @@ codebase.
 | 6 | 3D-aware containment | `experiments/step58_3d_containment.py` | — | 3 | $E\to\ell{=}0$ linear ($R^2{=}0.62$–$0.91$); $L$ bilinear $\to\ell{=}1$ degree-2 cross ($R^2{=}1.00$, range $0.998$–$1.000$) |
 | 7 | Structure vs scale | `experiments/step51_structure_vs_scale.py` | — | 3 | equiv flat $1.1$–$1.2$; in-wedge gain $31$–$166\times$; best baseline $10$–$155\times$ above floor out-of-wedge |
 | 8 | Approximate symmetry | `experiments/step53_approximate_symmetry.py` | — | 3 | cert exact at $\beta{=}0$ ($68$–$320\times$); graceful $\propto\epsilon$ (corr $0.88$–$0.98$); threshold $\epsilon\approx0.01$–$0.06$ |
+| 9 | **Certificate on real contact dynamics (PushT)** | `experiments/step59_pusht_certificate.py` | — | 3 | learned equivariant exactly flat over the orbit (ratio $1.00$, equiv-resid $\sim10^{-7}$) and competitive in-dist; no MLP scale ($1.7\mathrm{k}$–$272\mathrm{k}$) reaches the floor out-of-wedge ($2.1$–$3.9\times$, $H{=}10$) |
