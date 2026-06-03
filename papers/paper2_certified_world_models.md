@@ -26,8 +26,8 @@ axis; and a non-equivariant network scaled across an $88\times$ parameter range 
 (even beating the equivariant model there) yet over the unseen orbit stays $10\text{–}155\times$ above the
 equivariant floor and never reaches it. Finally, on **real PushT contact dynamics** — physics simulated by an
 engine we did not author — a learned equivariant world model's multi-step rollout error is *exactly* flat over the
-orbit and competitive in-distribution, while no non-equivariant baseline across a $160\times$ parameter ladder
-reaches its out-of-distribution floor. *Scale buys interpolation; structure buys a certificate.* The result is a
+orbit and competitive in-distribution, while no non-equivariant baseline across a $160\times$ parameter ladder (up
+to $16\times$ the equivariant model's size) reaches its out-of-distribution floor. *Scale buys interpolation; structure buys a certificate.* The result is a
 single, **runnable** criterion (Algorithm 1, $\le 20$ lines) for *what* an equivariant world model can certifiably
 predict, and a structural reading of *why* celestial mechanics is forecastable for millennia while weather is not.
 
@@ -171,8 +171,10 @@ $\Phi(\rho(h)z):=\rho(h)c$ well-defined on the orbit of $z$ (extend by $0$ elsew
 $\mathcal D_G$ as $\rho(g)0=0$). Orbit-constancy gives $\lVert f(z)-c\rVert=\lVert f(\rho(g)z)-\rho(g)c\rVert
 =\lVert\rho(g)^{-1}f(\rho(g)z)-c\rVert$ (orthogonality of $\rho(g)$) for **all** $c$; two points equidistant to
 every $c$ coincide, so $f(\rho(g)z)=\rho(g)f(z)$. $\square$
-*(For $G$ compact with closed orbits the interpolant can be taken continuous, so the statement holds against
-continuous dynamics, not only the full algebraic class.)* With Theorem A this gives a **characterization**:
+*(The step uses $\rho(g)^{-1}$; since $\rho$ is orthogonal every $\rho(w)$, $w\in\langle S\rangle$, is invertible, so
+the necessity direction covers the monoid framework of Lemma 1 — equivalently it is the converse for the group
+$\langle S\cup S^{-1}\rangle$. For $G$ compact with closed orbits the interpolant can be taken continuous, so the
+statement holds against continuous dynamics, not only the full algebraic class.)* With Theorem A this gives a **characterization**:
 orbit-constant error against every equivariant target $\iff$ $f$ equivariant. Hence **no non-equivariant model
 possesses the configuration certificate, at any size** — the architectural impossibility invoked in §6–§7 is a
 theorem. The result is elementary (one line of Hilbert-space geometry once freeness frees the probe $c$); its role
@@ -223,7 +225,10 @@ $T$.
 
 **Proposition 3 (separation).** *(Structure.)* Under the equivariant prior ($\Phi\in\mathcal D_G$, $f$ equivariant
 and exact on $T$, $S$ generating $G$), Theorem A makes the error orbit-constant, so $\mathcal C\supseteq G\cdot T$:
-the **entire orbit is certified to error $0$, independent of $\epsilon$**, from the $k=|S|$ generator checks.
+the **entire orbit is certified, independent of $\epsilon$**, from the $k=|S|$ generator checks — to error $0$
+under the idealization that $f$ interpolates $T$ exactly, and in general (Theorem A) to the *constant, possibly
+nonzero* in-distribution error (cf. §7, "flat is not good"). What is $\epsilon$-independent is the *region*, not the
+error level.
 *(Scale/data.)* Under the equivariance-free prior of $L$-Lipschitz targets consistent on $T$, the McShane
 extensions $\Phi_\pm(z)=\min/\max_{t\in T}\big(\Phi(t)\pm L\,\mathrm{dist}(z,t)\big)$ are admissible and differ at
 $z$ by up to $2L\,\mathrm{dist}(z,T)$, so every learner has minimax error $\ge L\,\mathrm{dist}(z,T)$ and
@@ -296,11 +301,17 @@ $\tau$-isotypic part of $\mathrm{Sym}^k\mathcal Z$ (Schur). In particular: a con
 e.g. energy) is an *invariant* function, read out from $\mathcal Z_0$; and the conserved **moment map**
 $\mu:\mathcal Z\to\mathfrak g^*$ — Noether's charge of the continuous symmetry — is equivariant in the adjoint
 representation, which for $\mathrm{SO}(3)$ is $\mathfrak{so}(3)^*\cong\mathcal V_1$, so angular momentum lives in
-the $\ell{=}1$ block. Since $\mu$ is **quadratic** and $\dim\mathrm{Hom}_{\mathrm{SO}(3)}(\Lambda^2\mathcal V_1,\mathcal V_1)=1$,
-the cross product is — up to scale — the **unique** $\mathrm{SO}(3)$-equivariant degree-2 readout, and no degree-1
-readout exists. *Proof.* Differentiate the equivariance of $C_k$ and apply Schur ($\mathrm{Hom}_G$ between
-non-isomorphic isotypic types vanishes); for $\mu$, equivariance of the moment map is Noether's theorem and the
-$\Lambda^2\mathcal V_1\cong\mathcal V_1$ multiplicity-one fact is classical $\mathrm{SO}(3)$ invariant theory.
+the $\ell{=}1$ block. Since $\mu$ is **quadratic** and bilinear in the position–velocity pair, then — *provided the
+$\ell{=}1$ block carries (at least) two copies of $\mathcal V_1$, e.g. $\mathcal V_1(\text{pos})\oplus\mathcal V_1(\text{vel})$,
+as in the model of Experiment 6* — the cross product is, up to scale, the **unique** $\mathrm{SO}(3)$-equivariant
+degree-2 readout, and no degree-1 readout exists. *Proof.* Differentiate the equivariance of $C_k$ and apply Schur
+($\mathrm{Hom}_G$ between non-isomorphic isotypic types vanishes). For the bilinear $\mu$ on
+$\mathcal Z\supseteq\mathcal V_1(\text{pos})\oplus\mathcal V_1(\text{vel})$, the degree-2 cross term in
+$\mathrm{Sym}^2\mathcal Z$ contains $\mathcal V_1\otimes\mathcal V_1=\mathrm{Sym}^2\mathcal V_1\oplus\Lambda^2\mathcal V_1$;
+$\mathrm{Sym}^2\mathcal V_1=\mathcal V_0\oplus\mathcal V_2$ carries **no** $\mathcal V_1$, while
+$\Lambda^2\mathcal V_1\cong\mathcal V_1$ with $\dim\mathrm{Hom}_{\mathrm{SO}(3)}(\Lambda^2\mathcal V_1,\mathcal V_1)=1$
+(classical $\mathrm{SO}(3)$ invariant theory) — realized by $r\times v$. So no degree-1 and no other degree-2
+readout exists; uniqueness needs the two $\mathcal V_1$ copies (with $m$ copies the space is $\binom{m}{2}$-dim).
 $\square$
 
 This *predicts*, with no fitted parameter, exactly what §5.3 measures — $E$ from the invariant block ($R^2\approx1$),
@@ -469,8 +480,12 @@ Three findings, robust across 3 seeds (Figure 6): (i) the equivariant model's ro
 the orbit** (out-of-wedge / in-wedge ratio $1.00$ at every horizon) — the certificate, now on a *learned* model of
 *real* contact physics; (ii) it is **competitive in-distribution** (in-wedge relMSE $0.13\text{–}0.15$ vs the best
 MLP's $0.14\text{–}0.19$), so the certificate is not bought by being a worse predictor — "flat" is also "good"
-here; and (iii) **no MLP scale reaches the equivariant floor out-of-wedge** — even the $272\mathrm{k}$-parameter MLP
-($16\times$ the equivariant model's size) stays $2.1\text{–}3.9\times$ above it. The gap is smaller than the toy's
+here; and (iii) **no MLP scale reaches the equivariant floor out-of-wedge** — every scale across the ladder stays
+$2.1\text{–}3.9\times$ above it at $H{=}10$, and the $272\mathrm{k}$-parameter MLP ($16\times$ the equivariant
+model's size) — the *closest* of the baselines — is still $2.1\text{–}2.6\times$ clear of the floor. (These three
+findings hold on all three seeds; the experiment's *auxiliary* `climb` sub-check — the largest MLP's own in→out
+ratio exceeding $2\times$ — is brittle, met on $1/3$ seeds, so we report the load-bearing floor-penalty rather than
+that sub-check, and the committed gate prints `INCONCLUSIVE` on it.) The gap is smaller than the toy's
 because a single PushT step is easy to predict in-distribution; the certificate's value is precisely that it
 survives the *rollout*, out of distribution, where scale does not follow. This is the keystone non-toy result: the
 configuration certificate holds for a learned model of dynamics we did not design.

@@ -51,6 +51,10 @@ class Certificate:
         if self.min_finite_horizon is None:
             hor = (f"HORIZON×RESOLUTION: all {self.n_unbounded} channels contractive (λ≤0) ⇒ certified to every "
                    f"horizon at ε={self.eps:g}")
+        elif self.min_finite_horizon < 1.0:
+            hor = (f"HORIZON×RESOLUTION at ε={self.eps:g}: {self.n_unbounded} channels unbounded (λ≤0); the binding "
+                   f"expansive channel is certified to <1 step (T={self.min_finite_horizon:.2f}; strongly expansive "
+                   "— its fine detail is uncertifiable at this resolution)")
         else:
             hor = (f"HORIZON×RESOLUTION at ε={self.eps:g}: {self.n_unbounded} channels unbounded (λ≤0); the binding "
                    f"expansive channel is certified to T={self.min_finite_horizon:.1f} steps")

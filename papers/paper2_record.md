@@ -146,4 +146,14 @@ The four real weaknesses from the honest assessment, and their fix status:
 **Net effect of the four-weakness program:** the paper now has (1) a real-contact-dynamics validation, (2) a
 characterization + quantitative separation, (3) a proved placement principle for the hinge, (4) a runnable
 certification procedure — each adversarially vetted and honestly scoped. Residual ceiling (stated in §7): still
-laptop-scale, structured-state not pixels, modest OOD gap on PushT; the embodied/scale lift remains the open frontier.
+laptop-scale, structured-state not pixels, modest OOD gap on PushT; the embodied/scale lift remains the open frontier
+(roadmap: `papers/proposals/paper2-embodied-scale-lift.md`).
+
+**Round-3 content panel** (`wf_544518f0`, on the §3.3/§3.4/§4/§5.7/Lemma-2 additions) → **verdict: should-fix-only,
+0 blockers**; confirmed the prior skeptics' corrected hypotheses survived the fold. 3 should-fix, all 1–2-sentence,
+fixed this batch: (i) §5.7 mis-attributed "2.1–3.9×" to the 272k MLP — it's the *smallest* MLP; the 272k is 2.1–2.6×
+(the closest baseline) → reworded to the across-ladder reading; (ii) Prop 4 proof skipped the Sym²→Λ² bridge + the
+"ℓ=1 block has ≥2 copies of V₁" hypothesis → inserted; (iii) Lemma 2 used ρ(g)⁻¹ in the monoid framework → one-line
+remark (ρ∈O(Z) ⇒ invertible). Plus honesty nitpicks: §3.3 "error 0" idealization clarified, §5.7 brittle-`climb`
+sub-gate disclosed, abstract 160×/16× disambiguated, certify.py flags sub-1-step horizons. Adjudicator **rejected**
+the Lyapunov "0.4%" complaint (worst-seed error 0.378% < 0.4% from the committed JSON; reviewers used rounded 0.690).
