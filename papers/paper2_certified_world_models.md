@@ -28,8 +28,8 @@ equivariant floor and never reaches it. Finally, on **real PushT contact dynamic
 engine we did not author — a learned equivariant world model's multi-step rollout error is *exactly* flat over the
 orbit and competitive in-distribution, while no non-equivariant baseline across a $160\times$ parameter ladder
 reaches its out-of-distribution floor. *Scale buys interpolation; structure buys a certificate.* The result is a
-single criterion for *what* an equivariant world model can certifiably predict, and a structural reading of *why*
-celestial mechanics is forecastable for millennia while weather is not.
+single, **runnable** criterion (Algorithm 1, $\le 20$ lines) for *what* an equivariant world model can certifiably
+predict, and a structural reading of *why* celestial mechanics is forecastable for millennia while weather is not.
 
 ---
 
@@ -236,6 +236,29 @@ end of the wedge in Experiments 7 and 9 — is certified by *structure* for **ev
 its fit *inside* the tube; it cannot enlarge the tube, because the bound $L\,\mathrm{dist}(z,T)$ is information-theoretic
 (independent of model size). This is the precise content of the empirical curves: the equivariant model is flat over
 the whole orbit while every baseline scale climbs once $\mathrm{dist}(z,T)$ exceeds $\epsilon/L$.
+
+### 3.4 The certificate is a procedure
+
+The certificate is not only a lens; it is something one **runs** on a trained model, with no further data. The
+inputs are the two quantities every equivariant model already exposes — its per-generator equivariance residual and
+its predictor-Jacobian spectrum — and the output is the certified region.
+
+> **Algorithm 1 (Certify).** *Input:* trained equivariant model $(E,f)$, generators $S$, resolution $\epsilon$.
+> 1. Measure the per-generator residual $\epsilon_{\max}=\max_{g_i\in S}\lVert E(g_i\!\cdot\!x)-\rho(g_i)E(x)\rVert$
+>    (and the analogous predictor residual).
+> 2. **Configuration axis:** if $\epsilon_{\max}\le\text{tol}$, certify the *entire* monoid $\langle S\rangle$ from
+>    these $k$ checks (Lemma 1, Theorem A); else report the approximate budget $m\,\epsilon_{\max}$ (Theorem B).
+> 3. Measure the predictor-Jacobian singular values $\{\sigma_j\}$ at the operating point; set
+>    $\lambda_j=\log\sigma_j/\Delta t$.
+> 4. **Horizon $\times$ resolution axis:** return, per channel, $T_j(\epsilon)=\infty$ if $\lambda_j\le0$, else
+>    $\log(1/\epsilon)/\lambda_j$ (Theorem B).
+>
+> *Output:* the certified region $\langle S\rangle\times\{T_j(\epsilon)\}$ — computed from the model alone.
+
+This is implemented and unit-tested (`src/certify.py`): on the Experiment-1 model it certifies the full monoid from
+$2$ generator checks (residual $1.2\times10^{-7}$) and returns $48$ contractive channels certified to *every*
+horizon plus the binding expansive channel's $\log(1/\epsilon)$ horizon. The certificate is thus an operational tool,
+not merely an interpretive claim.
 
 ---
 

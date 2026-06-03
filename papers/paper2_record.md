@@ -135,5 +135,15 @@ The four real weaknesses from the honest assessment, and their fix status:
    — proving *why* the Step-58 cross-product readout is unique and tying it to the companion paper's degree-1 cap.
    Honestly framed as a Schur/moment-map *placement principle* (not a new theorem); "slow$=$conserved" stays measured
    (needs the Hamiltonian symplectic bridge). The hinge is now *conjecture (measured) + proved placement core*.
-4. **Contribution is a perspective, not a method** ⏳ next: ship a concrete `certify()` procedure (algorithm box)
-   + keep the falsifiability paragraph; reframe as "new result + usable tool."
+4. ~~**Contribution is a perspective, not a method**~~ ✅ **this batch**: shipped `src/certify.py` — a runnable
+   **Algorithm 1 (Certify)** that takes a trained model's equivariance residuals + predictor-Jacobian spectrum + ε
+   and emits the certified region (configuration monoid + per-channel horizons $T_j(\epsilon)$). Unit-tested
+   (`tests/test_certify.py`, 5 tests → suite **86 passed**); demo runs on Experiment-1's *measured* spectrum (48
+   unbounded channels + binding log-law horizon). Added Algorithm 1 box to §3.4 and reframed the abstract ("a
+   single, runnable criterion"). Partly intrinsic (it remains a mechanism paper), but the certificate is now an
+   operational tool, not only a lens.
+
+**Net effect of the four-weakness program:** the paper now has (1) a real-contact-dynamics validation, (2) a
+characterization + quantitative separation, (3) a proved placement principle for the hinge, (4) a runnable
+certification procedure — each adversarially vetted and honestly scoped. Residual ceiling (stated in §7): still
+laptop-scale, structured-state not pixels, modest OOD gap on PushT; the embodied/scale lift remains the open frontier.
