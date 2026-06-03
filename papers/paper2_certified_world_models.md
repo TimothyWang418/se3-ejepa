@@ -66,7 +66,9 @@ Our contributions are:
    an $\epsilon/L$-tube around its data).
 2. **The Noether hinge** (§4): the conjecture — *measured and confirmed on controlled systems* — that the
    group-invariant channels are the dynamically slow (long-horizon-certifiable) ones, linking the configuration
-   axis to the horizon axis.
+   axis to the horizon axis; a representation-theoretic **placement principle** (Proposition 4) proves *which*
+   isotypic block must carry each conserved charge and why $3$D angular momentum is recoverable only at a unique
+   degree-2 cross product, leaving the slow$=$conserved coincidence as the measured part.
 3. **Empirical confirmation of all three axes at small scale** (§5), including the headline contrast *scale buys
    interpolation; structure buys a certificate*, and a keystone validation on **real physics-engine contact
    dynamics** (PushT) where the certificate holds for a *learned* model of dynamics we did not design.
@@ -219,7 +221,7 @@ observed on a training set $T$. Formally $\mathcal C=\{z:\inf_{f}\sup_{\Phi}\lVe
 where $f$ ranges over the learner's hypotheses (exact on $T$) and $\Phi$ over the admissible targets agreeing on
 $T$.
 
-**Proposition (separation).** *(Structure.)* Under the equivariant prior ($\Phi\in\mathcal D_G$, $f$ equivariant
+**Proposition 3 (separation).** *(Structure.)* Under the equivariant prior ($\Phi\in\mathcal D_G$, $f$ equivariant
 and exact on $T$, $S$ generating $G$), Theorem A makes the error orbit-constant, so $\mathcal C\supseteq G\cdot T$:
 the **entire orbit is certified to error $0$, independent of $\epsilon$**, from the $k=|S|$ generator checks.
 *(Scale/data.)* Under the equivariance-free prior of $L$-Lipschitz targets consistent on $T$, the McShane
@@ -258,6 +260,35 @@ $\text{invariant}\oplus\text{conserved-equivariant}$, which **collapses to the i
 every conserved charge is a scalar** — the two-dimensional case, where $\text{slow}\subseteq\text{invariant}$ holds
 literally. Section 5.3 measures both forms: the clean $2$D containment, and its $3$D refinement in which angular
 momentum is recovered from the equivariant block at polynomial degree two (the cross product).
+
+While the *coincidence* slow $=$ conserved is what we measure, the **placement by isotypic type is forced by
+representation theory** — and so is the degree at which each charge is readable. This is what makes the $3$D
+"degree-2 cross product" non-arbitrary.
+
+**Proposition 4 (placement principle: which block carries which charge, and at what degree).** Let $G$ act on
+$\mathcal Z$ by an orthogonal $\rho$ with isotypic decomposition $\mathcal Z=\bigoplus_\ell\mathcal Z_\ell$, and let
+$C$ be a conserved quantity transforming in a representation $\tau$, $C(\rho(g)z)=\tau(g)C(z)$. Then every
+homogeneous component $C_k\in\mathrm{Hom}_G(\mathrm{Sym}^k\mathcal Z,\,W)$ of $C$ is supported on the
+$\tau$-isotypic part of $\mathrm{Sym}^k\mathcal Z$ (Schur). In particular: a conserved **scalar** ($\tau$ trivial,
+e.g. energy) is an *invariant* function, read out from $\mathcal Z_0$; and the conserved **moment map**
+$\mu:\mathcal Z\to\mathfrak g^*$ — Noether's charge of the continuous symmetry — is equivariant in the adjoint
+representation, which for $\mathrm{SO}(3)$ is $\mathfrak{so}(3)^*\cong\mathcal V_1$, so angular momentum lives in
+the $\ell{=}1$ block. Since $\mu$ is **quadratic** and $\dim\mathrm{Hom}_{\mathrm{SO}(3)}(\Lambda^2\mathcal V_1,\mathcal V_1)=1$,
+the cross product is — up to scale — the **unique** $\mathrm{SO}(3)$-equivariant degree-2 readout, and no degree-1
+readout exists. *Proof.* Differentiate the equivariance of $C_k$ and apply Schur ($\mathrm{Hom}_G$ between
+non-isomorphic isotypic types vanishes); for $\mu$, equivariance of the moment map is Noether's theorem and the
+$\Lambda^2\mathcal V_1\cong\mathcal V_1$ multiplicity-one fact is classical $\mathrm{SO}(3)$ invariant theory.
+$\square$
+
+This *predicts*, with no fitted parameter, exactly what §5.3 measures — $E$ from the invariant block ($R^2\approx1$),
+$L$ from the $\ell{=}1$ block via the degree-2 cross product ($R^2{=}1.00$) and nothing lower — and explains the
+tie to the companion paper's degree-1 Vector-Neuron cap (a degree-1 net *cannot* form the only available readout).
+**Scope (honest).** Proposition 4 is Schur's lemma applied to the symmetric powers plus the moment map's
+equivariance — a *placement principle*, not a new theorem: it pins which block carries each charge and at what
+degree, but representation theory alone does not force those charges to be the *dynamically slow* modes.
+Identifying a conserved readout with a slow state direction uses the system's Hamiltonian (symplectic) structure;
+absent that, "slow $\subseteq$ invariant $\oplus$ conserved-equivariant" stays the *measured* statement of §5.3,
+now equipped with a proof of *why the conserved content sits where it does.*
 
 ---
 
@@ -493,9 +524,12 @@ certificate for equivariant models.
   *isotypic* refinement (channels chosen by $\ell$-type, which ties the spectrum to equivariance and the hinge) is
   asserted, not separately measured — Experiment 3 measures the scalar law and Experiment 1 splits contractive from
   expansive but not by $\ell$-type.
-- **The Noether hinge is a measured conjecture**, confirmed on controlled systems with the honest non-converse
-  (invariant $\not\Rightarrow$ slow). Its lift to a *real, contact-rich embodied* model — where symmetry is
-  approximate and the latent is learned end-to-end — is the primary open problem; the $3$D contact experiment is a
+- **The Noether hinge is a measured conjecture** *with a proved core*: the *placement* of each conserved charge by
+  isotypic type (Proposition 4 — energy in $\ell{=}0$, angular momentum in the $\ell{=}1$ block via the unique
+  degree-2 cross product) is forced by representation theory, but the remaining claim that these blocks are also the
+  *dynamically slow* ones is what we measure, with the honest non-converse (invariant $\not\Rightarrow$ slow). Its
+  lift to a *real, contact-rich embodied* model — where symmetry is approximate and the latent is learned
+  end-to-end — is the primary open problem; the $3$D contact experiment is a
   clean two-body toy whose clean-containment gate is `INCONCLUSIVE` (resolved in type-and-degree form by
   Experiment 6).
 - **§5.6 re-frames companion-line results**, not fresh runs: the decoder-free reach is *exact transfer*

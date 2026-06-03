@@ -127,7 +127,13 @@ The four real weaknesses from the honest assessment, and their fix status:
    ε-independent orbit; best L-Lipschitz learner certifies only an ε/L-tube). Adversarially vetted (a skeptic agent
    killed the first folklore version and steered to the Lipschitz one). Honestly framed as a characterization +
    separation, not deep machinery.
-3. **Hinge (most novel) least substantiated** ⏳ next: promote to a theorem under explicit assumptions (linearized
-   group-commuting dynamics ⟹ slow ⊆ invariant⊕conserved-equivariant via Schur + Noether), measured beyond.
+3. ~~**Hinge (most novel) least substantiated**~~ ✅ **this batch**: added **Proposition 4** (placement principle).
+   Skeptic killed the naive "place via $DC(z^*)$" version (vacuous — angular momentum is quadratic, $DC(0){=}0$) and
+   steered to the correct one: via the **moment map's equivariance** ($\mu:\mathcal Z\to\mathfrak g^*\cong\mathcal V_1$
+   for SO(3)) + Schur on $\mathrm{Sym}^2$, energy is forced into $\ell{=}0$ and angular momentum into the $\ell{=}1$
+   block, recoverable **only** at degree 2 because $\dim\mathrm{Hom}_{SO(3)}(\Lambda^2\mathcal V_1,\mathcal V_1){=}1$
+   — proving *why* the Step-58 cross-product readout is unique and tying it to the companion paper's degree-1 cap.
+   Honestly framed as a Schur/moment-map *placement principle* (not a new theorem); "slow$=$conserved" stays measured
+   (needs the Hamiltonian symplectic bridge). The hinge is now *conjecture (measured) + proved placement core*.
 4. **Contribution is a perspective, not a method** ⏳ next: ship a concrete `certify()` procedure (algorithm box)
    + keep the falsifiability paragraph; reframe as "new result + usable tool."
