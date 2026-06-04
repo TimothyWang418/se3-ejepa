@@ -194,5 +194,14 @@ of `papers/proposals/paper2-embodied-scale-lift.md`) is out of physical scope he
   functional yet has huge σ_max — claim only the readout channel's λ≤0); "exact conservation" honestly scoped (exact
   for momentum under equivariant symplectic discretization, O(Δtᵖ) for energy, η *measured* for learned f). Honest
   residue: latent-Hamiltonicity assumed; η measured; converse (slow ⇒ conserved) false. Compute-free (pure theory).
+- **T5 — polish** ✅ (presentation, reviewer-facing). **Hero Figure 1** (`papers/figures/make_hero.py` →
+  `hero_certified_region.png`): a 2-panel concept schematic of the 3-axis certified region (configuration: structure
+  certifies all ⟨S⟩ vs scale's ε/L tube; horizon×resolution: eclipses-slow vs weather-chaotic), placed at §1 end +
+  cited; all 7 downstream "(Figure N)" refs renumbered +1 (now Figures 1–9, verified embed↔ref aligned).
+  **Positioning table** at the top of §6 (BRo / UWM / UR-LeJEPA / IMWM / LDA / companion / **this paper** × config /
+  horizon×ε / closed-loop / guarantee-kind) — crisp at-a-glance map. **One-command repro**: `Makefile` with
+  `make paper2` (seeds→figures→tests→PDF) + `make paper2-quick`; noted in Appendix A. PDF 19 pp, 9 figures, clean
+  compile. *Deferred (marginal):* the 5-seed bump — the paper is consistent + honest at 3 seeds, and a 5-seed re-run
+  of the PushT line is ~2 h CPU for negligible CI tightening; left at 3.
 - **T3 — pixel latent** ⏳ (S1; needs a C₄-equivariant latent predictor — interpolation-floored for continuous
-  SO(2), so honestly C₄-scoped). · **T5 — hero figure + positioning table + one-command repro** ⏳.
+  SO(2), so honestly C₄-scoped; the remaining laptop-feasible gap-closer).

@@ -66,7 +66,7 @@ Our contributions are:
    $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$ (Theorem B) whose certified region is the
    coarse-invariant-slow-low-$|w|$ corner — with a **quantitative scale-vs-structure separation** (§3.3: structure
    certifies the whole $\epsilon$-independent orbit; the best $L$-Lipschitz non-equivariant learner certifies only
-   an $\epsilon/L$-tube around its data).
+   an $\epsilon/L$-tube around its data). Figure 1 is the whole picture at a glance.
 2. **The Noether hinge** (§4): the bridge — that the group-invariant/equivariant channels are the dynamically slow
    (long-horizon-certifiable) ones — linking the configuration axis to the horizon axis. A representation-theoretic
    **placement principle** (Proposition 4) proves *which* isotypic block must carry each conserved charge and why
@@ -82,6 +82,8 @@ Our contributions are:
 
 We are explicit about scope (§7): this is a mechanism-and-theory paper with $1$–$2$-GPU proof-of-principle, not a
 scaled benchmark, and the hinge's lift to *approximate* symmetry is open.
+
+![The predictability certificate at a glance. **Left:** in the configuration $\times$ horizon plane, an equivariant model certifies the *entire* generated monoid $\langle S\rangle$ — every composition, from $k$ generator checks (Lemma 1) — up to a horizon ceiling set by the predictor spectrum $\{\lambda_j\}$ (Theorem B); a non-equivariant model of any size certifies only a small interpolation *tube* around its training set ($\sim\epsilon/L$, §3.3). **Right:** the horizon $\times$ resolution trade-off $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$ — conserved/invariant (slow, $\lambda\le0$) channels are certified to all horizons (eclipses, millennia), chaotic ($\lambda>0$) channels shrink as the demanded resolution sharpens (weather, $\sim$two weeks). *Scale buys interpolation; structure buys a certificate.*](figures/hero_certified_region.png)
 
 ---
 
@@ -398,7 +400,7 @@ predictor $f(z,a)_i=h_\theta(a_i)\odot z_i$ on **only the $6$ single-line genera
 $64$ actions) certifies it over **all $2^6{=}64$ compositions** to machine precision (worst relMSE $\sim10^{-33}$;
 equivariance residual exactly $0$), while a non-equivariant baseline trained on the same $7$ actions degrades
 monotonically with composition length ($1.6\text{–}1.7\times10^{-5}$ on seen actions $\to 0.59$ at six flips,
-Figure 1). This makes "$k$ generator checks $\Rightarrow 2^k$ certified set" literal, with genuine learning and an
+Figure 2). This makes "$k$ generator checks $\Rightarrow 2^k$ certified set" literal, with genuine learning and an
 honest contrast.
 
 ![Training on the $6$ generators of $\mathbb{Z}_2^6$ certifies all $64$ compositions (equivariant, machine precision) while a non-equivariant baseline degrades with composition length.](figures/step49_iching_certificate.png)
@@ -415,7 +417,7 @@ steps over the full $\epsilon$ grid, and its horizon grows *only logarithmically
 slope $\mathrm{d}T/\mathrm{d}\log\epsilon=1.3\text{–}1.6\approx1/\lambda=1.44$), while the **contracting channel
 stays certified for the entire $90$-step rollout at every $\epsilon$** (the conserved and rotor channels too, except
 at the finest $\epsilon{=}0.005$, where they fall to $\sim40\text{–}90$ steps). At $\epsilon{=}0.05$ the slow
-channels outlast the chaotic detail by $12\text{–}15\times$ (Figure 2). This is the predictability staircase: long
+channels outlast the chaotic detail by $12\text{–}15\times$ (Figure 3). This is the predictability staircase: long
 horizon $\Rightarrow$ coarse and invariant only.
 
 ![Left: rollout error growth recovers the Lyapunov spectrum. Right: the certified-horizon staircase $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$.](figures/step52_horizon_resolution.png)
@@ -434,7 +436,7 @@ no slow direction escapes the invariant block in this system — rather than by 
 the certificate: the equivariant model's slow subspace **is** its invariant subspace, whose out-of-distribution
 group-action residual is $\sim10^{-16}$, exact and architectural for all of $\mathrm{SO}(2)$. A matched
 non-equivariant baseline also learns $E,L$ ($R^2=0.99$) but smears them across directions that **drift by
-$\approx1.17$** under the same group action, and carries no certificate (Figure 3). The honest non-converse is
+$\approx1.17$** under the same group action, and carries no certificate (Figure 4). The honest non-converse is
 visible in the data (the invariant but fast scalar $|r|^2$): slow $\subseteq$ invariant, not $=$.
 
 ![Left: the slowest latent modes live in the invariant ($\ell{=}0$) block. Right: the certificate — the invariant subspace stays group-invariant to $10^{-16}$ where the non-equivariant model's slow directions drift by $\sim1$.](figures/step50_noether_hinge.png)
@@ -471,7 +473,7 @@ ratio $1.1\text{–}1.2$) — a certificate that holds from partial data by the 
 $\mathrm{err}(R_\theta s)=\mathrm{err}(s)$. A non-equivariant baseline **scaled across an $88\times$ parameter range**
 ($3.8\mathrm{k}\to337\mathrm{k}$) buys genuine *interpolation*: its in-wedge error drops $31\text{–}166\times$ and
 even **beats** the $56\times$-smaller equivariant model in-distribution — but out of the wedge the largest baseline
-remains $10\text{–}155\times$ worse than the equivariant model and never reaches its floor (Figure 4). The fair
+remains $10\text{–}155\times$ worse than the equivariant model and never reaches its floor (Figure 5). The fair
 nuance — *scale can win in-distribution* — is exactly why the contribution is the **certificate** (an orbit-wide
 guarantee from partial data), not a per-point accuracy contest. This is a gap versus *scale* (more parameters, the
 same data); the complementary question — whether *data augmentation* (orbit-covering rotations) closes it — is
@@ -490,7 +492,7 @@ the baseline; (ii) as the measured world symmetry-defect $\epsilon_{\text{world}
 out-of-wedge error grows **smoothly and monotonically** (correlation $0.88\text{–}0.98$, exactly Theorem B's
 $\epsilon_{\max}$ term — a graceful slope, not a cliff); and (iii) the equivariant model keeps beating the
 non-equivariant one up to a **measured symmetry-content threshold** ($\epsilon_{\text{world}}\approx0.01\text{–}0.06$,
-seed-dependent), beyond which the now-wrong symmetry assumption hurts more than it helps (Figure 5). So *approximate*
+seed-dependent), beyond which the now-wrong symmetry assumption hurts more than it helps (Figure 6). So *approximate*
 symmetry buys an *approximate* certificate with exactly the error budget the theory predicts, and the boundary where
 structure stops paying is itself measured, not assumed.
 
@@ -530,7 +532,7 @@ both are trained one-step with identical data, optimiser, and cosine schedule. W
 steps and measure rollout relMSE across the full orbit of scene orientations (rotating a held-out real test set, as
 in Experiment 7).
 
-Three findings, robust across 3 seeds (Figure 6): (i) the equivariant model's rollout error is **exactly flat over
+Three findings, robust across 3 seeds (Figure 7): (i) the equivariant model's rollout error is **exactly flat over
 the orbit** (out-of-wedge / in-wedge ratio $1.00$ at every horizon) — the certificate, now on a *learned* model of
 *real* contact physics; (ii) it is **competitive in-distribution** (in-wedge relMSE $0.13\text{–}0.15$ vs the best
 MLP's $0.14\text{–}0.19$), so the certificate is not bought by being a worse predictor — "flat" is also "good"
@@ -593,7 +595,7 @@ CEM with an isotropic exploration covariance, a rotation-invariant **disk** acti
 **scene-covariant** action noise. With these the planner satisfies $\pi(R_\beta s)=R_\beta\,\pi(s)$, so an
 equivariant model yields an equivariant closed-loop policy and the realized task error is *exactly* orbit-invariant.
 
-Three findings (Figure 8): **(i) an exact certificate at the task level** — the model-rollout terminal pose error is
+Three findings (Figure 9): **(i) an exact certificate at the task level** — the model-rollout terminal pose error is
 flat over the orbit *to the float floor* (out-of-wedge / in-wedge ratio $\mathbf{1.000}$ on all $3$ seeds —
 architectural) for the equivariant model, versus $\times 1.1\text{–}2.2$ for the MLP under the *same* equivariant
 planner: the certificate now governs closed-loop *outcomes*, not just predictions; **(ii) it survives the real env**
@@ -624,6 +626,25 @@ orbit, to the float floor on every seed.
 ---
 
 ## 6. Related Work
+
+The paper sits among a cluster of concurrent *structure-for-prediction* works. The table places each against the
+certificate's three axes and the *kind* of guarantee it offers (✓ provides; ~ partial/empirical; — not addressed);
+the prose elaborates below.
+
+| Work | Core mechanism | Config. $\langle S\rangle$ | Horizon$\times\epsilon$ | Closed-loop | Guarantee kind |
+|---|---|:--:|:--:|:--:|---|
+| BRo-JEPA | $\mathbb{Z}/10$ cyclic predictor | ~ one group | — | — | empirical zero-shot |
+| UWM-JEPA | $U(d)$ unitary predictor | ~ one group | — | — | empirical |
+| UR-JEPA / LeJEPA | latent-geometry prior (an/isotropy) | — | — | — | distributional (2nd-order) |
+| IMWM | oracle-bypass; residual $=$ search | — | — | ~ search budget | diagnostic |
+| LDA | $\mathrm{SE}(3)$-intrinsic diffusion (action side) | — | — | ~ policy | empirical, modest$+$robust |
+| companion line | exact flatness: $1$ element, $1$ resolution | ~ one element | — | ✓ invariance | proved (a corner) |
+| **this paper** | equivariant **predictability certificate** | ✓ $k\!\Rightarrow\!\langle S\rangle$ (Thm A, Lem 1) | ✓ $T_j(\epsilon)\!\sim\!\tfrac{\log(1/\epsilon)}{\lambda_j}$ (Thm B) | ✓ exact (Exp 11) | **a-priori, per-situation, computable (Alg 1)** |
+
+The throughline: prior work supplies *mechanisms* (equivariant predictors), *priors* (latent geometry), or
+*diagnostics* (oracle-bypass) — each empirical or distributional and on a single axis; this paper supplies a
+*provable, computable region* across configuration $\times$ horizon $\times$ resolution, with the Noether hinge (§4)
+tying the axes together.
 
 **Equivariance and constant error (our companion line).** A companion paper establishes, for a single group element
 and one resolution, that exact equivariance makes one-step error constant across the group, with exact-flatness and
@@ -775,7 +796,9 @@ writes its figure and JSON to `papers/figures/`. The multi-seed steps commit per
 `experiments/aggregate_seeds.py`; every range quoted above is the seed min–max from those files. The
 configuration-flatness experiment (Experiment 1) self-aggregates its three seeds into the means in
 `step47_certificate.json`. The full test suite passes together; `tests/conftest.py` isolates the float64
-experiments from the float32 codebase.
+experiments from the float32 codebase. One command reproduces the paper end-to-end — `make paper2` (multi-seed
+re-runs $\to$ figures $\to$ tests $\to$ PDF), with `make paper2-quick` for the figures-and-PDF fast path; everything
+is CPU/MPS, no CUDA.
 
 | Exp. | Result | Code | Test | Seeds | Headline number |
 |---|---|---|---|---|---|
