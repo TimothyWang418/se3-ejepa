@@ -216,6 +216,31 @@ of `papers/proposals/paper2-embodied-scale-lift.md`) is out of physical scope he
   to the load-bearing claim (enc/pred equivariance + exact flatness + a learned-check), which surfaced the underfit
   honestly (`eq_learned` = False).
 
-**极致 program complete: T1–T5 all done (T1/T2 evidence, T4 theorem, T5 polish, T3 honest pixel attempt). The
-laptop-feasible envelope is exhausted; the remaining lifts (SE(3)/3D, scale, competitive pixels, embodied hinge) are
-the GPU tier S1–S5 of `papers/proposals/paper2-embodied-scale-lift.md`.**
+**极致 program complete: T1–T5 all done (T1/T2 evidence, T4 theorem, T5 polish, T3 honest pixel attempt).**
+
+## 10. Frontier push (user: "把剩下的 SE(3)/3D、scale、像素、具身枢纽 跑了吧")
+
+Honest triage on this Mac (CPU/MPS, no CUDA): of the four GPU-tier items, **SE(3)/3D was genuinely laptop-runnable**
+(the 3D machinery was built here originally) and I ran it; the other three are GPU-bound and I did not fake them.
+
+- **SE(3)/3D — the certificate on SO(3)** ✅ (Experiment 12, `experiments/step63_se3_certificate.py`, §5.10 +
+  Figure 10, 3 seeds). Lifts the multi-step rollout certificate from the circle to the **non-abelian SO(3)** on 3D
+  point clouds (constructed SO(3)-equivariant teacher — toy, like Exps 1–7; e3nn encoder + jointly-equivariant VN
+  predictor, the Step 13/18 line). **Robust positive:** learned equivariant model exactly flat over the SO(3) orbit
+  (H=5 ratio **1.000**, resid ~1e-5, all 3 seeds), MLP climbs ×2.1–5.7 OOD; structure-vs-scale reproduced in 3D
+  (7.4×-smaller eq carries the cert; bigger MLP interpolates better in-wedge 0.19–0.27 vs 0.55–0.58). **Honest
+  caveat:** `compete` gate fails all 3 (the small eq's accuracy floor ~0.57 is high → OOD only *comparable* to the
+  degraded MLP, not a clean win — "flat is not good" in 3D, like T3 pixels); reported INCONCLUSIVE, not loosened. No
+  new test needed — `tests/test_se3_equivariance.py` already guards the encoder+VN-predictor joint SO(3) equivariance
+  that gives the rollout flatness. Ties to Prop 4 (L in ℓ=1) + Exp 6 (3D containment): hinge *places* the SO(3)
+  charges, certificate is *flat* over SO(3).
+- **scale (→1M+ params)** ⛔ GPU-only — laptop already shows "no scale reaches the floor" across 160× (Exp 9);
+  genuinely-larger needs a card. · **competitive pixels** ⛔ T3 showed the steerable pixel JEPA underfits at laptop
+  scale; competitive-and-flat needs GPU capacity. · **real embodied (RLBench/ManiSkill)** ⛔ GPU+sim. These three →
+  **GPU-ready scripts** (offered), the GPU tier S1–S5 of `papers/proposals/paper2-embodied-scale-lift.md`.
+
+**Meta-finding across T3 + Exp 12:** the certificate's *exact orbit-flatness* (the GUARANTEE) lifts everywhere —
+SO(2) structured-state, SO(2) pixels, SO(3) point clouds — all ratio 1.000. The equivariant model's *competitive
+accuracy* is modality/capacity-dependent: competitive on structured-state SO(2) PushT (Exp 9), underfits on pixels
+(T3) and 3D clouds (Exp 12) at laptop capacity. Honest read: the guarantee is free and universal; competitive
+accuracy needs matched equivariant capacity per modality (GPU tier).

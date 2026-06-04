@@ -78,7 +78,8 @@ Our contributions are:
    interpolation; structure buys a certificate*, a keystone validation on **real physics-engine contact
    dynamics** (PushT) where the certificate holds for a *learned* model of dynamics we did not design, and a
    **closed-loop** instantiation where, run through a planner, the certificate becomes *task* competence —
-   orbit-invariant pose control where a scaled baseline degrades.
+   orbit-invariant pose control where a scaled baseline degrades — and a lift from the circle to the **non-abelian
+   $\mathrm{SO}(3)$** on 3D point clouds (the certificate is not $\mathrm{SO}(2)$-specific).
 
 We are explicit about scope (§7): this is a mechanism-and-theory paper with $1$–$2$-GPU proof-of-principle, not a
 scaled benchmark, and the hinge's lift to *approximate* symmetry is open.
@@ -623,6 +624,40 @@ orbit, to the float floor on every seed.
 
 ![Experiment 11 (the certificate at the task level). Left: closed-loop block-angle error over the orbit of scene orientations — the equivariant model under a $G$-equivariant planner is exactly flat under model rollout (ratio $1.000$) and flat on the real env, while a $4.3\times$-larger MLP degrades out of the training wedge. Right: the $\mathrm{SO}(2)$-invariant planning cost is orbit-invariant to the float floor under the equivariant model and materially distorted under the MLP.](figures/step61_closed_loop_certificate.png)
 
+### 5.10 The certificate is not $\mathrm{SO}(2)$-specific: a lift to the non-abelian $\mathrm{SO}(3)$
+
+**Experiment 12 (the certificate on $\mathrm{SO}(3)$, 3D point clouds).** Every result so far uses a *circle* —
+$\mathrm{SO}(2)$ or a discrete cyclic group. We lift the same multi-step rollout certificate to **$\mathrm{SO}(3)$ on
+3D point clouds**, a genuinely larger, **non-commutative** group whose orbit is two-dimensional (an axis on $S^2$
+times an angle). The dynamics is a constructed exactly-$\mathrm{SO}(3)$-equivariant teacher on a $24$-point cloud
+(drift $+$ torque $+$ anisotropic stretch) — like Experiments 1–7 a *toy* (the real-data anchor stays Experiment 9);
+the model is an $\mathrm{e3nn}$ point-cloud encoder whose latent is a stack of type-$\ell{=}1$ vectors, with a
+jointly-equivariant Vector-Neuron predictor (the companion 3D line). We train one-step on a $z$-wedge of training
+rotations, then roll each model $H{=}5$ steps and measure rollout relMSE over the $\mathrm{SO}(3)$ orbit: the
+in-wedge identity, and out-of-distribution rotations (off-axis $90^\circ$, the antipode, random $\mathrm{SO}(3)$).
+
+Two findings, robust across $3$ seeds (Figure 10). **(i) The certificate lifts to $\mathrm{SO}(3)$.** The learned
+equivariant model stays $\mathrm{SO}(3)$-equivariant after training (residual $\sim\!10^{-5}$) and its $5$-step
+latent rollout is **exactly flat over the full $\mathrm{SO}(3)$ orbit** (out-of-wedge / in-wedge ratio
+$\mathbf{1.000}$, all $3$ seeds), where the MLP climbs $\times 2.1\text{–}5.7$ out of the wedge — the configuration
+certificate is *not* an artifact of the abelian circle. **(ii) Structure versus scale, in 3D.** A $7.4\times$
+*smaller* equivariant model ($17$k vs $124$k parameters) carries the certificate, while the larger MLP buys better
+in-wedge interpolation (relMSE $0.19\text{–}0.27$ vs the equivariant model's $0.55\text{–}0.58$) yet has none — the
+same *scale buys interpolation; structure buys a certificate* pattern as Experiment 7, now over $\mathrm{SO}(3)$.
+
+The honest difference from $\mathrm{SO}(2)$ ("flat is not good", quantified). Unlike the real-PushT model of
+Experiment 9 — which was *competitive* in-distribution ($0.13\text{–}0.15$), so its flatness gave a clean
+out-of-distribution win — the small $\mathrm{SO}(3)$ point-cloud model's accuracy *floor* ($\approx0.57$) is high
+enough that out of the wedge it is only **comparable** to the degraded MLP (whose far error $0.43\text{–}1.09$
+brackets that floor), not clearly below it. So the committed gate's `compete` sub-check (equivariant in-wedge
+error $<1.5\times$ the MLP's) **fails**, and the run reports `INCONCLUSIVE` on it: we claim the lift of the
+*guarantee* to $\mathrm{SO}(3)$ and the structure-versus-scale pattern, **not** a 3D accuracy win — a competitive
+*and* flat 3D model needs more equivariant capacity than $1$–$2$ GPUs afford. With Proposition 4 (angular momentum
+in the $\ell{=}1$ block) and Experiment 6 (3D containment), this completes the 3D picture: representation theory
+*places* the $\mathrm{SO}(3)$ charges, and the certificate is *flat* over $\mathrm{SO}(3)$.
+
+![Experiment 12 (the certificate on $\mathrm{SO}(3)$, 3D point clouds, constructed teacher). Left: $5$-step rollout relMSE over the $\mathrm{SO}(3)$ orbit (in-wedge identity $|$ out-of-distribution rotations) — the learned equivariant model is exactly flat (ratio $1.000$) while the $7.4\times$-larger MLP climbs out of the wedge. Right: across rollout horizon the MLP's out-of-wedge error stays at or above the equivariant floor, but the gap is modest because the small equivariant model's floor is high (the "flat is not good" caveat in 3D).](figures/step63_se3_certificate.png)
+
 ---
 
 ## 6. Related Work
@@ -805,7 +840,7 @@ numerical-weather-prediction practice).
 Every experiment sets random seeds explicitly, prints an `INCONCLUSIVE` verdict rather than loosen a gate, and
 writes its figure and JSON to `papers/figures/`. The multi-seed steps commit per-seed JSONs
 (`papers/figures/step5*_seeds.json`, `step59_pusht_certificate_seeds.json`, `step60_augmentation_seeds.json`, and
-`step61_closed_loop_certificate_seeds.json`, seeds $0/1/2$), regenerated by
+`step61_closed_loop_certificate_seeds.json`, and `step63_se3_certificate_seeds.json`, seeds $0/1/2$), regenerated by
 `experiments/aggregate_seeds.py`; every range quoted above is the seed min–max from those files. The
 configuration-flatness experiment (Experiment 1) self-aggregates its three seeds into the means in
 `step47_certificate.json`. The full test suite passes together; `tests/conftest.py` isolates the float64
@@ -826,3 +861,4 @@ is CPU/MPS, no CUDA.
 | 9 | **Certificate on real contact dynamics (PushT)** | `experiments/step59_pusht_certificate.py` | — | 3 | learned equivariant exactly flat over the orbit (ratio $1.00$, equiv-resid $\sim10^{-7}$) and competitive in-dist; no MLP scale ($1.7\mathrm{k}$–$272\mathrm{k}$) reaches the floor out-of-wedge ($2.1$–$3.9\times$, $H{=}10$) |
 | 10 | **Augmentation vs the certificate** | `experiments/step60_augmentation.py` | — | 3 | $\mathrm{SO}(2)$-aug flattens a single PushT orbit (ratio $0.93$–$1.02$ vs plain $1.84$–$2.75$); on $\mathbb{Z}_2^6$ augmentation reaches a $\sim10^{-4}$ floor but never the certificate's exact $\sim10^{-32}$ from $7$ generators ($\sim10^{28}\times$) |
 | 11 | **Certificate at the task level (closed-loop PushT pose control)** | `experiments/step61_closed_loop_certificate.py` | `tests/test_step61.py` | 3 | equivariant model + $G$-equivariant planner: closed-loop pose error orbit-invariant to the float floor (model-rollout & real-env ratio $1.000$, all seeds) vs MLP $\times1.1$–$2.2$ (rollout) / $\times1.6$–$3.6$ (real-env); in-wedge competitive ($3.6$–$16^\circ$ vs $8$–$18^\circ$). Auxiliary cost-drift $>0.3$ met $1/3$ (eq $\sim10^{-7}$ vs MLP $0.19$–$0.31$) |
+| 12 | **Certificate on $\mathrm{SO}(3)$ (3D point clouds, constructed teacher)** | `experiments/step63_se3_certificate.py` | `tests/test_se3_equivariance.py` | 3 | learned equivariant model exactly flat over the non-abelian $\mathrm{SO}(3)$ orbit ($H{=}5$ ratio $1.000$, resid $\sim10^{-5}$); MLP climbs $\times2.1$–$5.7$ out of the wedge. Structure-vs-scale in 3D: $7.4\times$-smaller equivariant carries the certificate; bigger MLP interpolates better in-wedge ($0.19$–$0.27$ vs $0.55$–$0.58$). Honest: `compete` gate `INCONCLUSIVE` (equivariant accuracy floor high at laptop capacity — "flat is not good") |

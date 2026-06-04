@@ -30,6 +30,7 @@ STEPS = [
     "step59_pusht_certificate",
     "step60_augmentation",
     "step61_closed_loop_certificate",
+    "step63_se3_certificate",
 ]
 
 
