@@ -157,3 +157,19 @@ fixed this batch: (i) §5.7 mis-attributed "2.1–3.9×" to the 272k MLP — it'
 remark (ρ∈O(Z) ⇒ invertible). Plus honesty nitpicks: §3.3 "error 0" idealization clarified, §5.7 brittle-`climb`
 sub-gate disclosed, abstract 160×/16× disambiguated, certify.py flags sub-1-step horizons. Adjudicator **rejected**
 the Lyapunov "0.4%" complaint (worst-seed error 0.378% < 0.4% from the committed JSON; reviewers used rounded 0.690).
+
+## 9. 极致 program — push to the absolute best (T1–T5; user: "全做掉")
+
+Closing the substantive (not cosmetic) gaps. Laptop-feasible set; the GPU tier (SE(3)/3D benchmark/scale, S3–S5
+of `papers/proposals/paper2-embodied-scale-lift.md`) is out of physical scope here.
+
+- **T1 — Augmentation baseline** ✅ (Experiment 10, `experiments/step60_augmentation.py`, §5.8 + Figure 7).
+  Answers the sharpest objection honestly. **Honest finding** (corrected a smoke-time over-claim): SO(2)-augmentation
+  *flattens a single PushT orbit* (ratio 0.93–1.02 vs plain MLP 1.84–2.75) and, on the smooth $\mathbb{Z}_2^6$
+  dynamics, augmentation drives a well-trained MLP to a $\sim10^{-4}$ floor — augmentation is a **strong** baseline,
+  NOT an exponential wall. The certificate's surviving edge: **exactness** ($\sim10^{-32}$ from 7 generators,
+  $\sim10^{27}$–$10^{28}\times$ below the MLP floor, 3 seeds), an **a-priori guarantee** (Theorem A — no testing of
+  the unseen compositions), **group-knowledge-free**, and **worst-case optimality** (§3.3). Reframed §5.4 ("gap vs
+  *scale*; augmentation is §5.8"). 15 pp.
+- **T2 — task-success closed-loop** ⏳ next (S2). · **T3 — pixel latent** ⏳ (S1). · **T4 — hinge slow=conserved as a
+  theorem** ⏳ (hard). · **T5 — hero figure + positioning table + one-command repro** ⏳.

@@ -28,6 +28,7 @@ STEPS = [
     "step57_embodied_hinge",
     "step58_3d_containment",
     "step59_pusht_certificate",
+    "step60_augmentation",
 ]
 
 
