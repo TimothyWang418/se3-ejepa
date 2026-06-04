@@ -30,10 +30,11 @@ All CPU/1-GPU-scale, seeded, honestly gated (a run prints `INCONCLUSIVE` rather 
 | **53** | **Approximate symmetry** (P4) | exact cert at β=0 (68–320×); graceful $\propto\epsilon_{\text{world}}$ (corr 0.88–0.98); symmetry-content **threshold** $\epsilon\approx0.01$–0.06 (3 seeds) | — | `df1ae98` |
 | **57** | **Embodied/contact hinge lift** (3D, two-body contact) | Noether content **lifts** (invariant $R^2{=}0.86$ vs 0.05); clean containment **2D-specific** (3D $L$ = conserved $\ell{=}1$ vector → slow ⊆ invariant⊕conserved-equivariant) | — | `3763aad` |
 | **58** | **3D-aware containment** (resolves 57) | conserved physics splits by type+degree: $E$→ℓ=0 linear ($R^2{=}0.62$–$0.91$); $L$ bilinear→ℓ=1 degree-2 cross ($R^2{=}1.00$, range $0.998$–$1.000$); both conserved → slow ⊆ (invariant ⊕ conserved-equivariant) **exact**; ties to old-paper degree-1 cross-product cap | — | `695143d` (3 seeds) |
-| **59** | **Certificate on REAL contact dynamics** (PushT, Experiment 9 — kills "constructed-teacher/toy-only", weakness #1) | learned SO(2)-equiv world model (invariant-scalar-gated VN) **exactly flat over the orbit** (10-step rollout ratio **1.00**, equiv-resid $\sim10^{-7}$) + **competitive in-dist** (eq 0.13–0.15 vs best MLP 0.14–0.19); **no MLP scale 1.7k→272k reaches the floor out-of-wedge** ($2.1$–$3.9\times$, 3 seeds). Real pymunk physics we did not author; clean rotate-the-orbit protocol | — | this batch (3 seeds) |
+| **59** | **Certificate on REAL contact dynamics** (PushT, Experiment 9 — kills "constructed-teacher/toy-only", weakness #1) | learned SO(2)-equiv world model (invariant-scalar-gated VN) **exactly flat over the orbit** (10-step rollout ratio **1.00**, equiv-resid $\sim10^{-7}$) + **competitive in-dist** (eq 0.13–0.15 vs best MLP 0.14–0.19); **no MLP scale 1.7k→272k reaches the floor out-of-wedge** ($2.1$–$3.9\times$, 3 seeds). Real pymunk physics we did not author; clean rotate-the-orbit protocol | — | `fb8ce72` (3 seeds) |
+| **61** | **Certificate at the TASK level** (PushT closed-loop pose control, Experiment 11 — 极致-T2) | RichVN + **G-equivariant CEM** (isotropic σ + disk action bound + scene-covariant noise = A5) on a contact-dominated reorient task; **paired** base tasks rotated over the orbit. **Model-rollout & real-env pose-error orbit ratio = 1.000 (exact, all 3 seeds)** vs MLP ×1.1–2.2 (rollout) / ×1.6–3.6 (real-env). In-wedge a **wash** (eq 3.6–16° vs MLP 8–18°, each better on some seeds — no in-dist win). Honest: cost-drift>0.3 met 1/3 (eq ~1e-7 vs MLP 0.19–0.31, ~10⁶×); scene-blind eq flatter but noisy margin → A5 needed for the *exact* guarantee. Kills "relMSE is just a proxy" | `test_step61.py` (plan-equivariance + orbit-invariance, 2 tests) | this batch (3 seeds) |
 
-Unit-test isolation: `tests/conftest.py` pins float32 around every test; float64 experiments opt in. Full suite **81 passed**.
-Multi-seed reproducibility: `experiments/aggregate_seeds.py` re-runs steps 50/51/52/53/57/58/59 at seeds {0,1,2} and commits per-seed `papers/figures/step5*_seeds.json` + `step59_pusht_certificate_seeds.json`; every range quoted above and in the draft is the seed min–max from those files. Single-seed `step5*.json/.png` stay canonical at the default seed 0.
+Unit-test isolation: `tests/conftest.py` pins float32 around every test; float64 experiments opt in. Full suite **passes** (`test_step61.py` adds the SO(2) pose-planner equivariance + model-rollout orbit-invariance guards).
+Multi-seed reproducibility: `experiments/aggregate_seeds.py` re-runs steps 50/51/52/53/57/58/59/60/61 at seeds {0,1,2} and commits per-seed `papers/figures/step5*_seeds.json` + `step59/60/61_*_seeds.json`; every range quoted above and in the draft is the seed min–max from those files. Single-seed `step5*.json/.png` stay canonical at the default seed 0.
 
 ## 3. Proposal phase status (P0–P5)
 
@@ -171,5 +172,16 @@ of `papers/proposals/paper2-embodied-scale-lift.md`) is out of physical scope he
   $\sim10^{27}$–$10^{28}\times$ below the MLP floor, 3 seeds), an **a-priori guarantee** (Theorem A — no testing of
   the unseen compositions), **group-knowledge-free**, and **worst-case optimality** (§3.3). Reframed §5.4 ("gap vs
   *scale*; augmentation is §5.8"). 15 pp.
-- **T2 — task-success closed-loop** ⏳ next (S2). · **T3 — pixel latent** ⏳ (S1). · **T4 — hinge slow=conserved as a
-  theorem** ⏳ (hard). · **T5 — hero figure + positioning table + one-command repro** ⏳.
+- **T2 — task-success closed-loop** ✅ (Experiment 11, `experiments/step61_closed_loop_certificate.py`, §5.9 +
+  Figure 8). Converts the prediction certificate (Exp 9) to a **task-level** certificate: an equivariant model + a
+  *G-equivariant* CEM planner (the A5 instantiation — isotropic σ, disk action bound, scene-covariant noise) gives
+  closed-loop PushT pose control whose error is **orbit-invariant to the float floor** (model-rollout & real-env
+  ratio **1.000**, all 3 seeds), while a 4.3×-larger MLP under the *same* planner degrades out of the wedge
+  (×1.1–2.2 rollout / ×1.6–3.6 real-env). The **paired** protocol (same base tasks rotated over the orbit) + the
+  RichVN model removed the between-task variance + weak-model issues that left Steps 10/12 closed-loop INCONCLUSIVE.
+  Honest demotions vs the seed-0 first look: in-wedge is a **wash** (no in-dist win), the scene-blind margin is
+  noisy (A5 needed for the *exact* guarantee), and the cost-drift>0.3 sub-check is met 1/3 (reported as ratio, like
+  Exp 9's `climb`). Answers the "does the proxy convert to control?" objection and resolves the §5.6/§7 "no
+  downstream task gap on PushT" concession.
+- **T3 — pixel latent** ⏳ (S1). · **T4 — hinge slow=conserved as a theorem** ⏳ (hard). · **T5 — hero figure +
+  positioning table + one-command repro** ⏳.

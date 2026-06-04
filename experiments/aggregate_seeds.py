@@ -29,6 +29,7 @@ STEPS = [
     "step58_3d_containment",
     "step59_pusht_certificate",
     "step60_augmentation",
+    "step61_closed_loop_certificate",
 ]
 
 

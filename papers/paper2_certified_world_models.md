@@ -27,7 +27,9 @@ axis; and a non-equivariant network scaled across an $88\times$ parameter range 
 equivariant floor and never reaches it. Finally, on **real PushT contact dynamics** — physics simulated by an
 engine we did not author — a learned equivariant world model's multi-step rollout error is *exactly* flat over the
 orbit and competitive in-distribution, while no non-equivariant baseline across a $160\times$ parameter ladder (up
-to $16\times$ the equivariant model's size) reaches its out-of-distribution floor. *Scale buys interpolation; structure buys a certificate.* The result is a
+to $16\times$ the equivariant model's size) reaches its out-of-distribution floor; and run through a
+$G$-equivariant planner, the same certificate becomes *task* competence — closed-loop pose control whose error is
+orbit-invariant to the float floor on every seed, where a scaled baseline degrades. *Scale buys interpolation; structure buys a certificate.* The result is a
 single, **runnable** criterion (Algorithm 1, $\le 20$ lines) for *what* an equivariant world model can certifiably
 predict, and a structural reading of *why* celestial mechanics is forecastable for millennia while weather is not.
 
@@ -70,8 +72,10 @@ Our contributions are:
    isotypic block must carry each conserved charge and why $3$D angular momentum is recoverable only at a unique
    degree-2 cross product, leaving the slow$=$conserved coincidence as the measured part.
 3. **Empirical confirmation of all three axes at small scale** (§5), including the headline contrast *scale buys
-   interpolation; structure buys a certificate*, and a keystone validation on **real physics-engine contact
-   dynamics** (PushT) where the certificate holds for a *learned* model of dynamics we did not design.
+   interpolation; structure buys a certificate*, a keystone validation on **real physics-engine contact
+   dynamics** (PushT) where the certificate holds for a *learned* model of dynamics we did not design, and a
+   **closed-loop** instantiation where, run through a planner, the certificate becomes *task* competence —
+   orbit-invariant pose control where a scaled baseline degrades.
 
 We are explicit about scope (§7): this is a mechanism-and-theory paper with $1$–$2$-GPU proof-of-principle, not a
 scaled benchmark, and the hinge's lift to *approximate* symmetry is open.
@@ -103,7 +107,10 @@ experiments use relMSE, its square). We use the following assumptions, **each ch
 - **(A5) Equivariant planner and invariant cost (closed-loop clause only):** the planner satisfies
   $\pi(\rho(g_i)z,\rho(g_i)z^\star)=\sigma(g_i)\,\pi(z,z^\star)$ and the cost is $\rho$-invariant,
   $J(\rho(g_i)z;\rho(g_i)z^\star)=J(z;z^\star)$. This is needed *only* for the closed-loop $J$ identity, not for the
-  prediction-error identity, and §5.6 instantiates exactly such a planner.
+  prediction-error identity. §5.6 instantiates such a planner in latent space; §5.9 instantiates one on **real PushT
+  contact dynamics** — an equivariant CEM-MPC (isotropic exploration covariance, a rotation-invariant disk action
+  bound, and scene-covariant action noise) — and confirms the resulting closed-loop task error is exactly
+  orbit-invariant.
 
 ---
 
@@ -463,7 +470,9 @@ generating set $S$ that anchors the configuration axis need not be postulated �
 seen-vs-unseen $\mathrm{SE}(3)$-orbit tasks, closing $\sim0.59$ of the orientation gap on the best deployable variant
 and — the load-bearing point — achieving the *same* success on the unseen orbit as on the seen one (unseen/seen
 ratio $1.000$): *exact transfer*, not high absolute success. Together: *discover $S$ $\to$ certify $\langle S\rangle$
-$\to$ generate $\to$ act* — the certificate is not merely descriptive but a usable plan-and-execute criterion.
+$\to$ generate $\to$ act* — the certificate is not merely descriptive but a usable plan-and-execute criterion. These
+two results are re-framed from a companion line; §5.9 closes the same loop on a *fresh* run, with a planner driving a
+learned model of **real physics-engine contact dynamics**.
 
 ### 5.7 Beyond toys: the certificate on real contact dynamics
 
@@ -524,6 +533,52 @@ structure buys that neither scale nor data does: a guarantee.
 
 ![Experiment 10 (augmentation vs the certificate). Left: on $\mathbb{Z}_2^6$, augmentation (more training words) drives the MLP to a $\sim10^{-4}$ approximation floor, never the certificate's machine-exact $\sim10^{-32}$ from $7$ generators. Right: on real PushT, $\mathrm{SO}(2)$-augmentation flattens the MLP over the orbit (matching the certificate on a single orbit), unlike the un-augmented MLP.](figures/step60_augmentation.png)
 
+### 5.9 The certificate at the task level: closed-loop control
+
+**Experiment 11 (does the prediction certificate convert to task competence?).** Experiment 9 certifies a model's
+*rollout error*; a sceptic rightly asks whether that proxy converts to *control*. We close the loop on the same real
+PushT physics, in a **contact-dominated pose task**: rotate the T-block to a target orientation (small translation
+only), so success depends on the block-rotation dynamics — exactly the channel where $\mathrm{SO}(2)$ bites, unlike a
+position-only push, which a near-linear agent subsystem carries out of distribution. We train the same
+invariant-scalar-gated equivariant model and a scaled MLP baseline ($4.3\times$ its parameters) one-step on a wedge
+of real interior reorientation transitions, then run **CEM-MPC** on the real env across the full orbit of scene
+orientations, evaluating $24$ base tasks *rotated to each orbit angle* — a **paired** protocol (the same task at
+every orientation) that removes the between-task variance which left earlier position-only closed-loop comparisons
+noise-limited.
+
+The certificate's closed-loop clause (Theorem A under (A5)) needs a *$G$-equivariant planner*. We instantiate one: a
+CEM with an isotropic exploration covariance, a rotation-invariant **disk** action bound $\lVert a\rVert\le1$, and
+**scene-covariant** action noise. With these the planner satisfies $\pi(R_\beta s)=R_\beta\,\pi(s)$, so an
+equivariant model yields an equivariant closed-loop policy and the realized task error is *exactly* orbit-invariant.
+
+Three findings (Figure 8): **(i) an exact certificate at the task level** — the model-rollout terminal pose error is
+flat over the orbit *to the float floor* (out-of-wedge / in-wedge ratio $\mathbf{1.000}$ on all $3$ seeds —
+architectural) for the equivariant model, versus $\times 1.1\text{–}2.2$ for the MLP under the *same* equivariant
+planner: the certificate now governs closed-loop *outcomes*, not just predictions; **(ii) it survives the real env**
+— executed on the real simulator the equivariant model's closed-loop block-angle error stays flat over the orbit to
+the measured precision (ratio $\mathbf{1.000}$ on all $3$ seeds — the real interior physics is itself
+$\mathrm{SO}(2)$-equivariant to $\sim\!10^{-5}$/step, so the *realized* outcome, not just the prediction, is
+orbit-invariant) while the MLP degrades $\times 1.6\text{–}3.6$ out of the wedge; and **(iii) flatness is not bought
+by being worse** — in-wedge the equivariant model is *competitive*, its block-angle error ($3.6\text{–}16^\circ$
+across seeds) bracketing the MLP's ($8\text{–}18^\circ$), each better on some seeds, so the orbit-flatness is that of
+a usable controller (we claim no in-distribution win).
+
+The mechanism is the cost landscape itself: the pose cost the planner optimizes is $\mathrm{SO}(2)$-invariant, and
+under the equivariant model its value is orbit-invariant to the float floor (drift $1.1\text{–}1.5\times10^{-7}$),
+while under the MLP it is materially distorted (drift $0.19\text{–}0.31$, $\sim\!10^{6}\times$ the equivariant
+floor). Two honesty notes, in the project's gating style. (a) That MLP cost-drift *straddles* a pre-registered
+absolute threshold ($>0.3$, met on $1/3$ seeds), so we report the eq/MLP *ratio* and the load-bearing orbit ratios —
+model-rollout $\times1.000$ and real-env $\times1.000$ versus the MLP's $\times1.1\text{–}2.2$ and
+$\times1.6\text{–}3.6$, on all $3$ seeds — rather than the absolute drift, exactly as Experiment 9 reports its
+floor-penalty rather than the brittle `climb` sub-check. (b) Assumption (A5) genuinely *matters*: a scene-blind
+planner (raw, un-rotated CEM noise) keeps the equivariant model flatter on all $3$ seeds (eq $\times1.0\text{–}1.4$
+vs the MLP's $\times1.5\text{–}3.5$) but by a noisy margin — the *exact* guarantee needs the equivariant planner,
+while a realistic planner retains a softer version of the benefit. This is the certificate's strongest form — not a
+low error number but a **guarantee** that whatever competence holds in the wedge holds, zero-shot, over the entire
+orbit, to the float floor on every seed.
+
+![Experiment 11 (the certificate at the task level). Left: closed-loop block-angle error over the orbit of scene orientations — the equivariant model under a $G$-equivariant planner is exactly flat under model rollout (ratio $1.000$) and flat on the real env, while a $4.3\times$-larger MLP degrades out of the training wedge. Right: the $\mathrm{SO}(2)$-invariant planning cost is orbit-invariant to the float floor under the equivariant model and materially distorted under the MLP.](figures/step61_closed_loop_certificate.png)
+
 ---
 
 ## 6. Related Work
@@ -578,11 +633,16 @@ certificate for equivariant models.
 
 ## 7. Limitations
 
-- **Scale and scope.** All experiments are CPU/$1$-GPU. Experiment 9 validates the central claim on a real
-  physics-engine contact simulator (PushT) — dynamics we did not author — but still on *structured state* (not
-  pixels), a single $\mathrm{SO}(2)$ task, and at a *modest* out-of-distribution gap ($2\text{–}4\times$, large
-  only because a single PushT step is easy to predict in-distribution). We claim a mechanism and a tool,
-  demonstrated cleanly, not a scaled benchmark.
+- **Scale and scope.** All experiments are CPU/$1$-GPU. Experiments 9 and 11 validate the central claim on a real
+  physics-engine contact simulator (PushT) — dynamics we did not author — at the *prediction* level (Experiment 9)
+  and the closed-loop *task* level (Experiment 11, where the certificate becomes orbit-invariant pose control: out of
+  the training wedge the equivariant controller stays flat while a scaled baseline degrades, the two being
+  *comparable* in-distribution — we claim no in-distribution win). This is still *structured state* (not pixels) and
+  a single $\mathrm{SO}(2)$ group; the out-of-distribution *prediction* gap is *modest* ($2\text{–}4\times$, large
+  only because a single PushT step is easy to predict in-distribution); and the closed-loop *out-of-wedge* advantage
+  is shown on the contact-dominated pose task specifically — a position-only push stays a tie, since a near-linear
+  agent subsystem carries it out of distribution. We claim a mechanism and a tool, demonstrated cleanly, not a scaled
+  benchmark.
 - **Scope of the exact certificate.** Theorem A requires (A3): the group must be a symmetry of the *dynamics*, not
   merely the encoder. The exact certificate therefore holds where the group is a genuine dynamical symmetry
   (orbital and conservative systems, free space, idealized manipulation). Everywhere else one is in Theorem B's
@@ -662,7 +722,8 @@ numerical-weather-prediction practice).
 
 Every experiment sets random seeds explicitly, prints an `INCONCLUSIVE` verdict rather than loosen a gate, and
 writes its figure and JSON to `papers/figures/`. The multi-seed steps commit per-seed JSONs
-(`papers/figures/step5*_seeds.json`, `step59_pusht_certificate_seeds.json`, and `step60_augmentation_seeds.json`, seeds $0/1/2$), regenerated by
+(`papers/figures/step5*_seeds.json`, `step59_pusht_certificate_seeds.json`, `step60_augmentation_seeds.json`, and
+`step61_closed_loop_certificate_seeds.json`, seeds $0/1/2$), regenerated by
 `experiments/aggregate_seeds.py`; every range quoted above is the seed min–max from those files. The
 configuration-flatness experiment (Experiment 1) self-aggregates its three seeds into the means in
 `step47_certificate.json`. The full test suite passes together; `tests/conftest.py` isolates the float64
@@ -680,3 +741,4 @@ experiments from the float32 codebase.
 | 8 | Approximate symmetry | `experiments/step53_approximate_symmetry.py` | — | 3 | cert exact at $\beta{=}0$ ($68$–$320\times$); graceful $\propto\epsilon$ (corr $0.88$–$0.98$); threshold $\epsilon\approx0.01$–$0.06$ |
 | 9 | **Certificate on real contact dynamics (PushT)** | `experiments/step59_pusht_certificate.py` | — | 3 | learned equivariant exactly flat over the orbit (ratio $1.00$, equiv-resid $\sim10^{-7}$) and competitive in-dist; no MLP scale ($1.7\mathrm{k}$–$272\mathrm{k}$) reaches the floor out-of-wedge ($2.1$–$3.9\times$, $H{=}10$) |
 | 10 | **Augmentation vs the certificate** | `experiments/step60_augmentation.py` | — | 3 | $\mathrm{SO}(2)$-aug flattens a single PushT orbit (ratio $0.93$–$1.02$ vs plain $1.84$–$2.75$); on $\mathbb{Z}_2^6$ augmentation reaches a $\sim10^{-4}$ floor but never the certificate's exact $\sim10^{-32}$ from $7$ generators ($\sim10^{28}\times$) |
+| 11 | **Certificate at the task level (closed-loop PushT pose control)** | `experiments/step61_closed_loop_certificate.py` | `tests/test_step61.py` | 3 | equivariant model + $G$-equivariant planner: closed-loop pose error orbit-invariant to the float floor (model-rollout & real-env ratio $1.000$, all seeds) vs MLP $\times1.1$–$2.2$ (rollout) / $\times1.6$–$3.6$ (real-env); in-wedge competitive ($3.6$–$16^\circ$ vs $8$–$18^\circ$). Auxiliary cost-drift $>0.3$ met $1/3$ (eq $\sim10^{-7}$ vs MLP $0.19$–$0.31$) |
