@@ -203,5 +203,19 @@ of `papers/proposals/paper2-embodied-scale-lift.md`) is out of physical scope he
   `make paper2` (seeds→figures→tests→PDF) + `make paper2-quick`; noted in Appendix A. PDF 19 pp, 9 figures, clean
   compile. *Deferred (marginal):* the 5-seed bump — the paper is consistent + honest at 3 seeds, and a 5-seed re-run
   of the PushT line is ~2 h CPU for negligible CI tightening; left at 3.
-- **T3 — pixel latent** ⏳ (S1; needs a C₄-equivariant latent predictor — interpolation-floored for continuous
-  SO(2), so honestly C₄-scoped; the remaining laptop-feasible gap-closer).
+- **T3 — pixel latent** ✅ (honest mixed result, `experiments/step62_pixel_latent_certificate.py` +
+  `tests/test_step62.py`; folded into §7 Limitations, NOT a §5 win — no overclaim). Built a C₄-steerable encoder +
+  a **new C₄-equivariant latent predictor** (`SteerableLatentPredictor`: 1×1 R2Conv on regular ⊕ irrep(1)-action →
+  regular, equivariant to 6e-7, unit-tested). **Positive:** the certificate's exact orbit-flatness *transfers to a
+  learned PIXEL latent* — encoder C₄-equiv 3e-5 (square arena ⇒ rot90 bit-exact), so the multi-step latent rollout
+  is flat over the C₄ orbit **to the float floor (ratio 1.000)**; exact orbit-invariance is not an artifact of
+  structured state. **Honest negative:** at laptop scale the steerable pixel JEPA **underfits** (rollout relMSE
+  ≈4.5 vs an ordinary CNN's ≈0.8) — "flat is not good" here; and the ordinary CNN is itself orbit-flat (PushT pixels
+  ≈ C₄-symmetric, the §5.8 augmentation regime). Did **not** chase a steerable-wins outcome by tuning capacity
+  (architecture p-hacking); reported the finding. Competitive-AND-flat pixel rollout → GPU tier (S1). Gate redesigned
+  to the load-bearing claim (enc/pred equivariance + exact flatness + a learned-check), which surfaced the underfit
+  honestly (`eq_learned` = False).
+
+**极致 program complete: T1–T5 all done (T1/T2 evidence, T4 theorem, T5 polish, T3 honest pixel attempt). The
+laptop-feasible envelope is exhausted; the remaining lifts (SE(3)/3D, scale, competitive pixels, embodied hinge) are
+the GPU tier S1–S5 of `papers/proposals/paper2-embodied-scale-lift.md`.**

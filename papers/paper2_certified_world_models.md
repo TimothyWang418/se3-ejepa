@@ -706,6 +706,19 @@ certificate for equivariant models.
   is shown on the contact-dominated pose task specifically — a position-only push stays a tie, since a near-linear
   agent subsystem carries it out of distribution. We claim a mechanism and a tool, demonstrated cleanly, not a scaled
   benchmark.
+- **Pixels: the certificate transfers, competitive accuracy does not (yet).** We ran the pixel lift
+  (`experiments/step62`): a $C_4$-steerable encoder and a $C_4$-equivariant latent predictor on rendered PushT
+  frames. The certificate's machinery transfers *exactly* — the steerable encoder is $C_4$-equivariant to
+  $3\times10^{-5}$ (the square arena makes a $90^\circ$ scene rotation a bit-exact pixel permutation, so the
+  grid-exact subgroup is $C_4$; continuous $\mathrm{SO}(2)$ on a pixel grid is interpolation-floored), the predictor
+  to $6\times10^{-7}$, and the multi-step latent rollout is consequently flat over the $C_4$ orbit *to the float
+  floor* (ratio $1.000$) — the exact orbit-invariance is **not** an artifact of structured state. But at this scale
+  the steerable pixel JEPA **underfits**: its rollout relMSE ($\approx4.5$) is far worse than an ordinary CNN's
+  ($\approx0.8$), so on pixels the prior currently buys the certificate at a real *accuracy* cost ("flat is not
+  good", concretely) — and the ordinary CNN is itself orbit-flat, since PushT's pixel stream is approximately
+  $C_4$-symmetric (the augmentation regime of §5.8). So on pixels we claim only the *architectural transfer of exact
+  flatness*; a steerable pixel model that is both flat *and* competitive needs more capacity and training than
+  $1$–$2$ GPUs (proposal stage S1).
 - **Scope of the exact certificate.** Theorem A requires (A3): the group must be a symmetry of the *dynamics*, not
   merely the encoder. The exact certificate therefore holds where the group is a genuine dynamical symmetry
   (orbital and conservative systems, free space, idealized manipulation). Everywhere else one is in Theorem B's
