@@ -21,8 +21,9 @@ all three axes at small scale: a model trained on the $6$ generators of $\mathbb
 compositions to machine precision while a matched non-equivariant baseline degrades monotonically; a learned
 predictor recovers a chaotic Lyapunov exponent to within $0.4\%$ and its certified horizon obeys the
 $\log(1/\epsilon)$ law; on an $\mathrm{SO}(2)$ mechanical system the conserved (slowest) quantities organize into
-the architecturally invariant channels — a measured **Noether hinge** linking the configuration axis to the horizon
-axis; and a non-equivariant network scaled across an $88\times$ parameter range buys in-distribution interpolation
+the architecturally invariant channels — a **Noether hinge** linking the configuration axis to the horizon axis,
+whose forward direction (*conserved $\Rightarrow$ slow*) we prove: a conserved charge's prediction error grows
+linearly, not exponentially, in its conservation defect; and a non-equivariant network scaled across an $88\times$ parameter range buys in-distribution interpolation
 (even beating the equivariant model there) yet over the unseen orbit stays $10\text{–}155\times$ above the
 equivariant floor and never reaches it. Finally, on **real PushT contact dynamics** — physics simulated by an
 engine we did not author — a learned equivariant world model's multi-step rollout error is *exactly* flat over the
@@ -66,11 +67,13 @@ Our contributions are:
    coarse-invariant-slow-low-$|w|$ corner — with a **quantitative scale-vs-structure separation** (§3.3: structure
    certifies the whole $\epsilon$-independent orbit; the best $L$-Lipschitz non-equivariant learner certifies only
    an $\epsilon/L$-tube around its data).
-2. **The Noether hinge** (§4): the conjecture — *measured and confirmed on controlled systems* — that the
-   group-invariant channels are the dynamically slow (long-horizon-certifiable) ones, linking the configuration
-   axis to the horizon axis; a representation-theoretic **placement principle** (Proposition 4) proves *which*
-   isotypic block must carry each conserved charge and why $3$D angular momentum is recoverable only at a unique
-   degree-2 cross product, leaving the slow$=$conserved coincidence as the measured part.
+2. **The Noether hinge** (§4): the bridge — that the group-invariant/equivariant channels are the dynamically slow
+   (long-horizon-certifiable) ones — linking the configuration axis to the horizon axis. A representation-theoretic
+   **placement principle** (Proposition 4) proves *which* isotypic block must carry each conserved charge and why
+   $3$D angular momentum is recoverable only at a unique degree-2 cross product; **Proposition 5** proves the
+   *forward* direction (*conserved $\Rightarrow$ slow*: a charge conserved to one-step defect $\eta$ has prediction
+   error $\le T\eta$ — linear, never the exponential $e^{\lambda T}$ of a chaotic channel — so it is certified to all
+   horizons at $\eta{=}0$). What remains measured is the dynamical-symmetry hypothesis and the size of $\eta$.
 3. **Empirical confirmation of all three axes at small scale** (§5), including the headline contrast *scale buys
    interpolation; structure buys a certificate*, a keystone validation on **real physics-engine contact
    dynamics** (PushT) where the certificate holds for a *learned* model of dynamics we did not design, and a
@@ -284,10 +287,11 @@ axis the **same** structure is a Noether-type bridge:
 > Hence the symmetry that gives across-configuration generalization is the *same* structure that gives long-horizon
 > predictability.
 
-This is **not automatic** — invariant $\ne$ conserved in general — so we treat it as a *falsifiable, measured*
-conjecture. The defensible direction is the inclusion **slow $\subseteq$ invariant $\oplus$ conserved-equivariant**,
-not the converse: the conserved (slowest) modes live in the invariant-or-conserved subspace, but not every invariant
-channel is slow (a rotation-invariant $|r|^2$ oscillates). The mechanism is Noether's. A continuous symmetry of the
+This is **not automatic** — invariant $\ne$ conserved in general. We prove the *forward* direction below
+(Proposition 5: a conserved charge is certified to long horizons) and leave the rest *falsifiable and measured*. The
+defensible inclusion is **slow $\subseteq$ invariant $\oplus$ conserved-equivariant**, not the converse: the
+conserved (slowest) modes live in the invariant-or-conserved subspace, but not every invariant channel is slow (a
+rotation-invariant $|r|^2$ oscillates). The mechanism is Noether's. A continuous symmetry of the
 dynamics yields a conserved current; a conserved *scalar* charge ($\ell{=}0$ Casimir, e.g. energy) **is**
 group-invariant, while a conserved *non-scalar* charge (e.g. three-dimensional angular momentum $L$, an $\ell{=}1$
 vector) is *equivariant*, **not** invariant. The slow subspace therefore lies in
@@ -327,9 +331,47 @@ tie to the companion paper's degree-1 Vector-Neuron cap (a degree-1 net *cannot*
 **Scope (honest).** Proposition 4 is Schur's lemma applied to the symmetric powers plus the moment map's
 equivariance — a *placement principle*, not a new theorem: it pins which block carries each charge and at what
 degree, but representation theory alone does not force those charges to be the *dynamically slow* modes.
-Identifying a conserved readout with a slow state direction uses the system's Hamiltonian (symplectic) structure;
-absent that, "slow $\subseteq$ invariant $\oplus$ conserved-equivariant" stays the *measured* statement of §5.3,
-now equipped with a proof of *why the conserved content sits where it does.*
+What representation theory does not give, a one-line dynamical argument does — the *forward* direction of the hinge.
+
+**Proposition 5 (conservation $\Rightarrow$ certified horizon — the slow side of the hinge).** Let $Q:\mathcal Z\to W$
+be a charge read-out and $\mathcal K\subseteq\mathcal Z$ a region forward-invariant under both the true dynamics
+$\Phi$ and the model $f$. Suppose $Q$ is a first integral of the truth, $Q\circ\Phi=Q$ on $\mathcal K$, and the model
+conserves it up to a one-step defect $\eta:=\sup_{z\in\mathcal K}\lVert Q(f(z))-Q(z)\rVert_W$. Then the model's
+$T$-step error *in the charge value* is at most **linear** in the horizon,
+$$
+\bigl\lVert Q(f^{T}z)-Q(\Phi^{T}z)\bigr\rVert=\bigl\lVert Q(f^{T}z)-Q(z)\bigr\rVert\;\le\;T\,\eta
+\qquad(\forall z\in\mathcal K,\ T\ge0),
+$$
+so the charge-readout channel carries **no positive Lyapunov exponent** ($\lambda_Q\le0$ in Theorem B's sense) and
+its certified horizon is $T_Q(\epsilon)\ge\epsilon/\eta$ — *infinite* at exact conservation $\eta=0$ — irrespective
+of the ambient dynamics' largest Lyapunov exponent. *Proof.* Telescope
+$Q(f^{T}z)-Q(z)=\sum_{k<T}\!\bigl[Q(f(f^{k}z))-Q(f^{k}z)\bigr]$; forward-invariance keeps each $f^{k}z\in\mathcal K$ so
+each term is $\le\eta$, while $\Phi$-invariance of $\mathcal K$ gives $Q(\Phi^{T}z)=Q(z)$. $\square$
+
+The content is the **additive-versus-multiplicative** contrast: a conserved charge's error *accumulates* ($T\eta$)
+where a generic channel's *compounds* ($e^{\lambda_jT}$, Theorem B). It is a statement about the **charge value**,
+not the full state — $f^{T}z$ and $\Phi^{T}z$ may separate at the ambient rate while their $Q$-images stay
+$T\eta$-close — which is exactly what a certificate for *"predict the conserved quantity"* needs (it does **not**
+claim the predictor-Jacobian's singular values on the conserved subspace are near one; off-diagonal shear can leave
+those large). With Proposition 4 this closes the **forward** direction of the hinge: Noether's charge $\mu$ lives in
+the invariant/equivariant blocks (Prop 4) **and** is certified to long horizons (Prop 5), so those blocks are the
+slow ones.
+
+**The hinge as a theorem, and its honest residue.** Under the hinge's own hypothesis — that $G$ is a symmetry of the
+*dynamics* — assemble the three pieces: if the latent flow is Hamiltonian with a $G$-invariant Hamiltonian, then
+(Noether) the moment map $\mu$ obeys $Q\circ\Phi=Q$; Proposition 4 places $\mu$ in
+$\mathcal Z_0\oplus(\text{adjoint})$; Proposition 5 certifies it. So *under symplectic structure* "the
+invariant/equivariant blocks are slow" is a **theorem**, not a coincidence. What stays assumed or measured, in order:
+**(i)** that the *learned latent* flow is Hamiltonian with $G$-invariant $H$ — i.e. the encoder is essentially a
+symplectomorphism — is a structural assumption we do **not** enforce; **(ii)** exact conservation ($\eta=0$) holds
+only for the momentum map under a $G$-equivariant *symplectic discretization* — energy is conserved only to
+$O(\Delta t^{p})$ even by symplectic integrators (they preserve a *modified* Hamiltonian), and a generic learned $f$
+is neither symplectic nor equivariant, so $\eta$ is **measured** (§5.3 is exactly that measurement); **(iii)** the
+**converse fails** — a slow channel need not be conserved (a rotation-invariant $|r|^2$ oscillates) — so the
+inclusion $\text{slow}\subseteq\text{invariant}\oplus\text{conserved-equivariant}$ is one-directional. The upgrade
+over a pure conjecture is precise: *conserved $\Rightarrow$ slow* is now **proved** (Prop 5, at the charge-readout
+level), with the conservation defect $\eta$ — not a positive Lyapunov exponent — bounding the drift *linearly*; only
+the dynamical-symmetry hypothesis and the value of $\eta$ remain empirical.
 
 ---
 
@@ -654,12 +696,17 @@ certificate for equivariant models.
   *isotypic* refinement (channels chosen by $\ell$-type, which ties the spectrum to equivariance and the hinge) is
   asserted, not separately measured — Experiment 3 measures the scalar law and Experiment 1 splits contractive from
   expansive but not by $\ell$-type.
-- **The Noether hinge is a measured conjecture** *with a proved core*: the *placement* of each conserved charge by
-  isotypic type (Proposition 4 — energy in $\ell{=}0$, angular momentum in the $\ell{=}1$ block via the unique
-  degree-2 cross product) is forced by representation theory, but the remaining claim that these blocks are also the
-  *dynamically slow* ones is what we measure, with the honest non-converse (invariant $\not\Rightarrow$ slow). Its
-  lift to a *real, contact-rich embodied* model — where symmetry is approximate and the latent is learned
-  end-to-end — is the primary open problem; the $3$D contact experiment is a
+- **The Noether hinge's forward direction is proved; its hypotheses are measured.** The *placement* of each conserved
+  charge by isotypic type (Proposition 4 — energy in $\ell{=}0$, angular momentum in the $\ell{=}1$ block via the
+  unique degree-2 cross product) is forced by representation theory, and the *conserved $\Rightarrow$ slow* direction
+  is now a theorem (Proposition 5: a charge conserved to one-step defect $\eta$ has prediction error $\le T\eta$,
+  linear not exponential — certified to all horizons at $\eta{=}0$). What remains *assumed or measured*: that the
+  learned latent flow is Hamiltonian with a $G$-invariant Hamiltonian (so the symmetry is a *dynamical* symmetry —
+  the encoder essentially symplectic); the value of the defect $\eta$ (exact only for the momentum map under a
+  $G$-equivariant symplectic discretization, $O(\Delta t^{p})$ for energy, measured for a generic learned $f$); and
+  the **non-converse** (slow $\not\Rightarrow$ conserved). Proposition 5 is moreover a statement about the *charge
+  value*, not full-state prediction on the conserved subspace. Its lift to a *real, contact-rich embodied* model —
+  approximate symmetry, latent learned end-to-end — is the primary open problem; the $3$D contact experiment is a
   clean two-body toy whose clean-containment gate is `INCONCLUSIVE` (resolved in type-and-degree form by
   Experiment 6).
 - **§5.6 re-frames companion-line results**, not fresh runs: the decoder-free reach is *exact transfer*
@@ -686,8 +733,9 @@ certificate** — a provable, computable, training-free region across configurat
 established the master theorem (Theorem A, the exact configuration certificate, proved — its closed-loop clause
 under the assumed equivariant-planner condition; Lemma 2, its converse, characterizing the certificate *as*
 equivariance; Theorem B, the spectral horizon $\times$ resolution law, stated as a bound and measured), exhibited
-the certified region as the coarse-invariant-slow-low-composition corner, measured the Noether hinge that unifies
-the symmetry and time axes, and showed — empirically and via the quantitative separation of §3.3 — that an
+the certified region as the coarse-invariant-slow-low-composition corner, proved the Noether hinge's forward
+direction that unifies the symmetry and time axes (Proposition 5: conserved $\Rightarrow$ slow) and measured its
+defect, and showed — empirically and via the quantitative separation of §3.3 — that an
 $88\times$-scaled non-equivariant model buys interpolation but never the certificate, an architectural
 impossibility rather than an unfinished sweep.
 *Scale buys interpolation; structure buys a certificate.* The same criterion that tells you which compositions a

@@ -183,5 +183,16 @@ of `papers/proposals/paper2-embodied-scale-lift.md`) is out of physical scope he
   noisy (A5 needed for the *exact* guarantee), and the cost-drift>0.3 sub-check is met 1/3 (reported as ratio, like
   Exp 9's `climb`). Answers the "does the proxy convert to control?" objection and resolves the §5.6/§7 "no
   downstream task gap on PushT" concession.
-- **T3 — pixel latent** ⏳ (S1). · **T4 — hinge slow=conserved as a theorem** ⏳ (hard). · **T5 — hero figure +
-  positioning table + one-command repro** ⏳.
+- **T4 — Noether hinge "conserved ⇒ slow" as a theorem** ✅ (Proposition 5, §4; abstract + §1-contrib + §7 + §8
+  reconciled). The forward direction is now **proved**, not conjectured: a charge conserved by the model to one-step
+  defect $\eta$ has $T$-step **charge-value** error $\le T\eta$ (telescoping) — *linear*, never the chaotic channel's
+  *exponential* $e^{\lambda T}$ — so $\lambda_Q\le0$, certified horizon $\ge\epsilon/\eta$ ($=\infty$ at exact
+  conservation). With Prop 4 (placement) + Noether (symplectic ⇒ μ conserved) this makes "invariant/equivariant
+  blocks are slow" a theorem under symplectic structure. **Adversarially vetted** (opus skeptic, verdict
+  ACCEPT-WITH-FIXES): folded all 4 fixes — (C1) needs Φ-forward-invariance to iterate; relabeled as *charge-value*
+  tracking not state-prediction; **dropped** the broken Jacobian-singular-value corollary (a shear conserves a
+  functional yet has huge σ_max — claim only the readout channel's λ≤0); "exact conservation" honestly scoped (exact
+  for momentum under equivariant symplectic discretization, O(Δtᵖ) for energy, η *measured* for learned f). Honest
+  residue: latent-Hamiltonicity assumed; η measured; converse (slow ⇒ conserved) false. Compute-free (pure theory).
+- **T3 — pixel latent** ⏳ (S1; needs a C₄-equivariant latent predictor — interpolation-floored for continuous
+  SO(2), so honestly C₄-scoped). · **T5 — hero figure + positioning table + one-command repro** ⏳.
