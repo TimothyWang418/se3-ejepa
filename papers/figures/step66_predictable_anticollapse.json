@@ -1,0 +1,60 @@
+{
+  "passed": false,
+  "gate": {
+    "orbit_flat_all_D": true,
+    "some_D_beats_mean": false,
+    "rank_trend": false
+  },
+  "rows": [
+    {
+      "D": 8,
+      "n_inv": 4,
+      "n_vec": 2,
+      "fvu": 2.568062941985147,
+      "relmse": 2.0196878910064697,
+      "part_ratio": 3.1973655223846436,
+      "orbit_ratio": 1.0
+    },
+    {
+      "D": 16,
+      "n_inv": 8,
+      "n_vec": 4,
+      "fvu": 2.257351175315731,
+      "relmse": 2.1173877716064453,
+      "part_ratio": 3.791316509246826,
+      "orbit_ratio": 1.0
+    },
+    {
+      "D": 32,
+      "n_inv": 16,
+      "n_vec": 8,
+      "fvu": 1.8783465716904384,
+      "relmse": 1.920150637626648,
+      "part_ratio": 3.708209276199341,
+      "orbit_ratio": 1.0
+    },
+    {
+      "D": 64,
+      "n_inv": 32,
+      "n_vec": 16,
+      "fvu": 1.9452230662544665,
+      "relmse": 1.9443858861923218,
+      "part_ratio": 4.019257545471191,
+      "orbit_ratio": 1.0
+    }
+  ],
+  "fvu_at_64": 1.9452230662544665,
+  "best": {
+    "D": 32,
+    "n_inv": 16,
+    "n_vec": 8,
+    "fvu": 1.8783465716904384,
+    "relmse": 1.920150637626648,
+    "part_ratio": 3.708209276199341,
+    "orbit_ratio": 1.0
+  },
+  "seed": 0,
+  "epochs": 30,
+  "device": "mps",
+  "smoke": false
+}

@@ -392,3 +392,15 @@ Ran a 2-reviewer Opus panel (distinct from round-1's generalist), both **borderl
 - **WM empiricist**: the **horizon headline is shown only on a learned SYNTHETIC-latent model (E2) + analytic (step65)**; real PushT (E5) shows the **configuration** axis (flatness), not the horizon staircase → added §6 limitation + reframed abstract to promise flatness-on-real + horizon-on-synthetic. E5 OOD gap is **non-monotone** (3.9× = smallest baseline, 2.1–2.6× = largest) → report per-baseline, lead with strong-baseline ~2×, force = exact flatness not magnitude. Disclosed E5 `climb` sub-gate is met 1/3 seeds (flat+floor 3/3).
 - **The one high-value NEW experiment** (recorded, NOT yet run): a learned-model PushT **certified-horizon staircase** (certified-vs-measured, reusing `certify.py`/Alg 1 on the E5 model) — moves the headline onto a learned model of real dynamics. This is the top next step for the ICLR draft.
 - Net: the draft is now honest about novelty (synthesis, not new theorems) and about the theory↔experiment gap. Both PDFs rebuilt, 92 tests pass.
+
+## 17. ③ candidate mechanism 1, probe 1 — predictability-aware anti-collapse (rank-matching): HONEST NEGATIVE
+
+`experiments/step66_predictable_anticollapse.py` (rank sweep, seed 0, MPS). Hypothesis (from step64's FVU discovery):
+the FVU>1 residual is "over-wide latent × isotropic VICReg variance"; narrowing the latent toward its predictable rank
+should drive FVU<1. **Rejected.** FVU vs latent D: D=8 **2.57**, D=16 **2.26**, D=32 **1.88** (best), D=64 **1.95** —
+narrowing does NOT beat predict-the-mean, and very small D is *worse* (task needs >8 dims). Orbit-flatness exact at
+every D (ratio 1.000) — the certificate is untouched; this isolates *accuracy*. **Conclusion: the residual is NOT
+latent width** — at every D the variance floor fills D dims with per-frame-unpredictable variance, so the culprit is
+the *isotropic variance objective*, not the dimension count. This sharpens (does not close) the open problem: the
+principled fix is a **predictability-gated variance** (collapse unpredictable dims, protect predictable ones) — a
+deeper training-objective change, a separate gamble. NOT folded into any paper (exploratory candidate-mechanism probe).
