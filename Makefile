@@ -33,3 +33,8 @@ paper2-build:
 
 ## paper2-quick    figures + PDF only, reusing committed experiment JSONs (skips the slow re-runs)
 paper2-quick: paper2-hero paper2-build
+
+## iclr-build      build the focused ICLR extraction draft (text+math only, no figures) -> QA PDF
+iclr-build:
+	pandoc papers/iclr_certified_horizons.md -o papers/iclr_certified_horizons.pdf \
+	  --pdf-engine=tectonic -V geometry:margin=1in -V fontsize=10pt

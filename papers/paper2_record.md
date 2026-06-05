@@ -354,3 +354,19 @@ paper-only change, tests unaffected (91 passed stands).
 (Noether hinge Prop 4/5) for *world models* — exactly what the single-shot robustness/conformal literature lacks, now
 explicitly carved out. Candidate new mechanisms (predictability-aware anti-collapse; certificate-driven active
 inference) remain future directions, each with a named neighbor to differentiate against.
+
+## 14. Focused ICLR extraction draft (user: "接着起草")
+
+Drafted **`papers/iclr_certified_horizons.md`** — "Certified Predictability Horizons for Equivariant World Models" —
+a focused ~9-page ICLR-shaped extraction of paper2's genuinely-novel core, **led by the horizon axis** (the unoccupied
+one per the lit-check). Single sharp claim: an equivariant world model admits a *tight* certificate of its predictable
+horizon (Thm B upper + Prop 6 lower = Θ(log(1/ε)/λ_j)), unbounded **iff** conserved/equivariant (Noether Prop 4/5),
+and equivalent to equivariance (Lemma 2 converse) so scale can't buy it. Key reframing (reviewer-friendly): the
+single-shot certified-equivariance literature (orbit-margin 2510.16171, eCP 2602.03986, randomized smoothing
+2211.14207) is our **T=1, ε-independent slice** — we are its multi-step generalization. Structure: Abstract / Intro+4
+contributions / Setup (A1–A5) / §3 certificate (config Thm A+Lem 1+2, horizon Thm B+Prop 6, Noether Prop 4/5, Alg 1) /
+§4 experiments E1–E7 (config exponential, horizon staircase+tightness, approx-sym validates Prop 6, structure-vs-scale,
+real PushT 160× sweep, SO(3)+frame-averaged pixels transfer, closed-loop) / §5 carve-out related work / §6 honest
+limitations / §7 conclusion / refs. All E1–E7 numbers cross-checked against the committed record (7/7 match). Builds
+via `make iclr-build` (pandoc→tectonic, text+math only, no figures); QA PDF 91 KiB compiles clean. Not yet committed to
+the arXiv bundle — it is a standalone focused draft for the user to review/iterate before deciding submission target.
