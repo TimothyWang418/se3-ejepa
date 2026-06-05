@@ -414,3 +414,23 @@ Step-64 FA-JEPA at $D{=}64$: **isotropic FVU 1.87, gated FVU 2.02** (gated sligh
 anti-collapse) is conclusively negative** — both the rank knob (step66) and the variance-objective knob (step68) fail.
 The FVU>1 pixel residual is deeper than the anti-collapse term; it is a property of frame-JEPA on PushT pixels we have
 not closed. Exploratory probe, not folded into any paper (the §6 pixel limitation already states the residual honestly).
+
+## 19. ③-2 certificate-driven active inference — POSITIVE (the one win in ③)
+
+`experiments/step69_certificate_driven_exploration.py` (+ `test_step69.py`; full suite 93). On the $\mathbb Z_2^k$
+configuration axis, three explorers spend a budget choosing the next observation by a different drive; the action space
+is $k$ true generators + noisy high-error *distractors* that certify nothing. **Result (3 seeds, all PASS):**
+certificate-driven (maximize certified-region expansion) certifies **all $2^7{=}128$ compositions in exactly $k{=}7$
+steps** (the generator basis, AUC 0.642); **error-curiosity** is lured by the noisy distractors and certifies only
+**1%** at the same budget (AUC 0.008); random ~2% (AUC 0.024). So "**expand your certified region**" is a **noise-immune
+epistemic drive** that beats prediction-error curiosity — the classic *noisy-TV* failure mode — for compositional
+coverage. **Honest caveat:** the baseline is *raw error* curiosity; a sophisticated *information-gain* agent would also
+learn to avoid aleatoric noise. The certificate's contribution is that it gives that noise-immunity **for free and
+provably** (computable from the certificate, no noise model). A toy demonstration of the certificate's *actionability*,
+candidate to fold into the paper's actionability discussion (§5.6).
+
+**③ tally (user "全做了 都不行再巩固"): 3 negatives + 1 positive.** ③-1 predictability-aware anti-collapse — negative
+twice (rank step66, gated-variance step68: FVU>1 survives both). Reviewers' #1 (horizon on real PushT, step67) —
+negative (local Jacobian spectrum does not predict the learned model's rollout, R²=0.02; folded as evidence into §6).
+③-2 certificate-driven active inference (step69) — **positive** (toy). Not all failed, so the consolidation is: fold
+③-2's positive + the §6 negatives, rather than abandon.
