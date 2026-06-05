@@ -66,12 +66,14 @@ SEED = int(os.environ.get("STEP62_SEED", "0"))
 SMOKE = os.environ.get("STEP62_SMOKE", "0") == "1"
 
 N_ROT = 4
-LATENT_DIM = 32 if SMOKE else 64
+WIDTH = int(os.environ.get("STEP62_WIDTH", "8"))                       # steerable encoder base width (capacity knob)
+LATENT_DIM = int(os.environ.get("STEP62_LATENT", "32" if SMOKE else "64"))
 IMG = 65                                    # odd size -> exact rot90 pixel permutation
 N_TRAIN = 200 if SMOKE else 1500
 N_TRAJ = 16 if SMOKE else 96
-EPOCHS = 4 if SMOKE else 30
+EPOCHS = int(os.environ.get("STEP62_EPOCHS", "4" if SMOKE else "30"))
 H = 4                                        # latent rollout horizon
+TAG = os.environ.get("STEP62_TAG", "")                                # output suffix (keeps the canonical T3 run intact)
 FIG = ROOT / "papers" / "figures"
 
 
@@ -175,7 +177,7 @@ def encoder_equiv_resid(model, F: torch.Tensor) -> float:
 
 
 def make_eq_jepa():
-    enc = SteerableEncoder(in_channels=3, latent_dim=LATENT_DIM, n_rot=N_ROT, width=8)
+    enc = SteerableEncoder(in_channels=3, latent_dim=LATENT_DIM, n_rot=N_ROT, width=WIDTH)
     pred = SteerableLatentPredictor(LATENT_DIM, n_rot=N_ROT)
     return EqJEPA(latent_dim=LATENT_DIM, action_dim=2, encoder=enc, predictor=pred)
 
@@ -243,7 +245,7 @@ def main() -> None:
         "horizon": H, "latent_dim": LATENT_DIM, "img": IMG, "smoke": SMOKE, "seed": SEED,
     }
     FIG.mkdir(parents=True, exist_ok=True)
-    (FIG / "step62_pixel_latent_certificate.json").write_text(json.dumps(result, indent=2), encoding="utf-8")
+    (FIG / f"step62_pixel_latent_certificate{TAG}.json").write_text(json.dumps(result, indent=2), encoding="utf-8")
 
     # figure ------------------------------------------------------------------------------------------
     fig, ax = plt.subplots(figsize=(6.2, 4.2))
@@ -256,7 +258,7 @@ def main() -> None:
     ax.set_title("Certificate on a learned PIXEL latent (PushT, $C_4$)")
     ax.legend(fontsize=8)
     fig.tight_layout()
-    fig.savefig(FIG / "step62_pixel_latent_certificate.png", dpi=130)
+    fig.savefig(FIG / f"step62_pixel_latent_certificate{TAG}.png", dpi=130)
 
     print(f"[step62] enc-equiv eq={eq_enc_resid:.2e} (mlp drift {mlp_enc_drift:.2e}); pred-equiv {eq_pred_resid:.1e}",
           file=sys.stderr)
