@@ -673,6 +673,7 @@ the prose elaborates below.
 | UR-JEPA / LeJEPA | latent-geometry prior (an/isotropy) | — | — | — | distributional (2nd-order) |
 | IMWM | oracle-bypass; residual $=$ search | — | — | ~ search budget | diagnostic |
 | LDA | $\mathrm{SE}(3)$-intrinsic diffusion (action side) | — | — | ~ policy | empirical, modest$+$robust |
+| Symmetry–Data rate | aug$+$TTA $=$ equivariance; wrong-group harmful | ~ one group | — | — | empirical scaling law |
 | companion line | exact flatness: $1$ element, $1$ resolution | ~ one element | — | ✓ invariance | proved (a corner) |
 | **this paper** | equivariant **predictability certificate** | ✓ $k\!\Rightarrow\!\langle S\rangle$ (Thm A, Lem 1) | ✓ $T_j(\epsilon)\!\sim\!\tfrac{\log(1/\epsilon)}{\lambda_j}$ (Thm B) | ✓ exact (Exp 11) | **a-priori, per-situation, computable (Alg 1)** |
 
@@ -721,6 +722,21 @@ quantities* — on the action side. As a diffusion policy its gains are modest b
 $3.27\to3.51$, $+7.3\%$), the same profile as equivariant methods generally; our framing explains why a geometric
 prior buys a *kind* of guarantee (consistency across the group, robustness out of distribution) rather than a
 uniform accuracy jump.
+
+**Concurrent corroboration: the symmetry–data exchange rate, and learned irreps.** Two concurrent works sharpen
+pieces of our picture. *Measuring the Symmetry–Data Exchange Rate* (Adly, 2026; arXiv:2606.01090), on a controlled
+$C_n$ task, independently reports the two facts our §5.8 and §5.5 rest on: (i) a non-equivariant model with
+augmentation **plus test-time orbit averaging matches the equivariant model essentially exactly** (coincident
+per-epoch validation curves) — the single-orbit tie of our augmentation experiment (Experiment 10); and (ii) a
+**misaligned (wrong-group) symmetry constraint is *actively harmful*** ($95\%$ CI excluding zero), not merely
+unhelpful — the approximate-symmetry threshold of our §5.5. It frames the trade as a "symmetry–data exchange rate,"
+the average-case dual of our worst-case separation (§3.3: structure certifies the $\epsilon$-independent orbit, data
+only an $\epsilon/L$ tube); like ours it carries the controlled-toy caveat, and it stops short of the multi-axis
+certificate, the spectral horizon law, the closed-loop clause, and the Noether hinge. On the learning-dynamics side,
+*Neural Networks Provably Learn Spectral Representations for Group Composition* (He et al., 2026; arXiv:2606.02993)
+proves that gradient flow on a group-composition task drives each neuron to a single **irreducible representation** —
+a provable account of *how* the isotypic structure our Proposition 4 places, and our §5.6 discovery experiments
+recover, emerges under training.
 
 **Predictability horizons.** The $T(\epsilon)\sim\log(1/\epsilon)/\lambda$ law is classical for dynamical systems
 (Lyapunov; numerical weather prediction). Our contribution is to measure it on a *learned latent world model*, tie
@@ -836,6 +852,12 @@ quoted from the cited works):
   policy; CALVIN average task length $3.27\to3.51$ ($+7.3\%$). arXiv:2606.01847.
 - **LeJEPA** (Balestriero and LeCun, 2025) — SIGReg / isotropic-Gaussian self-supervised objective (the
   latent-geometry target that UR-JEPA, and our group-prescribed anisotropy, depart from).
+- **Symmetry–Data Exchange Rate** (Adly, 2026) — controlled $C_n$ scaling-law study; augmentation $+$ test-time orbit
+  averaging matches equivariance, and a wrong-group constraint is actively harmful — the average-case dual of our
+  §3.3 separation, corroborating Experiment 10 (§5.8) and §5.5. arXiv:2606.01090.
+- **Spectral Representations for Group Composition** (He et al., 2026) — gradient flow on a group-composition task
+  provably drives neurons to single irreducible representations; the learning-dynamics complement to Proposition 4
+  and the §5.6 discovery experiments. arXiv:2606.02993.
 
 The $T(\epsilon)\sim\log(1/\epsilon)/\lambda$ predictability-horizon law is classical (Lyapunov / Lorenz; standard
 numerical-weather-prediction practice).
