@@ -103,6 +103,7 @@ def train_jepa(
     log_every: int = 5,
     verbose: bool = True,
     return_target_encoder: bool = False,
+    predictability_gated_var: bool = False,
 ) -> dict:
     r"""Train ``model`` (an :class:`EqJEPA`) with EMA-target JEPA + Muon/AdamW.
 
@@ -152,7 +153,18 @@ def train_jepa(
 
             pred_loss = F.mse_loss(z_pred, z_tgt)
             std = z0.std(dim=0)  # per-dim batch std
-            var_loss = F.relu(1.0 - std).mean()
+            if predictability_gated_var:
+                # Predictability-aware anti-collapse: weight the per-dim variance floor by how PREDICTABLE that
+                # dimension is (low 1-step error -> protect its variance; high error / pure anti-collapse noise ->
+                # let it collapse). Resolves the variance<->predictability tension found in Step 64: an isotropic
+                # floor fills unused dims with unpredictable variance, so the rollout cannot beat predict-the-mean.
+                with torch.no_grad():
+                    per_dim_err = (z_pred - z_tgt).pow(2).mean(dim=0)              # (D,) per-dim 1-step error
+                    w = torch.exp(-per_dim_err / (per_dim_err.mean() + 1e-6))      # predictable~1, noise->small
+                    w = w / (w.mean() + 1e-6)                                      # normalize: mean weight = 1
+                var_loss = (w * F.relu(1.0 - std)).mean()
+            else:
+                var_loss = F.relu(1.0 - std).mean()
             loss = pred_loss + var_coef * var_loss
 
             if muon is not None:

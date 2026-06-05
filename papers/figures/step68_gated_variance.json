@@ -1,0 +1,24 @@
+{
+  "passed": false,
+  "gate": {
+    "orbit_flat_both": true,
+    "gated_beats_mean_and_isotropic": false
+  },
+  "isotropic": {
+    "fvu": 1.8676449144121279,
+    "relmse": 1.768923282623291,
+    "part_ratio": 3.34450364112854,
+    "orbit_ratio": 1.000000067390876
+  },
+  "gated": {
+    "fvu": 2.016280545437904,
+    "relmse": 2.0111777782440186,
+    "part_ratio": 3.1852848529815674,
+    "orbit_ratio": 1.0
+  },
+  "fvu_improvement": -0.14863563102577593,
+  "seed": 0,
+  "epochs": 30,
+  "device": "mps",
+  "smoke": false
+}

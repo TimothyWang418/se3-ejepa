@@ -404,3 +404,13 @@ latent width** — at every D the variance floor fills D dims with per-frame-unp
 the *isotropic variance objective*, not the dimension count. This sharpens (does not close) the open problem: the
 principled fix is a **predictability-gated variance** (collapse unpredictable dims, protect predictable ones) — a
 deeper training-objective change, a separate gamble. NOT folded into any paper (exploratory candidate-mechanism probe).
+
+## 18. ③-1 mechanism probe 2 (predictability-GATED variance) — HONEST NEGATIVE; ③-1 conclusively fails
+
+`experiments/step68_gated_variance.py` + `train_jepa(..., predictability_gated_var=True)` (per-dim variance floor
+weighted by predictability $w_d=\exp(-e_d/\bar e)$, protect predictable dims, let noise dims collapse). A/B on the
+Step-64 FA-JEPA at $D{=}64$: **isotropic FVU 1.87, gated FVU 2.02** (gated slightly WORSE, Δ −0.15); orbit-flat both
+(ratio 1.000). So gating the *objective* does not beat predict-the-mean either. **③-1 (predictability-aware
+anti-collapse) is conclusively negative** — both the rank knob (step66) and the variance-objective knob (step68) fail.
+The FVU>1 pixel residual is deeper than the anti-collapse term; it is a property of frame-JEPA on PushT pixels we have
+not closed. Exploratory probe, not folded into any paper (the §6 pixel limitation already states the residual honestly).
