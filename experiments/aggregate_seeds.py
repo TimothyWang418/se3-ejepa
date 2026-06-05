@@ -32,6 +32,7 @@ STEPS = [
     "step61_closed_loop_certificate",
     "step63_se3_certificate",
     "step64_frame_averaged_pixel",
+    "step65_horizon_tightness",
 ]
 
 

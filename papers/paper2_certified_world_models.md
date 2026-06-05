@@ -266,7 +266,11 @@ amplified $e^{\lambda T}$ — so the single-orbit, single-step tie between augme
 *must* break over horizon, at the predicted $T\!\sim\!\tfrac1\lambda\log(1/\epsilon)$. Experiment 8's measured
 symmetry-breaking threshold ($\epsilon_{\text{world}}\!\approx\!0.01\text{–}0.06$) is the same crossing from the
 world's side, and §5.2 recovers $T_j(\epsilon)$ to within $0.4\%$ — the lower bound is what certifies that recovery is
-the *true* horizon, not just an attainable one.
+the *true* horizon, not just an attainable one. A direct numerical instantiation of the construction
+(`experiments/step65`, 3 seeds) confirms it: an $\epsilon{=}10^{-3}$-approximately-equivariant model's
+orbit-error-variation equals $\epsilon\,e^{\lambda_j T}$ to a relative error of $\sim\!10^{-14}$ per channel, an
+exactly equivariant model stays flat at $\sim\!10^{-16}$ for all horizons, and the certified horizon is linear in
+$\log(1/\epsilon)$ with slope $1/\lambda_j$ ($R^2{=}1.000$).
 
 ### 3.3 Scale versus structure, quantified
 
