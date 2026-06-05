@@ -242,9 +242,19 @@ Honest triage on this Mac (CPU/MPS, no CUDA): of the four GPU-tier items, **SE(3
   **optimization/architecture** problem (e2cnn JEPA hard to train on pixels) → genuinely GPU-tier. Folded into §7
   (corrected "needs more capacity" → "is an optimization problem, not a missing-parameters one"). step62
   parametrized (`6f7a10b`); committed T3 result untouched.
-- **scale (→1M+ params)** ⛔ GPU-only — laptop already shows "no scale reaches the floor" across 160× (Exp 9). ·
-  **real embodied (RLBench/ManiSkill)** ⛔ GPU+sim. These → **GPU-ready scripts** (offered), the GPU tier S1–S5 of
-  `papers/proposals/paper2-embodied-scale-lift.md`.
+- **MPS correction (user: "苹果自己的 M5max GPU 不能跑吗？")** — I was wrong to say "no GPU". This Mac's GPU runs via
+  **PyTorch MPS**, and e2cnn is **~10–26× faster on MPS than CPU** (SteerableEncoder fwd 466ms→18ms; full e2cnn JEPA
+  3809→399 ms/epoch). step62 now has a `STEP62_DEVICE=mps` knob (train on MPS, eval on CPU to dodge e2cnn MPS
+  edge-cases). So the equivariant models ARE Apple-GPU-trainable here. **MPS-accelerated pixel retries (≈2.5 min
+  each):** the gamble's divergence was an **optimization instability** (latent collapse) — *fixable*: with anti-
+  collapse var_coef + lower LR + stable training the rollout relMSE drops monotonically **23.7→4.5→2.84→2.28** over
+  800 epochs while staying flat (1.000). But it **plateaus at ~2.3** vs an ordinary CNN's **~0.44** — diminishing
+  returns, so the **residual gap is architecture-deep, not compute/capacity** (an e2cnn JEPA is a worse pixel
+  predictor on this modality). §7 rewritten accordingly: "ruled out capacity/compute; needs a better equivariant
+  architecture, an open problem" — not the earlier (wrong) "GPU-tier compute we lack". **scale (→1M params)** is now
+  plausibly MPS-feasible (unified memory + 10× speedup) — laptop already shows no-scale-reaches-floor across 160×
+  (Exp 9), so low marginal value but doable. **real embodied (RLBench/ManiSkill)** still needs CUDA-only sim → the
+  one genuinely off-Mac item; the rest is the GPU tier S1–S5 of `papers/proposals/paper2-embodied-scale-lift.md`.
 
 **Meta-finding across T3 + Exp 12:** the certificate's *exact orbit-flatness* (the GUARANTEE) lifts everywhere —
 SO(2) structured-state, SO(2) pixels, SO(3) point clouds — all ratio 1.000. The equivariant model's *competitive

@@ -74,6 +74,7 @@ N_TRAJ = 16 if SMOKE else 96
 EPOCHS = int(os.environ.get("STEP62_EPOCHS", "4" if SMOKE else "30"))
 H = 4                                        # latent rollout horizon
 TAG = os.environ.get("STEP62_TAG", "")                                # output suffix (keeps the canonical T3 run intact)
+DEVICE = os.environ.get("STEP62_DEVICE", "cpu")                       # "mps" trains the e2cnn JEPA ~10x faster on Apple GPU
 FIG = ROOT / "papers" / "figures"
 
 
@@ -204,8 +205,13 @@ def main() -> None:
 
     eq = make_eq_jepa()
     mlp = make_mlp_jepa()
-    train_jepa(eq, obs, act, nxt, epochs=EPOCHS, batch_size=64, var_coef=0.04, seed=SEED, verbose=False)
-    train_jepa(mlp, obs, act, nxt, epochs=EPOCHS, batch_size=64, var_coef=0.04, seed=SEED, verbose=False)
+    tk = dict(epochs=EPOCHS, batch_size=64, seed=SEED, device=DEVICE, verbose=False,
+              var_coef=float(os.environ.get("STEP62_VARCOEF", "0.04")),       # anti-collapse hinge (stabilizer)
+              muon_lr=float(os.environ.get("STEP62_MUON_LR", "0.02")),         # lower => more stable steerable training
+              adamw_lr=float(os.environ.get("STEP62_ADAMW_LR", "0.001")))
+    train_jepa(eq, obs, act, nxt, **tk)
+    train_jepa(mlp, obs, act, nxt, **tk)
+    eq.to("cpu"); mlp.to("cpu")   # train on DEVICE (mps ~10x faster for e2cnn); eval on CPU (dodges e2cnn MPS edge-cases)
 
     # predictor equivariance (architectural) ---------------------------------------------------------
     zc = torch.randn(16, LATENT_DIM); ac = torch.randn(16, 2)

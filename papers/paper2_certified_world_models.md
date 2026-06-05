@@ -751,13 +751,16 @@ certificate for equivariant models.
   the steerable pixel JEPA **underfits**: its rollout relMSE ($\approx4.5$) is far worse than an ordinary CNN's
   ($\approx0.8$), so on pixels the prior currently buys the certificate at a real *accuracy* cost ("flat is not
   good", concretely) — and the ordinary CNN is itself orbit-flat, since PushT's pixel stream is approximately
-  $C_4$-symmetric (the augmentation regime of §5.8). Crucially, this is **not** a capacity gap: a matched-capacity,
-  $4\times$-longer retry (a steerable encoder grown to $179\mathrm{k}$ parameters versus the baseline's
-  $243\mathrm{k}$, trained $120$ epochs) underfits *further* (rollout relMSE $\approx23.7$), so on this modality the
-  accuracy gap is an **optimization/architecture** problem — harder to train an $\mathrm{e2cnn}$ JEPA on pixels than
-  a plain CNN — that more laptop parameters and epochs do not close. So on pixels we claim only the *architectural
-  transfer of exact flatness*; a steerable pixel model that is both flat *and* competitive is a GPU-tier problem
-  (better optimization and compute, proposal stage S1), not a missing-parameters one.
+  $C_4$-symmetric (the augmentation regime of §5.8). We separated the two possible causes by training on this
+  machine's GPU (Apple MPS — $\sim\!10$–$26\times$ faster than CPU for the $\mathrm{e2cnn}$ model, so optimization
+  could be iterated). **Optimization instability is real but fixable:** a naive larger/longer run *diverges* (rollout
+  relMSE $\approx23.7$ — the latent collapses), but anti-collapse regularization plus stable training pulls it down
+  monotonically ($23.7\!\to\!4.5\!\to\!2.8\!\to\!2.3$ over $800$ epochs). **The residual gap is architectural, not
+  compute:** it *plateaus* at relMSE $\approx2.3$ with diminishing returns, versus an ordinary CNN's $\approx0.4$ —
+  the $\mathrm{e2cnn}$ JEPA is simply a worse pixel predictor on this modality, and more epochs do not close it. So
+  on pixels we claim the *exact architectural transfer of flatness* (always) and have *ruled out* a capacity or
+  compute explanation for the accuracy gap; a steerable pixel model that is both flat **and** competitive needs a
+  better equivariant **architecture** (not more GPU) — a genuine open problem (proposal stage S1).
 - **Scope of the exact certificate.** Theorem A requires (A3): the group must be a symmetry of the *dynamics*, not
   merely the encoder. The exact certificate therefore holds where the group is a genuine dynamical symmetry
   (orbital and conservative systems, free space, idealized manipulation). Everywhere else one is in Theorem B's
