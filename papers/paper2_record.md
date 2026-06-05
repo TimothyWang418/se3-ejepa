@@ -371,3 +371,16 @@ real PushT 160× sweep, SO(3)+frame-averaged pixels transfer, closed-loop) / §5
 limitations / §7 conclusion / refs. All E1–E7 numbers cross-checked against the committed record (7/7 match). Builds
 via `make iclr-build` (pandoc→tectonic, text+math only, no figures); QA PDF 91 KiB compiles clean. Not yet committed to
 the arXiv bundle — it is a standalone focused draft for the user to review/iterate before deciding submission target.
+
+## 15. ICLR draft → submission-quality: figures + step65 + adversarial red-team (user: "都做了吧", overnight batch)
+
+Took the focused ICLR draft from text-only to submission-shaped, autonomously:
+- **7 figures embedded** (hero + the new step65 tightness figure as the §3.2 central-claim visual + E2–E6); `make iclr-build` (pandoc→tectonic, `--resource-path`); QA PDF ~800 KiB, visually checked (Figure 2 renders cleanly).
+- **step65 (Proposition 6 numerical confirmation)** added as a real experiment (3 seeds, test_step65, full suite 92) + folded into paper2 §3.2 + ledger + aggregate_seeds.
+- **Opus adversarial red-team** (as a tough ICLR reviewer) → verdict *borderline, fixable to accept*. It caught a **real reproducibility gap on the central figure** (committed step65 JSON was a seed-2 run, caption quoted seed-0, no `_seeds.json` despite "3 seeds") + two honest overclaims. **All folded** (commit `023328b`):
+  - **B1**: regenerated canonical at seed 0, committed `step65_horizon_tightness_seeds.json`, captions now quote the true seed range (rel-err 1e-14–1e-13) and state exact-equiv variation is *exactly 0* (1e-16 was a log-plot floor).
+  - **B2**: Prop 6's "any model… is horizon-limited" → the honest worst-case certificate statement ("guaranteeable from ε-approx equivariance alone … worst case over admissible targets"), in **both** papers.
+  - **B3**: E2's "0.4%" (Lyapunov recovery) separated from the certified-horizon slope (1.3–1.6 vs 1/λ=1.44).
+  - Non-blocking: Lemma 2 continuity caveat; Prop 6 linearity as explicit hypothesis; "no accuracy cost" → *relative to* the unconstrained CNN; E7 closed-loop derivation; a "what is classical vs new" preemption para (leads with Prop 6 + Lemma 2); a "hinge validated on constructed teachers, not emergent" limitation.
+  - The red-team verified 7/7 cross-checkable numbers against this ledger — all matched.
+- **Honest residual on this draft (NOT done — needs the user):** it is a clean conference-style pandoc PDF, **not** the official ICLR `.sty` template (author/affiliation/line-numbers/page-limit pass still required for an actual submission); no dedicated "tightness" beyond the analytic step65; the toy-scale + constructed-teacher-hinge caveats are disclosed, not resolved. Commits this batch: `b4f7431` (step65 + paper2 fold + iclr-build), `59fc368` (draft), `023328b` (figures + red-team fixes).
