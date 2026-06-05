@@ -22,13 +22,16 @@ is conserved or invariant (the Noether hinge, Propositions 4–5). The certifica
 any scale**, and §3.3 makes this quantitative (a resolution-independent orbit vs. an $\epsilon/L$-tube); the existing
 single-shot certified-equivariance guarantees (robustness margins, equivariant conformal prediction) are the $T{=}1$,
 $\epsilon$-independent slice of this picture. Our contribution is the *synthesis* of these facts into one computable
-certificate for learned world models, not the individual statements. Empirically, the horizon law is recovered on a
-learned (synthetic-latent) model to $0.4\%$; on a real physics-engine contact simulator (PushT) the *orbit-flatness*
-certificate holds for a learned model exactly (ratio $1.000$) while non-equivariant baselines of up to $160{\times}$ the
-parameters retain a $2$–$3{\times}$ out-of-distribution penalty; and the certificate transfers from the circle to
-non-abelian $\mathrm{SO}(3)$ and — via frame averaging — to raw pixels at **no accuracy cost relative to an
-unconstrained CNN** (both absolute-limited; §6)
-relative to an unconstrained CNN. *Scale buys interpolation; structure buys a certified horizon.*
+certificate for learned world models, not the individual statements — together with a **scope theorem** (Proposition 7)
+that says *when* the locally-measured spectrum governs a learned model's horizon: it does on spectrally non-degenerate
+dynamics, and is vacuous on near-neutral dynamics, which *predicts* where the certificate is informative rather than
+leaving it to chance. Empirically, the horizon law is recovered on a controlled-spectrum latent to $0.4\%$ and — the
+decisive test — **lifts to a learned model of the genuinely chaotic Lorenz system**, whose true Lyapunov exponent the
+learned model matches to $1$–$8\%$ ($R^2{=}0.975$–$0.995$, 3 seeds); on a real physics-engine contact simulator (PushT)
+the *orbit-flatness* certificate holds for a learned model exactly (ratio $1.000$) while non-equivariant baselines of up
+to $160{\times}$ the parameters retain a $2$–$3{\times}$ out-of-distribution penalty; and the certificate transfers from
+the circle to non-abelian $\mathrm{SO}(3)$ and — via frame averaging — to raw pixels at **no accuracy cost relative to
+an unconstrained CNN** (both absolute-limited; §6). *Scale buys interpolation; structure buys a certified horizon.*
 
 ---
 
@@ -57,7 +60,11 @@ contributions are:
    **matching lower bound** (Proposition 6): an $\epsilon$-approximately-equivariant model — even one with a *perfect*
    predictor — has orbit-error-variation exactly $\epsilon\,e^{\lambda T}$ on an expansive channel, so its certified
    horizon is $\Theta(\log(1/\epsilon)/\lambda)$, **no better**. Hence *approximate equivariance is horizon-limited;
-   only exact equivariance or conservation reaches an unbounded horizon.*
+   only exact equivariance or conservation reaches an unbounded horizon.* A **scope theorem** (Proposition 7) then says
+   *when* the locally-measured spectrum governs a *learned* model's horizon — Oseledets gives the rate on spectrally
+   non-degenerate dynamics, the law degenerates on near-neutral dynamics — and the horizon staircase **lifts to a
+   learned model of the genuinely chaotic Lorenz system** (E2: the learned model's Lyapunov exponent matches the true
+   one to $1$–$8\%$), while the near-neutral PushT interior is the predicted degenerate case.
 2. **The certificate is exclusive to structure (§3.1).** The converse (Lemma 2): orbit-constant error against every
    equivariant target $\iff$ the model is equivariant. So **no non-equivariant model has the certificate at any size**
    — an architectural impossibility, proved, not asserted.
@@ -184,6 +191,22 @@ between augmentation and equivariance **must break over horizon** at the predict
 
 ![Proposition 6, numerically (the central claim). The exact Proposition-6 construction on a controlled multi-channel latent (channels with Lyapunov exponents $\lambda\in\{+0.70,+0.35,0,-0.40\}$). **Left:** the orbit-error-variation of an $\epsilon{=}10^{-3}$-approximately-equivariant model (markers) equals the analytic $\epsilon\,e^{\lambda T}$ (dashed) to a relative error of $10^{-14}$–$10^{-13}$ across 3 seeds — the lower bound is exact, so the horizon is tight; an *exactly* equivariant model has orbit-variation *exactly $0$* (to machine precision) at every horizon (plotted at the $10^{-16}$ log-floor), and conserved/contractive channels ($\lambda\le0$) are bounded for all $T$ (infinite certified horizon). **Right:** the per-channel certified horizon $T(\epsilon_{\rm res})$ is linear in $\log(1/\epsilon)$ with slope exactly $1/\lambda$ ($R^2=1.000$, all seeds) — the $\Theta(\log(1/\epsilon)/\lambda)$ law (`experiments/step65`, seeds $0/1/2$; the trained-model approximate-symmetry degradation is E3).](figures/step65_horizon_tightness.png)
 
+**Proposition 7 (scope — when the local spectrum certifies a *learned* model's horizon).** Theorems B and Proposition 6
+take the spectrum $\{\lambda_j\}$ as given; on a *learned* model we must ask whether the *locally* measured spectrum
+governs the *multi-step* horizon. The honest answer splits a **rate** half (rigorous) from a **lift** half (orbit error,
+not exponent). Let $\phi$ be the true dynamics with an ergodic invariant measure $\mu$, $\log^+\lVert D\phi\rVert\in
+L^1(\mu)$. By the **Oseledets multiplicative ergodic theorem**, $\tfrac1t\log\lVert\delta_t\rVert\to\lambda_1$ $\mu$-a.e.
+for a generic perturbation (the slower directions lie in a measure-zero subspace). *(a) Non-degenerate ($\lambda_1>0$):*
+$T(\epsilon)=\tfrac1{\lambda_1}\log(\epsilon_{\mathrm{res}}/\epsilon)+o(t)$ — Theorem B's law with $\lambda_1$ now the
+*measurable* asymptotic rate. The lift to a learned $\hat\phi$ is an *orbit-error* statement: on uniformly hyperbolic
+$\phi$ the shadowing lemma bounds the forecast-horizon *floor* $\sim\tfrac1{\lambda_1}\log(1/\delta)$ for one-step error
+$\delta$, but it controls trajectory closeness, **not** the Lyapunov exponent (which is only upper-semicontinuous under
+$C^1$ perturbation). That $\hat\phi$ *reproduces* $\lambda_1$ is therefore **empirical** (E2), not a corollary. *(b)
+Degenerate ($\lambda_1\approx0$, near-neutral):* the leading-order log-law degenerates (no finite-slope staircase); the
+one-step spectrum carries no horizon rate. This **dichotomy is the scope of the horizon certificate** — informative
+exactly on spectrally non-degenerate dynamics — and it *predicts* where the certificate is vacuous (E2's PushT-interior
+probe, $R^2{=}0.02$), rather than leaving it as a gap.
+
 ### 3.3 The Noether hinge: which channels are unbounded
 
 Theorem B leaves the $\lambda_j\le0$ (unbounded-horizon) channels unidentified. The Noether hinge identifies them as
@@ -225,13 +248,26 @@ $180^\circ$ flips), training the equivariance checks on the **6 generators** cer
 compositions to $\sim10^{-33}$ error, while a non-equivariant baseline degrades from $1.6\!\times\!10^{-5}$ on the
 generators to $0.59$ on held-out compositions. Six checks, sixty-four guarantees (Lemma 1).
 
-**(E2) The horizon staircase, and tightness.** On a controlled latent with a tunable Lyapunov spectrum, the model
-recovers the chaotic Lyapunov exponent to within $0.4\%$, and its certified-horizon slope
-$\mathrm{d}T/\mathrm{d}\log(1/\epsilon)=1.3$–$1.6$ across seeds brackets the predicted $1/\lambda=1.44$: chaotic channels
-are certified to $3$–$10$ steps, slow/invariant channels to $\ge 90$. The recovery matches *both* Theorem B (upper) and
-Proposition 6 (lower), confirming the horizon is the true one, not merely attainable.
+**(E2) The horizon staircase, on a controlled spectrum and on a learned model of *real chaotic dynamics*.** First, on a
+controlled latent with a tunable Lyapunov spectrum, the model recovers the chaotic Lyapunov exponent to within $0.4\%$,
+and its certified-horizon slope $\mathrm{d}T/\mathrm{d}\log(1/\epsilon)=1.3$–$1.6$ across seeds brackets the predicted
+$1/\lambda=1.44$: chaotic channels are certified to $3$–$10$ steps, slow/invariant channels to $\ge 90$ — matching
+*both* Theorem B (upper) and Proposition 6 (lower). **The decisive test is whether this lifts to a learned model of a
+genuinely chaotic system, not a planted spectrum.** It does: we integrate the **Lorenz** attractor
+($\sigma{=}10,\rho{=}28,\beta{=}8/3$; $\lambda_1\approx0.9056$, singular-hyperbolic with an SRB measure [Tucker, 2002]),
+train a plain one-step MLP of the $\Delta t$-map (relMSE $<10^{-4}$), and run the staircase **on the learned model**.
+The certified horizon is linear in $\log(1/\epsilon)$ ($R^2{=}0.975$–$0.995$, 3 seeds), and the learned model's
+Lyapunov exponent — read off as the staircase slope — **matches the true** $\lambda_1$ to $1$–$8\%$
+($\hat\lambda_1{=}0.895/0.919/0.977$ vs $0.9056$). A model can be one-step-accurate yet drift to a wrong *multi-step*
+rate; that it does not is the content (this is Proposition 7(a)'s empirical lift — shadowing does not transfer the
+exponent, so the match is the finding). Conversely, the **PushT interior** is Proposition 7's *degenerate* branch:
+near-neutral one-step Jacobian ($|\mu|\approx1$, $\lambda_1\approx0$), and a learned-model horizon probe finds the local
+spectrum does *not* predict the rollout ($R^2{=}0.02$) — exactly the regime where the horizon axis is vacuous, predicted
+not patched.
 
-![The horizon $\times$ resolution staircase (E2). The measured certified horizon per channel as the demanded resolution $\epsilon$ sharpens, recovering $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$ (slope $1.3$–$1.6$): chaotic channels are certified to a few steps, slow/invariant channels to dozens.](figures/step52_horizon_resolution.png)
+![The horizon staircase on a learned model of real chaotic dynamics (E2, Lorenz). **Left:** the learned one-step model's perturbation growth tracks the true Lorenz integrator over $550$ steps. **Right:** the certified horizon $T(\epsilon_0)$ on the *learned* model is linear in $\log(1/\epsilon_0)$ ($R^2{=}0.995$), and the measured slope sits on the prediction $1/(\lambda_1 dt)$ from the textbook Lorenz exponent — Theorem B's law lifted to a learned model of a genuinely chaotic system (Proposition 7(a)).](figures/step70_lorenz_horizon.png)
+
+![The horizon $\times$ resolution staircase on a controlled spectrum (E2). The measured certified horizon per channel as the demanded resolution $\epsilon$ sharpens, recovering $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$ (slope $1.3$–$1.6$): chaotic channels are certified to a few steps, slow/invariant channels to dozens.](figures/step52_horizon_resolution.png)
 
 **(E3) Approximate symmetry validates Proposition 6.** Breaking the world's symmetry by $\epsilon_{\text{world}}$, the
 certificate degrades *gracefully and linearly* in $\epsilon_{\text{world}}$ (correlation $0.88$–$0.98$ across seeds)
@@ -329,9 +365,14 @@ and their critics target a *distributional* (second-order) property; our certifi
 guarantee, and predicts precisely when a data-discovered latent anisotropy will fail to generalize (off the orbit).
 
 **Predictability horizons.** The $T(\epsilon)\sim\log(1/\epsilon)/\lambda$ law is classical for dynamical systems
-(Lyapunov; numerical weather prediction). Our contribution is to (i) prove it *tight* for a *learned* latent world
-model, (ii) tie its unbounded-horizon subspace to the group-invariant subspace (Noether hinge), and (iii) make the
-forward direction's converse a theorem (Lemma 2).
+(Lyapunov; numerical weather prediction); that the *local* spectrum governs the *asymptotic* rate is the Oseledets
+multiplicative ergodic theorem, and on uniformly hyperbolic systems the shadowing lemma bounds a perturbed model's
+forecast-horizon floor (it controls orbit error, not the exponent). Our contribution is to (i) prove the law *tight* for
+a *learned* latent world model and **measure it on a learned model of genuinely chaotic dynamics** (Lorenz, E2 — the
+learned model's exponent matches the true one to $1$–$8\%$); (ii) **characterize when it lifts** (Proposition 7: the
+non-degenerate/degenerate dichotomy, synthesizing Oseledets for the rate with shadowing for the floor); (iii) tie its
+unbounded-horizon subspace to the group-invariant subspace (Noether hinge); and (iv) make the forward direction's
+converse a theorem (Lemma 2).
 
 ---
 
@@ -349,21 +390,21 @@ forward direction's converse a theorem (Lemma 2).
   containment results) use *constructed* equivariant teachers, so the "slow $=$ invariant" coincidence is partly built
   in. The real-ish experiments (E5 PushT, E6 $\mathrm{SO}(3)$) validate *flatness*, not the hinge's emergence in a
   learned model of un-constructed dynamics — that remains open.
-- **The horizon axis is demonstrated on a learned *synthetic-latent* model, and does NOT lift cleanly to learned
-  *real* dynamics — a measured negative.** E2 recovers the certified-horizon law
-  $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$ on a learned predictor rolled out to $T{=}90$, but its latent is a
-  hand-designed multi-Lyapunov system; Proposition 6 is confirmed analytically (step65). We *attempted* the lift to
-  real dynamics (`experiments/step67`): on the trained PushT model (one-step relMSE $0.003$, $\mathrm{SO}(2)$-residual
-  $2\times10^{-7}$), the a-priori local Jacobian spectrum (the Algorithm-1 ingredient) **does not predict the measured
-  multi-step rollout perturbation growth** — across $160$ held-out query states the certified exponent and the measured
-  finite-time exponent correlate at $R^2\approx0.02$. The reason is structural: a learned model of real contact
-  physics is not *locally linear with a constant spectrum* (its one-step linearization, though it has a spread of
-  eigenvalues $e^{\lambda}\in[1.0,2.0]$, does not govern the bounded, normalization-constrained multi-step rollout), so
-  the Theorem-B/Proposition-6 horizon law — which assumes exactly that local-linear structure — has no purchase. So the
-  honest reading is sharp: the *configuration* axis (orbit-flatness, ratio $1.000$) holds on real PushT; the *horizon*
-  axis is validated only on synthetic constant-spectrum latents (E2) and analytically (step65); and **lifting the
-  per-channel horizon certificate to learned models of real, non-linearly-recurrent dynamics is a genuine open
-  problem** that our local-spectrum instrument does not solve.
+- **The horizon axis lifts to learned models of real *chaotic* dynamics, but the lift is empirical, and is vacuous on
+  near-neutral dynamics (scope, not a bug).** E2 now validates the certified-horizon law on three levels: a
+  synthetic constant-spectrum latent, analytically (Proposition 6, step65), and — the decisive case — a *learned* model
+  of the genuinely chaotic **Lorenz** system, where the staircase is linear ($R^2{=}0.975$–$0.995$) and the learned
+  model's Lyapunov exponent matches the true $\lambda_1$ to $1$–$8\%$. Proposition 7 explains the regime structure: the
+  horizon axis is informative iff the dynamics is spectrally non-degenerate ($\lambda_1>0$). The **PushT interior is the
+  degenerate branch** ($\lambda_1\approx0$, near-neutral): a learned-PushT probe (`experiments/step67`) finds the local
+  Jacobian spectrum does *not* predict the multi-step rollout ($R^2\approx0.02$) — *predicted* by Proposition 7(b), not
+  a defect of the certificate. Two honest caveats remain. (i) The lift is **empirical, not theorem-backed**: Oseledets
+  gives the rate rigorously, but shadowing bounds only the forecast-horizon *floor* and does **not** transfer the
+  Lyapunov exponent (exponents are upper-semicontinuous under $C^1$ perturbation), and classical shadowing does not even
+  formally cover singular-hyperbolic Lorenz; that the learned model reproduces $\lambda_1$ is the *measured* finding,
+  and we verify $C^1$-closeness only via one-step error (an $L^2$ proxy). (ii) The *configuration* axis (orbit-flatness,
+  ratio $1.000$) is the part that holds on real PushT at the contact level; the horizon axis's real-dynamics evidence is
+  Lorenz, a $3$D ODE, not a contact simulator.
 - **Scale and modality.** All experiments are $1$–$2$-GPU. The exact flatness of the certificate transfers across
   modalities (structured state, $\mathrm{SO}(3)$ point clouds, pixels), but absolute multi-step accuracy on raw pixels
   at this scale is poor for *every* architecture (an artifact of the anti-collapse-regularized JEPA latent, not of
@@ -409,10 +450,16 @@ already trusts are the one-step slice of this picture. *Scale buys interpolation
   Networks* (2019); Yarotsky, *Universal approximations of invariant maps* (2022); Dym & Maron, *Universality of
   Rotation-Equivariant Point Cloud Networks* (2021); Goodman & Wallach, *Symmetry, Representations, and Invariants*
   (the $\mathrm{Sym}^k/\Lambda^k$ decompositions behind Proposition 4).
-- **Predictability horizon / perturbation growth** — Lorenz, *Atmospheric predictability* (1969); Pilyugin,
-  *Shadowing in Dynamical Systems*. The $T(\epsilon)\sim\log(1/\epsilon)/\lambda$ law and the $e^{\lambda T}$ growth of
-  a seeded perturbation (the upper bound, and the mechanism of Proposition 6's lower bound) are classical here; our
-  twist is only to seed the growth with the *equivariance residual*.
+- **Predictability horizon / perturbation growth / ergodic rate** — Lorenz, *Atmospheric predictability* (1969);
+  Oseledets, *A multiplicative ergodic theorem* (1968) — the local/finite-time exponent converges a.e. to the
+  asymptotic rate $\lambda_1$, the rigorous half of Proposition 7; Pilyugin, *Shadowing in Dynamical Systems* (1999) —
+  on *uniformly* hyperbolic sets, bounds a perturbed model's forecast-horizon *floor* (orbit error, not the exponent);
+  Tucker, *A rigorous ODE solver and Smale's 14th problem* (2002) and Araújo–Pacífico–Pujals–Viana (2009) — the
+  geometric Lorenz attractor is *singular*-hyperbolic with an SRB measure (so the MET applies) but is **not** uniformly
+  hyperbolic (so classical shadowing does not formally cover it — hence E2's exponent-lift is empirical). The
+  $T(\epsilon)\sim\log(1/\epsilon)/\lambda$ law and the $e^{\lambda T}$ growth of a seeded perturbation are classical;
+  our twist is to seed the growth with the *equivariance residual* (Proposition 6) and to characterize *when* the local
+  spectrum governs a learned model's horizon (Proposition 7).
 
 *Companion line.* This paper is a focused extraction of the project's *Certified World Models* program; the full
 experiment suite, the closed-loop clause, the discovery/generation re-framing, and the complete proofs appear in the
