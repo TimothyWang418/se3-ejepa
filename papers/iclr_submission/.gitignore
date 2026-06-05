@@ -1,0 +1,17 @@
+# Re-downloadable official ICLR template kit (build_iclr.py fetches it idempotently)
+iclr2026/
+iclr2026.zip
+__MACOSX/
+# Build intermediates / duplicated assets
+_iclr_combined.md
+preamble_iclr.tex
+main.tex
+main.log
+main.aux
+main.out
+main.xdv
+iclr2026_conference.sty
+iclr2026_conference.bst
+figures/
+*.otf
+# Keep: build_iclr.py, README.md, main.pdf (the deliverable)
