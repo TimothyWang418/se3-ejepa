@@ -10,20 +10,24 @@ venue: "ICLR submission draft (focused extraction of the Certified World Models 
 
 Scaling a world model lowers its average error but issues **no guarantee about any specific unseen situation, and none
 about how far into the future it can be trusted.** We give a different *kind* of result for **equivariant** latent
-world models: a **tight, computable certificate of the predictable horizon.** For a model whose encoder and latent
+world models: a **computable, multi-step certificate of the predictable horizon.** For a model whose encoder and latent
 predictor are $G$-equivariant with an orthogonal representation, the $T$-step rollout error is provably *constant over
-the entire orbit* of group-related situations (Theorem A), and — our central result — the *horizon* to which this
-holds is governed channel-by-channel by the predictor's spectrum: a channel with Lyapunov exponent $\lambda_j$ is
-certified to horizon $T_j(\epsilon)=\Theta\!\big(\tfrac1{\lambda_j}\log\tfrac1\epsilon\big)$, **and this is tight** —
-we prove a matching lower bound (Proposition 6) showing that any model that is only *approximately* equivariant is
-horizon-limited at exactly this rate, while a channel is certified to *unbounded* horizon **iff** it is conserved or
-invariant (the Noether hinge, Propositions 4–5). Two structural facts make the certificate exclusive to structure:
-the certificate is *equivalent* to equivariance (Lemma 2, the converse), so **no non-equivariant model possesses it at
-any scale**; and the existing single-shot certified-equivariance guarantees (robustness margins, equivariant conformal
-prediction) are exactly the $T{=}1$, $\epsilon$-independent slice of this picture. Empirically, on a real physics-engine
-contact simulator (PushT) the certificate holds for a *learned* model to the floating-point floor while a $160{\times}$
-parameter sweep of non-equivariant baselines never reaches it out of distribution; the certificate transfers exactly
-from the circle to non-abelian $\mathrm{SO}(3)$ and — via frame averaging — to raw pixels at **no accuracy cost**
+the entire orbit* of group-related situations (Theorem A), and the *horizon* to which this holds is governed
+channel-by-channel by the predictor's spectrum: a channel with Lyapunov exponent $\lambda_j$ is certified to horizon
+$T_j(\epsilon)=\Theta\!\big(\tfrac1{\lambda_j}\log\tfrac1\epsilon\big)$ — upper-bounded by the classical
+predictability law and lower-bounded by a worst-case construction (Proposition 6), so the *form* is two-sided:
+approximate equivariance is horizon-limited at this rate, while a channel is certified to *unbounded* horizon **iff** it
+is conserved or invariant (the Noether hinge, Propositions 4–5). The certificate is *equivalent* to equivariance
+(Lemma 2, the converse of a classical invariant-decision-theory fact), so **no non-equivariant model possesses it at
+any scale**, and §3.3 makes this quantitative (a resolution-independent orbit vs. an $\epsilon/L$-tube); the existing
+single-shot certified-equivariance guarantees (robustness margins, equivariant conformal prediction) are the $T{=}1$,
+$\epsilon$-independent slice of this picture. Our contribution is the *synthesis* of these facts into one computable
+certificate for learned world models, not the individual statements. Empirically, the horizon law is recovered on a
+learned (synthetic-latent) model to $0.4\%$; on a real physics-engine contact simulator (PushT) the *orbit-flatness*
+certificate holds for a learned model exactly (ratio $1.000$) while non-equivariant baselines of up to $160{\times}$ the
+parameters retain a $2$–$3{\times}$ out-of-distribution penalty; and the certificate transfers from the circle to
+non-abelian $\mathrm{SO}(3)$ and — via frame averaging — to raw pixels at **no accuracy cost relative to an
+unconstrained CNN** (both absolute-limited; §6)
 relative to an unconstrained CNN. *Scale buys interpolation; structure buys a certified horizon.*
 
 ---
@@ -69,15 +73,21 @@ We are explicit about scope (§6): this is a mechanism-and-theory contribution a
 benchmark; the certificate is *exact* where the group is a genuine dynamical symmetry and *gracefully approximate*,
 with a measured and now lower-bounded boundary, elsewhere.
 
-**What is classical, and what is new.** We are deliberately explicit. The *upper* horizon bound (Theorem B) is the
-classical Lyapunov / numerical-weather-prediction predictability law, and the *forward* configuration certificate
-(Theorem A) is the classical fact that an equivariant estimator's risk is constant on orbits, specialized to world
-models. Two pieces are new and carry the paper: **(i) Proposition 6**, a *matching lower bound* that couples the
-certified horizon to the equivariance *residual* $\epsilon$ — a coupling absent from both the dynamical-systems and the
-certified-equivariance literatures, and what makes the horizon *tight* rather than merely upper-bounded; and **(ii)
-Lemma 2**, the *converse*, which turns "scale cannot buy the certificate" from a slogan into a theorem against the
-entire forward-only certified-equivariance literature. The "single-shot guarantees are our $T{=}1$ slice" framing (§5)
-is accurate *positioning*, not itself a contribution.
+**What is classical, what is folklore, and what is new.** We are deliberately explicit, because two of the four
+ingredients are not ours. The *upper* horizon bound (Theorem B) is the classical Lyapunov / numerical-weather-prediction
+predictability law (Lorenz, 1969). The orbit-constant-error fact underlying the configuration certificate — *both*
+directions, including the converse of Lemma 2 — is essentially classical **invariant decision theory**: an equivariant
+procedure has orbit-constant risk, and orbit-constant risk against a rich enough equivariant family pins the procedure
+to the equivariant class (Eaton, 1989; Lehmann & Romano). Proposition 6's lower bound is, mathematically, the textbook
+fact that a perturbation along an expanding mode grows like $e^{\lambda T}$; its only twist is to seed that growth with
+the *equivariance residual* $\epsilon$ rather than an initial-condition error. **Our contribution is therefore the
+*synthesis*, not the individual statements:** assembling these into a single **computable, multi-step, per-channel**
+predictability certificate for *learned equivariant world models* (Algorithm 1), tying its unbounded-horizon subspace
+to the conserved/invariant channels (the Noether hinge), instantiating it on real-physics-engine contact dynamics, and
+showing it is exclusive to structure. The "single-shot certified equivariance is our $T{=}1$ slice" framing (§5) is
+accurate *positioning*, not a contribution; and the cleanest *quantitative* "scale cannot buy it" statement is the
+resolution-independent orbit vs. $\epsilon/L$-tube separation of §3.3, which we lean on rather than Lemma 2's algebraic
+converse (whose continuous-target form we only assert, §6).
 
 ![The predictability certificate at a glance. **Left:** in the configuration $\times$ horizon plane, an equivariant model certifies the *entire* generated monoid $\langle S\rangle$ — every composition, from $k$ generator checks (Lemma 1) — up to a horizon ceiling set by the predictor spectrum (Theorem B, tight by Proposition 6); a non-equivariant model of any size certifies only a small interpolation tube. **Right:** the horizon $\times$ resolution trade-off $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$ — conserved/invariant ($\lambda\le0$) channels are certified to all horizons (eclipses, millennia), chaotic ($\lambda>0$) channels shrink as the demanded resolution sharpens (weather, $\sim$two weeks).](figures/hero_certified_region.png)
 
@@ -187,7 +197,8 @@ representation theory, not chosen.
 **Proposition 5 (conservation $\Rightarrow$ unbounded horizon).** Let $Q:\mathcal Z\to W$ be a charge the model
 conserves to one-step defect $\eta$ (i.e. $\lVert Q(f z)-Q(z)\rVert\le\eta$). Then the $T$-step *charge-value*
 prediction error satisfies $\lVert Q(\hat z_T)-Q(z_T)\rVert\le T\eta$ — **linear in $T$**, never the chaotic
-$e^{\lambda T}$. So a conserved channel has $\lambda_Q\le0$ and, at $\eta{=}0$, is certified to all horizons. (The
+$e^{\lambda T}$. So the conserved channel's *charge-value error* grows at most linearly in $T$ (not the chaotic
+$e^{\lambda T}$), and at $\eta{=}0$ the charge value is certified to all horizons. (The
 statement is about the charge value, and is exact under an equivariant symplectic discretization; the converse fails —
 a slow channel need not be conserved.)
 
@@ -242,8 +253,14 @@ it never buys the certificate (Lemma 2).
 $\mathrm{SO}(2)$ scene rotation an exact dynamical symmetry — a *learned* $\mathrm{SO}(2)$-equivariant world model has
 $10$-step rollout error **exactly flat over the orbit** (ratio $1.00$, equivariance residual $\sim10^{-7}$) and is
 competitive in-distribution ($0.13$–$0.15$ vs. the best baseline $0.14$–$0.19$); **no non-equivariant baseline across a
-$160{\times}$ parameter sweep ($1.7\mathrm{k}\to272\mathrm{k}$) reaches the equivariant floor out of distribution**
-($2.1$–$3.9{\times}$ above it, 3 seeds). The dynamics were not authored by us.
+$160{\times}$ parameter sweep ($1.7\mathrm{k}\to272\mathrm{k}$) reaches the equivariant floor out of distribution.** We
+are careful about the *size* of that gap: per baseline it is $\sim3.9{\times}$ at the *smallest* model and
+$2.1$–$2.6{\times}$ at the *largest*, i.e. it does **not** grow with scale — the honest control is the strong-baseline
+$\sim2\times$. The *force* of E5 is the exactness of the flatness (ratio $1.000$ vs. the baselines' $2$–$3\times$ drift)
+and the a-priori certificate, not the OOD-error magnitude (which on one $\mathrm{SO}(2)$ task is modest); the "scale
+cannot buy it" claim is carried by Lemma 2 / §3.3, not by E5's gap. The dynamics were not authored by us. (Honest gate
+note: the run's load-bearing *flat* and *floor* sub-gates pass on all 3 seeds; the auxiliary "MLP error climbs with
+horizon faster than equivariant" sub-gate is met on 1/3 seeds and reported `INCONCLUSIVE` on the others.)
 
 ![The certificate on real contact dynamics (E5). On PushT (a physics engine we did not author), a *learned* $\mathrm{SO}(2)$-equivariant world model's multi-step rollout error is flat over the orbit of scene orientations to the floating-point floor, while a $160{\times}$ parameter sweep of non-equivariant baselines never reaches the equivariant floor out of distribution.](figures/step59_pusht_certificate.png)
 
@@ -318,6 +335,14 @@ forward direction's converse a theorem (Lemma 2).
   containment results) use *constructed* equivariant teachers, so the "slow $=$ invariant" coincidence is partly built
   in. The real-ish experiments (E5 PushT, E6 $\mathrm{SO}(3)$) validate *flatness*, not the hinge's emergence in a
   learned model of un-constructed dynamics — that remains open.
+- **The horizon axis is demonstrated on a learned *synthetic-latent* model, not yet on learned *real* dynamics.** E2
+  recovers the certified-horizon law $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$ on a learned predictor rolled out to
+  $T{=}90$, but its latent is a hand-designed multi-Lyapunov system; Proposition 6 is confirmed analytically (step65).
+  On real PushT (E5) we demonstrate the *configuration* axis (orbit-flatness, ratio $1.000$), not the per-channel
+  *horizon* staircase. Recovering an a-priori certified horizon and validating it against held-out multi-step rollouts
+  on a learned model of real dynamics — feasible with our `certify.py` / Algorithm 1 on the E5 model — is the most
+  valuable next experiment, and is not yet done. The honest reading: the headline is *horizon*; the realistic evidence
+  to date is *flatness* plus a learned-synthetic + analytic horizon recovery.
 - **Scale and modality.** All experiments are $1$–$2$-GPU. The exact flatness of the certificate transfers across
   modalities (structured state, $\mathrm{SO}(3)$ point clouds, pixels), but absolute multi-step accuracy on raw pixels
   at this scale is poor for *every* architecture (an artifact of the anti-collapse-regularized JEPA latent, not of
@@ -348,7 +373,25 @@ already trusts are the one-step slice of this picture. *Scale buys interpolation
   arXiv:2410.08087.
 - **Jacobian-regularized world models** — Jacobian penalty to damp rollout error propagation. arXiv:2501.00195.
 - **Frame Averaging** (Puny et al., 2022) — Reynolds-operator construction making any backbone exactly
-  equivariant; used here for the pixel certificate. arXiv:2110.03336.
+  equivariant; used here for the pixel certificate. Its known *expressivity* (FA preserves a universal backbone's
+  power) is what our $T{=}1$ accuracy-neutrality (E6) reflects, and a map equals its own frame average iff it is
+  equivariant — the trivial $T{=}1$ converse our Lemma 2 generalizes to the multi-step rollout. arXiv:2110.03336.
+
+*Classical foundations (we are explicit that the single-axis facts are not new; our contribution is their synthesis):*
+
+- **Invariant decision theory** — the orbit-constancy of an equivariant procedure's risk, and its converse
+  (orbit-constant risk against a rich equivariant family pins the procedure to the equivariant class): Eaton, *Group
+  Invariance Applications in Statistics* (1989); Lehmann & Romano, *Testing Statistical Hypotheses* (invariance
+  chapter); Berger, *Statistical Decision Theory*. This is the correct, $\sim$50-year-old provenance of our Theorem A
+  forward fact *and* Lemma 2's converse.
+- **Structure of equivariant maps / universal approximation** — Maron et al., *On the Universality of Invariant
+  Networks* (2019); Yarotsky, *Universal approximations of invariant maps* (2022); Dym & Maron, *Universality of
+  Rotation-Equivariant Point Cloud Networks* (2021); Goodman & Wallach, *Symmetry, Representations, and Invariants*
+  (the $\mathrm{Sym}^k/\Lambda^k$ decompositions behind Proposition 4).
+- **Predictability horizon / perturbation growth** — Lorenz, *Atmospheric predictability* (1969); Pilyugin,
+  *Shadowing in Dynamical Systems*. The $T(\epsilon)\sim\log(1/\epsilon)/\lambda$ law and the $e^{\lambda T}$ growth of
+  a seeded perturbation (the upper bound, and the mechanism of Proposition 6's lower bound) are classical here; our
+  twist is only to seed the growth with the *equivariance residual*.
 
 *Companion line.* This paper is a focused extraction of the project's *Certified World Models* program; the full
 experiment suite, the closed-loop clause, the discovery/generation re-framing, and the complete proofs appear in the

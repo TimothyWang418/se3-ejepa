@@ -392,9 +392,10 @@ $$
 \bigl\lVert Q(f^{T}z)-Q(\Phi^{T}z)\bigr\rVert=\bigl\lVert Q(f^{T}z)-Q(z)\bigr\rVert\;\le\;T\,\eta
 \qquad(\forall z\in\mathcal K,\ T\ge0),
 $$
-so the charge-readout channel carries **no positive Lyapunov exponent** ($\lambda_Q\le0$ in Theorem B's sense) and
-its certified horizon is $T_Q(\epsilon)\ge\epsilon/\eta$ — *infinite* at exact conservation $\eta=0$ — irrespective
-of the ambient dynamics' largest Lyapunov exponent. *Proof.* Telescope
+so the charge-value error grows **at most linearly in $T$** (not the chaotic $e^{\lambda T}$ of an expansive channel),
+and its certified horizon is $T_Q(\epsilon)\ge\epsilon/\eta$ — *infinite* at exact conservation $\eta=0$ — irrespective
+of the ambient dynamics' largest Lyapunov exponent. (This is a statement about the *charge value*; a positive-exponent
+*shear* off-diagonal can still leave the full state on the conserved subspace large — see §7.) *Proof.* Telescope
 $Q(f^{T}z)-Q(z)=\sum_{k<T}\!\bigl[Q(f(f^{k}z))-Q(f^{k}z)\bigr]$; forward-invariance keeps each $f^{k}z\in\mathcal K$ so
 each term is $\le\eta$, while $\Phi$-invariance of $\mathcal K$ gives $Q(\Phi^{T}z)=Q(z)$. $\square$
 
