@@ -236,8 +236,9 @@ high-$\lambda$ system, where only the coarse/invariant component is certifiable.
 
 **Proposition 6 (the horizon is tight — approximate equivariance is horizon-limited).** Theorem B's
 $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$ is an *upper* bound on the certified horizon; here is a matching *lower*
-bound, so the horizon is tight (not merely "a bound on the form"). Fix an expansive channel with multiplier
-$a=e^{\lambda}$, $\lambda>0$. There exist an exactly equivariant target $\Phi$ (acting as $a$ on the channel) and a
+bound, so the horizon is tight (not merely "a bound on the form"). Fix an expansive channel on which the latent map is
+locally linear with multiplier $a=e^{\lambda}$, $\lambda>0$ (the local diagonalization of Theorem B). There exist an
+exactly equivariant target $\Phi$ (acting as $a$ on the channel) and a
 world model that is **$\epsilon$-approximately equivariant** — a *perfect* equivariant predictor $f=\Phi$ ($\delta=0$)
 and an encoder that intertwines the dynamics along the trajectory of $x$ and differs from exact equivariance only by a
 single defect $E(g\cdot x)=\rho(g)E(x)+\epsilon u$ at one orbit point ($u$ a unit vector in the channel,
@@ -257,9 +258,11 @@ e^{\lambda T}$. $\square$
 Hence the certified horizon $T(\epsilon_{\mathrm{res}})=\max\{T:\lvert\Delta\mathrm{Err}_T\rvert\le
 \epsilon_{\mathrm{res}}\}=\tfrac1\lambda\log\tfrac{\epsilon_{\mathrm{res}}}{\epsilon}$, matching Theorem B's upper
 bound up to a constant: the horizon is $\Theta\!\big(\tfrac1\lambda\log\tfrac1\epsilon\big)$. The conceptual payload
-is sharp and removes the only hedge on the horizon axis: **any model that is merely $\epsilon$-approximately
-equivariant ($\epsilon>0$) has a *finite* certified horizon on every expansive ($\lambda>0$) channel — only exact
-equivariance ($\epsilon=0$) or conservation ($\lambda\le0$, Proposition 5) reaches infinite horizon.** This is the
+is sharp and removes the only hedge on the horizon axis: **the certified horizon guaranteeable from
+$\epsilon$-approximate equivariance alone is finite on every expansive ($\lambda>0$) channel — no certificate derived
+from an $\epsilon>0$ residual can promise predictability beyond $T\sim\tfrac1\lambda\log\tfrac1\epsilon$ (worst case
+over admissible targets); only exact equivariance ($\epsilon=0$) or conservation ($\lambda\le0$, Proposition 5) yields
+an unbounded certified horizon.** This is the
 horizon-domain companion of Lemma 2 and §3.3: scale and data buy *approximate* equivariance at best (Experiment 10's
 augmented model floors at $\epsilon\!\approx\!10^{-4}$, never exact), and Proposition 6 shows that residual is
 amplified $e^{\lambda T}$ — so the single-orbit, single-step tie between augmentation and equivariance (Experiment 10)
@@ -267,10 +270,10 @@ amplified $e^{\lambda T}$ — so the single-orbit, single-step tie between augme
 symmetry-breaking threshold ($\epsilon_{\text{world}}\!\approx\!0.01\text{–}0.06$) is the same crossing from the
 world's side, and §5.2 recovers $T_j(\epsilon)$ to within $0.4\%$ — the lower bound is what certifies that recovery is
 the *true* horizon, not just an attainable one. A direct numerical instantiation of the construction
-(`experiments/step65`, 3 seeds) confirms it: an $\epsilon{=}10^{-3}$-approximately-equivariant model's
-orbit-error-variation equals $\epsilon\,e^{\lambda_j T}$ to a relative error of $\sim\!10^{-14}$ per channel, an
-exactly equivariant model stays flat at $\sim\!10^{-16}$ for all horizons, and the certified horizon is linear in
-$\log(1/\epsilon)$ with slope $1/\lambda_j$ ($R^2{=}1.000$).
+(`experiments/step65`, seeds $0/1/2$) confirms it: an $\epsilon{=}10^{-3}$-approximately-equivariant model's
+orbit-error-variation equals $\epsilon\,e^{\lambda_j T}$ to a relative error of $10^{-14}$–$10^{-13}$ across seeds, an
+exactly equivariant model has orbit-variation *exactly $0$* (to machine precision) at all horizons, and the certified
+horizon is linear in $\log(1/\epsilon)$ with slope $1/\lambda_j$ ($R^2{=}1.000$, all seeds).
 
 ### 3.3 Scale versus structure, quantified
 

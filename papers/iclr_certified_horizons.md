@@ -69,6 +69,18 @@ We are explicit about scope (§6): this is a mechanism-and-theory contribution a
 benchmark; the certificate is *exact* where the group is a genuine dynamical symmetry and *gracefully approximate*,
 with a measured and now lower-bounded boundary, elsewhere.
 
+**What is classical, and what is new.** We are deliberately explicit. The *upper* horizon bound (Theorem B) is the
+classical Lyapunov / numerical-weather-prediction predictability law, and the *forward* configuration certificate
+(Theorem A) is the classical fact that an equivariant estimator's risk is constant on orbits, specialized to world
+models. Two pieces are new and carry the paper: **(i) Proposition 6**, a *matching lower bound* that couples the
+certified horizon to the equivariance *residual* $\epsilon$ — a coupling absent from both the dynamical-systems and the
+certified-equivariance literatures, and what makes the horizon *tight* rather than merely upper-bounded; and **(ii)
+Lemma 2**, the *converse*, which turns "scale cannot buy the certificate" from a slogan into a theorem against the
+entire forward-only certified-equivariance literature. The "single-shot guarantees are our $T{=}1$ slice" framing (§5)
+is accurate *positioning*, not itself a contribution.
+
+![The predictability certificate at a glance. **Left:** in the configuration $\times$ horizon plane, an equivariant model certifies the *entire* generated monoid $\langle S\rangle$ — every composition, from $k$ generator checks (Lemma 1) — up to a horizon ceiling set by the predictor spectrum (Theorem B, tight by Proposition 6); a non-equivariant model of any size certifies only a small interpolation tube. **Right:** the horizon $\times$ resolution trade-off $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$ — conserved/invariant ($\lambda\le0$) channels are certified to all horizons (eclipses, millennia), chaotic ($\lambda>0$) channels shrink as the demanded resolution sharpens (weather, $\sim$two weeks).](figures/hero_certified_region.png)
+
 ---
 
 ## 2. Setup and assumptions
@@ -110,7 +122,9 @@ an open $U\subseteq\mathcal Z$. If a predictor $f$'s error $\lVert f-\Phi\rVert$
 equivariant target $\Phi$, then $f$ is equivariant on $U$. *Proof.* Fix $z,g$. For any probe $c$, freeness makes
 $\Phi(\rho(h)z):=\rho(h)c$ a well-defined equivariant target on the orbit; orbit-constancy gives
 $\lVert f(z)-c\rVert=\lVert\rho(g)^{-1}f(\rho(g)z)-c\rVert$ for *all* $c$, and two points equidistant to every $c$
-coincide, so $f(\rho(g)z)=\rho(g)f(z)$. $\square$ With Theorem A this is a **characterization**: orbit-constant error
+coincide, so $f(\rho(g)z)=\rho(g)f(z)$. $\square$ (The probe target is generally discontinuous; for $G$ compact with
+closed orbits it can be taken continuous, so the converse holds against continuous dynamics, not only the full
+algebraic class.) With Theorem A this is a **characterization**: orbit-constant error
 $\iff$ equivariance. **Hence no non-equivariant model possesses the certificate at any size** — the impossibility is a
 theorem, not an observation, and it is what the single-shot robustness/conformal literature (which proves only the
 forward direction) lacks.
@@ -131,7 +145,8 @@ or $T_j=\infty$ ($\lambda_j\le0$). As $\epsilon_{\max},\delta\to0$ the configura
 recovered.
 
 **Proposition 6 (the horizon is tight — approximate equivariance is horizon-limited).** Theorem B is an *upper* bound;
-here is a matching *lower* bound. Fix an expansive channel with multiplier $a=e^{\lambda}$, $\lambda>0$. There exist an
+here is a matching *lower* bound. Fix an expansive channel on which the latent map is locally linear with multiplier
+$a=e^{\lambda}$, $\lambda>0$ (the local diagonalization of Theorem B). There exist an
 exactly equivariant target $\Phi$ and a model that is $\epsilon$-approximately equivariant — a *perfect* equivariant
 predictor $f=\Phi$ ($\delta=0$) and an encoder that intertwines the dynamics along $x$'s trajectory and differs from
 exact equivariance only by a single defect $E(g\cdot x)=\rho(g)E(x)+\epsilon u$ at one orbit point — for which
@@ -147,14 +162,17 @@ Hence the certified horizon $T(\epsilon_{\mathrm{res}})=\tfrac1\lambda\log\tfrac
 \Theta\!\big(\tfrac1\lambda\log\tfrac1\epsilon\big)$, matching Theorem B: **the horizon's form is two-sided, not merely
 an upper estimate.** The conceptual payload is sharp:
 
-> **Any model that is merely $\epsilon$-approximately equivariant ($\epsilon>0$) has a *finite* certified horizon on
-> every expansive channel; only exact equivariance ($\epsilon=0$) or conservation ($\lambda_j\le0$) reaches infinite
-> horizon.**
+> **The certified horizon guaranteeable from $\epsilon$-approximate equivariance alone is finite on every expansive
+> channel: no certificate derived from an $\epsilon>0$ residual can promise predictability beyond
+> $T\sim\tfrac1\lambda\log\tfrac1\epsilon$ (worst case over admissible targets). Only exact equivariance
+> ($\epsilon=0$) or conservation ($\lambda_j\le0$) yields an unbounded certified horizon.**
 
 This is the horizon-domain companion of Lemma 2, and it sharpens *scale vs. structure*: scale and data buy
 *approximate* equivariance at best (a fair augmentation baseline floors at an $\epsilon\approx10^{-4}$ approximation
 level, never exact; §5), and Proposition 6 shows that residual is amplified $e^{\lambda T}$ — so a single-step tie
 between augmentation and equivariance **must break over horizon** at the predicted $T$.
+
+![Proposition 6, numerically (the central claim). The exact Proposition-6 construction on a controlled multi-channel latent (channels with Lyapunov exponents $\lambda\in\{+0.70,+0.35,0,-0.40\}$). **Left:** the orbit-error-variation of an $\epsilon{=}10^{-3}$-approximately-equivariant model (markers) equals the analytic $\epsilon\,e^{\lambda T}$ (dashed) to a relative error of $10^{-14}$–$10^{-13}$ across 3 seeds — the lower bound is exact, so the horizon is tight; an *exactly* equivariant model has orbit-variation *exactly $0$* (to machine precision) at every horizon (plotted at the $10^{-16}$ log-floor), and conserved/contractive channels ($\lambda\le0$) are bounded for all $T$ (infinite certified horizon). **Right:** the per-channel certified horizon $T(\epsilon_{\rm res})$ is linear in $\log(1/\epsilon)$ with slope exactly $1/\lambda$ ($R^2=1.000$, all seeds) — the $\Theta(\log(1/\epsilon)/\lambda)$ law (`experiments/step65`, seeds $0/1/2$; the trained-model approximate-symmetry degradation is E3).](figures/step65_horizon_tightness.png)
 
 ### 3.3 The Noether hinge: which channels are unbounded
 
@@ -196,10 +214,13 @@ $180^\circ$ flips), training the equivariance checks on the **6 generators** cer
 compositions to $\sim10^{-33}$ error, while a non-equivariant baseline degrades from $1.6\!\times\!10^{-5}$ on the
 generators to $0.59$ on held-out compositions. Six checks, sixty-four guarantees (Lemma 1).
 
-**(E2) The horizon staircase, and tightness.** On a controlled latent with a tunable Lyapunov spectrum, the measured
-certified horizon recovers $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$ to within $0.4\%$ (slope $1.3$–$1.6$ across
-seeds): chaotic channels are certified to $3$–$10$ steps, slow/invariant channels to $\ge 90$. The recovery matches
-*both* Theorem B (upper) and Proposition 6 (lower), confirming the horizon is the true one, not merely attainable.
+**(E2) The horizon staircase, and tightness.** On a controlled latent with a tunable Lyapunov spectrum, the model
+recovers the chaotic Lyapunov exponent to within $0.4\%$, and its certified-horizon slope
+$\mathrm{d}T/\mathrm{d}\log(1/\epsilon)=1.3$–$1.6$ across seeds brackets the predicted $1/\lambda=1.44$: chaotic channels
+are certified to $3$–$10$ steps, slow/invariant channels to $\ge 90$. The recovery matches *both* Theorem B (upper) and
+Proposition 6 (lower), confirming the horizon is the true one, not merely attainable.
+
+![The horizon $\times$ resolution staircase (E2). The measured certified horizon per channel as the demanded resolution $\epsilon$ sharpens, recovering $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$ (slope $1.3$–$1.6$): chaotic channels are certified to a few steps, slow/invariant channels to dozens.](figures/step52_horizon_resolution.png)
 
 **(E3) Approximate symmetry validates Proposition 6.** Breaking the world's symmetry by $\epsilon_{\text{world}}$, the
 certificate degrades *gracefully and linearly* in $\epsilon_{\text{world}}$ (correlation $0.88$–$0.98$ across seeds)
@@ -208,10 +229,14 @@ up to a measured threshold $\epsilon_{\text{world}}\approx0.01$–$0.06$ — exa
 model on a *single orbit at one step* but, being only $\epsilon\approx10^{-4}$-equivariant, is horizon-limited as
 predicted.
 
+![Approximate symmetry (E3). **Left:** on a compositional task, exact equivariance certifies machine-exactly while augmentation drives a non-equivariant model only to an $\sim\!10^{-4}$ approximation floor. **Right:** breaking the world's symmetry by $\epsilon_{\rm world}$ degrades the certificate gracefully and *linearly* (the slope Proposition 6 predicts) up to a measured threshold.](figures/step53_approximate_symmetry.png)
+
 **(E4) Structure vs. scale.** The equivariant model is orbit-flat (ratio $1.1$–$1.2$); an $88{\times}$-scaled
 non-equivariant model buys in-distribution interpolation ($31$–$166{\times}$ better in-wedge, *beating* the equivariant
 model there) but its out-of-wedge error stays $10$–$155{\times}$ above the equivariant floor. Scale buys interpolation;
 it never buys the certificate (Lemma 2).
+
+![Structure versus scale (E4). The equivariant model is orbit-flat (a certificate); an $88{\times}$-scaled non-equivariant model buys *in-distribution* interpolation (it beats the equivariant model inside the training wedge) but its error climbs $10$–$155{\times}$ above the equivariant floor *out* of the wedge — scale buys interpolation, not the certificate.](figures/step51_structure_vs_scale.png)
 
 **(E5) The certificate on real contact dynamics.** On PushT — a pymunk physics engine whose square arena makes
 $\mathrm{SO}(2)$ scene rotation an exact dynamical symmetry — a *learned* $\mathrm{SO}(2)$-equivariant world model has
@@ -220,18 +245,25 @@ competitive in-distribution ($0.13$–$0.15$ vs. the best baseline $0.14$–$0.1
 $160{\times}$ parameter sweep ($1.7\mathrm{k}\to272\mathrm{k}$) reaches the equivariant floor out of distribution**
 ($2.1$–$3.9{\times}$ above it, 3 seeds). The dynamics were not authored by us.
 
+![The certificate on real contact dynamics (E5). On PushT (a physics engine we did not author), a *learned* $\mathrm{SO}(2)$-equivariant world model's multi-step rollout error is flat over the orbit of scene orientations to the floating-point floor, while a $160{\times}$ parameter sweep of non-equivariant baselines never reaches the equivariant floor out of distribution.](figures/step59_pusht_certificate.png)
+
 **(E6) The certificate is not $\mathrm{SO}(2)$-specific, and transfers to pixels at no accuracy cost.** It lifts to
 non-abelian $\mathrm{SO}(3)$ on 3D point clouds (learned equivariant rollout exactly flat, ratio $1.000$, with a
 $7.4{\times}$-*smaller* model than the baseline). On raw rendered pixels (PushT, exact $C_4$), **frame averaging** —
 a plain CNN/MLP made exactly $C_4$-equivariant by a Reynolds average over grid rotations — keeps the exact orbit-flat
 certificate (ratio $1.000$) while being **accuracy-neutral**: it matches or beats an unconstrained CNN on a
 collapse-robust metric (fraction-of-variance-unexplained ratio $0.68$–$1.07$, mean $0.84$, 3 seeds), with a healthier
-latent and a horizon-stable rollout where the steerable baseline diverges. The prior costs nothing.
+latent and a horizon-stable rollout where the steerable baseline diverges. The prior costs nothing *relative to* the
+unconstrained CNN — though both remain limited in absolute terms (neither beats predict-the-mean at this scale; §6).
+
+![The certificate on raw pixels at no accuracy cost (E6). On rendered PushT frames (exact $C_4$), frame averaging makes a plain CNN/MLP exactly $C_4$-equivariant: the latent rollout is flat over the orbit (left, the certificate), it matches or beats an unconstrained CNN on a collapse-robust accuracy metric (centre), and its rollout error stays bounded over horizon while the steerable baseline diverges (right, log scale).](figures/step64_frame_averaged_pixel.png)
 
 **(E7) The certificate becomes task competence.** Run through a $G$-equivariant planner (A5), the prediction
 certificate becomes an *orbit-invariant control* certificate: closed-loop pose error is flat over the orbit to the
 floating-point floor (ratio $1.000$, 3 seeds) while a $4.3{\times}$-larger non-equivariant controller degrades out of
-the training wedge.
+the training wedge. The flatness is exact because (A5) makes the planner $G$-equivariant and the planning cost
+$G$-invariant, so the closed-loop trajectory inherits the encoder's orbit-equivariance — Theorem A under the
+closed-loop clause.
 
 ---
 
@@ -282,6 +314,10 @@ forward direction's converse a theorem (Lemma 2).
 - **The Noether hinge's forward direction is proved; its hypotheses are measured.** Proposition 5 assumes a
   Hamiltonian latent flow with a $G$-invariant Hamiltonian; the defect $\eta$ is exact only under an equivariant
   symplectic discretization; the non-converse (slow $\not\Rightarrow$ conserved) is genuine.
+- **The hinge is validated on constructed teachers, not shown to *emerge*.** The Noether experiments (E2 and the
+  containment results) use *constructed* equivariant teachers, so the "slow $=$ invariant" coincidence is partly built
+  in. The real-ish experiments (E5 PushT, E6 $\mathrm{SO}(3)$) validate *flatness*, not the hinge's emergence in a
+  learned model of un-constructed dynamics — that remains open.
 - **Scale and modality.** All experiments are $1$–$2$-GPU. The exact flatness of the certificate transfers across
   modalities (structured state, $\mathrm{SO}(3)$ point clouds, pixels), but absolute multi-step accuracy on raw pixels
   at this scale is poor for *every* architecture (an artifact of the anti-collapse-regularized JEPA latent, not of
