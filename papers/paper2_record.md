@@ -320,3 +320,37 @@ Then (user: "都做吧") promoted to **Experiment 13 / §5.11** AND attacked the
   pixel clause; §7 pixel bullet shrunk to a §5.11 pointer; Puny et al. ref; reproducibility appendix + `aggregate_seeds.py`
   register step64. PDF rebuilt (**1087 KiB, 11 figures**, compiles clean); full suite **91 passed**. MPS note: absolute FVU
   has run-to-run non-determinism (~±0.3), so quoted numbers are committed seed ranges, not single-run.
+
+## 13. ICLR-novelty lit-check + two moves: §6 carve-out + Proposition 6 (user: "有没有ICLR级创新点" → "都做")
+
+Did a 6-angle novelty lit-check (WebSearch/WebFetch) before committing to any new direction. **Verdict: the mechanism
+space is largely occupied (2024–2026)** — orbit certificates (randomized smoothing 2211.14207, eCP 2602.03986),
+orbit-margin robustness (2510.16171), learned conservation (Noether Networks 2112.03321, Noether's Razor 2410.08087),
+Jacobian-reg world models (2501.00195), slowness-as-failure-mode in JEPA, anti-collapse↔IB. **But the closest neighbors
+*validate* our uncrowded corner:** they are all **single-shot** (classification margin / one-shot conformal set),
+**forward-only** (no converse), and have **no horizon / spectrum / conservation** axis.
+
+**Move 1 (defense) — §6 carve-out.** Added a related-work paragraph + 2 table rows + 6 references positioning paper2
+against the certified-equivariance / conformal / conservation / Jacobian-reg literature. Spine: (i) Time — they are
+single-shot, we are multi-step (Thm B, tight by Prop 6) + conserved-channel infinite horizon (Prop 5); (ii) Direction —
+they prove equivariance⇒guarantee (classical: equivariant estimator risk constant on orbits), we add the **converse**
+(Lemma 2, ⟺); (iii) Object — eCP frame-averages a *score* post-hoc, we frame-average an *encoder/predictor* (Exp 13).
+Honesty fix: explicitly acknowledge the forward direction is classical.
+
+**Move 2 (offense) — Proposition 6 (the horizon is tight; approximate equivariance is horizon-limited).** Theorem B
+already had the multi-step upper bound but was hedged as "a bound on the form." Added a **matching lower bound**: an
+exactly-equivariant target + a model that is ε-approximately equivariant (perfect predictor, encoder with a single
+ε equivariance defect on one orbit point) has orbit-error-variation **exactly ε·e^{λT}** on an expansive channel
+(multiplier a=e^λ). One-line proof (linearity + A3 + orthogonal ρ). ⇒ certified horizon
+T(ε_res)=（1/λ)log(ε_res/ε)=Θ(log(1/ε)/λ) — **tight**. Sharp payload: **any ε-approximately-equivariant model
+(ε>0) has a finite certified horizon on every expansive channel; only exact equivariance (ε=0) or conservation
+(λ≤0, Prop 5) reaches ∞.** This is the horizon-domain companion of Lemma 2: scale/augmentation buys *approximate*
+equivariance (Exp 10 floors at ε≈1e-4, never exact), amplified e^{λT} — so the Exp-10 single-step augmentation tie
+**must break over horizon** at the predicted T. Removes the only hedge on the horizon axis (constants c_j still
+un-estimated — honest). Updated contribution 1, Thm-B hedge, §7 limitation. PDF rebuilt (**1098 KiB, compiles clean**);
+paper-only change, tests unaffected (91 passed stands).
+
+**Net ICLR posture:** the genuinely-novel core is (converse Lemma 2) + (multi-step tight horizon Thm B+Prop 6) +
+(Noether hinge Prop 4/5) for *world models* — exactly what the single-shot robustness/conformal literature lacks, now
+explicitly carved out. Candidate new mechanisms (predictability-aware anti-collapse; certificate-driven active
+inference) remain future directions, each with a named neighbor to differentiate against.

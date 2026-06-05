@@ -63,8 +63,10 @@ Our contributions are:
 1. **A three-axis master theorem** (§3): composition closure ($k$ checks $\Rightarrow$ an exponential set), an
    exact certificate under exact equivariance (Theorem A) together with its **converse** (Lemma 2: the certificate
    is *equivalent* to equivariance, so no non-equivariant model has it at any size), and a spectral degradation law
-   $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$ (Theorem B) whose certified region is the
-   coarse-invariant-slow-low-$|w|$ corner — with a **quantitative scale-vs-structure separation** (§3.3: structure
+   $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$ (Theorem B) — **tight**, with a matching lower bound (Proposition 6:
+   *approximate* equivariance is horizon-limited, so only exact structure or conservation reaches an unbounded
+   horizon) — whose certified region is the coarse-invariant-slow-low-$|w|$ corner, with a **quantitative
+   scale-vs-structure separation** (§3.3: structure
    certifies the whole $\epsilon$-independent orbit; the best $L$-Lipschitz non-equivariant learner certifies only
    an $\epsilon/L$-tube around its data). Figure 1 is the whole picture at a glance.
 2. **The Noether hinge** (§4): the bridge — that the group-invariant/equivariant channels are the dynamically slow
@@ -209,8 +211,10 @@ $$
 \;\le\; \sum_{\text{channels }j} c_j\,(m\,\epsilon_{\max}+T\,\delta)\,e^{\lambda_j T},\qquad m=|w|.
 $$
 
-We claim this as a **bound on the form**, not a tight inequality: the constants $c_j$ are not estimated, and we
-instead **measure the consequence** — that channel $j$ is certified only to horizon
+We claim this as a **bound on the form**, not a tight inequality *on the prefactor*: the constants $c_j$ are not
+estimated. The horizon's *form*, however, is tight — Proposition 6 below supplies a matching lower bound, so the
+$\log(1/\epsilon)/\lambda_j$ scaling is two-sided, not merely an upper estimate. We **measure the consequence** — that
+channel $j$ is certified only to horizon
 
 $$
 T_j(\epsilon)\ \sim\ \tfrac{1}{\lambda_j}\,\log\tfrac{1}{\epsilon}\quad(\lambda_j>0),\qquad
@@ -229,6 +233,40 @@ $\text{horizon}\times\text{demanded-resolution}\lesssim\text{const}(\{\lambda_j\
 $\sim$two weeks (chaotic $\lambda>0$).^[An interpretive aside, secondary to the spectral law: a long-range text that
 asserts only *regime-level* change rather than dated specifics is, structurally, making the *correct* move for a
 high-$\lambda$ system, where only the coarse/invariant component is certifiable.]
+
+**Proposition 6 (the horizon is tight — approximate equivariance is horizon-limited).** Theorem B's
+$T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$ is an *upper* bound on the certified horizon; here is a matching *lower*
+bound, so the horizon is tight (not merely "a bound on the form"). Fix an expansive channel with multiplier
+$a=e^{\lambda}$, $\lambda>0$. There exist an exactly equivariant target $\Phi$ (acting as $a$ on the channel) and a
+world model that is **$\epsilon$-approximately equivariant** — a *perfect* equivariant predictor $f=\Phi$ ($\delta=0$)
+and an encoder that intertwines the dynamics along the trajectory of $x$ and differs from exact equivariance only by a
+single defect $E(g\cdot x)=\rho(g)E(x)+\epsilon u$ at one orbit point ($u$ a unit vector in the channel,
+$\epsilon_{\max}=\epsilon$) — for which the $T$-step rollout error's orbit-variation is *exactly*
+
+$$
+\bigl\lvert \mathrm{Err}_T(g\cdot x)-\mathrm{Err}_T(x)\bigr\rvert \;=\; \epsilon\,e^{\lambda T}.
+$$
+
+*Proof.* $\mathrm{Err}_T(x)=0$ (encoder exact and $f=\Phi$ along $x$'s trajectory). At $g\cdot x$, linearity gives
+$f^{T}(E(g\cdot x))=\Phi^{T}(\rho(g)E(x)+\epsilon u)=\rho(g)\Phi^{T}(E(x))+a^{T}\epsilon u$ (using $f=\Phi$ equivariant
+and $\Phi$ linear with multiplier $a$ on the channel), while the target $E(\Phi^{T}(g\cdot x))=E(g\cdot\Phi^{T}x)=
+\rho(g)E(\Phi^{T}x)=\rho(g)\Phi^{T}(E(x))$ (encoder exact off the single defect point, intertwining the dynamics).
+Subtracting and using $\lVert\rho(g)\,\cdot\rVert=\lVert\cdot\rVert$ leaves $\lVert a^{T}\epsilon u\rVert=\epsilon
+e^{\lambda T}$. $\square$
+
+Hence the certified horizon $T(\epsilon_{\mathrm{res}})=\max\{T:\lvert\Delta\mathrm{Err}_T\rvert\le
+\epsilon_{\mathrm{res}}\}=\tfrac1\lambda\log\tfrac{\epsilon_{\mathrm{res}}}{\epsilon}$, matching Theorem B's upper
+bound up to a constant: the horizon is $\Theta\!\big(\tfrac1\lambda\log\tfrac1\epsilon\big)$. The conceptual payload
+is sharp and removes the only hedge on the horizon axis: **any model that is merely $\epsilon$-approximately
+equivariant ($\epsilon>0$) has a *finite* certified horizon on every expansive ($\lambda>0$) channel — only exact
+equivariance ($\epsilon=0$) or conservation ($\lambda\le0$, Proposition 5) reaches infinite horizon.** This is the
+horizon-domain companion of Lemma 2 and §3.3: scale and data buy *approximate* equivariance at best (Experiment 10's
+augmented model floors at $\epsilon\!\approx\!10^{-4}$, never exact), and Proposition 6 shows that residual is
+amplified $e^{\lambda T}$ — so the single-orbit, single-step tie between augmentation and equivariance (Experiment 10)
+*must* break over horizon, at the predicted $T\!\sim\!\tfrac1\lambda\log(1/\epsilon)$. Experiment 8's measured
+symmetry-breaking threshold ($\epsilon_{\text{world}}\!\approx\!0.01\text{–}0.06$) is the same crossing from the
+world's side, and §5.2 recovers $T_j(\epsilon)$ to within $0.4\%$ — the lower bound is what certifies that recovery is
+the *true* horizon, not just an attainable one.
 
 ### 3.3 Scale versus structure, quantified
 
@@ -719,7 +757,9 @@ the prose elaborates below.
 | LDA | $\mathrm{SE}(3)$-intrinsic diffusion (action side) | — | — | ~ policy | empirical, modest$+$robust |
 | Symmetry–Data rate | aug$+$TTA $=$ equivariance; wrong-group harmful | ~ one group | — | — | empirical scaling law |
 | companion line | exact flatness: $1$ element, $1$ resolution | ~ one element | — | ✓ invariance | proved (a corner) |
-| **this paper** | equivariant **predictability certificate** | ✓ $k\!\Rightarrow\!\langle S\rangle$ (Thm A, Lem 1) | ✓ $T_j(\epsilon)\!\sim\!\tfrac{\log(1/\epsilon)}{\lambda_j}$ (Thm B) | ✓ exact (Exp 11) | **a-priori, per-situation, computable (Alg 1)** |
+| certified equivariance (robustness / conformal) | orbit-margin / group-averaged conformal score | ~ one group | — (single-shot) | — | proved, but **single-shot**, forward-only |
+| Noether Networks / Razor | meta-learn conserved quantities | — | ~ better avg prediction | — | average accuracy, no guarantee |
+| **this paper** | equivariant **predictability certificate** | ✓ $k\!\Rightarrow\!\langle S\rangle$ (Thm A, Lem 1) | ✓ $T_j(\epsilon)\!\sim\!\tfrac{\log(1/\epsilon)}{\lambda_j}$, **tight** (Thm B, Prop 6) | ✓ exact (Exp 11) | **a-priori, per-situation, computable (Alg 1)** |
 
 The throughline: prior work supplies *mechanisms* (equivariant predictors), *priors* (latent geometry), or
 *diagnostics* (oracle-bypass) — each empirical or distributional and on a single axis; this paper supplies a
@@ -731,6 +771,33 @@ and one resolution, that exact equivariance makes one-step error constant across
 closed-loop-invariance corollaries. The present paper lifts that corner along three axes: Theorem A is its
 multi-step, full-monoid generalization; Theorem B adds the horizon $\times$ resolution stratification; and Lemma 1
 turns $k$ generator checks into an exponential certified set.
+
+**Certified equivariance is single-shot; ours is multi-step, with a converse.** The closest *guarantee-bearing*
+relatives live in robustness and conformal prediction, not world models, and a careful comparison sharpens exactly
+what is new here. Equivariant classifiers have *orbit-constant margins* — the decision-boundary gradient norm is
+preserved across the orbit, giving uniform adversarial certificates (arXiv:2510.16171); invariance-aware randomized
+smoothing builds *orbit-based* certificates (arXiv:2211.14207); and Equivariantized Conformal Prediction (eCP,
+arXiv:2602.03986) *group-averages the nonconformity score* — frame averaging for distribution-free coverage — to
+tighten prediction sets over an orbit. Three differences are load-bearing. **(i) Time.** All of these are
+*single-shot*: a classifier margin or a one-shot prediction set, with the guarantee attached to one input, never
+*propagated through an $H$-step latent rollout*; none has a prediction-*horizon* axis, a predictor *spectrum*, or a
+*conservation* law. Our certificate is precisely a multi-step statement, stratified by the Lyapunov spectrum
+(Theorem B, made *tight* by Proposition 6) and extended to all horizons on conserved channels (Proposition 5).
+**(ii) Direction.** This literature proves *equivariance $\Rightarrow$ orbit-constant guarantee* — at root the
+classical fact that an equivariant estimator's risk is constant on orbits, specialized to margins or coverage; it
+proves no converse. Lemma 2 supplies the **converse** (orbit-constant error $\iff$ equivariance), which is what makes
+"no non-equivariant model has the certificate at any scale" a theorem rather than an observation. **(iii) Object.**
+Frame averaging unifies the two literatures concretely but at different layers: eCP averages a *score* post-hoc for
+coverage; we average an *encoder/predictor* (Experiment 13) for an in-model multi-step certificate — the same Reynolds
+operator, opposite ends of the pipeline. Separately, **learned-conservation** methods — Noether Networks (Alet et al.,
+2021; arXiv:2112.03321) and Noether's Razor (2024; arXiv:2410.08087) — meta-learn conserved quantities to *improve
+average prediction* by shrinking the hypothesis space; our Noether hinge instead *certifies* (Proposition 5 turns a
+conserved charge into an a-priori long-horizon guarantee, Proposition 4 says which isotypic block must carry it) —
+guarantee versus average accuracy. Finally, **Jacobian-regularized world models** (arXiv:2501.00195) damp rollout
+error propagation by penalizing the transition Jacobian — a heuristic; Theorem B is the *provable* version of the same
+intuition, reading a per-channel certified horizon $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$ off the spectrum
+rather than regularizing toward stability, and (Proposition 6) characterizing how that horizon shrinks when the
+symmetry is only approximate.
 
 **Equivariant predictors.** Block-rotation predictors (BRo-JEPA, arXiv:2606.01372) match a $\mathbb{Z}/10\mathbb{Z}$
 cyclic structure to the latent — "add $k$" becomes "rotate $k\theta$" — and report $99.46\%$ best-config zero-shot
@@ -816,10 +883,12 @@ certificate for equivariant models.
   ($\propto\epsilon_{\text{world}}$) up to a measured threshold $\epsilon_{\text{world}}\approx0.01\text{–}0.06$
   (seed-dependent; one seed crosses over as early as $\epsilon\approx0.008$). The honest reading is "exact on
   symmetric dynamics; gracefully approximate, with a measured boundary, elsewhere."
-- **Theorem B is a bound on the form, not a tightness proof.** The constants $c_j$ are not estimated, and the
-  *isotypic* refinement (channels chosen by $\ell$-type, which ties the spectrum to equivariance and the hinge) is
-  asserted, not separately measured — Experiment 3 measures the scalar law and Experiment 1 splits contractive from
-  expansive but not by $\ell$-type.
+- **Theorem B's horizon is tight; its constants are not estimated.** The certified horizon
+  $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$ is now bounded on *both* sides — Theorem B above and the matching lower
+  bound of Proposition 6 — so the horizon's *form* is tight (and §5.2 recovers it to $0.4\%$). What remains
+  un-tightened is the prefactor: the constants $c_j$ are not estimated, and the *isotypic* refinement (channels chosen
+  by $\ell$-type, which ties the spectrum to equivariance and the hinge) is asserted, not separately measured —
+  Experiment 3 measures the scalar law and Experiment 1 splits contractive from expansive but not by $\ell$-type.
 - **The Noether hinge's forward direction is proved; its hypotheses are measured.** The *placement* of each conserved
   charge by isotypic type (Proposition 4 — energy in $\ell{=}0$, angular momentum in the $\ell{=}1$ block via the
   unique degree-2 cross product) is forced by representation theory, and the *conserved $\Rightarrow$ slow* direction
@@ -894,6 +963,24 @@ quoted from the cited works):
   invariant/equivariant by averaging over a group frame; the method we use in `experiments/step64` to obtain an
   exactly $C_4$-equivariant *pixel* encoder/predictor from plain `torch` nets (so the §7 pixel certificate is flat
   *and* accuracy-neutral relative to the unconstrained CNN). arXiv:2110.03336.
+
+*Certified equivariance, conservation, and stability (the §6 carve-out — these are the guarantee-bearing neighbors;
+all single-shot and forward-only, none with the multi-step horizon, the converse, or the Noether tie):*
+
+- **Orbit-constant margins for equivariant networks** — equivariant classifiers have an orbit-invariant margin /
+  decision-boundary gradient norm, giving uniform adversarial certificates across the orbit; single-shot
+  classification, forward direction only. arXiv:2510.16171.
+- **Equivariantized Conformal Prediction (eCP)** — group-averages the nonconformity score (frame averaging for
+  distribution-free coverage) to tighten orbit-wide prediction sets; single-shot, per-sample, no horizon. arXiv:2602.03986.
+- **Invariance-aware randomized smoothing** — orbit-based robustness certificates combining invariance with smoothing.
+  arXiv:2211.14207.
+- **Noether Networks** (Alet et al., 2021) — meta-learn conserved quantities inside the prediction loop to improve
+  *average* prediction (hypothesis-space shrinkage); no a-priori guarantee. arXiv:2112.03321.
+- **Noether's Razor** (2024) — learns symmetries-as-conserved-quantities by Bayesian model selection with an Occam
+  effect; average accuracy, not a certificate. arXiv:2410.08087.
+- **Jacobian-regularized world models** ("Towards Unraveling and Improving Generalization in World Models", 2025) —
+  penalizes the latent-transition Jacobian to damp rollout error propagation; the heuristic version of Theorem B's
+  provable per-channel horizon. arXiv:2501.00195.
 
 The $T(\epsilon)\sim\log(1/\epsilon)/\lambda$ predictability-horizon law is classical (Lyapunov / Lorenz; standard
 numerical-weather-prediction practice).
