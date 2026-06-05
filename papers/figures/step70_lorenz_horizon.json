@@ -1,0 +1,41 @@
+{
+  "passed": true,
+  "gate": {
+    "model_learned": true,
+    "captured_chaos_rate": true,
+    "horizon_staircase": true
+  },
+  "one_step_relmse": 1.1007169575805165e-07,
+  "lambda_model_perstep": 0.018046682827591653,
+  "lambda_true_perstep": 0.021186616415858547,
+  "lambda_model_per_time": 0.9023341413795827,
+  "lambda_true_per_time": 1.0593308207929273,
+  "horizon_slope": 54.433440873973474,
+  "inv_lambda": 55.41184546508988,
+  "horizon_r2": 0.9952561736812635,
+  "lambda_staircase_per_time": 0.9185529923739718,
+  "lorenz_lambda1_ref": 0.9056,
+  "lambda_staircase_relerr_vs_ref": 0.014303215960657962,
+  "eps_sweep": [
+    0.01,
+    0.003,
+    0.001,
+    0.0003,
+    0.0001,
+    3e-05,
+    1e-05
+  ],
+  "Tcross": [
+    206.0,
+    274.0,
+    327.0,
+    389.0,
+    471.0,
+    516.0,
+    NaN
+  ],
+  "dt": 0.02,
+  "seed": 1,
+  "epochs": 200,
+  "smoke": false
+}

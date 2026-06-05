@@ -1,0 +1,132 @@
+{
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "runs": [
+    {
+      "passed": true,
+      "gate": {
+        "model_learned": true,
+        "captured_chaos_rate": true,
+        "horizon_staircase": true
+      },
+      "one_step_relmse": 7.338285712421566e-08,
+      "lambda_model_perstep": 0.07340618165812099,
+      "lambda_true_perstep": 0.07204933131435053,
+      "lambda_model_per_time": 3.670309082906049,
+      "lambda_true_per_time": 3.6024665657175263,
+      "horizon_slope": 55.89064925571956,
+      "inv_lambda": 13.622830903497473,
+      "horizon_r2": 0.9749946287849157,
+      "lambda_staircase_per_time": 0.8946040288641531,
+      "lorenz_lambda1_ref": 0.9056,
+      "lambda_staircase_relerr_vs_ref": 0.012142194275449235,
+      "eps_sweep": [
+        0.01,
+        0.003,
+        0.001,
+        0.0003,
+        0.0001,
+        3e-05,
+        1e-05
+      ],
+      "Tcross": [
+        203.0,
+        250.0,
+        291.0,
+        407.0,
+        465.0,
+        503.0,
+        NaN
+      ],
+      "dt": 0.02,
+      "seed": 0,
+      "epochs": 200,
+      "smoke": false
+    },
+    {
+      "passed": true,
+      "gate": {
+        "model_learned": true,
+        "captured_chaos_rate": true,
+        "horizon_staircase": true
+      },
+      "one_step_relmse": 1.1007169575805165e-07,
+      "lambda_model_perstep": 0.018046682827591653,
+      "lambda_true_perstep": 0.021186616415858547,
+      "lambda_model_per_time": 0.9023341413795827,
+      "lambda_true_per_time": 1.0593308207929273,
+      "horizon_slope": 54.433440873973474,
+      "inv_lambda": 55.41184546508988,
+      "horizon_r2": 0.9952561736812635,
+      "lambda_staircase_per_time": 0.9185529923739718,
+      "lorenz_lambda1_ref": 0.9056,
+      "lambda_staircase_relerr_vs_ref": 0.014303215960657962,
+      "eps_sweep": [
+        0.01,
+        0.003,
+        0.001,
+        0.0003,
+        0.0001,
+        3e-05,
+        1e-05
+      ],
+      "Tcross": [
+        206.0,
+        274.0,
+        327.0,
+        389.0,
+        471.0,
+        516.0,
+        NaN
+      ],
+      "dt": 0.02,
+      "seed": 1,
+      "epochs": 200,
+      "smoke": false
+    },
+    {
+      "passed": true,
+      "gate": {
+        "model_learned": true,
+        "captured_chaos_rate": true,
+        "horizon_staircase": true
+      },
+      "one_step_relmse": 6.357442572380023e-08,
+      "lambda_model_perstep": 0.01601136485173268,
+      "lambda_true_perstep": 0.015978193783137043,
+      "lambda_model_per_time": 0.8005682425866341,
+      "lambda_true_per_time": 0.7989096891568521,
+      "horizon_slope": 51.17789765526653,
+      "inv_lambda": 62.4556375587047,
+      "horizon_r2": 0.9898184501788019,
+      "lambda_staircase_per_time": 0.9769842508342015,
+      "lorenz_lambda1_ref": 0.9056,
+      "lambda_staircase_relerr_vs_ref": 0.07882536532045221,
+      "eps_sweep": [
+        0.01,
+        0.003,
+        0.001,
+        0.0003,
+        0.0001,
+        3e-05,
+        1e-05
+      ],
+      "Tcross": [
+        205.0,
+        257.0,
+        321.0,
+        388.0,
+        457.0,
+        486.0,
+        NaN
+      ],
+      "dt": 0.02,
+      "seed": 2,
+      "epochs": 200,
+      "smoke": false
+    }
+  ]
+}

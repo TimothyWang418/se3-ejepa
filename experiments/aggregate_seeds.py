@@ -33,6 +33,7 @@ STEPS = [
     "step63_se3_certificate",
     "step64_frame_averaged_pixel",
     "step65_horizon_tightness",
+    "step70_lorenz_horizon",
 ]
 
 

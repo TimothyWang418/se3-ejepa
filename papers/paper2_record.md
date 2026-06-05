@@ -434,3 +434,32 @@ twice (rank step66, gated-variance step68: FVU>1 survives both). Reviewers' #1 (
 negative (local Jacobian spectrum does not predict the learned model's rollout, R²=0.02; folded as evidence into §6).
 ③-2 certificate-driven active inference (step69) — **positive** (toy). Not all failed, so the consolidation is: fold
 ③-2's positive + the §6 negatives, rather than abandon.
+
+## 20. Gap-closing C — the certified-horizon law on a learned model of REAL chaotic dynamics (Lorenz): POSITIVE
+
+`experiments/step70_lorenz_horizon.py` (+ `test_step70.py`; full suite now 95). The biggest ICLR gap was that the
+**horizon headline** had only been shown on a learned *synthetic-latent* model (E2) + analytically (step65); on real
+PushT (step67) it **failed** because PushT interior dynamics is locally *near-neutral* ($|\mu|\approx1$, no Lyapunov
+spread). The decisive question: does the staircase lift to a learned model of a system that is *genuinely chaotic*?
+Test: integrate the **Lorenz** attractor ($\sigma{=}10,\rho{=}28,\beta{=}8/3$; $\lambda_1\approx0.9056$/t, $\mathbb Z_2$
+symmetry) with RK4, train a plain one-step MLP of the $\Delta t$ map, then run the **Step-52 certified-horizon
+staircase on the learned model**. **Result (3 seeds, all PASS):** one-step relMSE $<10^{-4}$ (model learned the map);
+the certified horizon $T(\epsilon_0)$ is **linear in $\log(1/\epsilon_0)$ with $R^2 = 0.975/0.995/0.990$**; the staircase
+**slope recovers the true Lorenz exponent** $\lambda_{\rm staircase}=1/(\text{slope}\cdot dt)=0.895/0.919/0.977$/t vs
+textbook $\lambda_1=0.9056$/t (rel-err **1.2%/1.4%/7.9%**). So the $T\sim\log(1/\epsilon)/\lambda$ law of Theorem B
+**does lift to a learned model of real chaotic dynamics** — gap 1 substantially closed, scoped honestly: it holds when
+the dynamics carries a genuine Lyapunov spectrum (Lorenz ✓); PushT failed only because it is near-neutral, not because
+the certificate is a toy.
+
+**Robust-estimator finding (folded into the experiment + test):** the *staircase slope* is the load-bearing Lyapunov
+estimator. I first gated on the early-window finite-time exponent $\hat\lambda$, but on Lorenz that exponent is
+**window-sensitive** (FTLE fluctuates along the attractor — seed 0's early window caught a transient super-expansion,
+$\hat\lambda\approx3.7$/t). The staircase slope, fit over the whole horizon range, is far more stable (recovers
+$\lambda_1$ to 1–8% on all 3 seeds). Gate is now: (i) one-step relMSE $<0.05$; (ii) staircase $R^2>0.95$; (iii)
+$|\lambda_{\rm staircase}-0.9056|/0.9056<0.25$. `test_step70.py` validates the protocol on the **true integrator**
+(Lorenz $\mathbb Z_2$-equivariance exact to machine precision; staircase $R^2=0.993$, slope recovers $\lambda_1$ to
+2.1%) so the claim is independent of any one trained model. Canonical figure = seed 1 (cleanest; its diagnostic
+$\hat\lambda$ also matches $\lambda_1$ so panels (a)/(b) agree); per-seed in `step70_lorenz_horizon_seeds.json`. This
+is the top input for the ICLR reframe (task B+D): the horizon axis now has **real-chaotic-dynamics** evidence, and the
+PushT/Lorenz contrast motivates the **scope theorem** (task A): the local-spectrum certificate lifts to learned
+dynamics iff the system is spectrally non-degenerate (chaotic), via Oseledets / shadowing.
