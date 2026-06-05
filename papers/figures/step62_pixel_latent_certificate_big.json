@@ -1,0 +1,35 @@
+{
+  "passed": false,
+  "gate": {
+    "enc_equiv": true,
+    "pred_equiv": true,
+    "eq_flat_exact": true,
+    "eq_learned": false
+  },
+  "eq_enc_resid": 4.4465065002441406e-05,
+  "eq_pred_resid": 8.344650268554688e-07,
+  "mlp_enc_drift": 2.7837162017822266,
+  "eq_orbit": [
+    23.663986206054688,
+    23.66400146484375,
+    23.6640682220459,
+    23.664047241210938
+  ],
+  "mlp_orbit": [
+    1.2843891382217407,
+    1.3028531074523926,
+    1.4031349420547485,
+    1.3022973537445068
+  ],
+  "eq_orbit_ratio": 1.0000034658569565,
+  "mlp_orbit_ratio": 1.0924531361246277,
+  "params": {
+    "eq": 179056,
+    "mlp": 243456
+  },
+  "horizon": 4,
+  "latent_dim": 128,
+  "img": 65,
+  "smoke": false,
+  "seed": 0
+}

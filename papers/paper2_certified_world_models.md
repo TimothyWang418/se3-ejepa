@@ -751,9 +751,13 @@ certificate for equivariant models.
   the steerable pixel JEPA **underfits**: its rollout relMSE ($\approx4.5$) is far worse than an ordinary CNN's
   ($\approx0.8$), so on pixels the prior currently buys the certificate at a real *accuracy* cost ("flat is not
   good", concretely) — and the ordinary CNN is itself orbit-flat, since PushT's pixel stream is approximately
-  $C_4$-symmetric (the augmentation regime of §5.8). So on pixels we claim only the *architectural transfer of exact
-  flatness*; a steerable pixel model that is both flat *and* competitive needs more capacity and training than
-  $1$–$2$ GPUs (proposal stage S1).
+  $C_4$-symmetric (the augmentation regime of §5.8). Crucially, this is **not** a capacity gap: a matched-capacity,
+  $4\times$-longer retry (a steerable encoder grown to $179\mathrm{k}$ parameters versus the baseline's
+  $243\mathrm{k}$, trained $120$ epochs) underfits *further* (rollout relMSE $\approx23.7$), so on this modality the
+  accuracy gap is an **optimization/architecture** problem — harder to train an $\mathrm{e2cnn}$ JEPA on pixels than
+  a plain CNN — that more laptop parameters and epochs do not close. So on pixels we claim only the *architectural
+  transfer of exact flatness*; a steerable pixel model that is both flat *and* competitive is a GPU-tier problem
+  (better optimization and compute, proposal stage S1), not a missing-parameters one.
 - **Scope of the exact certificate.** Theorem A requires (A3): the group must be a symmetry of the *dynamics*, not
   merely the encoder. The exact certificate therefore holds where the group is a genuine dynamical symmetry
   (orbital and conservative systems, free space, idealized manipulation). Everywhere else one is in Theorem B's

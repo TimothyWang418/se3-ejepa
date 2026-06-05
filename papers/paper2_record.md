@@ -234,10 +234,17 @@ Honest triage on this Mac (CPU/MPS, no CUDA): of the four GPU-tier items, **SE(3
   new test needed — `tests/test_se3_equivariance.py` already guards the encoder+VN-predictor joint SO(3) equivariance
   that gives the rollout flatness. Ties to Prop 4 (L in ℓ=1) + Exp 6 (3D containment): hinge *places* the SO(3)
   charges, certificate is *flat* over SO(3).
-- **scale (→1M+ params)** ⛔ GPU-only — laptop already shows "no scale reaches the floor" across 160× (Exp 9);
-  genuinely-larger needs a card. · **competitive pixels** ⛔ T3 showed the steerable pixel JEPA underfits at laptop
-  scale; competitive-and-flat needs GPU capacity. · **real embodied (RLBench/ManiSkill)** ⛔ GPU+sim. These three →
-  **GPU-ready scripts** (offered), the GPU tier S1–S5 of `papers/proposals/paper2-embodied-scale-lift.md`.
+- **competitive pixels — the laptop gamble** (user: "笔记本赌一把像素") ❌→✅-honest. Ran a fair/generous-capacity,
+  4×-longer steerable-pixel retry (`STEP62_WIDTH=16 STEP62_LATENT=128 STEP62_EPOCHS=120`, 179k params vs the MLP's
+  243k, → `step62_pixel_latent_certificate_big.json`). **Result: gamble failed, decisively and informatively** — the
+  bigger/longer steerable underfits *further* (rollout relMSE **23.7** vs T3's 4.5) while staying exactly flat (ratio
+  1.000, enc 4.5e-5). So the pixel accuracy gap is **NOT capacity** (more params + epochs made it worse) — it's an
+  **optimization/architecture** problem (e2cnn JEPA hard to train on pixels) → genuinely GPU-tier. Folded into §7
+  (corrected "needs more capacity" → "is an optimization problem, not a missing-parameters one"). step62
+  parametrized (`6f7a10b`); committed T3 result untouched.
+- **scale (→1M+ params)** ⛔ GPU-only — laptop already shows "no scale reaches the floor" across 160× (Exp 9). ·
+  **real embodied (RLBench/ManiSkill)** ⛔ GPU+sim. These → **GPU-ready scripts** (offered), the GPU tier S1–S5 of
+  `papers/proposals/paper2-embodied-scale-lift.md`.
 
 **Meta-finding across T3 + Exp 12:** the certificate's *exact orbit-flatness* (the GUARANTEE) lifts everywhere —
 SO(2) structured-state, SO(2) pixels, SO(3) point clouds — all ratio 1.000. The equivariant model's *competitive
