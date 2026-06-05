@@ -335,14 +335,21 @@ forward direction's converse a theorem (Lemma 2).
   containment results) use *constructed* equivariant teachers, so the "slow $=$ invariant" coincidence is partly built
   in. The real-ish experiments (E5 PushT, E6 $\mathrm{SO}(3)$) validate *flatness*, not the hinge's emergence in a
   learned model of un-constructed dynamics — that remains open.
-- **The horizon axis is demonstrated on a learned *synthetic-latent* model, not yet on learned *real* dynamics.** E2
-  recovers the certified-horizon law $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$ on a learned predictor rolled out to
-  $T{=}90$, but its latent is a hand-designed multi-Lyapunov system; Proposition 6 is confirmed analytically (step65).
-  On real PushT (E5) we demonstrate the *configuration* axis (orbit-flatness, ratio $1.000$), not the per-channel
-  *horizon* staircase. Recovering an a-priori certified horizon and validating it against held-out multi-step rollouts
-  on a learned model of real dynamics — feasible with our `certify.py` / Algorithm 1 on the E5 model — is the most
-  valuable next experiment, and is not yet done. The honest reading: the headline is *horizon*; the realistic evidence
-  to date is *flatness* plus a learned-synthetic + analytic horizon recovery.
+- **The horizon axis is demonstrated on a learned *synthetic-latent* model, and does NOT lift cleanly to learned
+  *real* dynamics — a measured negative.** E2 recovers the certified-horizon law
+  $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$ on a learned predictor rolled out to $T{=}90$, but its latent is a
+  hand-designed multi-Lyapunov system; Proposition 6 is confirmed analytically (step65). We *attempted* the lift to
+  real dynamics (`experiments/step67`): on the trained PushT model (one-step relMSE $0.003$, $\mathrm{SO}(2)$-residual
+  $2\times10^{-7}$), the a-priori local Jacobian spectrum (the Algorithm-1 ingredient) **does not predict the measured
+  multi-step rollout perturbation growth** — across $160$ held-out query states the certified exponent and the measured
+  finite-time exponent correlate at $R^2\approx0.02$. The reason is structural: a learned model of real contact
+  physics is not *locally linear with a constant spectrum* (its one-step linearization, though it has a spread of
+  eigenvalues $e^{\lambda}\in[1.0,2.0]$, does not govern the bounded, normalization-constrained multi-step rollout), so
+  the Theorem-B/Proposition-6 horizon law — which assumes exactly that local-linear structure — has no purchase. So the
+  honest reading is sharp: the *configuration* axis (orbit-flatness, ratio $1.000$) holds on real PushT; the *horizon*
+  axis is validated only on synthetic constant-spectrum latents (E2) and analytically (step65); and **lifting the
+  per-channel horizon certificate to learned models of real, non-linearly-recurrent dynamics is a genuine open
+  problem** that our local-spectrum instrument does not solve.
 - **Scale and modality.** All experiments are $1$–$2$-GPU. The exact flatness of the certificate transfers across
   modalities (structured state, $\mathrm{SO}(3)$ point clouds, pixels), but absolute multi-step accuracy on raw pixels
   at this scale is poor for *every* architecture (an artifact of the anti-collapse-regularized JEPA latent, not of
