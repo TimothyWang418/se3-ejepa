@@ -199,12 +199,15 @@ def main() -> None:
 
     fig, (axa, axb) = plt.subplots(1, 2, figsize=(11.0, 4.3))
     tt = np.arange(T_ROLL + 1)
-    axa.plot(tt, logg_m, "C0-", lw=2, label=f"learned model ($\\hat\\lambda={lam_model/DT:.2f}$/t)")
-    axa.plot(tt, logg_t, "k--", lw=1.5, label=f"true Lorenz ($\\lambda={lam_true/DT:.2f}$/t)")
-    axa.axvspan(t0, t1, color="C1", alpha=0.12, label="fit window")
+    # Panel (a) is QUALITATIVE: the learned model's perturbation growth tracks the true integrator. The quantitative
+    # rate lives entirely in panel (b) (the staircase slope), since the early-window FTLE is window-sensitive (the very
+    # point of Step 70's robust-estimator finding) -- so we do NOT print the misleading window-FTLE lambda here.
+    axa.plot(tt, logg_m, "C0-", lw=2, label="learned model (one-step MLP)")
+    axa.plot(tt, logg_t, "k--", lw=1.5, label="true Lorenz (RK4 integrator)")
+    axa.axvspan(t0, t1, color="C1", alpha=0.12, label="early-window FTLE (diagnostic; rate from (b))")
     axa.set_xlabel("rollout step"); axa.set_ylabel("$\\log\\,\\|\\delta_t\\|/\\|\\delta_0\\|$")
-    axa.set_title("(a) Perturbation growth: model captures Lorenz chaos rate")
-    axa.legend(fontsize=8)
+    axa.set_title("(a) Perturbation growth: learned model tracks the true Lorenz integrator")
+    axa.legend(fontsize=8, loc="lower right")
     slope_ref = 1.0 / (LORENZ_LAMBDA1 * DT)                          # predicted staircase slope from the TRUE Lorenz exponent
     axb.plot(xs, ys, "C0o-", lw=2,
              label=f"measured (slope {slope:.1f} $\\Rightarrow\\hat\\lambda={lam_staircase:.2f}$/t, $R^2{{=}}{r2:.3f}$)")
