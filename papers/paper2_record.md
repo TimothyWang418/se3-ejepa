@@ -32,9 +32,10 @@ All CPU/1-GPU-scale, seeded, honestly gated (a run prints `INCONCLUSIVE` rather 
 | **58** | **3D-aware containment** (resolves 57) | conserved physics splits by type+degree: $E$→ℓ=0 linear ($R^2{=}0.62$–$0.91$); $L$ bilinear→ℓ=1 degree-2 cross ($R^2{=}1.00$, range $0.998$–$1.000$); both conserved → slow ⊆ (invariant ⊕ conserved-equivariant) **exact**; ties to old-paper degree-1 cross-product cap | — | `695143d` (3 seeds) |
 | **59** | **Certificate on REAL contact dynamics** (PushT, Experiment 9 — kills "constructed-teacher/toy-only", weakness #1) | learned SO(2)-equiv world model (invariant-scalar-gated VN) **exactly flat over the orbit** (10-step rollout ratio **1.00**, equiv-resid $\sim10^{-7}$) + **competitive in-dist** (eq 0.13–0.15 vs best MLP 0.14–0.19); **no MLP scale 1.7k→272k reaches the floor out-of-wedge** ($2.1$–$3.9\times$, 3 seeds). Real pymunk physics we did not author; clean rotate-the-orbit protocol | — | `fb8ce72` (3 seeds) |
 | **61** | **Certificate at the TASK level** (PushT closed-loop pose control, Experiment 11 — 极致-T2) | RichVN + **G-equivariant CEM** (isotropic σ + disk action bound + scene-covariant noise = A5) on a contact-dominated reorient task; **paired** base tasks rotated over the orbit. **Model-rollout & real-env pose-error orbit ratio = 1.000 (exact, all 3 seeds)** vs MLP ×1.1–2.2 (rollout) / ×1.6–3.6 (real-env). In-wedge a **wash** (eq 3.6–16° vs MLP 8–18°, each better on some seeds — no in-dist win). Honest: cost-drift>0.3 met 1/3 (eq ~1e-7 vs MLP 0.19–0.31, ~10⁶×); scene-blind eq flatter but noisy margin → A5 needed for the *exact* guarantee. Kills "relMSE is just a proxy" | `test_step61.py` (plan-equivariance + orbit-invariance, 2 tests) | this batch (3 seeds) |
+| **64** | **Certificate on raw PIXELS** (PushT $C_4$, Experiment 13 — user "研究一下"/"都做吧") | **frame averaging** (Puny 2022): a plain CNN/MLP made exactly $C_4$-equivariant by Reynolds avg over 4 grid rotations + $\rho$-correction (pure torch/MPS). **Exactly orbit-flat** (1.000, enc/pred $\sim10^{-7}$); **accuracy-neutral** vs the unconstrained CNN (collapse-robust **FVU 0.68–1.07×**, mean 0.84) with healthier latent (PR 2.8–4.3 vs 2.2–2.6); **horizon-stable** (FVU grows ≤1.2× over 8 steps) while the steerable incumbent **diverges** (160–1600×). Honest residual: FVU>1 for ALL incl. the CNN's fair 1-step-vs-target (1.8–2.2) → JEPA-latent property (VICReg variance on low-dim dynamics), architecture-AGNOSTIC, not equivariance | `test_step64.py` (FA encoder + predictor $C_4$-equiv, 2 tests) | `99af968` + this batch (3 seeds) |
 
-Unit-test isolation: `tests/conftest.py` pins float32 around every test; float64 experiments opt in. Full suite **passes** (`test_step61.py` adds the SO(2) pose-planner equivariance + model-rollout orbit-invariance guards).
-Multi-seed reproducibility: `experiments/aggregate_seeds.py` re-runs steps 50/51/52/53/57/58/59/60/61 at seeds {0,1,2} and commits per-seed `papers/figures/step5*_seeds.json` + `step59/60/61_*_seeds.json`; every range quoted above and in the draft is the seed min–max from those files. Single-seed `step5*.json/.png` stay canonical at the default seed 0.
+Unit-test isolation: `tests/conftest.py` pins float32 around every test; float64 experiments opt in. Full suite **91 passed** (`test_step61.py` SO(2) pose-planner guards; `test_step64.py` frame-averaged $C_4$ encoder+predictor guards).
+Multi-seed reproducibility: `experiments/aggregate_seeds.py` re-runs steps 50/51/52/53/57/58/59/60/61/63/64 at seeds {0,1,2} and commits per-seed `papers/figures/*_seeds.json`; every range quoted above and in the draft is the seed min–max from those files. Single-seed `*.json/.png` stay canonical at the default seed 0.
 
 ## 3. Proposal phase status (P0–P5)
 
@@ -297,16 +298,25 @@ step62's metric.
   Added **FVU** (fraction of *centered* variance unexplained; FVU$<1\iff$ beats predict-the-mean) + latent
   participation ratio. This *re-scoped* the result honestly: I gate the RELATIVE claim (penalty removed vs the
   unconstrained CNN), and REPORT the absolute limitation (no model beats predict-the-mean at $H{=}4$).
-- **Result (3 seeds, `step64_frame_averaged_pixel_seeds.json`, all PASS).** FA is competitive-or-**better** than the
-  *unconstrained* CNN on FVU (**0.83–0.87×**), exactly orbit-flat (ratio **1.000**, enc $\sim\!10^{-7}$), with a
-  *healthier* latent (PR **2.9–4.0** vs CNN 1.8–3.2). So the steerable underfit was an **e2cnn optimization artifact,
-  NOT a cost of equivariance** — with frame averaging the prior is *accuracy-neutral*. The steerable incumbent is
-  *unstable* across seeds (FVU 2.0–62.5, latent PR sometimes →1.0); FA buys reliability.
-- **The honest residual.** Under FVU the *unconstrained CNN itself* fails to beat predict-the-mean at $H{=}4$ (FVU
-  1.99–2.35 > 1). So absolute 4-step pixel-latent accuracy is poor for **every** architecture at this scale — an
-  architecture-AGNOSTIC open problem — while the certificate (flatness) is exact regardless. This also corrects
-  step62's "CNN ≈ 0.44–0.8" (a relMSE artifact).
-- **Paper change.** §7 pixel bullet rewritten ("the certificate transfers exactly; frame averaging makes equivariance
-  accuracy-neutral; absolute multi-step accuracy is architecture-agnostic"); Puny et al. ref added; reproducibility
-  appendix + `aggregate_seeds.py` register step64. PDF rebuilt (984 KiB, compiles clean). MPS note: absolute FVU has
-  run-to-run non-determinism (~±0.3), so quoted numbers are the committed seed ranges, not single-run.
+- **Result (3 seeds, `step64_frame_averaged_pixel_seeds.json`, all PASS).** FA matches-or-**beats** the *unconstrained*
+  CNN on FVU (**0.68–1.07×**, mean 0.84), exactly orbit-flat (ratio **1.000**, enc $\sim\!10^{-7}$), with a *healthier*
+  latent (PR **2.8–4.3** vs CNN 2.2–2.6). So the steerable underfit was an **e2cnn optimization artifact, NOT a cost of
+  equivariance** — with frame averaging the prior is *accuracy-neutral*.
+
+Then (user: "都做吧") promoted to **Experiment 13 / §5.11** AND attacked the residual via a **horizon sweep + a fair
+1-step-vs-target diagnostic** (the second part of "都做吧"):
+
+- **Horizon stability (the residual attack).** Hypothesis (FVU<1 at short H, crossing 1 = a Theorem-B certified horizon)
+  was **wrong** — FVU>1 at *every* h for *every* model. But the sweep revealed something cleaner: the **steerable rollout
+  DIVERGES** over horizon (FVU grows **160–1600×** its 1-step value), while **FA stays stable** (**≤1.2×**, usually below
+  the CNN's 1.1–1.6×). Equivariance done right is *reliable*, not just flat. Added `STEP64_HEVAL` sweep + a 3rd figure
+  panel (log-scale FVU vs h).
+- **The residual is the JEPA latent, proven not an artifact.** Added `return_target_encoder` to `train_jepa` (backward-
+  compatible) and measured the **fair 1-step FVU vs the EMA target** (the exact training objective). It is **>1 for ALL**
+  (FA 1.7–2.0, CNN 1.8–2.2) → rules out an EMA online/target measurement artifact AND equivariance. Cause: VICReg forces
+  unit variance on all 64 latent dims, but PushT dynamics is low-dim (PR≈3), so ~60 dims carry unpredictable anti-collapse
+  variance. Architecture-AGNOSTIC; a strong few-step pixel predictor at small scale is the residual open problem.
+- **Paper change.** New **§5.11 (Experiment 13)** with the 3-panel figure (flat | FVU | horizon); contribution 3 gains a
+  pixel clause; §7 pixel bullet shrunk to a §5.11 pointer; Puny et al. ref; reproducibility appendix + `aggregate_seeds.py`
+  register step64. PDF rebuilt (**1087 KiB, 11 figures**, compiles clean); full suite **91 passed**. MPS note: absolute FVU
+  has run-to-run non-determinism (~±0.3), so quoted numbers are committed seed ranges, not single-run.

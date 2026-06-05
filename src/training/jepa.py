@@ -102,12 +102,18 @@ def train_jepa(
     seed: int = 0,
     log_every: int = 5,
     verbose: bool = True,
+    return_target_encoder: bool = False,
 ) -> dict:
     r"""Train ``model`` (an :class:`EqJEPA`) with EMA-target JEPA + Muon/AdamW.
 
     Returns a history dict with per-epoch ``pred_loss``, ``var_loss`` and the
     final batch latent standard deviation ``latent_std`` (a collapse witness:
     a healthy run keeps this well above 0).
+
+    If ``return_target_encoder`` is set, returns ``(history, target_enc)`` where
+    ``target_enc`` is the stop-grad EMA encoder the predictor was actually
+    trained against — exposed so a rollout can be scored against the *training
+    target* (the fair absolute accuracy), not just the online encoder.
     """
     torch.manual_seed(seed)
     model.to(device).train()
@@ -187,6 +193,9 @@ def train_jepa(
     model.eval()
     history["latent_std"] = last_std
     history["routing"] = counts
+    if return_target_encoder:
+        target_enc.eval()
+        return history, target_enc
     return history
 
 

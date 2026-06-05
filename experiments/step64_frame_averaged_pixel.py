@@ -45,6 +45,15 @@ at $H{=}4$ here (FVU$>1$), so absolute $H{=}4$ pixel accuracy is an architecture
 the residual open problem — not pinned on the equivariant model. The CNN's flatness is reported, not gated (the PushT
 random-reset pixel distribution is approximately $C_4$-symmetric — the augmentation lesson of §5.8).
 
+Two extra honest diagnostics (reported, not gated): (a) a **horizon-stability sweep** — FVU$(h)$ for $h=1\dots H_{\rm eval}$
+— shows the frame-averaged equivariant rollout does *not* compound (FVU roughly flat in $h$, stability ratio
+$\mathrm{FVU}(h_{\max})/\mathrm{FVU}(1)\approx1$), whereas the unconstrained CNN's compounds ($\approx2\times$) and the
+steerable's *diverges* ($\sim\!10^2\times$); (b) a **fair $1$-step accuracy vs. the EMA target** the predictor was
+actually trained against — this is $>1$ for *every* model too, which rules out an EMA online/target measurement artifact
+and localizes the residual to the JEPA latent itself (VICReg anti-collapse forces unit variance on all $D$ dims, but
+PushT dynamics is low-dimensional, so most latent dims carry unpredictable anti-collapse variance). The residual is a
+*JEPA-latent* property, shared by all architectures — neither an equivariance cost nor a measurement artifact.
+
 Run:   SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy PYGAME_HIDE_SUPPORT_PROMPT=1 \
            PYTORCH_ENABLE_MPS_FALLBACK=1 STEP64_DEVICE=mps .venv/bin/python experiments/step64_frame_averaged_pixel.py
 Seeded:    STEP64_SEED=0|1|2 ...
@@ -95,7 +104,8 @@ IMG = 65                                              # odd size -> exact rot90 
 N_TRAIN = 200 if SMOKE else 1500
 N_TRAJ = 16 if SMOKE else 96
 EPOCHS = int(os.environ.get("STEP64_EPOCHS", "4" if SMOKE else "30"))
-H = 4
+H = 4                                                 # canonical horizon for the flat-ratio + penalty-removed gate
+H_EVAL = int(os.environ.get("STEP64_HEVAL", "3" if SMOKE else "8"))   # max horizon for the FVU certified-horizon sweep
 TAG = os.environ.get("STEP64_TAG", "")
 DEVICE = os.environ.get("STEP64_DEVICE", "cpu")       # "mps": FA is pure torch -> native Apple-GPU, no e2cnn fallback
 FIG = ROOT / "papers" / "figures"
@@ -202,6 +212,20 @@ def rollout_fvu(model, F: torch.Tensor, A: torch.Tensor, k: int) -> float:
 
 
 @torch.no_grad()
+def fvu_1step_target(model, target_enc, F: torch.Tensor, A: torch.Tensor) -> float:
+    r"""The FAIR absolute $1$-step accuracy: the model's *exact training objective* at eval time —
+    $\mathrm{FVU}=\lVert f(E_{\text{online}}(o_0),a_0) - E_{\text{tgt}}(o_1)\rVert^2/\sum_d\mathrm{Var}_n[E_{\text{tgt}}(o_1)]$,
+    scored against the **EMA-target** encoder the predictor was trained to hit (not the online encoder). This separates
+    "did the model learn the $1$-step dynamics" ($\mathrm{FVU}_1^{\text{tgt}}<1$) from multi-step online-rollout drift."""
+    z0 = model.encoder(F[:, 0])
+    z_pred = model.predictor(z0, A[:, 0])
+    z_tgt = target_enc(F[:, 1])
+    num = ((z_pred - z_tgt) ** 2).sum().item()
+    den = ((z_tgt - z_tgt.mean(0, keepdim=True)) ** 2).sum().item()
+    return num / max(den, 1e-9)
+
+
+@torch.no_grad()
 def latent_partratio(model, F: torch.Tensor) -> float:
     r"""Participation ratio (soft effective rank) of the encoder latent over the test set:
     $\mathrm{PR}=(\sum_i\lambda_i)^2/\sum_i\lambda_i^2\in[1,D]$ for covariance eigenvalues $\lambda_i$. A collapsed
@@ -244,8 +268,9 @@ def main() -> None:
 
     world = swm.World("swm/PushT-v1", num_envs=8, image_shape=(IMG, IMG))
     obs, act, nxt = collect_transitions(world, N_TRAIN, seed=SEED)
-    Fte, Ate = collect_trajs_pixels(world, N_TRAJ, H, seed=9000 + SEED)
-    print(f"[step64] seed={SEED} train={tuple(obs.shape)} traj={tuple(Fte.shape)} "
+    Flong, Along = collect_trajs_pixels(world, N_TRAJ, H_EVAL, seed=9000 + SEED)   # length-H_EVAL trajs for the sweep
+    Fte, Ate = Flong[:, : H + 1], Along[:, :H]                                     # canonical-H slice for the gate
+    print(f"[step64] seed={SEED} train={tuple(obs.shape)} traj={tuple(Flong.shape)} H={H} H_eval={H_EVAL} "
           f"latent={LATENT_DIM} (inv={N_INV}, vec={N_VEC}) device={DEVICE}", file=sys.stderr)
 
     fa = make_fa_jepa()
@@ -255,10 +280,11 @@ def main() -> None:
               var_coef=float(os.environ.get("STEP64_VARCOEF", "0.04")),
               muon_lr=float(os.environ.get("STEP64_MUON_LR", "0.02")),
               adamw_lr=float(os.environ.get("STEP64_ADAMW_LR", "0.001")))
-    train_jepa(fa, obs, act, nxt, **tk)
-    train_jepa(cnn, obs, act, nxt, **tk)
-    train_jepa(steer, obs, act, nxt, **tk)
+    _, fa_tgt = train_jepa(fa, obs, act, nxt, return_target_encoder=True, **tk)
+    _, cnn_tgt = train_jepa(cnn, obs, act, nxt, return_target_encoder=True, **tk)
+    _, steer_tgt = train_jepa(steer, obs, act, nxt, return_target_encoder=True, **tk)
     fa.to("cpu"); cnn.to("cpu"); steer.to("cpu")
+    fa_tgt.to("cpu"); cnn_tgt.to("cpu"); steer_tgt.to("cpu")
 
     # equivariance (architectural / measured) --------------------------------------------------------
     fa_enc_resid = fa_encoder_equiv_resid(fa.encoder, Fte)
@@ -282,6 +308,27 @@ def main() -> None:
     # competitiveness on the collapse-robust FVU: how much of the steerable architecture's gap to the CNN does FA close?
     compet = fa_fvu[0] / max(cnn_fvu[0], 1e-12)               # ~1 = matched the CNN; steerable was ~5x
     steer_compet = steer_fvu[0] / max(cnn_fvu[0], 1e-12)
+
+    # Horizon-stability sweep: FVU as a function of rollout horizon h (canonical orientation). We had hoped for a
+    # Theorem-B "certified horizon" (largest h with FVU(h)<1), but honestly the absolute FVU>1 at EVERY h, for EVERY
+    # model (see the 1-step-vs-target diagnostic below: the residual is a JEPA-latent property, not equivariance). What
+    # the sweep DOES show cleanly is rollout STABILITY: the frame-averaged equivariant model's error does not compound
+    # (FVU roughly flat in h), whereas the unconstrained CNN's compounds and the steerable's diverges. We quantify with
+    # the stability ratio FVU(h_max)/FVU(1) (<=1 = stable/improving, >1 = compounding). Reported, not gated.
+    hs = list(range(1, H_EVAL + 1))
+    fa_fvu_h = [rollout_fvu(fa, Flong[:, : h + 1], Along[:, :h], 0) for h in hs]
+    cnn_fvu_h = [rollout_fvu(cnn, Flong[:, : h + 1], Along[:, :h], 0) for h in hs]
+    steer_fvu_h = [rollout_fvu(steer, Flong[:, : h + 1], Along[:, :h], 0) for h in hs]
+    def horizon_stability(curve):  # FVU(h_max)/FVU(1): <=1 stable, >1 compounding
+        return curve[-1] / max(curve[0], 1e-12)
+    fa_stab, cnn_stab, steer_stab = horizon_stability(fa_fvu_h), horizon_stability(cnn_fvu_h), horizon_stability(steer_fvu_h)
+    # fair 1-step accuracy against the EMA TARGET encoder (the exact training objective) -- separates "learned the
+    # 1-step dynamics" from "online-encoder multi-step rollout drift".
+    fa_fvu1t = fvu_1step_target(fa, fa_tgt, Flong, Along)
+    cnn_fvu1t = fvu_1step_target(cnn, cnn_tgt, Flong, Along)
+    steer_fvu1t = fvu_1step_target(steer, steer_tgt, Flong, Along)
+    print(f"[step64] 1-step FVU vs EMA-target (fair training objective): FA {fa_fvu1t:.3f} | CNN {cnn_fvu1t:.3f} | "
+          f"STE {steer_fvu1t:.3f}", file=sys.stderr)
 
     # Load-bearing claim of THIS experiment: frame averaging removes the EQUIVARIANCE PENALTY -- a plain CNN/MLP made
     # exactly C_4-equivariant by Reynolds averaging keeps the exact certificate (flat) AND is competitive-or-better than
@@ -312,15 +359,18 @@ def main() -> None:
         "fa_orbit_ratio": fa_ratio, "cnn_orbit_ratio": cnn_ratio, "steer_orbit_ratio": steer_ratio,
         "fa_part_ratio": fa_pr, "cnn_part_ratio": cnn_pr, "steer_part_ratio": steer_pr,
         "fa_vs_cnn_fvu": compet, "steer_vs_cnn_fvu": steer_compet,
+        "horizons": hs, "fa_fvu_by_h": fa_fvu_h, "cnn_fvu_by_h": cnn_fvu_h, "steer_fvu_by_h": steer_fvu_h,
+        "fa_horizon_stability": fa_stab, "cnn_horizon_stability": cnn_stab, "steer_horizon_stability": steer_stab,
+        "fa_fvu_1step_target": fa_fvu1t, "cnn_fvu_1step_target": cnn_fvu1t, "steer_fvu_1step_target": steer_fvu1t,
         "params": {"fa": n_params(fa), "cnn": n_params(cnn), "steer": n_params(steer)},
-        "horizon": H, "latent_dim": LATENT_DIM, "n_inv": N_INV, "n_vec": N_VEC,
+        "horizon": H, "h_eval": H_EVAL, "latent_dim": LATENT_DIM, "n_inv": N_INV, "n_vec": N_VEC,
         "img": IMG, "smoke": SMOKE, "seed": SEED, "epochs": EPOCHS, "device": DEVICE,
     }
     FIG.mkdir(parents=True, exist_ok=True)
     (FIG / f"step64_frame_averaged_pixel{TAG}.json").write_text(json.dumps(result, indent=2), encoding="utf-8")
 
-    # figure: three-way flatness (relMSE over the orbit) + an accuracy/flatness bar (FVU) ----------------
-    fig, (ax, axb) = plt.subplots(1, 2, figsize=(10.6, 4.3))
+    # figure: orbit flatness (the certificate) | accuracy bar at canonical H | FVU vs horizon (certified horizon) ----
+    fig, (ax, axb, axc) = plt.subplots(1, 3, figsize=(15.4, 4.3))
     degs = [0, 90, 180, 270]
     ax.plot(degs, fa_orbit, "o-", color="C0", lw=2.6, label=f"FA (plain CNN, ratio {fa_ratio:.2f})")
     ax.plot(degs, steer_orbit, "^-", color="C2", lw=2.2, label=f"$C_4$-steerable (ratio {steer_ratio:.2f})")
@@ -328,18 +378,27 @@ def main() -> None:
     ax.set_xlabel("scene orientation (degrees, exact $C_4$ via rot90)")
     ax.set_ylabel(f"{H}-step latent rollout relMSE")
     ax.set_xticks(degs)
-    ax.set_title("Orbit flatness (the certificate)")
+    ax.set_title("(a) Orbit flatness (the certificate)")
     ax.legend(fontsize=8)
-    labels = ["FA\n(plain CNN)", "$C_4$-steerable", "ordinary CNN"]
+    labels = ["FA\n(plain CNN)", "$C_4$-steer", "ord. CNN"]
     fvus = [fa_fvu[0], steer_fvu[0], cnn_fvu[0]]
     bars = axb.bar(labels, fvus, color=["C0", "C2", "C3"])
     axb.axhline(1.0, ls=":", color="gray", lw=1, label="FVU=1 (predict-the-mean)")
-    axb.set_ylabel(f"{H}-step rollout FVU (collapse-robust accuracy)")
-    axb.set_title("Accuracy: lower is better")
+    axb.set_ylabel(f"{H}-step rollout FVU (collapse-robust)")
+    axb.set_title("(b) Accuracy at $H{=}%d$ (lower better)" % H)
     for b, v in zip(bars, fvus):
         axb.text(b.get_x() + b.get_width() / 2, v, f"{v:.2f}", ha="center", va="bottom", fontsize=9)
     axb.legend(fontsize=8)
-    fig.suptitle("Frame averaging: exactly flat AND competitive on a learned pixel latent ($C_4$)", y=1.02)
+    axc.plot(hs, fa_fvu_h, "o-", color="C0", lw=2.6, label=f"FA (stability {fa_stab:.2f})")
+    axc.plot(hs, cnn_fvu_h, "s--", color="C3", lw=2.0, label=f"ordinary CNN (stability {cnn_stab:.2f})")
+    axc.plot(hs, steer_fvu_h, "^-", color="C2", lw=2.0, label=f"$C_4$-steerable (diverges, {steer_stab:.0f})")
+    axc.set_xlabel("rollout horizon $h$ (steps)")
+    axc.set_ylabel("FVU($h$) at canonical orientation")
+    axc.set_xticks(hs)
+    axc.set_yscale("log")
+    axc.set_title("(c) Horizon stability: FA flat, CNN compounds, steer diverges")
+    axc.legend(fontsize=8)
+    fig.suptitle("Frame averaging: exactly flat, accuracy-neutral vs the unconstrained CNN, and horizon-stable (learned pixel latent, $C_4$)", y=1.03)
     fig.tight_layout()
     fig.savefig(FIG / f"step64_frame_averaged_pixel{TAG}.png", dpi=130, bbox_inches="tight")
 
@@ -349,6 +408,13 @@ def main() -> None:
     print(f"[step64]   steerable ratio {steer_ratio:.3f} | FVU {steer_fvu[0]:.3f} | PR {steer_pr:.1f}", file=sys.stderr)
     print(f"[step64]   CNN       ratio {cnn_ratio:.3f} | FVU {cnn_fvu[0]:.3f} | PR {cnn_pr:.1f}", file=sys.stderr)
     print(f"[step64] FA/CNN FVU ratio {compet:.2f}  (steerable/CNN was {steer_compet:.2f})", file=sys.stderr)
+    print(f"[step64] FVU-by-horizon h={hs} (stability = FVU(h_max)/FVU(1), <=1 stable):", file=sys.stderr)
+    print(f"[step64]   FA  {[round(x,3) for x in fa_fvu_h]}  -> stability {fa_stab:.2f}", file=sys.stderr)
+    print(f"[step64]   CNN {[round(x,3) for x in cnn_fvu_h]}  -> stability {cnn_stab:.2f}", file=sys.stderr)
+    print(f"[step64]   STE {[round(x,3) for x in steer_fvu_h]}  -> stability {steer_stab:.1f}", file=sys.stderr)
+    print(f"[step64] horizon STABILITY: FA {fa_stab:.2f} (flat) vs CNN {cnn_stab:.2f} (compounds) -- "
+          f"FA rollout {'does NOT compound' if fa_stab <= cnn_stab else 'compounds'}; steerable diverges ({steer_stab:.0f}).",
+          file=sys.stderr)
     if passed:
         steer_note = (f"steerable unstable this seed ({steer_compet:.1f}x CNN, PR {steer_pr:.1f})" if steer_unstable
                       else f"steerable OK this seed ({steer_compet:.2f}x CNN) -- it is high-variance across seeds")
@@ -357,9 +423,11 @@ def main() -> None:
               f"(FA/CNN FVU {compet:.2f}x), with a healthier latent (PR {fa_pr:.1f} vs {cnn_pr:.1f}); {steer_note}.",
               file=sys.stderr)
         if absolute_accuracy_open:
-            print(f"[step64] HONEST CAVEAT (reported, not gated): absolute H={H} accuracy is poor for ALL pixel models "
-                  f"(FVU>1: FA {fa_fvu[0]:.2f}, CNN {cnn_fvu[0]:.2f}) -- a shared, architecture-agnostic limitation, the "
-                  f"residual open problem. The certificate (flatness) is exact regardless.", file=sys.stderr)
+            print(f"[step64] HONEST CAVEAT (reported, not gated): absolute accuracy is poor for ALL pixel models "
+                  f"(FVU>1: FA {fa_fvu[0]:.2f}, CNN {cnn_fvu[0]:.2f}); even the FAIR 1-step-vs-target FVU is >1 "
+                  f"(FA {fa_fvu1t:.2f}, CNN {cnn_fvu1t:.2f}) -- so the residual is the JEPA latent (anti-collapse "
+                  f"variance on a low-dim task), NOT an EMA artifact and NOT equivariance. Architecture-agnostic; the "
+                  f"certificate (flatness) + FA's horizon stability hold regardless.", file=sys.stderr)
     else:
         bad = [k for k, v in result["gate"].items() if not v]
         print(f"[step64] INCONCLUSIVE: gate not met ({bad}); reported as-is (no thresholds loosened).", file=sys.stderr)

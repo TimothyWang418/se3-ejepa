@@ -78,8 +78,10 @@ Our contributions are:
    interpolation; structure buys a certificate*, a keystone validation on **real physics-engine contact
    dynamics** (PushT) where the certificate holds for a *learned* model of dynamics we did not design, and a
    **closed-loop** instantiation where, run through a planner, the certificate becomes *task* competence —
-   orbit-invariant pose control where a scaled baseline degrades — and a lift from the circle to the **non-abelian
-   $\mathrm{SO}(3)$** on 3D point clouds (the certificate is not $\mathrm{SO}(2)$-specific).
+   orbit-invariant pose control where a scaled baseline degrades — a lift from the circle to the **non-abelian
+   $\mathrm{SO}(3)$** on 3D point clouds (the certificate is not $\mathrm{SO}(2)$-specific), and a lift to raw
+   **pixels** (Experiment 13) where *frame averaging* makes the exact certificate **accuracy-neutral** — an equivariant
+   pixel model matches an unconstrained CNN and is horizon-stable, so the prior costs nothing.
 
 We are explicit about scope (§7): this is a mechanism-and-theory paper with $1$–$2$-GPU proof-of-principle, not a
 scaled benchmark, and the hinge's lift to *approximate* symmetry is open.
@@ -658,6 +660,48 @@ in the $\ell{=}1$ block) and Experiment 6 (3D containment), this completes the 3
 
 ![Experiment 12 (the certificate on $\mathrm{SO}(3)$, 3D point clouds, constructed teacher). Left: $5$-step rollout relMSE over the $\mathrm{SO}(3)$ orbit (in-wedge identity $|$ out-of-distribution rotations) — the learned equivariant model is exactly flat (ratio $1.000$) while the $7.4\times$-larger MLP climbs out of the wedge. Right: across rollout horizon the MLP's out-of-wedge error stays at or above the equivariant floor, but the gap is modest because the small equivariant model's floor is high (the "flat is not good" caveat in 3D).](figures/step63_se3_certificate.png)
 
+### 5.11 The certificate on raw pixels: frame averaging makes the prior accuracy-neutral
+
+**Experiment 13 (the certificate on rendered pixels, and what the prior costs).** Every experiment so far reads a
+*structured* state or point cloud. We close the modality gap on the hardest input — **rendered RGB frames** of PushT
+(`experiments/step64`) — over the exact $C_4$ subgroup (a $90^\circ$ scene rotation is a bit-exact pixel permutation on
+the odd-sized grid; continuous $\mathrm{SO}(2)$ on a pixel grid is interpolation-floored, so $C_4$ is the grid-exact
+group). Theorem A already guarantees the certificate *transfers* for any exactly equivariant $(E,f)$; the real question
+is whether the equivariance prior **costs accuracy** — the standing pixel limitation of earlier drafts, where an
+$\mathrm{e2cnn}$-steerable pixel JEPA underfit badly. We compare three latent world models trained identically
+(EMA-target JEPA $+$ VICReg) on the same frames: the $C_4$-steerable $\mathrm{e2cnn}$ model (the incumbent); an
+unconstrained CNN/MLP (the accuracy reference, no flatness guarantee); and a **frame-averaged** model — a *plain* CNN
+encoder and MLP predictor made *exactly* $C_4$-equivariant by a Reynolds average over the four grid rotations with a
+$\rho$-correction, $E(o)=\tfrac14\sum_{k}\rho(g_k)^{-1}\phi(g_k\!\cdot\!o)$ (Puny et al., 2022), with
+$\rho=I\oplus(R_k\otimes I)$ orthogonal so Theorem A applies. Accuracy is read collapse-robustly as the fraction of
+*centered* latent variance unexplained ($\mathrm{FVU}$; $<1\iff$ beating predict-the-mean), since an uncentered relMSE is
+deflated by a large constant latent mean. Three findings (3 seeds; `tests/test_step64.py` certifies $E,f$ equivariant to
+$\sim\!10^{-7}$ at init **and** after training):
+
+- **(a) Flatness transfers exactly.** The frame-averaged rollout is flat over the $C_4$ orbit to the float floor
+  (ratio $1.000$, every seed), with $E,f$ equivariant to $\sim\!10^{-7}$ — the certificate is not an artifact of
+  structured state.
+- **(b) Frame averaging makes the prior accuracy-neutral.** The frame-averaged model **matches or beats the
+  unconstrained CNN** on FVU (ratio $0.68$–$1.07$, mean $0.84$ over seeds) with a *healthier* latent (participation
+  ratio $2.8$–$4.3$ vs. the CNN's $2.2$–$2.6$) — so the earlier steerable underfit was an $\mathrm{e2cnn}$
+  *optimization* artifact, **not** a cost of equivariance. Over the rollout horizon the contrast sharpens: the steerable
+  model **diverges** (its FVU grows $160$–$1600\times$ its one-step value), while the frame-averaged model stays
+  **stable** ($\le1.2\times$, usually below the CNN's $1.1$–$1.6\times$) — equivariance done right is reliable, not just
+  flat.
+- **(c) The residual is not equivariance.** Absolutely, *no* pixel model beats predict-the-mean here ($\mathrm{FVU}>1$),
+  but this is **architecture-agnostic** and not a measurement artifact: even the unconstrained CNN's *fair* one-step
+  accuracy against its own EMA target is $\mathrm{FVU}>1$ ($1.8$–$2.2$), as is the frame-averaged model's
+  ($1.7$–$2.0$). The cause is the JEPA latent itself — VICReg forces unit variance on all $D{=}64$ dimensions, but PushT
+  dynamics is low-dimensional (latent rank $\approx3$), so most dimensions carry unpredictable anti-collapse variance. A
+  strong few-step pixel-latent predictor at $1$-GPU scale is the residual open problem, shared by *every* architecture;
+  the certificate (flatness), the accuracy-neutrality of the prior, and the rollout stability hold regardless.
+
+![Experiment 13 (the certificate on rendered pixels, $C_4$). **(a)** $4$-step latent-rollout relMSE over the orbit of scene orientations: the frame-averaged model is flat to the float floor (ratio $1.000$); the ordinary CNN is also orbit-flat (PushT's pixel stream is approximately $C_4$-symmetric, the augmentation regime of §5.8). **(b)** Collapse-robust accuracy (FVU) at the canonical orientation: frame averaging matches/beats the unconstrained CNN and is far better than the steerable incumbent (dotted line = predict-the-mean). **(c)** FVU vs. rollout horizon (log scale): the steerable rollout *diverges* while the frame-averaged model stays *stable*. Absolute $\mathrm{FVU}>1$ for all models is an architecture-agnostic JEPA-latent property, not an equivariance cost.](figures/step64_frame_averaged_pixel.png)
+
+The pixel takeaway is therefore sharper than "structure underfits": structure transfers the certificate *exactly and for
+free* — frame averaging is flat, accuracy-neutral, and horizon-stable — and what remains open, a strong few-step pixel
+predictor at small scale, is not an equivariance problem at all.
+
 ---
 
 ## 6. Related Work
@@ -757,31 +801,14 @@ certificate for equivariant models.
   is shown on the contact-dominated pose task specifically — a position-only push stays a tie, since a near-linear
   agent subsystem carries it out of distribution. We claim a mechanism and a tool, demonstrated cleanly, not a scaled
   benchmark.
-- **Pixels: the certificate transfers exactly; frame averaging makes equivariance accuracy-neutral; absolute
-  multi-step accuracy is architecture-agnostic.** We ran the pixel lift (`experiments/step62`): a $C_4$-steerable
-  encoder and a $C_4$-equivariant latent predictor on rendered PushT frames. The certificate's machinery transfers
-  *exactly* — the encoder is $C_4$-equivariant to $\sim\!10^{-5}$ (the square arena makes a $90^\circ$ scene rotation
-  a bit-exact pixel permutation, so the grid-exact subgroup is $C_4$; continuous $\mathrm{SO}(2)$ on a pixel grid is
-  interpolation-floored), the predictor to $\sim\!10^{-7}$, and the multi-step latent rollout is consequently flat
-  over the $C_4$ orbit *to the float floor* (ratio $1.000$) — exact orbit-invariance is **not** an artifact of
-  structured state. The open question was whether the prior costs *accuracy*: the steerable JEPA underfit, which we
-  had flagged as needing a better equivariant architecture. **A follow-up (`experiments/step64`, $3$ seeds) resolves
-  it: the underfit was an $\mathrm{e2cnn}$ optimization artifact, not a cost of equivariance.** Replacing steerable
-  layers with *frame averaging* (Puny et al., 2022) — a *plain* CNN and MLP made exactly $C_4$-equivariant by
-  averaging over the four grid rotations with a $\rho$-correction (a Reynolds operator; pure `torch`, native on Apple
-  MPS) — is competitive-or-*better* than the **unconstrained** CNN on a collapse-robust accuracy metric (the fraction
-  of *centered* latent variance unexplained, FVU; ratio $0.83$–$0.87$) while staying exactly orbit-flat (ratio
-  $1.000$, equivariance $\sim\!10^{-7}$) and with a *healthier* latent (participation ratio $2.9$–$4.0$ vs. the CNN's
-  $1.8$–$3.2$). With the right construction the prior is **accuracy-neutral** — equivariance need not cost a thing on
-  pixels — and, since the steerable incumbent is *unstable* across seeds (FVU spanning $\sim\!2$ to $60$, the latent
-  occasionally collapsing), frame averaging also buys *reliability*: the same exact certificate, every run.
-  *An honesty correction comes with it.* Step 62 measured accuracy with an *uncentered* relMSE, which a large constant
-  latent mean deflates — flattering the ordinary CNN. Under the collapse-robust FVU ($\mathrm{FVU}<1\iff$ beating
-  predict-the-mean), the **unconstrained CNN itself** fails to beat predict-the-mean at horizon $H{=}4$
-  ($\mathrm{FVU}\approx2.0$–$2.3>1$). So absolute multi-step pixel-latent accuracy is poor for *every* architecture at
-  this $1$-GPU scale — an architecture-*agnostic* open problem — while the certificate (flatness) is exact regardless.
-  The honest pixel takeaway is therefore sharper than before: structure transfers the certificate exactly and for free,
-  and what remains open (a strong $4$-step pixel predictor at small scale) is not an equivariance problem at all.
+- **Pixels (Experiment 13, §5.11): structure is free; absolute accuracy is the open part.** The certificate transfers
+  *exactly* to rendered pixels, and — via frame averaging — at **no accuracy cost** relative to an unconstrained CNN
+  (matches-or-beats it on collapse-robust FVU, with a healthier latent and a horizon-stable rollout; §5.11). The honest
+  limitation is *absolute*, not comparative: at $1$-GPU scale **no** pixel model, equivariant or not, beats
+  predict-the-mean at a multi-step horizon ($\mathrm{FVU}>1$ even for the unconstrained CNN's fair one-step accuracy).
+  This is an architecture-*agnostic* property of the JEPA latent — VICReg's anti-collapse variance on low-dimensional
+  dynamics — not a cost of the prior. A strong few-step pixel-latent predictor at small scale remains open; everything
+  the certificate promises (exact flatness) holds regardless.
 - **Scope of the exact certificate.** Theorem A requires (A3): the group must be a symmetry of the *dynamics*, not
   merely the encoder. The exact certificate therefore holds where the group is a genuine dynamical symmetry
   (orbital and conservative systems, free space, idealized manipulation). Everywhere else one is in Theorem B's
