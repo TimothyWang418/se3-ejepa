@@ -1,0 +1,72 @@
+{
+  "passed": true,
+  "gate": {
+    "fa_enc_equiv": true,
+    "fa_pred_equiv": true,
+    "fa_flat_exact": true,
+    "fa_penalty_removed_vs_cnn": true,
+    "fa_latent_healthier_than_cnn": true
+  },
+  "absolute_accuracy_open": true,
+  "steerable_unstable_this_seed": true,
+  "fa_enc_resid": 2.384185791015625e-07,
+  "fa_pred_resid": 4.76837158203125e-07,
+  "fa_orbit_relmse": [
+    1.7550801038742065,
+    1.7550801038742065,
+    1.7550801038742065,
+    1.7550801038742065
+  ],
+  "cnn_orbit_relmse": [
+    0.6702014803886414,
+    0.6776466965675354,
+    0.6765026450157166,
+    0.7206405997276306
+  ],
+  "steer_orbit_relmse": [
+    30.77404022216797,
+    30.7740478515625,
+    30.774038314819336,
+    30.774049758911133
+  ],
+  "fa_orbit_fvu": [
+    1.742512753607702,
+    1.742512753607702,
+    1.7425127359252772,
+    1.742512753607702
+  ],
+  "cnn_orbit_fvu": [
+    2.002067905579894,
+    2.0834650087775732,
+    1.998346705268183,
+    2.202712046801674
+  ],
+  "steer_orbit_fvu": [
+    62.52360799933616,
+    62.52363846005237,
+    62.52362311074933,
+    62.523628385772824
+  ],
+  "fa_orbit_ratio": 1.0,
+  "cnn_orbit_ratio": 1.0752596358183815,
+  "steer_orbit_ratio": 1.000000309895714,
+  "fa_part_ratio": 3.384843111038208,
+  "cnn_part_ratio": 3.2329976558685303,
+  "steer_part_ratio": 1.0100395679473877,
+  "fa_vs_cnn_fvu": 0.8703564693041655,
+  "steer_vs_cnn_fvu": 31.2295141563774,
+  "params": {
+    "fa": 201344,
+    "cnn": 202368,
+    "steer": 44984
+  },
+  "horizon": 4,
+  "latent_dim": 64,
+  "n_inv": 32,
+  "n_vec": 16,
+  "img": 65,
+  "smoke": false,
+  "seed": 0,
+  "epochs": 30,
+  "device": "mps"
+}

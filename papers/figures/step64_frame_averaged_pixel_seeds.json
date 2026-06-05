@@ -1,0 +1,228 @@
+{
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "runs": [
+    {
+      "passed": true,
+      "gate": {
+        "fa_enc_equiv": true,
+        "fa_pred_equiv": true,
+        "fa_flat_exact": true,
+        "fa_penalty_removed_vs_cnn": true,
+        "fa_latent_healthier_than_cnn": true
+      },
+      "absolute_accuracy_open": true,
+      "steerable_unstable_this_seed": true,
+      "fa_enc_resid": 2.384185791015625e-07,
+      "fa_pred_resid": 4.76837158203125e-07,
+      "fa_orbit_relmse": [
+        1.7550801038742065,
+        1.7550801038742065,
+        1.7550801038742065,
+        1.7550801038742065
+      ],
+      "cnn_orbit_relmse": [
+        0.6702014803886414,
+        0.6776466965675354,
+        0.6765026450157166,
+        0.7206405997276306
+      ],
+      "steer_orbit_relmse": [
+        30.77404022216797,
+        30.7740478515625,
+        30.774038314819336,
+        30.774049758911133
+      ],
+      "fa_orbit_fvu": [
+        1.742512753607702,
+        1.742512753607702,
+        1.7425127359252772,
+        1.742512753607702
+      ],
+      "cnn_orbit_fvu": [
+        2.002067905579894,
+        2.0834650087775732,
+        1.998346705268183,
+        2.202712046801674
+      ],
+      "steer_orbit_fvu": [
+        62.52360799933616,
+        62.52363846005237,
+        62.52362311074933,
+        62.523628385772824
+      ],
+      "fa_orbit_ratio": 1.0,
+      "cnn_orbit_ratio": 1.0752596358183815,
+      "steer_orbit_ratio": 1.000000309895714,
+      "fa_part_ratio": 3.384843111038208,
+      "cnn_part_ratio": 3.2329976558685303,
+      "steer_part_ratio": 1.0100395679473877,
+      "fa_vs_cnn_fvu": 0.8703564693041655,
+      "steer_vs_cnn_fvu": 31.2295141563774,
+      "params": {
+        "fa": 201344,
+        "cnn": 202368,
+        "steer": 44984
+      },
+      "horizon": 4,
+      "latent_dim": 64,
+      "n_inv": 32,
+      "n_vec": 16,
+      "img": 65,
+      "smoke": false,
+      "seed": 0,
+      "epochs": 30,
+      "device": "mps",
+      "_seed": 0
+    },
+    {
+      "passed": true,
+      "gate": {
+        "fa_enc_equiv": true,
+        "fa_pred_equiv": true,
+        "fa_flat_exact": true,
+        "fa_penalty_removed_vs_cnn": true,
+        "fa_latent_healthier_than_cnn": true
+      },
+      "absolute_accuracy_open": true,
+      "steerable_unstable_this_seed": false,
+      "fa_enc_resid": 2.384185791015625e-07,
+      "fa_pred_resid": 4.76837158203125e-07,
+      "fa_orbit_relmse": [
+        2.1268675327301025,
+        2.1268677711486816,
+        2.1268675327301025,
+        2.1268675327301025
+      ],
+      "cnn_orbit_relmse": [
+        1.0033161640167236,
+        0.9263913631439209,
+        0.9535306096076965,
+        1.0095429420471191
+      ],
+      "steer_orbit_relmse": [
+        1.4819825887680054,
+        1.4819831848144531,
+        1.4819828271865845,
+        1.4819825887680054
+      ],
+      "fa_orbit_fvu": [
+        1.9697739466113964,
+        1.9697739466113964,
+        1.9697739466113964,
+        1.9697741754926124
+      ],
+      "cnn_orbit_fvu": [
+        2.3456029310739637,
+        2.178148230702489,
+        2.11577300153944,
+        2.318502552134585
+      ],
+      "steer_orbit_fvu": [
+        1.9975441220043488,
+        1.9975451003851723,
+        1.9975448554145059,
+        1.9975438770335927
+      ],
+      "fa_orbit_ratio": 1.0000001120984618,
+      "cnn_orbit_ratio": 1.0062061972623535,
+      "steer_orbit_ratio": 1.0000004021953106,
+      "fa_part_ratio": 2.9483203887939453,
+      "cnn_part_ratio": 2.513662576675415,
+      "steer_part_ratio": 1.9981611967086792,
+      "fa_vs_cnn_fvu": 0.8397729728746164,
+      "steer_vs_cnn_fvu": 0.8516122211229282,
+      "params": {
+        "fa": 201344,
+        "cnn": 202368,
+        "steer": 44984
+      },
+      "horizon": 4,
+      "latent_dim": 64,
+      "n_inv": 32,
+      "n_vec": 16,
+      "img": 65,
+      "smoke": false,
+      "seed": 1,
+      "epochs": 30,
+      "device": "mps",
+      "_seed": 1
+    },
+    {
+      "passed": true,
+      "gate": {
+        "fa_enc_equiv": true,
+        "fa_pred_equiv": true,
+        "fa_flat_exact": true,
+        "fa_penalty_removed_vs_cnn": true,
+        "fa_latent_healthier_than_cnn": true
+      },
+      "absolute_accuracy_open": true,
+      "steerable_unstable_this_seed": true,
+      "fa_enc_resid": 2.384185791015625e-07,
+      "fa_pred_resid": 4.76837158203125e-07,
+      "fa_orbit_relmse": [
+        1.663643717765808,
+        1.663643717765808,
+        1.663643717765808,
+        1.663643717765808
+      ],
+      "cnn_orbit_relmse": [
+        0.5197048187255859,
+        0.42140674591064453,
+        0.5451508164405823,
+        0.46764495968818665
+      ],
+      "steer_orbit_relmse": [
+        4.139509201049805,
+        4.139510631561279,
+        4.13950777053833,
+        4.1395111083984375
+      ],
+      "fa_orbit_fvu": [
+        1.6518450696244247,
+        1.6518451815899717,
+        1.6518451579913014,
+        1.6518451815899717
+      ],
+      "cnn_orbit_fvu": [
+        1.9924510032395353,
+        1.9207910281525937,
+        2.052190501457597,
+        1.7721968806583839
+      ],
+      "steer_orbit_fvu": [
+        4.363687171731476,
+        4.363684650427508,
+        4.36368633129682,
+        4.363687248145318
+      ],
+      "fa_orbit_ratio": 1.0,
+      "cnn_orbit_ratio": 1.0489624048077806,
+      "steer_orbit_ratio": 1.0000004607668542,
+      "fa_part_ratio": 3.9966535568237305,
+      "cnn_part_ratio": 1.800755262374878,
+      "steer_part_ratio": 1.8179857730865479,
+      "fa_vs_cnn_fvu": 0.8290517894486149,
+      "steer_vs_cnn_fvu": 2.1901101530911107,
+      "params": {
+        "fa": 201344,
+        "cnn": 202368,
+        "steer": 44984
+      },
+      "horizon": 4,
+      "latent_dim": 64,
+      "n_inv": 32,
+      "n_vec": 16,
+      "img": 65,
+      "smoke": false,
+      "seed": 2,
+      "epochs": 30,
+      "device": "mps",
+      "_seed": 2
+    }
+  ]
+}

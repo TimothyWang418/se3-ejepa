@@ -281,3 +281,32 @@ MPS unlocked fast e2cnn/e3nn training (§10). Surveyed paper2 for MPS-improvable
   real §7 open problem — research, not just compute); real embodied RLBench/ManiSkill (CUDA-only sim, genuinely
   off-Mac). The certificate's exact-flatness lifts everywhere; competitive accuracy on pixels/3D is the standing
   open problem, and MPS shows it is architecture/efficiency, not raw compute.
+
+## 12. Frame averaging resolves the §7 pixel open problem (user: "研究一下")
+
+Researched the §7 pixel open problem (a pixel encoder both exactly flat AND competitive). **Resolved by frame
+averaging** (`experiments/step64`, Puny et al. 2022, arXiv:2110.03336). Also produced an *honesty correction* to
+step62's metric.
+
+- **Method.** Instead of steerable layers (the e2cnn route that underfit), make a *plain* `ConvEncoder` + plain MLP
+  exactly $C_4$-equivariant by a Reynolds average over the 4 grid rotations with a $\rho$-correction:
+  $E(o)=\frac14\sum_k \rho(g_k)^{-1}\phi(g_k\!\cdot\!o)$, latent $=[z_{\text{inv}}\,(\rho{=}I)\oplus z_{\text{vec}}\,(\rho{=}R_k)]$,
+  $\rho$ orthogonal $\Rightarrow$ Theorem A. Verified $C_4$-equivariant to $\sim\!10^{-7}$ at init **and** post-train
+  (`tests/test_step64.py`, +2 tests $\to$ 91 passed); pure `torch`, native MPS (no e2cnn fallback).
+- **Honesty fix — collapse-robust metric.** step62's uncentered relMSE is deflated by a large constant latent mean.
+  Added **FVU** (fraction of *centered* variance unexplained; FVU$<1\iff$ beats predict-the-mean) + latent
+  participation ratio. This *re-scoped* the result honestly: I gate the RELATIVE claim (penalty removed vs the
+  unconstrained CNN), and REPORT the absolute limitation (no model beats predict-the-mean at $H{=}4$).
+- **Result (3 seeds, `step64_frame_averaged_pixel_seeds.json`, all PASS).** FA is competitive-or-**better** than the
+  *unconstrained* CNN on FVU (**0.83–0.87×**), exactly orbit-flat (ratio **1.000**, enc $\sim\!10^{-7}$), with a
+  *healthier* latent (PR **2.9–4.0** vs CNN 1.8–3.2). So the steerable underfit was an **e2cnn optimization artifact,
+  NOT a cost of equivariance** — with frame averaging the prior is *accuracy-neutral*. The steerable incumbent is
+  *unstable* across seeds (FVU 2.0–62.5, latent PR sometimes →1.0); FA buys reliability.
+- **The honest residual.** Under FVU the *unconstrained CNN itself* fails to beat predict-the-mean at $H{=}4$ (FVU
+  1.99–2.35 > 1). So absolute 4-step pixel-latent accuracy is poor for **every** architecture at this scale — an
+  architecture-AGNOSTIC open problem — while the certificate (flatness) is exact regardless. This also corrects
+  step62's "CNN ≈ 0.44–0.8" (a relMSE artifact).
+- **Paper change.** §7 pixel bullet rewritten ("the certificate transfers exactly; frame averaging makes equivariance
+  accuracy-neutral; absolute multi-step accuracy is architecture-agnostic"); Puny et al. ref added; reproducibility
+  appendix + `aggregate_seeds.py` register step64. PDF rebuilt (984 KiB, compiles clean). MPS note: absolute FVU has
+  run-to-run non-determinism (~±0.3), so quoted numbers are the committed seed ranges, not single-run.

@@ -31,6 +31,7 @@ STEPS = [
     "step60_augmentation",
     "step61_closed_loop_certificate",
     "step63_se3_certificate",
+    "step64_frame_averaged_pixel",
 ]
 
 

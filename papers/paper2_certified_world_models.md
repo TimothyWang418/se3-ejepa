@@ -757,26 +757,31 @@ certificate for equivariant models.
   is shown on the contact-dominated pose task specifically — a position-only push stays a tie, since a near-linear
   agent subsystem carries it out of distribution. We claim a mechanism and a tool, demonstrated cleanly, not a scaled
   benchmark.
-- **Pixels: the certificate transfers, competitive accuracy does not (yet).** We ran the pixel lift
-  (`experiments/step62`): a $C_4$-steerable encoder and a $C_4$-equivariant latent predictor on rendered PushT
-  frames. The certificate's machinery transfers *exactly* — the steerable encoder is $C_4$-equivariant to
-  $3\times10^{-5}$ (the square arena makes a $90^\circ$ scene rotation a bit-exact pixel permutation, so the
-  grid-exact subgroup is $C_4$; continuous $\mathrm{SO}(2)$ on a pixel grid is interpolation-floored), the predictor
-  to $6\times10^{-7}$, and the multi-step latent rollout is consequently flat over the $C_4$ orbit *to the float
-  floor* (ratio $1.000$) — the exact orbit-invariance is **not** an artifact of structured state. But at this scale
-  the steerable pixel JEPA **underfits**: its rollout relMSE ($\approx4.5$) is far worse than an ordinary CNN's
-  ($\approx0.8$), so on pixels the prior currently buys the certificate at a real *accuracy* cost ("flat is not
-  good", concretely) — and the ordinary CNN is itself orbit-flat, since PushT's pixel stream is approximately
-  $C_4$-symmetric (the augmentation regime of §5.8). We separated the two possible causes by training on this
-  machine's GPU (Apple MPS — $\sim\!10$–$26\times$ faster than CPU for the $\mathrm{e2cnn}$ model, so optimization
-  could be iterated). **Optimization instability is real but fixable:** a naive larger/longer run *diverges* (rollout
-  relMSE $\approx23.7$ — the latent collapses), but anti-collapse regularization plus stable training pulls it down
-  monotonically ($23.7\!\to\!4.5\!\to\!2.8\!\to\!2.3$ over $800$ epochs). **The residual gap is architectural, not
-  compute:** it *plateaus* at relMSE $\approx2.3$ with diminishing returns, versus an ordinary CNN's $\approx0.4$ —
-  the $\mathrm{e2cnn}$ JEPA is simply a worse pixel predictor on this modality, and more epochs do not close it. So
-  on pixels we claim the *exact architectural transfer of flatness* (always) and have *ruled out* a capacity or
-  compute explanation for the accuracy gap; a steerable pixel model that is both flat **and** competitive needs a
-  better equivariant **architecture** (not more GPU) — a genuine open problem (proposal stage S1).
+- **Pixels: the certificate transfers exactly; frame averaging makes equivariance accuracy-neutral; absolute
+  multi-step accuracy is architecture-agnostic.** We ran the pixel lift (`experiments/step62`): a $C_4$-steerable
+  encoder and a $C_4$-equivariant latent predictor on rendered PushT frames. The certificate's machinery transfers
+  *exactly* — the encoder is $C_4$-equivariant to $\sim\!10^{-5}$ (the square arena makes a $90^\circ$ scene rotation
+  a bit-exact pixel permutation, so the grid-exact subgroup is $C_4$; continuous $\mathrm{SO}(2)$ on a pixel grid is
+  interpolation-floored), the predictor to $\sim\!10^{-7}$, and the multi-step latent rollout is consequently flat
+  over the $C_4$ orbit *to the float floor* (ratio $1.000$) — exact orbit-invariance is **not** an artifact of
+  structured state. The open question was whether the prior costs *accuracy*: the steerable JEPA underfit, which we
+  had flagged as needing a better equivariant architecture. **A follow-up (`experiments/step64`, $3$ seeds) resolves
+  it: the underfit was an $\mathrm{e2cnn}$ optimization artifact, not a cost of equivariance.** Replacing steerable
+  layers with *frame averaging* (Puny et al., 2022) — a *plain* CNN and MLP made exactly $C_4$-equivariant by
+  averaging over the four grid rotations with a $\rho$-correction (a Reynolds operator; pure `torch`, native on Apple
+  MPS) — is competitive-or-*better* than the **unconstrained** CNN on a collapse-robust accuracy metric (the fraction
+  of *centered* latent variance unexplained, FVU; ratio $0.83$–$0.87$) while staying exactly orbit-flat (ratio
+  $1.000$, equivariance $\sim\!10^{-7}$) and with a *healthier* latent (participation ratio $2.9$–$4.0$ vs. the CNN's
+  $1.8$–$3.2$). With the right construction the prior is **accuracy-neutral** — equivariance need not cost a thing on
+  pixels — and, since the steerable incumbent is *unstable* across seeds (FVU spanning $\sim\!2$ to $60$, the latent
+  occasionally collapsing), frame averaging also buys *reliability*: the same exact certificate, every run.
+  *An honesty correction comes with it.* Step 62 measured accuracy with an *uncentered* relMSE, which a large constant
+  latent mean deflates — flattering the ordinary CNN. Under the collapse-robust FVU ($\mathrm{FVU}<1\iff$ beating
+  predict-the-mean), the **unconstrained CNN itself** fails to beat predict-the-mean at horizon $H{=}4$
+  ($\mathrm{FVU}\approx2.0$–$2.3>1$). So absolute multi-step pixel-latent accuracy is poor for *every* architecture at
+  this $1$-GPU scale — an architecture-*agnostic* open problem — while the certificate (flatness) is exact regardless.
+  The honest pixel takeaway is therefore sharper than before: structure transfers the certificate exactly and for free,
+  and what remains open (a strong $4$-step pixel predictor at small scale) is not an equivariance problem at all.
 - **Scope of the exact certificate.** Theorem A requires (A3): the group must be a symmetry of the *dynamics*, not
   merely the encoder. The exact certificate therefore holds where the group is a genuine dynamical symmetry
   (orbital and conservative systems, free space, idealized manipulation). Everywhere else one is in Theorem B's
@@ -858,6 +863,10 @@ quoted from the cited works):
 - **Spectral Representations for Group Composition** (He et al., 2026) — gradient flow on a group-composition task
   provably drives neurons to single irreducible representations; the learning-dynamics complement to Proposition 4
   and the §5.6 discovery experiments. arXiv:2606.02993.
+- **Frame Averaging** (Puny et al., 2022) — a Reynolds-operator construction that makes an arbitrary backbone exactly
+  invariant/equivariant by averaging over a group frame; the method we use in `experiments/step64` to obtain an
+  exactly $C_4$-equivariant *pixel* encoder/predictor from plain `torch` nets (so the §7 pixel certificate is flat
+  *and* accuracy-neutral relative to the unconstrained CNN). arXiv:2110.03336.
 
 The $T(\epsilon)\sim\log(1/\epsilon)/\lambda$ predictability-horizon law is classical (Lyapunov / Lorenz; standard
 numerical-weather-prediction practice).
@@ -869,7 +878,8 @@ numerical-weather-prediction practice).
 Every experiment sets random seeds explicitly, prints an `INCONCLUSIVE` verdict rather than loosen a gate, and
 writes its figure and JSON to `papers/figures/`. The multi-seed steps commit per-seed JSONs
 (`papers/figures/step5*_seeds.json`, `step59_pusht_certificate_seeds.json`, `step60_augmentation_seeds.json`, and
-`step61_closed_loop_certificate_seeds.json`, and `step63_se3_certificate_seeds.json`, seeds $0/1/2$), regenerated by
+`step61_closed_loop_certificate_seeds.json`, `step63_se3_certificate_seeds.json`, and
+`step64_frame_averaged_pixel_seeds.json`, seeds $0/1/2$), regenerated by
 `experiments/aggregate_seeds.py`; every range quoted above is the seed min–max from those files. The
 configuration-flatness experiment (Experiment 1) self-aggregates its three seeds into the means in
 `step47_certificate.json`. The full test suite passes together; `tests/conftest.py` isolates the float64
