@@ -43,9 +43,13 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "experiments"))
 
+from src.models.eqjepa import EqJEPA  # noqa: E402
+from src.models.se3 import SE3PointEncoder  # noqa: E402
+from src.models.structured import VNPredictor  # noqa: E402
 from step13_se3_latent_jepa import (  # noqa: E402
     ACTION_DIM,
     LATENT_DIM,
+    N_OUT_VEC,
     build_eq_jepa,
     build_mlp_jepa,
     collect_cloud_transitions,
@@ -60,10 +64,26 @@ SMOKE = os.environ.get("STEP63_SMOKE", "0") == "1"
 
 N_TRAIN = 200 if SMOKE else 1500
 N_TRAJ = 64 if SMOKE else 256
-EPOCHS = 4 if SMOKE else 60
+EPOCHS = int(os.environ.get("STEP63_EPOCHS", "4" if SMOKE else "60"))
 H = 5
 HS = [1, 3, 5]
 VAR_COEF = 0.1                              # 3D needs more than 2D's 0.04 (Step 13)
+MUL = int(os.environ.get("STEP63_MUL", "8"))         # e3nn encoder multiplicity (canonical Exp 12; knob for capacity sweeps)
+PRED_HID = int(os.environ.get("STEP63_PREDHID", "64"))  # VN predictor hidden width (predictor dominates total params)
+# Capacity note: a sweep (this knob) found the equivariant 3D model is parameter-INEFFICIENT — at *matched* capacity
+# (~124k = MLP) it still underfits in-distribution and its out-of-wedge advantage straddles 1 across seeds; only at
+# ~1.7x the MLP's parameters does its flat floor drop enough for a clean OOD win. So Exp 12 keeps the canonical
+# 7.4x-SMALLER equivariant model (the stronger structure-vs-scale framing); capacity helps but does not flip it.
+TAG = os.environ.get("STEP63_TAG", "")
+
+
+def make_eq() -> EqJEPA:
+    r"""Equivariant JEPA with a capacity knob: a bigger ``SE3PointEncoder`` (mul=MUL) + wider ``VNPredictor`` lets us
+    test whether Experiment 12's in-distribution underfit is a *capacity* gap (the default e3nn model is $7.4\times$
+    smaller than the MLP) rather than an architectural one."""
+    enc = SE3PointEncoder(n_out_vec=N_OUT_VEC, lmax=2, mul=MUL)
+    pred = VNPredictor(latent_dim=LATENT_DIM, action_dim=ACTION_DIM, hidden=PRED_HID, dim=3)
+    return EqJEPA(latent_dim=LATENT_DIM, action_dim=ACTION_DIM, encoder=enc, predictor=pred)
 FIG = ROOT / "papers" / "figures"
 
 
@@ -133,7 +153,7 @@ def main() -> None:
     print(f"[step63] seed={SEED} train={tuple(S_tr.shape)} traj={tuple(S_te.shape)} latent={LATENT_DIM}",
           file=sys.stderr)
 
-    eq = build_eq_jepa()
+    eq = make_eq()
     mlp = build_mlp_jepa()
     train_jepa(eq, S_tr, A_tr, S2_tr, epochs=EPOCHS, batch_size=128, var_coef=VAR_COEF, seed=SEED, verbose=False)
     train_jepa(mlp, S_tr, A_tr, S2_tr, epochs=EPOCHS, batch_size=128, var_coef=VAR_COEF, seed=SEED, verbose=False)
@@ -182,7 +202,9 @@ def main() -> None:
         "horizons": HS, "headline_H": H, "smoke": SMOKE, "seed": SEED,
     }
     FIG.mkdir(parents=True, exist_ok=True)
-    (FIG / "step63_se3_certificate.json").write_text(json.dumps(result, indent=2), encoding="utf-8")
+    result["params"] = {"eq": sum(p.numel() for p in eq.parameters()), "mlp": sum(p.numel() for p in mlp.parameters()),
+                        "mul": MUL, "pred_hid": PRED_HID}
+    (FIG / f"step63_se3_certificate{TAG}.json").write_text(json.dumps(result, indent=2), encoding="utf-8")
 
     # figure -----------------------------------------------------------------------------------------
     fig, (axL, axR) = plt.subplots(1, 2, figsize=(11, 4.2))
@@ -199,7 +221,7 @@ def main() -> None:
     axR.set_xlabel("rollout horizon H"); axR.set_ylabel("OOD relMSE / equivariant floor")
     axR.set_title("no baseline reaches the equivariant floor (any horizon)"); axR.legend(fontsize=8)
     fig.suptitle("Step 63 — the predictability certificate on SO(3) (3D point clouds, constructed teacher)", fontsize=11)
-    fig.tight_layout(); fig.savefig(FIG / "step63_se3_certificate.png", dpi=130)
+    fig.tight_layout(); fig.savefig(FIG / f"step63_se3_certificate{TAG}.png", dpi=130)
 
     print(f"[step63] eq-resid {eq_resid:.1e} (mlp {mlp_resid:.1e}); H={H} "
           f"eq in/far {eq_in[H]:.4f}/{eq_far[H]:.4f} (ratio {eq_ratio[H]:.2f}); "

@@ -261,3 +261,23 @@ SO(2) structured-state, SO(2) pixels, SO(3) point clouds — all ratio 1.000. Th
 accuracy* is modality/capacity-dependent: competitive on structured-state SO(2) PushT (Exp 9), underfits on pixels
 (T3) and 3D clouds (Exp 12) at laptop capacity. Honest read: the guarantee is free and universal; competitive
 accuracy needs matched equivariant capacity per modality (GPU tier).
+
+## 11. GPU(MPS)-optimization survey + 3D-capacity attempt (user: "看看论文有什么可以优化的地方需要跑GPU的")
+
+MPS unlocked fast e2cnn/e3nn training (§10). Surveyed paper2 for MPS-improvable items; attempted the top one.
+
+- **Top candidate — fix Exp 12's 3D underfit via capacity** (step63 gained `STEP63_MUL/PREDHID` knobs). The committed
+  Exp 12 eq is 7.4× *smaller* than the MLP (17k vs 124k) and underfits in-distribution. Hypothesis: it's a capacity
+  gap (unlike pixels, which is architecture-deep). **Result: capacity helps but does NOT cleanly flip it.** At
+  *matched* capacity (124k=124k, mul=24/predhid=192, 3 seeds) the eq still underfits (eq_in 0.58–0.70) and its
+  out-of-wedge advantage *straddles* 1 (floor-pen 0.65–1.16). Only at ~1.7× the MLP (215k, mul=32, 1 seed) does its
+  flat floor drop to 0.47 for a clean OOD win (floor-pen 1.4). **Honest finding: the equivariant 3D model is
+  parameter-INEFFICIENT** (equivariance costs per-parameter expressiveness here). So Exp 12 KEEPS the canonical mul=8
+  config (a 7.4×-smaller eq carrying the cert is the *stronger* structure-vs-scale framing); the knob + this note
+  document the negative result. No paper change; canonical mul=8 artifacts restored (now record `params`).
+- **Other GPU(MPS) items (surveyed, not run — low marginal value or out-of-scope):** scale ladder →1M params
+  (MPS-feasible via unified memory, but Exp 9's 160× already makes the point); 5-seed hardening of the e3nn/e2cnn
+  experiments (MPS-fast, but 3 seeds is already honestly reported); a better *equivariant pixel architecture* (the
+  real §7 open problem — research, not just compute); real embodied RLBench/ManiSkill (CUDA-only sim, genuinely
+  off-Mac). The certificate's exact-flatness lifts everywhere; competitive accuracy on pixels/3D is the standing
+  open problem, and MPS shows it is architecture/efficiency, not raw compute.

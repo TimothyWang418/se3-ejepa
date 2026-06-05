@@ -108,5 +108,11 @@
   ],
   "headline_H": 5,
   "smoke": false,
-  "seed": 0
+  "seed": 0,
+  "params": {
+    "eq": 16856,
+    "mlp": 124512,
+    "mul": 8,
+    "pred_hid": 64
+  }
 }
