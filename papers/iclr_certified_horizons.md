@@ -282,6 +282,20 @@ the training wedge. The flatness is exact because (A5) makes the planner $G$-equ
 $G$-invariant, so the closed-loop trajectory inherits the encoder's orbit-equivariance — Theorem A under the
 closed-loop clause.
 
+**(E8) The certificate is an epistemic drive: certificate-driven active inference.** Because the certified region is
+*computable* (Algorithm 1), an agent can act to **expand** it — a provable alternative to curiosity's "reduce
+prediction error". On a $\mathbb{Z}_2^7$ compositional world whose action space mixes $7$ true generators with noisy
+high-error distractors, an explorer that maximizes certified-region growth certifies all $2^7{=}128$ compositions in
+exactly $7$ observations (the generator basis — each generator unlocks an exponential swath, Lemma 1), whereas an
+error-curiosity explorer is lured by the irreducible-noise distractors and certifies only $1\%$ at the same budget (3
+seeds; random $\sim2\%$). So "expand your certified region" is a **noise-immune** epistemic drive that beats
+prediction-error curiosity — the classic *noisy-TV* failure mode — for compositional coverage. *Honest scope:* the
+baseline is *raw-error* curiosity; a sophisticated information-gain agent would also learn to avoid aleatoric noise.
+The certificate's contribution is that it supplies that immunity **for free and provably**, with no noise model — and
+this is a toy demonstration of the principle, not a benchmark.
+
+![Certificate-driven active inference (E8). On a $\mathbb{Z}_2^7$ compositional world with noisy distractor actions, an explorer that maximizes the *certified region* certifies all $128$ compositions in exactly $7$ observations (the generator basis), while a prediction-error-curiosity explorer is lured by the high-error distractors and certifies almost nothing at the same budget.](figures/step69_certificate_driven_exploration.png)
+
 ---
 
 ## 5. Related work
