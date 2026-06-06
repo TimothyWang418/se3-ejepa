@@ -35,6 +35,10 @@ Run (on the 3080 WSL2 box, after `uv pip install gymnasium-robotics mujoco`):
 
 import argparse
 import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))   # repo root, so `src` and fetchpush_symmetry import
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 
 def smoke(env_id: str) -> int:
@@ -74,6 +78,7 @@ def smoke(env_id: str) -> int:
 # Note: this purely-equivariant first model uses the planar (dx,dy) action and drops dz/gripper into the
 # invariant side (a refinement); FetchPush is dominated by planar pushing.
 # -------------------------------------------------------------------------------------------------
+import numpy as np  # noqa: E402
 import torch  # noqa: E402
 from torch import nn  # noqa: E402
 
@@ -126,24 +131,124 @@ class BaselineWM(nn.Module):
         return z + self.pred(torch.cat([z, act], dim=-1))          # residual next latent
 
 
-def train_wm(model, demos):
-    raise NotImplementedError("Stage 2b: train the latent WM (JEPA) on the rollout dataset")
+def prep_equiv(obs_np, act_np, device):
+    v, _ = sym.obs_to_vn(np.asarray(obs_np))
+    enc_in = torch.tensor(v, dtype=torch.float32, device=device)
+    act_in = torch.tensor(np.asarray(act_np)[..., :2], dtype=torch.float32, device=device)   # (dx,dy)
+    return enc_in, act_in
+
+
+def prep_baseline(obs_np, act_np, device):
+    return (torch.tensor(np.asarray(obs_np), dtype=torch.float32, device=device),
+            torch.tensor(np.asarray(act_np), dtype=torch.float32, device=device))
+
+
+def collect_transitions(env_id, n_steps, seed):
+    r"""Random-policy rollouts -> (obs, act, next_obs) arrays. Random data suffices to learn the local dynamics."""
+    import gymnasium as gym
+    import gymnasium_robotics
+    gym.register_envs(gymnasium_robotics)
+    env = gym.make(env_id)
+    obs, _ = env.reset(seed=seed)
+    O, A, N = [], [], []
+    cur = obs["observation"]
+    for _ in range(n_steps):
+        a = env.action_space.sample()
+        nxt, _, term, trunc, _ = env.step(a)
+        O.append(cur); A.append(a); N.append(nxt["observation"])
+        cur = nxt["observation"]
+        if term or trunc:
+            obs, _ = env.reset(); cur = obs["observation"]
+    env.close()
+    return np.array(O, np.float32), np.array(A, np.float32), np.array(N, np.float32)
+
+
+def _vicreg(z):
+    r"""Anti-collapse: variance hinge + off-diagonal covariance penalty (VICReg)."""
+    std = torch.sqrt(z.var(0) + 1e-4)
+    var = torch.relu(1.0 - std).mean()
+    zc = z - z.mean(0)
+    cov = (zc.T @ zc) / (z.shape[0] - 1)
+    off = cov - torch.diag(torch.diag(cov))
+    return var + 0.04 * (off ** 2).sum() / z.shape[1]
+
+
+def train_jepa_wm(model, obs, act, nxt, prep, epochs, device, seed, ema=0.99, var_coef=0.1):
+    r"""JEPA: predict the EMA-target encoder's next latent; VICReg keeps the latent from collapsing."""
+    import copy
+    torch.manual_seed(seed)
+    model = model.to(device)
+    target_enc = copy.deepcopy(model.enc).to(device)
+    for p in target_enc.parameters():
+        p.requires_grad_(False)
+    opt = torch.optim.Adam(model.parameters(), lr=1e-3)
+    enc_in, act_in = prep(obs, act, device)
+    nxt_in, _ = prep(nxt, act, device)
+    n = enc_in.shape[0]
+    g = torch.Generator().manual_seed(seed)
+    for _ in range(epochs):
+        for i in range(0, n, 256):
+            idx = torch.randperm(n, generator=g)[i:i + 256]
+            pred = model.forward(enc_in[idx], act_in[idx])
+            with torch.no_grad():
+                tgt = target_enc(nxt_in[idx])
+            loss = ((pred - tgt) ** 2).mean() + var_coef * _vicreg(model.encode(enc_in[idx]))
+            opt.zero_grad(); loss.backward(); opt.step()
+            with torch.no_grad():
+                for tp, mp in zip(target_enc.parameters(), model.enc.parameters()):
+                    tp.mul_(ema).add_(mp, alpha=1 - ema)
+    return model, target_enc
+
+
+@torch.no_grad()
+def one_step_relmse(model, target_enc, obs, act, nxt, prep, device):
+    r"""Collapse-robust 1-step latent prediction error (FVU: fraction of centered target variance unexplained)."""
+    enc_in, act_in = prep(obs, act, device)
+    nxt_in, _ = prep(nxt, act, device)
+    pred = model.forward(enc_in, act_in)
+    tgt = target_enc(nxt_in)
+    return float(((pred - tgt) ** 2).sum(-1).mean() / ((tgt - tgt.mean(0)) ** 2).sum(-1).mean())
 
 
 def eval_cross_pose(model, env_id, seen_orientations, ood_orientations, seeds):
     raise NotImplementedError("closed-loop CEM eval: is_success on seen vs OOD object/goal orientations (举一反三)")
 
 
+def train_smoke(env_id: str, device: str) -> int:
+    r"""Stage 2b validation: collect random transitions, JEPA-train BOTH world models, print 1-step FVU.
+    Confirms the data+training+eval pipeline runs end-to-end (FVU<1 = beats predict-the-mean)."""
+    import numpy as _np
+    print(f"[step72] train-smoke: collecting transitions from {env_id} ...", file=sys.stderr)
+    obs, act, nxt = collect_transitions(env_id, 3000, seed=0)
+    ntr = 2500
+    res = {}
+    for name, model, prep in [("equivariant", EquivariantWM(latent_dim=64, hidden=64), prep_equiv),
+                              ("baseline", BaselineWM(latent_dim=64, hidden=128), prep_baseline)]:
+        m, tgt = train_jepa_wm(model, obs[:ntr], act[:ntr], nxt[:ntr], prep, epochs=15, device=device, seed=0)
+        r = one_step_relmse(m, tgt, obs[ntr:], act[ntr:], nxt[ntr:], prep, device)
+        res[name] = r
+        print(f"[step72]   {name:11s} 1-step FVU {r:.3f}  ({'beats predict-the-mean' if r < 1 else 'FVU>1'})",
+              file=sys.stderr)
+    print(f"[step72] train-smoke OK: pipeline trains end-to-end on {device} "
+          f"(equiv {res['equivariant']:.3f}, baseline {res['baseline']:.3f}). "
+          f"Stage 3 next: seen-vs-OOD orientation flatness.", file=sys.stderr)
+    return 0
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--smoke", action="store_true", help="validate the MuJoCo env (no Vulkan), then exit")
+    ap.add_argument("--train-smoke", action="store_true", help="Stage 2b: collect + JEPA-train both WMs + 1-step FVU")
     ap.add_argument("--env", default="FetchPush-v4")
+    ap.add_argument("--device", default="cpu")
     ap.add_argument("--demos", type=int, default=100)
     args = ap.parse_args()
     if args.smoke:
         sys.exit(smoke(args.env))
-    print("[step72] full pipeline is a TODO scaffold — wire build_wm/train_wm/eval_cross_pose on the 3080 first; "
-          "run with --smoke to validate the environment.", file=sys.stderr)
+    if args.train_smoke:
+        sys.exit(train_smoke(args.env, args.device))
+    print("[step72] Stage 3/4 (cross-pose flatness + closed-loop CEM win) are the next builds; "
+          "use --smoke (env) or --train-smoke (data+JEPA) to validate.", file=sys.stderr)
     sys.exit(2)
 
 
