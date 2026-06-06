@@ -61,6 +61,83 @@ OBJ_XY = (3, 4)                       # object_pos planar (x,y) indices in the 2
 SMOKE = bool(int(os.environ.get("STEP73_SMOKE", "0")))
 
 
+# ------------------------------------------------------------------------------------------------- #
+# Goal-directed (scripted) data. The random-policy 4b run was INCONCLUSIVE because neither WM+CEM
+# controller is COMPETENT from random data (both ~7%, the near-goal give-away rate) — so the seen-vs-OOD
+# test has no working control to break. A scripted "get behind the block, push toward the goal" policy
+# generates on-task transitions: training the WM on these should make the controller competent, which is
+# the prerequisite for the task-win test to discriminate (equivariant flat vs baseline drop). The scripted
+# policy is for DATA + a competence sanity check ONLY — the evaluated controller is still the learned WM+CEM.
+# ------------------------------------------------------------------------------------------------- #
+def scripted_action(obs: np.ndarray, goal_xyz: np.ndarray, rng=None, noise: float = 0.0) -> np.ndarray:
+    r"""Heuristic FetchPush pusher: approach a point just BEHIND the block (opposite the goal) at table height,
+    then push through the block toward the goal. Gripper held closed. Returns a 4-D action in $[-1,1]^4$."""
+    grip = obs[0:3]; objp = obs[3:6]
+    to_goal = goal_xyz - objp
+    dxy = to_goal[:2]
+    dn = dxy / (np.linalg.norm(dxy) + 1e-6)                          # planar push direction (object -> goal)
+    behind = objp.copy()
+    behind[:2] = objp[:2] - dn * 0.055                              # stand-off point behind the block
+    behind[2] = objp[2]
+    grip_to_behind = behind[:2] - grip[:2]
+    a = np.zeros(4, dtype=np.float64)
+    if np.linalg.norm(grip_to_behind) > 0.025:                     # phase 1: get behind the block (in plane)
+        a[:2] = 6.0 * grip_to_behind
+        a[2] = 6.0 * (behind[2] + 0.01 - grip[2])
+    else:                                                          # phase 2: push through the block to the goal
+        a[:2] = 6.0 * (objp[:2] + dn * 0.10 - grip[:2])
+        a[2] = 6.0 * (objp[2] - grip[2])
+    a[3] = -1.0                                                     # gripper closed (push, not grasp)
+    if noise and rng is not None:
+        a[:3] = a[:3] + noise * rng.standard_normal(3)
+    return np.clip(a, -1.0, 1.0)
+
+
+def collect_scripted_transitions(env_id, n_steps, seed, noise: float = 0.4):
+    r"""(obs, act, next_obs) from the scripted pusher + exploration noise — goal-directed coverage of the dynamics."""
+    import gymnasium as gym
+    import gymnasium_robotics
+    gym.register_envs(gymnasium_robotics)
+    env = gym.make(env_id)
+    obs, _ = env.reset(seed=seed)
+    rng = np.random.default_rng(seed)
+    O, A, N = [], [], []
+    for _ in range(n_steps):
+        o = obs["observation"]; g = obs["desired_goal"]
+        a = scripted_action(np.asarray(o), np.asarray(g), rng=rng, noise=noise).astype(np.float32)
+        nxt, _, term, trunc, _ = env.step(a)
+        O.append(o); A.append(a); N.append(nxt["observation"])
+        obs = nxt
+        if term or trunc:
+            obs, _ = env.reset()
+    env.close()
+    return np.array(O, np.float32), np.array(A, np.float32), np.array(N, np.float32)
+
+
+def scripted_policy_success(env_id, n_episodes, seed, T_max: int = 50, noise: float = 0.0) -> float:
+    r"""Sanity: does the SCRIPTED policy itself solve FetchPush? If this is ~7% the heuristic is broken (fix it
+    before training on its data); if it is decently above the give-away floor, its data is worth training on."""
+    import gymnasium as gym
+    import gymnasium_robotics
+    gym.register_envs(gymnasium_robotics)
+    env = gym.make(env_id)
+    rng = np.random.default_rng(seed)
+    hits = 0
+    for ep in range(n_episodes):
+        obs, info = env.reset(seed=seed + 7 * ep)
+        done = False
+        for _ in range(T_max):
+            a = scripted_action(np.asarray(obs["observation"]), np.asarray(obs["desired_goal"]),
+                                rng=rng, noise=noise).astype(np.float32)
+            obs, _, term, trunc, info = env.step(a)
+            done = done or bool(info.get("is_success", 0.0))
+            if term or trunc:
+                break
+        hits += int(done)
+    env.close()
+    return hits / n_episodes
+
+
 def _rot_np(theta: float) -> np.ndarray:
     c, s = np.cos(theta), np.sin(theta)
     return np.array([[c, -s], [s, c]], dtype=np.float64)
@@ -381,15 +458,22 @@ def realenv_success(planner, env_id: str, device: str, *, thetas, n_episodes: in
     return succ
 
 
-def run_realenv(env_id: str, device: str, seed: int, tag: str) -> int:
+def run_realenv(env_id: str, device: str, seed: int, tag: str, scripted: bool = False) -> int:
     import json
     n_tr = 1500 if SMOKE else 12000
     epochs = 6 if SMOKE else 40
     thetas = [0.0, np.pi / 2] if SMOKE else [0.0, np.pi / 4, np.pi / 2, 3 * np.pi / 4, np.pi]
     n_episodes = 3 if SMOKE else 30
-    cem_kw = dict(H=8, n_samples=128, n_iters=3) if SMOKE else dict(H=12, n_samples=256, n_iters=5)
-    print(f"[step73] realenv: collecting {n_tr} transitions + training both stacks (seed {seed}) ...", file=sys.stderr)
-    obs, act, nxt = collect_transitions(env_id, n_tr, seed)
+    cem_kw = dict(H=8, n_samples=128, n_iters=3) if SMOKE else dict(H=16, n_samples=384, n_iters=6)
+    src = "scripted goal-directed" if scripted else "random-policy"
+    if scripted:
+        sp = scripted_policy_success(env_id, 10 if SMOKE else 40, seed)
+        print(f"[step73] realenv: scripted-policy sanity success {sp:.2f} (must clear the ~0.07 give-away floor to be "
+              f"worth training on)", file=sys.stderr)
+    print(f"[step73] realenv: collecting {n_tr} {src} transitions + training both stacks (seed {seed}) ...",
+          file=sys.stderr)
+    obs, act, nxt = (collect_scripted_transitions(env_id, n_tr, seed) if scripted
+                     else collect_transitions(env_id, n_tr, seed))
     eq = EquivPlanner(EquivariantWM(latent_dim=128, hidden=64), EquivGoalHead(latent_dim=128))
     bl = BaselinePlanner(BaselineWM(latent_dim=128, hidden=256), BaselineGoalHead(latent_dim=128, hidden=128))
     train_planner(eq, obs, act, nxt, prep_equiv, epochs=epochs, device=device, seed=seed)
@@ -400,17 +484,49 @@ def run_realenv(env_id: str, device: str, seed: int, tag: str) -> int:
     s_bl = realenv_success(bl, env_id, device, thetas=thetas, n_episodes=n_episodes, seed=seed, cem_kw=cem_kw)
     drop_eq = s_eq[0.0] - min(s_eq.values())
     drop_bl = s_bl[0.0] - min(s_bl.values())
-    res = {"equivariant": {"by_theta": s_eq, "seen": s_eq[0.0], "ood_drop": drop_eq},
+    # Honest gate: a task win needs (i) a COMPETENT in-distribution baseline (else nothing to break — the random-data
+    # failure mode), (ii) the baseline to drop OOD, and (iii) the equivariant to stay flatter. Anything else is
+    # INCONCLUSIVE, not a win.
+    competent = bool(s_bl[0.0] >= 0.2 and s_eq[0.0] >= 0.2)
+    win = bool(competent and drop_bl >= 0.1 and drop_eq < drop_bl - 0.05)
+    verdict = ("TASK WIN: equivariant holds success across orientations where the scaled baseline drops (举一反三)"
+               if win else ("INCONCLUSIVE: baseline not competent in-distribution (no working control to break — "
+                            "needs better data/horizon/scale)" if not competent else "INCONCLUSIVE"))
+    res = {"task_win": win, "competent": competent, "data": src,
+           "equivariant": {"by_theta": s_eq, "seen": s_eq[0.0], "ood_drop": drop_eq},
            "baseline": {"by_theta": s_bl, "seen": s_bl[0.0], "ood_drop": drop_bl},
            "seed": seed, "smoke": SMOKE, "env": env_id}
     figdir = Path(__file__).resolve().parent.parent / "papers" / "figures"
     figdir.mkdir(parents=True, exist_ok=True)
     (figdir / f"step73_fetchpush_realenv{tag}.json").write_text(json.dumps(res, indent=2))
-    print(f"[step73] realenv: equivariant seen {s_eq[0.0]:.2f} OOD-drop {drop_eq:.2f}; "
-          f"baseline seen {s_bl[0.0]:.2f} OOD-drop {drop_bl:.2f}. "
-          f"{'Equivariant generalizes across orientations (举一反三).' if drop_eq < drop_bl else 'INCONCLUSIVE.'}",
-          file=sys.stderr)
+    _save_realenv_figure(res, tag)
+    print(f"[step73] realenv ({src}): equivariant seen {s_eq[0.0]:.2f} OOD-drop {drop_eq:.2f}; "
+          f"baseline seen {s_bl[0.0]:.2f} OOD-drop {drop_bl:.2f}. {verdict}.", file=sys.stderr)
     return 0
+
+
+def _save_realenv_figure(res: dict, tag: str) -> None:
+    try:
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+        figdir = Path(__file__).resolve().parent.parent / "papers" / "figures"
+        eq, bl = res["equivariant"], res["baseline"]
+        xs = sorted(float(k) for k in eq["by_theta"])
+        deg = [int(round(np.degrees(x))) for x in xs]
+        fig, ax = plt.subplots(figsize=(6.6, 4.2))
+        ax.plot(deg, [eq["by_theta"][x] for x in xs], "o-", color="#1f77b4",
+                label=f"equivariant (seen {eq['seen']:.2f}, OOD-drop {eq['ood_drop']:.2f})")
+        ax.plot(deg, [bl["by_theta"][x] for x in xs], "s--", color="#d62728",
+                label=f"baseline (seen {bl['seen']:.2f}, OOD-drop {bl['ood_drop']:.2f})")
+        ax.set_xlabel("scene rotation off the training orientation (deg)")
+        ax.set_ylabel("FetchPush task success rate")
+        ax.set_ylim(-0.02, 1.02)
+        ax.set_title(f"FetchPush closed-loop success vs. orientation ({res['data']} data)")
+        ax.legend(fontsize=8)
+        fig.tight_layout(); fig.savefig(figdir / f"step73_fetchpush_realenv{tag}.png", dpi=130, bbox_inches="tight")
+    except Exception as e:
+        print(f"[step73]   (realenv figure skipped: {e})", file=sys.stderr)
 
 
 def smoke(env_id: str) -> int:
@@ -425,16 +541,27 @@ def main() -> int:
     p = argparse.ArgumentParser(description="Step 73 — task-level certificate (planning) on FetchPush")
     p.add_argument("--cert", action="store_true", help="4a: model-rollout orbit-flatness certificate of the plan")
     p.add_argument("--realenv", action="store_true", help="4b: real-env closed-loop is_success (seen vs OOD)")
+    p.add_argument("--scripted", action="store_true",
+                   help="4b-v2: train the WM on goal-directed (scripted-pusher) data, not random-policy data")
+    p.add_argument("--scripted-eval", action="store_true",
+                   help="sanity only: run the scripted pusher itself and report its FetchPush success rate")
     p.add_argument("--smoke", action="store_true", help="tiny end-to-end validation of the planning probe")
     p.add_argument("--env", default="FetchPush-v4")
     p.add_argument("--device", default="cpu")
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--tag", default="")
     a = p.parse_args()
+    if a.scripted_eval:
+        n = 20 if SMOKE else 100
+        sr = scripted_policy_success(a.env, n, a.seed)
+        print(f"[step73] scripted-pusher success on {a.env}: {sr:.2f} over {n} episodes "
+              f"({'competent — worth training on' if sr >= 0.2 else 'weak — fix the heuristic before using its data'}).",
+              file=sys.stderr)
+        return 0
     if a.smoke:
         return smoke(a.env)
     if a.realenv:
-        return run_realenv(a.env, a.device, a.seed, a.tag)
+        return run_realenv(a.env, a.device, a.seed, a.tag, scripted=a.scripted)
     if a.cert:
         return run_certificate(a.env, a.device, a.seed, a.tag)
     p.print_help()
