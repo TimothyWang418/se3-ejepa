@@ -66,16 +66,68 @@ def smoke(env_id: str) -> int:
 
 
 # -------------------------------------------------------------------------------------------------
-# TODO (wire + debug on the 3080): equivariant-vs-baseline certificate-as-task-win. Reuse the repo's
-# SO(2)-equivariant encoder/predictor (src/models) and the G-equivariant CEM (Step 9/11). Add an
-# SO(2)-equivariance unit test on the planar-obs action BEFORE trusting results (project rule).
+# Stage 2a — the latent world models. Equivariant: VN encoder on the 7 planar 2-vecs of obs_to_vn +
+# VN predictor on the (dx,dy) planar action, so the WHOLE WM is SO(2)-equivariant by construction
+# (encoder + predictor verified in tests/test_step72_wm_equivariance.py). Baseline: a capacity-matched
+# (or larger) ordinary MLP on the raw 25-D obs + 4-D action. Both predict in latent space (JEPA-style);
+# Stage 2b adds data + training + rollout relMSE; Stage 3 the seen-vs-OOD flatness; Stage 4 the CEM win.
+# Note: this purely-equivariant first model uses the planar (dx,dy) action and drops dz/gripper into the
+# invariant side (a refinement); FetchPush is dominated by planar pushing.
 # -------------------------------------------------------------------------------------------------
-def build_wm(equivariant: bool, obs_dim: int, act_dim: int):
-    raise NotImplementedError("wire the SO(2)-equivariant / baseline latent world model (src/models) on the GPU box")
+import torch  # noqa: E402
+from torch import nn  # noqa: E402
+
+import fetchpush_symmetry as sym  # noqa: E402  (same experiments/ dir; on sys.path when run or imported)
+
+
+def latent_rotation(z: "torch.Tensor", theta: float) -> "torch.Tensor":
+    r"""Apply rho_latent(theta) to a VN latent (B, latent_dim) = latent_dim/2 flattened 2-vecs."""
+    import numpy as _np
+    c, s = float(_np.cos(theta)), float(_np.sin(theta))
+    R = torch.tensor([[c, -s], [s, c]], dtype=z.dtype, device=z.device)
+    zz = z.reshape(z.shape[0], -1, 2)
+    return (zz @ R.T).reshape(z.shape[0], -1)
+
+
+class EquivariantWM(nn.Module):
+    r"""SO(2)-equivariant latent WM: StructuredStateEncoder (7 planar 2-vecs -> latent) + VNPredictor
+    ((dx,dy) action -> residual next-latent). Equivariant encoder + equivariant predictor => the whole WM
+    satisfies E(rho(g) obs) = rho(g) E(obs) and f(rho(g) z, R(g) a) = rho(g) f(z, a)."""
+
+    def __init__(self, latent_dim: int = 128, hidden: int = 64):
+        super().__init__()
+        from src.models.structured import StructuredStateEncoder, VNPredictor
+        self.enc = StructuredStateEncoder(n_vec=sym.N_VEC, latent_dim=latent_dim, hidden=hidden)
+        self.pred = VNPredictor(latent_dim=latent_dim, action_dim=2, hidden=hidden, dim=2)
+
+    def encode(self, vectors: "torch.Tensor") -> "torch.Tensor":   # (B,N_VEC,2) -> (B,latent_dim)
+        return self.enc(vectors)
+
+    def forward(self, vectors: "torch.Tensor", act_xy: "torch.Tensor") -> "torch.Tensor":
+        return self.pred(self.enc(vectors), act_xy)                # predicted next latent
+
+
+class BaselineWM(nn.Module):
+    r"""Non-equivariant baseline: ordinary MLP encoder on the raw 25-D obs + MLP predictor on latent+4-D action.
+    `hidden` is sized to match-or-exceed the equivariant model's capacity (fair-baseline discipline)."""
+
+    def __init__(self, obs_dim: int = sym.OBS_DIM, act_dim: int = 4, latent_dim: int = 128, hidden: int = 256):
+        super().__init__()
+        self.enc = nn.Sequential(nn.Linear(obs_dim, hidden), nn.SiLU(), nn.Linear(hidden, hidden), nn.SiLU(),
+                                 nn.Linear(hidden, latent_dim))
+        self.pred = nn.Sequential(nn.Linear(latent_dim + act_dim, hidden), nn.SiLU(),
+                                  nn.Linear(hidden, hidden), nn.SiLU(), nn.Linear(hidden, latent_dim))
+
+    def encode(self, obs: "torch.Tensor") -> "torch.Tensor":
+        return self.enc(obs)
+
+    def forward(self, obs: "torch.Tensor", act: "torch.Tensor") -> "torch.Tensor":
+        z = self.enc(obs)
+        return z + self.pred(torch.cat([z, act], dim=-1))          # residual next latent
 
 
 def train_wm(model, demos):
-    raise NotImplementedError("train the latent WM on the few-shot demo set")
+    raise NotImplementedError("Stage 2b: train the latent WM (JEPA) on the rollout dataset")
 
 
 def eval_cross_pose(model, env_id, seen_orientations, ood_orientations, seeds):
