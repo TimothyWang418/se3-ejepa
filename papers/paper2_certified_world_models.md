@@ -86,7 +86,10 @@ Our contributions are:
    horizons at $\eta{=}0$). What remains measured is the dynamical-symmetry hypothesis and the size of $\eta$.
 3. **Empirical confirmation of all three axes at small scale** (§5), including the headline contrast *scale buys
    interpolation; structure buys a certificate*, a keystone validation on **real physics-engine contact
-   dynamics** (PushT) where the certificate holds for a *learned* model of dynamics we did not design, and a
+   dynamics** (PushT, and the **standard MuJoCo FetchPush** benchmark — Experiment 16, the cleanest cut: the
+   equivariant world model is *exactly* orbit-flat while a $7\times$-larger baseline degrades by orders of magnitude
+   out of the training orientation yet interpolates it competitively) where the certificate holds for a *learned*
+   model of dynamics we did not design, and a
    **closed-loop** instantiation where, run through a planner, the certificate becomes *task* competence —
    orbit-invariant pose control where a scaled baseline degrades — a lift from the circle to the **non-abelian
    $\mathrm{SO}(3)$** on 3D point clouds (the certificate is not $\mathrm{SO}(2)$-specific), a lift to raw
@@ -916,6 +919,42 @@ continuity bound (Proposition 8) both predicts and decomposes.
 
 ![Experiment 15 (the certified-horizon law across a class of learned chaotic models). The horizon staircase $T(\epsilon_0)$ on the learned model of each system is linear in $\log(1/\epsilon_0)$ and its slope (blue $\Rightarrow\hat\lambda_1$) sits on the textbook exponent (red dashed): a 2D map (Hénon), a small-exponent flow (Rössler), and a large-exponent flow (Lorenz). The law is a property of chaotic dynamics, not of Lorenz.](figures/step71_multichaos_horizon.png)
 
+### 5.14 The certificate on a *standard* manipulation benchmark: FetchPush (Experiment 16)
+
+The PushT certificate (Experiment 9, §5.8) is on a $2$D pusher; the closed-loop lift (Experiment 11) is on the same
+contact game. A reviewer's fair question is whether the configuration axis survives on a **standard, third-party
+robotics benchmark** with a $3$D arm — not an environment we chose. **Experiment 16** runs the certificate on
+**FetchPush-v4** (Gymnasium-Robotics / MuJoCo): a $7$-DoF Fetch arm pushes a block to a goal, with a $25$-D state
+observation. About the vertical axis the scene carries an $\mathrm{SO}(2)_z$ symmetry — rotating the planar $(x,y)$ of
+every positional/velocity $3$-vector and shifting the block yaw — which acts on the state by an *exact orthogonal*
+$\rho(\theta)$ (verified as a representation, `tests/test_fetchpush_symmetry.py`). Because the arm base is fixed, the
+*dynamical* symmetry is **approximate** (the Theorem B / Experiment 8 regime, exactly as in PushT), but the
+representation the world model consumes is exact. We train two JEPA world models (EMA target $+$ VICReg, collapse-robust
+FVU) on transitions from a **single** training orientation: a $\mathrm{VN}$ equivariant model (a Vector-Neuron encoder
+on the $7$ planar $2$-vectors $+$ a jointly $\mathrm{SO}(2)$-equivariant predictor on the $2$D action) and a $\sim\!7\times$
+larger unconstrained MLP. We then measure one-step latent FVU as the scene is rotated off the training orientation.
+
+**The certificate holds on a real manipulation benchmark, and it is the cleanest structure-vs-scale separation in the
+paper.** The equivariant model is **exactly orbit-flat — OOD/seen FVU ratio $1.000$ to the float floor on every seed**
+($3/3$; the encoder/predictor equivariance is machine-precision and unit-tested, `tests/test_step72_wm_equivariance.py`,
+$\sim\!10^{-15}$, so the flatness is *architectural*, not fit). The scaled baseline **degrades by one-to-three orders
+of magnitude out of the training orientation** — OOD-max FVU ratio $211\times$/$1037\times$/$1445\times$ across seeds,
+its error *exceeding predict-the-mean* (FVU $>1$) at large rotations (an independent CUDA run on an RTX 3080 confirms
+the same separation, $19$–$382\times$; the exact magnitude is seed/backend-sensitive, the order-of-magnitude
+degradation is unanimous over all six runs). What makes this the sharpest cut is the **in-distribution** comparison:
+with $12$k transitions the unconstrained baseline interpolates the *single* training orientation **as well or better**
+than the equivariant model — the in-dist tax (equiv/baseline seen FVU) ranges $0.8\times$ (seed 2: equivariant
+*cheaper*) to $4.1\times$ (seed 1). So this is **not** a case where structure also wins in-distribution and the OOD
+gap could be dismissed as the baseline being undertrained: the baseline is *competitive-to-better* exactly where it has
+data and *catastrophic* one orbit-step away. That is the thesis in one experiment — **scale buys interpolation;
+structure buys the certificate** — and it is precisely the converse direction (Lemma 2): no non-equivariant model has
+the orbit-flat certificate at any scale, because orbit-constant error *is* equivariance. The honest scope is unchanged
+from PushT: $\mathrm{SO}(2)_z$ is an approximate dynamical symmetry (fixed base), so this is a configuration-axis
+(Theorem A, exact-representation) result on learned contact dynamics, not a claim that equivariance lowers
+in-distribution error.
+
+![Experiment 16 (the certificate on FetchPush / MuJoCo, seed 0; the other seeds match). One-step latent FVU as the scene is rotated off the single training orientation. The equivariant world model (blue) is exactly orbit-flat (ratio $1.000$); the $\sim\!7\times$-larger unconstrained baseline (red dashed) degrades by orders of magnitude out of the training orientation, exceeding predict-the-mean (FVU $=1$, dotted) near a quarter-turn — yet it interpolates the training orientation competitively. Structure buys the certificate; scale buys only interpolation.](figures/step72_fetchpush_certificate_s0.png)
+
 ---
 
 ## 6. Related Work
@@ -1046,12 +1085,17 @@ subspace via the Noether hinge; and fold all of it into a single multi-axis cert
   physics-engine contact simulator (PushT) — dynamics we did not author — at the *prediction* level (Experiment 9)
   and the closed-loop *task* level (Experiment 11, where the certificate becomes orbit-invariant pose control: out of
   the training wedge the equivariant controller stays flat while a scaled baseline degrades, the two being
-  *comparable* in-distribution — we claim no in-distribution win). This is still *structured state* (not pixels) and
-  a single $\mathrm{SO}(2)$ group; the out-of-distribution *prediction* gap is *modest* ($2\text{–}4\times$, large
-  only because a single PushT step is easy to predict in-distribution); and the closed-loop *out-of-wedge* advantage
-  is shown on the contact-dominated pose task specifically — a position-only push stays a tie, since a near-linear
-  agent subsystem carries it out of distribution. We claim a mechanism and a tool, demonstrated cleanly, not a scaled
-  benchmark.
+  *comparable* in-distribution — we claim no in-distribution win), and Experiment 16 reproduces the prediction-level
+  certificate on the **standard third-party MuJoCo FetchPush benchmark** with a $3$D arm. This is still *structured
+  state* (not pixels) and a single $\mathrm{SO}(2)$ group; the magnitude of the out-of-distribution *prediction* gap is
+  **benchmark-dependent** — *modest* on PushT ($2\text{–}4\times$ at $H{=}10$, large only because a single PushT step is
+  easy to predict in-distribution) but *orders of magnitude* on the $25$-D FetchPush state ($211$–$1445\times$ one-step,
+  where the baseline extrapolates a higher-dimensional state badly) — while the equivariant ratio is exactly $1.000$ on
+  both. We still claim **no in-distribution win** on either: FetchPush's in-dist tax *straddles* $1$ (the baseline
+  interpolates the training orientation competitively-to-better, equivariant cheaper on one seed). The closed-loop
+  *out-of-wedge* advantage is shown on the contact-dominated pose task specifically — a position-only push stays a tie,
+  since a near-linear agent subsystem carries it out of distribution. We claim a mechanism and a tool, demonstrated
+  cleanly, not a scaled benchmark.
 - **Pixels (Experiment 13, §5.11): structure is free; absolute accuracy is the open part.** The certificate transfers
   *exactly* to rendered pixels, and — via frame averaging — at **no accuracy cost** relative to an unconstrained CNN
   (matches-or-beats it on collapse-robust FVU, with a healthier latent and a horizon-stable rollout; §5.11). The honest
@@ -1207,7 +1251,8 @@ writes its figure and JSON to `papers/figures/`. The multi-seed steps commit per
 `step64_frame_averaged_pixel_seeds.json`, `step70_lorenz_horizon_seeds.json`, and `step71_multichaos_horizon_seeds.json`, seeds $0/1/2$), regenerated by
 `experiments/aggregate_seeds.py`; every range quoted above is the seed min–max from those files. The
 configuration-flatness experiment (Experiment 1) self-aggregates its three seeds into the means in
-`step47_certificate.json`. The full test suite passes together; `tests/conftest.py` isolates the float64
+`step47_certificate.json`. Experiment 16 writes its per-seed certificates directly to
+`step72_fetchpush_certificate_s{0,1,2}.json` (the seed min–max quoted in §5.14). The full test suite passes together; `tests/conftest.py` isolates the float64
 experiments from the float32 codebase. One command reproduces the paper end-to-end — `make paper2` (multi-seed
 re-runs $\to$ figures $\to$ tests $\to$ PDF), with `make paper2-quick` for the figures-and-PDF fast path; everything
 is CPU/MPS, no CUDA.
@@ -1229,3 +1274,4 @@ is CPU/MPS, no CUDA.
 | 13 | **Certificate on rendered pixels ($C_4$, frame averaging)** | `experiments/step64_frame_averaged_pixel.py` | `tests/test_step62.py` | 3 | frame-averaged pixel model orbit-flat to the float floor (ratio $1.000$, equiv-resid $\sim10^{-7}$); collapse-robust FVU matches/beats the unconstrained CNN and beats the steerable incumbent; rollout horizon-stable while steerable diverges. Honest: absolute $\mathrm{FVU}>1$ for *all* models (architecture-agnostic JEPA-latent property, not an equivariance cost) |
 | 14 | **Horizon law on a learned model of real chaotic dynamics (Lorenz)** | `experiments/step70_lorenz_horizon.py` | `tests/test_step70.py` | 3 | learned one-step MLP of the Lorenz $\Delta t$-map (relMSE $<10^{-4}$); certified-horizon staircase linear in $\log(1/\epsilon)$ ($R^2{=}0.975$–$0.995$) and the model's Lyapunov exponent (slope) *matches* the true $\lambda_1{=}0.9056$ to $1$–$8\%$ ($\hat\lambda_1{=}0.895$/$0.919$/$0.977$). Prop. 7(a). The near-neutral PushT interior is the degenerate branch (b), $R^2{=}0.02$ |
 | 15 | **Horizon law across a class of chaotic systems** | `experiments/step71_multichaos_horizon.py` | `tests/test_step71.py` | 3 | same learned-model staircase on a 2D map + two flows: Hénon $\hat\lambda_1{=}0.45$–$0.47$ vs $0.419$ (rel-err $8$–$12\%$, $3/3$ seeds), Lorenz $1$–$5\%$ ($3/3$), small-exponent Rössler $0.065$–$0.066$ vs $0.0714$ ($8$–$9\%$, $2/3$ — one seed's $\sim\!1500$-step horizon under-crossed). Validates Prop. 8: the $O(\delta)$ bias falls $44\%\!\to\!8\%$ as fidelity rises (Rössler); the true-system staircase isolates the finite-$T$ truncation (~$9$–$10\%$) |
+| 16 | **Certificate on a standard manipulation benchmark (FetchPush / MuJoCo)** | `experiments/step72_mujoco_certificate.py` | `tests/test_step72_wm_equivariance.py`, `tests/test_fetchpush_symmetry.py` | 3 | learned $\mathrm{VN}$ equivariant world model exactly orbit-flat over the $\mathrm{SO}(2)_z$ scene rotation (OOD/seen FVU ratio $1.000$, $3/3$; equivariance unit-tested $\sim10^{-15}$). $\sim7\times$-larger MLP degrades $211$/$1037$/$1445\times$ OOD (CUDA confirms $19$–$382\times$), exceeding predict-the-mean. Cleanest structure-vs-scale cut: baseline interpolates the single training orientation competitively-to-better (in-dist tax $0.8$–$4.1\times$, equiv *cheaper* on seed 2) yet has no certificate (Lemma 2). $\mathrm{SO}(2)_z$ approximate (fixed base; Thm A representation regime) |
