@@ -34,6 +34,7 @@ STEPS = [
     "step64_frame_averaged_pixel",
     "step65_horizon_tightness",
     "step70_lorenz_horizon",
+    "step71_multichaos_horizon",
 ]
 
 
