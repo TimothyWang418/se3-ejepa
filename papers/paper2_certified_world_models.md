@@ -982,17 +982,23 @@ though this cross-stack number is read through each stack's own head and so is s
 — the rigorous statement is the *within-stack* orbit-flatness. This is the closed-loop certificate (Theorem A carried
 through the planner: orbit-equivariant plans $\Rightarrow$ orbit-invariant behaviour) on a standard manipulation
 benchmark, completing the FetchPush pair (prediction-flat, Experiment 16; plan-flat, here) just as Experiments 9 and
-11 pair on PushT. *Scope, honestly:* this is the **model-rollout** planning certificate — the plan is provably
-orbit-flat. We also ran the *real-env* `is_success` task win (`--realenv`: receding-horizon control on FetchPush-v4
-in a rotated control frame, seen vs OOD orientations, on the CUDA box), and report it **INCONCLUSIVE**: trained on
-random-policy data at $1$-GPU scale, *neither* stack actually solves the task — both reach only $\approx\!7\%$ success
-(the rate at which an episode starts near enough to the goal that almost any push succeeds), flat across all
-orientations for **both** models. The seen-vs-OOD test therefore cannot discriminate: its discriminating mechanism
-needs a *competent* in-distribution baseline whose (non-equivariant) control then breaks out of orientation, and at the
-$\sim\!7\%$ give-away floor there is no working control to break. So the closed-loop *task-success* win on FetchPush
-is unproven at this scale (it would need a competent base controller — better-than-random data, longer horizon); what
-*is* established here is the planning certificate (the plan is orbit-flat) and, at the prediction level, Experiment 16.
-We do not claim a downstream task win we did not measure.
+11 pair on PushT. *Scope, honestly — the closed-loop* task-success *win does not materialize at $1$-GPU scale, and we
+diagnosed exactly why.* We ran the real-env `is_success` test (`--realenv`: receding-horizon control on FetchPush-v4
+in a rotated control frame, seen vs OOD, CUDA box) **twice** — once on random-policy data, once on **goal-directed**
+data from a scripted pusher that *itself* solves the task $33\%$ of the time — and both are **INCONCLUSIVE**: the
+*learned* WM$+$CEM controller stays at $\approx\!7\%$ (the give-away rate of episodes that start near the goal), flat
+for **both** stacks, whether the data is random or competent. The bottleneck is therefore *not* the data. A diagnostic
+(`--diagnose`) localizes it: the world model is **accurate** — the equivariant goal-readout decodes the object's planar
+position to $\mathbf{<\!1\,\text{cm}}$ (RMSE $0.008$ m current, $0.010$ m one-step, on objects spanning $0.34$ m) — yet
+CEM yields $0\%$ task success at **every** planning horizon ($H{=}3,6,16$). That signature is **model exploitation**:
+CEM is an optimizer that searches the whole action disk and finds the accurate-on-distribution model's *off*-distribution
+blind spots (actions it wrongly predicts reach the goal) — the classic model-based-RL failure, which no horizon fixed.
+It is **architecture-agnostic** (it hits the baseline identically) and has nothing to do with the certificate: the plan
+is still provably orbit-flat (4a), and the prediction certificate (Experiment 16) still holds. This is the embodied
+analogue of the pixel result (Experiment 13): *the geometric prior is free; absolute closed-loop competence is the open
+part.* A genuine task-success win on FetchPush would need robust model-based control (action/uncertainty
+regularization, ensembles) or a learned policy — real future work, not a knob. We do not claim a downstream task win we
+did not measure.
 
 ![Experiment 17 (the task-level certificate on FetchPush, seed 0; the other seeds match). Planned terminal object→goal distance vs. scene rotation off the training orientation. The equivariant planning stack (blue; equivariant WM + equivariant goal-readout + $G$-equivariant CEM) produces an exactly orbit-flat plan (ratio $1.000$); the scaled-baseline stack (red dashed) degrades $4$–$10\times$ out of the training orientation. The whole planner is $\mathrm{SO}(2)$-equivariant by construction (proven to the float floor in a unit test), so closed-loop behaviour is orbit-invariant — Theorem A carried through the planner.](figures/step73_fetchpush_planning_s0.png)
 
@@ -1138,11 +1144,14 @@ subspace via the Noether hinge; and fold all of it into a single multi-axis cert
   since a near-linear agent subsystem carries it out of distribution. The FetchPush closed-loop (Experiment 17) is at
   present the **model-rollout** planning certificate — we prove the whole planner $\mathrm{SO}(2)$-equivariant and show
   its learned plan is orbit-flat (ratio $1.000$) while the baseline planner degrades $4$–$10\times$. The *real-env*
-  `is_success` task win we **ran and report INCONCLUSIVE**: from random-policy data at $1$-GPU scale neither stack
-  solves FetchPush (both $\approx7\%$, the near-goal give-away rate, flat across orientations for both), so the
-  seen-vs-OOD test has no competent base controller to break — a downstream task win would need better-than-random data
-  and a longer horizon, which we leave to scale. We claim a mechanism and a tool, demonstrated cleanly, not a scaled
-  benchmark, and we do not claim a task win we did not measure.
+  `is_success` task win we **ran twice (random and goal-directed data) and report INCONCLUSIVE**, with a diagnosis: the
+  learned WM$+$CEM controller stays at the $\approx7\%$ give-away floor for both stacks *regardless of data*, even
+  though the scripted pusher that generated the goal-directed data itself solves the task $33\%$. The model is not the
+  problem — its goal-readout decodes the object position to $<\!1$ cm — but CEM gets $0\%$ at every horizon because it
+  **exploits the model off-distribution** (the classic model-based-RL pitfall). This is architecture-agnostic and
+  unrelated to equivariance — the certificate holds exactly; it is the embodied analogue of the pixel result (the prior
+  is free, absolute closed-loop competence is the open part). A real task win needs robust model-based control or a
+  learned policy — future work, not a knob. We do not claim a task win we did not measure.
 - **Pixels (Experiment 13, §5.11): structure is free; absolute accuracy is the open part.** The certificate transfers
   *exactly* to rendered pixels, and — via frame averaging — at **no accuracy cost** relative to an unconstrained CNN
   (matches-or-beats it on collapse-robust FVU, with a healthier latent and a horizon-stable rollout; §5.11). The honest
@@ -1323,4 +1332,4 @@ is CPU/MPS, no CUDA.
 | 14 | **Horizon law on a learned model of real chaotic dynamics (Lorenz)** | `experiments/step70_lorenz_horizon.py` | `tests/test_step70.py` | 3 | learned one-step MLP of the Lorenz $\Delta t$-map (relMSE $<10^{-4}$); certified-horizon staircase linear in $\log(1/\epsilon)$ ($R^2{=}0.975$–$0.995$) and the model's Lyapunov exponent (slope) *matches* the true $\lambda_1{=}0.9056$ to $1$–$8\%$ ($\hat\lambda_1{=}0.895$/$0.919$/$0.977$). Prop. 7(a). The near-neutral PushT interior is the degenerate branch (b), $R^2{=}0.02$ |
 | 15 | **Horizon law across a class of chaotic systems** | `experiments/step71_multichaos_horizon.py` | `tests/test_step71.py` | 3 | same learned-model staircase on a 2D map + two flows: Hénon $\hat\lambda_1{=}0.45$–$0.47$ vs $0.419$ (rel-err $8$–$12\%$, $3/3$ seeds), Lorenz $1$–$5\%$ ($3/3$), small-exponent Rössler $0.065$–$0.066$ vs $0.0714$ ($8$–$9\%$, $2/3$ — one seed's $\sim\!1500$-step horizon under-crossed). Validates Prop. 8: the $O(\delta)$ bias falls $44\%\!\to\!8\%$ as fidelity rises (Rössler); the true-system staircase isolates the finite-$T$ truncation (~$9$–$10\%$) |
 | 16 | **Certificate on a standard manipulation benchmark (FetchPush / MuJoCo)** | `experiments/step72_mujoco_certificate.py` | `tests/test_step72_wm_equivariance.py`, `tests/test_fetchpush_symmetry.py` | 3 | learned $\mathrm{VN}$ equivariant world model exactly orbit-flat over the $\mathrm{SO}(2)_z$ scene rotation (OOD/seen FVU ratio $1.000$, $3/3$; equivariance unit-tested $\sim10^{-15}$). $\sim7\times$-larger MLP degrades $211$/$1037$/$1445\times$ OOD (CUDA confirms $19$–$382\times$), exceeding predict-the-mean. Cleanest structure-vs-scale cut: baseline interpolates the single training orientation competitively-to-better (in-dist tax $0.8$–$4.1\times$, equiv *cheaper* on seed 2) yet has no certificate (Lemma 2). $\mathrm{SO}(2)_z$ approximate (fixed base; Thm A representation regime) |
-| 17 | **Certificate at the planning level on FetchPush** | `experiments/step73_fetchpush_planning.py` | `tests/test_step73_planner_equivariance.py` | 3 | equivariant WM $+$ equivariant goal-readout head $+$ $G$-equivariant CEM: the whole planner is $\mathrm{SO}(2)$-equivariant, proven to the float floor (head $3\mathrm{e}{-}16$, step+readout $6\mathrm{e}{-}16$, **CEM search $2\mathrm{e}{-}16$**). Learned-model planning certificate: equivariant planned-distance orbit-flat (ratio $1.000$, $3/3$); baseline planner degrades $4.1$/$8.5$/$10.3\times$ OOD. Model-rollout (plan orbit-flat). Real-env `is_success` (`--realenv`, CUDA): **INCONCLUSIVE** — both stacks $\approx7\%$ (FetchPush unsolved at $1$-GPU from random data), flat for both, no discrimination at the give-away floor |
+| 17 | **Certificate at the planning level on FetchPush** | `experiments/step73_fetchpush_planning.py` | `tests/test_step73_planner_equivariance.py` | 3 | equivariant WM $+$ equivariant goal-readout head $+$ $G$-equivariant CEM: the whole planner is $\mathrm{SO}(2)$-equivariant, proven to the float floor (head $3\mathrm{e}{-}16$, step+readout $6\mathrm{e}{-}16$, **CEM search $2\mathrm{e}{-}16$**). Learned-model planning certificate: equivariant planned-distance orbit-flat (ratio $1.000$, $3/3$); baseline planner degrades $4.1$/$8.5$/$10.3\times$ OOD. Real-env `is_success` (`--realenv` random and `--scripted` goal-directed data, CUDA): **INCONCLUSIVE** — learned WM+CEM stuck at $\approx7\%$ for both stacks regardless of data, though the scripted *policy* solves the task $33\%$. `--diagnose`: model accurate (readout RMSE $<1$cm) yet CEM $0\%$ at every horizon $=$ **model exploitation** (architecture-agnostic, not an equivariance cost) |

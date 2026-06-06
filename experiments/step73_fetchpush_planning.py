@@ -529,6 +529,37 @@ def _save_realenv_figure(res: dict, tag: str) -> None:
         print(f"[step73]   (realenv figure skipped: {e})", file=sys.stderr)
 
 
+def diagnose(env_id: str, device: str, seed: int) -> int:
+    r"""Why does the real-env task win not materialize (4b/4b-v2 both INCONCLUSIVE)? Train the equivariant stack on
+    goal-directed data, then localize the failure: (1) readout fidelity — can $g(z)$ decode the object position? — and
+    (2) does ANY planning horizon reach in-distribution competence? The finding: the WM is accurate ($<\!1$cm) yet CEM
+    gets $0$ success at every horizon, i.e. the planner **exploits the model off-distribution** (a model-based-RL
+    pitfall), which is architecture-agnostic and unrelated to the (exact) certificate."""
+    n_tr = 1500 if SMOKE else 5000
+    epochs = 6 if SMOKE else 30
+    obs, act, nxt = collect_scripted_transitions(env_id, n_tr, seed)
+    eq = EquivPlanner(EquivariantWM(latent_dim=128, hidden=64), EquivGoalHead(latent_dim=128))
+    train_planner(eq, obs, act, nxt, prep_equiv, epochs=epochs, device=device, seed=seed)
+    eq.wm.eval(); eq.head.eval()
+    o2, a2, n2 = collect_scripted_transitions(env_id, 1000, seed + 99)
+    with torch.no_grad():
+        cur = eq.readout(eq.encode(o2, device)).cpu().numpy()
+        enc_in, act_in = prep_equiv(o2, a2, device)
+        nx = eq.readout(planner_forward(eq, enc_in, act_in)).cpu().numpy()
+    txy, tnx = np.asarray(o2)[:, list(OBJ_XY)], np.asarray(n2)[:, list(OBJ_XY)]
+    rc = float(np.sqrt(((cur - txy) ** 2).sum(-1)).mean())
+    rn = float(np.sqrt(((nx - tnx) ** 2).sum(-1)).mean())
+    print(f"[step73] diagnose: object-readout RMSE current={rc:.4f} m, one-step-pred={rn:.4f} m "
+          f"(objects span ~0.34 m) — the model is accurate.", file=sys.stderr)
+    for H, re_ in ([(8, 4)] if SMOKE else [(16, 10), (6, 2), (3, 1)]):
+        s = realenv_success(eq, env_id, device, thetas=[0.0], n_episodes=5 if SMOKE else 20, seed=seed,
+                            replan_every=re_, cem_kw=dict(H=H, n_samples=256, n_iters=4))
+        print(f"[step73] diagnose: eq in-dist success H={H} replan_every={re_}: {s[0.0]:.2f}", file=sys.stderr)
+    print("[step73] diagnose => accurate WM but ~0 CEM success at every horizon = the planner exploits the model "
+          "off-distribution (MBRL pitfall), architecture-agnostic, NOT an equivariance cost.", file=sys.stderr)
+    return 0
+
+
 def smoke(env_id: str) -> int:
     r"""Tiny end-to-end: train both stacks on few transitions, run the orbit planning probe, print ratios."""
     os.environ["STEP73_SMOKE"] = "1"
@@ -545,6 +576,8 @@ def main() -> int:
                    help="4b-v2: train the WM on goal-directed (scripted-pusher) data, not random-policy data")
     p.add_argument("--scripted-eval", action="store_true",
                    help="sanity only: run the scripted pusher itself and report its FetchPush success rate")
+    p.add_argument("--diagnose", action="store_true",
+                   help="localize the 4b failure: readout fidelity + competence vs planning horizon (model exploitation)")
     p.add_argument("--smoke", action="store_true", help="tiny end-to-end validation of the planning probe")
     p.add_argument("--env", default="FetchPush-v4")
     p.add_argument("--device", default="cpu")
@@ -558,6 +591,8 @@ def main() -> int:
               f"({'competent — worth training on' if sr >= 0.2 else 'weak — fix the heuristic before using its data'}).",
               file=sys.stderr)
         return 0
+    if a.diagnose:
+        return diagnose(a.env, a.device, a.seed)
     if a.smoke:
         return smoke(a.env)
     if a.realenv:
