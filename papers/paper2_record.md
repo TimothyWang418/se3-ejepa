@@ -463,3 +463,27 @@ $\hat\lambda$ also matches $\lambda_1$ so panels (a)/(b) agree); per-seed in `st
 is the top input for the ICLR reframe (task B+D): the horizon axis now has **real-chaotic-dynamics** evidence, and the
 PushT/Lorenz contrast motivates the **scope theorem** (task A): the local-spectrum certificate lifts to learned
 dynamics iff the system is spectrally non-degenerate (chaotic), via Oseledets / shadowing.
+
+## 21. Deepening (user "全做吧"): Step 71 multi-chaos + Proposition 8 (finite-horizon exponent transfer)
+
+After the gap-closing batch, user picked "全做" on four deepening directions; the two doable on CPU/MPS landed
+(commits `9741583` + this batch). The other two are honestly constrained: ③ arXiv = bundle rebuilt, manual submit;
+④ embodied benchmark = CUDA-only (ManiSkill/RLBench), plan only.
+
+- **② Step 71 (`step71_multichaos_horizon.py` + `test_step71.py`)** — generalize Step 70's learned-model horizon lift
+  from Lorenz to a **class**: Hénon map ($\lambda_1{\approx}0.419$/step), Rössler flow ($\lambda_1{\approx}0.0714$/t,
+  the *small*-exponent stress case), Lorenz anchor. On-attractor data gen (burn-in + divergence filter) fixes Hénon's
+  basin escapees + Rössler's transient. **3 seeds:** Hénon $3/3$ (rel-err $8$–$12\%$), Lorenz $3/3$ ($1$–$5\%$),
+  Rössler $2/3$ ($8$–$9\%$; one seed's $\sim1500$-step horizon under-crossed — honest small-$\lambda$ fragility). Every
+  *seed* passes overall (Hénon+Lorenz carry the $\ge2$-of-3 gate). = Experiment 15 / §5.13.
+- **① Proposition 8 (paper2 §3.2)** — the *correct* mechanism the round-1 theory red-team's correction left open. The
+  red-team killed "shadowing transfers the exponent" (asymptotic Lyapunov exponents only upper-semicontinuous). The
+  fix: the certified horizon is **finite**, and **finite-time** Lyapunov exponents *are* $C^1$-Lipschitz in the
+  dynamics. So a learned model recovers $\lambda_1$ up to an $O(\delta)$ model-fidelity bias + finite-$T$ truncation,
+  the $T$-uniform constant under a dominated splitting (cite **Bochi–Viana 2005**). **Falsifiable + confirmed:** bias
+  $\propto$ fidelity → Step 71's Rössler tightens $44\%\!\to\!8\%$ as $\delta$ falls with fuller training; the
+  true-system staircase (no model) isolates the finite-$T$ truncation (~$9$–$10\%$). Replaces a wrong intuition with a
+  right one and *explains/decomposes* the recovery rather than reporting it. This is the genuine math contribution of
+  the deepening pass (plays to the researcher's geometry/ergodic-theory strength, zero compute).
+- Full suite **96 tests**; paper2 PDF 1329 KiB / 13 figures; arXiv bundle rebuilt (22 members). ICLR fold + arXiv
+  submit instructions + embodied-benchmark plan are the wrap-up.
