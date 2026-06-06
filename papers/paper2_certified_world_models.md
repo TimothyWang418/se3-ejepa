@@ -91,7 +91,10 @@ Our contributions are:
    out of the training orientation yet interpolates it competitively) where the certificate holds for a *learned*
    model of dynamics we did not design, and a
    **closed-loop** instantiation where, run through a planner, the certificate becomes *task* competence —
-   orbit-invariant pose control where a scaled baseline degrades — a lift from the circle to the **non-abelian
+   orbit-invariant pose control where a scaled baseline degrades, lifted to FetchPush in Experiment 17 where the
+   *entire planner* (equivariant WM $+$ equivariant goal-readout $+$ $G$-equivariant CEM) is provably
+   $\mathrm{SO}(2)$-equivariant and its plan orbit-flat while the baseline planner degrades $4$–$10\times$ — a lift
+   from the circle to the **non-abelian
    $\mathrm{SO}(3)$** on 3D point clouds (the certificate is not $\mathrm{SO}(2)$-specific), a lift to raw
    **pixels** (Experiment 13) where *frame averaging* makes the exact certificate **accuracy-neutral** — an equivariant
    pixel model matches an unconstrained CNN and is horizon-stable, so the prior costs nothing — and a lift of the
@@ -955,6 +958,38 @@ in-distribution error.
 
 ![Experiment 16 (the certificate on FetchPush / MuJoCo, seed 0; the other seeds match). One-step latent FVU as the scene is rotated off the single training orientation. The equivariant world model (blue) is exactly orbit-flat (ratio $1.000$); the $\sim\!7\times$-larger unconstrained baseline (red dashed) degrades by orders of magnitude out of the training orientation, exceeding predict-the-mean (FVU $=1$, dotted) near a quarter-turn — yet it interpolates the training orientation competitively. Structure buys the certificate; scale buys only interpolation.](figures/step72_fetchpush_certificate_s0.png)
 
+### 5.15 The certificate at the *planning* level on FetchPush (Experiment 17)
+
+Experiment 16 is a *prediction* certificate; the project's task-level claim (Experiment 11 on PushT) is that the
+certificate survives a *planner*. **Experiment 17** lifts the closed-loop certificate to the standard FetchPush
+benchmark. The planning stack is (i) the equivariant world model of Experiment 16, (ii) an **equivariant
+goal-readout head** $g$ — a single $\mathrm{VNLinear}$ mapping the latent to a predicted object planar position, so
+$g(\rho(\theta)z)=R(\theta)g(z)$ and the planning cost $\lVert g(z)-\mathrm{goal}_{xy}\rVert$ is rotation-invariant
+(the readout a JEPA latent predictor needs to be planned against a $2$-D goal), and (iii) the **$G$-equivariant CEM**
+of Experiment 11 — isotropic per-step covariance, a disk action bound, and scene-covariant action noise — now run
+over *latent* rollouts scored by the readout. With these three ingredients the *entire planner* is
+$\mathrm{SO}(2)$-equivariant: $\mathrm{plan}(\rho(\theta)s,\rho(\theta)\,\mathrm{goal})=R(\theta)\,\mathrm{plan}(s,\mathrm{goal})$.
+We **prove** this to the float floor as a unit test — the goal head to $3\times10^{-16}$, the latent step $+$ readout
+to $6\times10^{-16}$, and (the load-bearing one) the *CEM search itself* to $2\times10^{-16}$, the last needing exactly
+the isotropic-covariance $+$ disk-bound discipline (a per-axis covariance silently breaks it).
+
+The learned-model certificate then holds on FetchPush ($3$ seeds): the equivariant stack's planned terminal
+object$\to$goal distance is **orbit-flat to the float floor (ratio $1.000$, $3/3$)**, while the scaled baseline
+planner **degrades $4.1\times$/$8.5\times$/$10.3\times$** as the scene rotates off the training orientation — the plan a
+non-equivariant stack produces is *not* the rotation of its in-orientation plan. On all three seeds the equivariant
+stack also reached a *smaller* planned distance in-distribution ($0.036$–$0.138$ vs the baseline's $0.109$–$0.189$),
+though this cross-stack number is read through each stack's own head and so is suggestive, not the load-bearing claim
+— the rigorous statement is the *within-stack* orbit-flatness. This is the closed-loop certificate (Theorem A carried
+through the planner: orbit-equivariant plans $\Rightarrow$ orbit-invariant behaviour) on a standard manipulation
+benchmark, completing the FetchPush pair (prediction-flat, Experiment 16; plan-flat, here) just as Experiments 9 and
+11 pair on PushT. *Scope, honestly:* this is the **model-rollout** planning certificate — the plan is provably
+orbit-flat. The *real-env* `is_success` task win (receding-horizon control on FetchPush-v4 in a rotated control
+frame, seen vs OOD orientations) is wired (`--realenv`) and is the natural empirical next step; whether a
+world-model$+$CEM controller *solves* FetchPush at all at $1$-GPU scale from random-policy data is a separate,
+unresolved question we do not pre-claim.
+
+![Experiment 17 (the task-level certificate on FetchPush, seed 0; the other seeds match). Planned terminal object→goal distance vs. scene rotation off the training orientation. The equivariant planning stack (blue; equivariant WM + equivariant goal-readout + $G$-equivariant CEM) produces an exactly orbit-flat plan (ratio $1.000$); the scaled-baseline stack (red dashed) degrades $4$–$10\times$ out of the training orientation. The whole planner is $\mathrm{SO}(2)$-equivariant by construction (proven to the float floor in a unit test), so closed-loop behaviour is orbit-invariant — Theorem A carried through the planner.](figures/step73_fetchpush_planning_s0.png)
+
 ---
 
 ## 6. Related Work
@@ -1094,8 +1129,11 @@ subspace via the Noether hinge; and fold all of it into a single multi-axis cert
   both. We still claim **no in-distribution win** on either: FetchPush's in-dist tax *straddles* $1$ (the baseline
   interpolates the training orientation competitively-to-better, equivariant cheaper on one seed). The closed-loop
   *out-of-wedge* advantage is shown on the contact-dominated pose task specifically — a position-only push stays a tie,
-  since a near-linear agent subsystem carries it out of distribution. We claim a mechanism and a tool, demonstrated
-  cleanly, not a scaled benchmark.
+  since a near-linear agent subsystem carries it out of distribution. The FetchPush closed-loop (Experiment 17) is at
+  present the **model-rollout** planning certificate — we prove the whole planner $\mathrm{SO}(2)$-equivariant and show
+  its learned plan is orbit-flat (ratio $1.000$) while the baseline planner degrades $4$–$10\times$ — but the *real-env*
+  `is_success` task win is wired and not yet claimed; whether a world-model$+$CEM controller solves FetchPush at $1$-GPU
+  scale from random data is open. We claim a mechanism and a tool, demonstrated cleanly, not a scaled benchmark.
 - **Pixels (Experiment 13, §5.11): structure is free; absolute accuracy is the open part.** The certificate transfers
   *exactly* to rendered pixels, and — via frame averaging — at **no accuracy cost** relative to an unconstrained CNN
   (matches-or-beats it on collapse-robust FVU, with a healthier latent and a horizon-stable rollout; §5.11). The honest
@@ -1252,7 +1290,8 @@ writes its figure and JSON to `papers/figures/`. The multi-seed steps commit per
 `experiments/aggregate_seeds.py`; every range quoted above is the seed min–max from those files. The
 configuration-flatness experiment (Experiment 1) self-aggregates its three seeds into the means in
 `step47_certificate.json`. Experiment 16 writes its per-seed certificates directly to
-`step72_fetchpush_certificate_s{0,1,2}.json` (the seed min–max quoted in §5.14). The full test suite passes together; `tests/conftest.py` isolates the float64
+`step72_fetchpush_certificate_s{0,1,2}.json` (the seed min–max quoted in §5.14); Experiment 17 likewise to
+`step73_fetchpush_planning_s{0,1,2}.json` (§5.15). The full test suite passes together; `tests/conftest.py` isolates the float64
 experiments from the float32 codebase. One command reproduces the paper end-to-end — `make paper2` (multi-seed
 re-runs $\to$ figures $\to$ tests $\to$ PDF), with `make paper2-quick` for the figures-and-PDF fast path; everything
 is CPU/MPS, no CUDA.
@@ -1275,3 +1314,4 @@ is CPU/MPS, no CUDA.
 | 14 | **Horizon law on a learned model of real chaotic dynamics (Lorenz)** | `experiments/step70_lorenz_horizon.py` | `tests/test_step70.py` | 3 | learned one-step MLP of the Lorenz $\Delta t$-map (relMSE $<10^{-4}$); certified-horizon staircase linear in $\log(1/\epsilon)$ ($R^2{=}0.975$–$0.995$) and the model's Lyapunov exponent (slope) *matches* the true $\lambda_1{=}0.9056$ to $1$–$8\%$ ($\hat\lambda_1{=}0.895$/$0.919$/$0.977$). Prop. 7(a). The near-neutral PushT interior is the degenerate branch (b), $R^2{=}0.02$ |
 | 15 | **Horizon law across a class of chaotic systems** | `experiments/step71_multichaos_horizon.py` | `tests/test_step71.py` | 3 | same learned-model staircase on a 2D map + two flows: Hénon $\hat\lambda_1{=}0.45$–$0.47$ vs $0.419$ (rel-err $8$–$12\%$, $3/3$ seeds), Lorenz $1$–$5\%$ ($3/3$), small-exponent Rössler $0.065$–$0.066$ vs $0.0714$ ($8$–$9\%$, $2/3$ — one seed's $\sim\!1500$-step horizon under-crossed). Validates Prop. 8: the $O(\delta)$ bias falls $44\%\!\to\!8\%$ as fidelity rises (Rössler); the true-system staircase isolates the finite-$T$ truncation (~$9$–$10\%$) |
 | 16 | **Certificate on a standard manipulation benchmark (FetchPush / MuJoCo)** | `experiments/step72_mujoco_certificate.py` | `tests/test_step72_wm_equivariance.py`, `tests/test_fetchpush_symmetry.py` | 3 | learned $\mathrm{VN}$ equivariant world model exactly orbit-flat over the $\mathrm{SO}(2)_z$ scene rotation (OOD/seen FVU ratio $1.000$, $3/3$; equivariance unit-tested $\sim10^{-15}$). $\sim7\times$-larger MLP degrades $211$/$1037$/$1445\times$ OOD (CUDA confirms $19$–$382\times$), exceeding predict-the-mean. Cleanest structure-vs-scale cut: baseline interpolates the single training orientation competitively-to-better (in-dist tax $0.8$–$4.1\times$, equiv *cheaper* on seed 2) yet has no certificate (Lemma 2). $\mathrm{SO}(2)_z$ approximate (fixed base; Thm A representation regime) |
+| 17 | **Certificate at the planning level on FetchPush** | `experiments/step73_fetchpush_planning.py` | `tests/test_step73_planner_equivariance.py` | 3 | equivariant WM $+$ equivariant goal-readout head $+$ $G$-equivariant CEM: the whole planner is $\mathrm{SO}(2)$-equivariant, proven to the float floor (head $3\mathrm{e}{-}16$, step+readout $6\mathrm{e}{-}16$, **CEM search $2\mathrm{e}{-}16$**). Learned-model planning certificate: equivariant planned-distance orbit-flat (ratio $1.000$, $3/3$); baseline planner degrades $4.1$/$8.5$/$10.3\times$ OOD. Model-rollout (the plan is orbit-flat); real-env `is_success` (`--realenv`) is the empirical next step, not pre-claimed |
