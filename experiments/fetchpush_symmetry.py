@@ -72,3 +72,13 @@ def rotate_goal(goal_xyz: np.ndarray, theta: float) -> np.ndarray:
     xy = np.stack([g[..., 0], g[..., 1]], axis=-1) @ _rot(theta).T
     g[..., 0], g[..., 1] = xy[..., 0], xy[..., 1]
     return g
+
+
+def rotate_action(act: np.ndarray, theta: float) -> np.ndarray:
+    r"""SO(2)-z on a 4-D FetchPush action [dx, dy, dz, gripper]: rotate the planar (dx,dy); dz, gripper invariant.
+    The orbit acts on the WHOLE transition (obs, action, next_obs) jointly — rotating obs without the action would
+    break the equivariance f(rho z, R a) = rho f(z, a)."""
+    a = np.array(act, dtype=np.float64, copy=True)
+    xy = np.stack([a[..., 0], a[..., 1]], axis=-1) @ _rot(theta).T
+    a[..., 0], a[..., 1] = xy[..., 0], xy[..., 1]
+    return a

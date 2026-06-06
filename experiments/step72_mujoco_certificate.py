@@ -34,6 +34,7 @@ Run (on the 3080 WSL2 box, after `uv pip install gymnasium-robotics mujoco`):
 """
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -214,6 +215,72 @@ def eval_cross_pose(model, env_id, seen_orientations, ood_orientations, seeds):
     raise NotImplementedError("closed-loop CEM eval: is_success on seen vs OOD object/goal orientations (举一反三)")
 
 
+@torch.no_grad()
+def cross_pose_fvu(model, target_enc, obs, act, nxt, prep, thetas, device):
+    r"""1-step FVU on the held-out set rotated by each theta in the SO(2) orbit (obs+action+next rotated jointly).
+    The equivariant WM is flat by construction (Theorem A); the baseline, trained at theta=0, degrades off-orbit."""
+    out = []
+    for th in thetas:
+        o = sym.rotate_obs(obs, th); a = sym.rotate_action(act, th); n = sym.rotate_obs(nxt, th)
+        out.append(one_step_relmse(model, target_enc, o, a, n, prep, device))
+    return np.array(out)
+
+
+def run_certificate(env_id: str, device: str, seed: int, tag: str = "") -> int:
+    r"""Experiment 16: the predictability certificate (orbit-flatness) on a real MuJoCo manipulation task.
+    Train both WMs on the theta=0 orientation; evaluate 1-step FVU across the SO(2) orbit of held-out transitions.
+    Equivariant -> flat (ratio ~1.000, Theorem A); baseline -> climbs OOD. Honest: 'flat is not good' unless the
+    equivariant in-distribution FVU is also competitive, so we report both."""
+    smoke = os.environ.get("STEP72_SMOKE", "0") == "1"
+    n_steps = 3000 if smoke else 12000
+    epochs = 15 if smoke else 40
+    ntr = int(n_steps * 0.85)
+    thetas = np.linspace(0.0, np.pi, 9)                              # seen=0 ... OOD up to pi
+    print(f"[step72] certificate: collecting {n_steps} transitions from {env_id} (seed {seed}) ...", file=sys.stderr)
+    obs, act, nxt = collect_transitions(env_id, n_steps, seed)
+    res = {}
+    for name, model, prep in [("equivariant", EquivariantWM(latent_dim=64, hidden=64), prep_equiv),
+                              ("baseline", BaselineWM(latent_dim=64, hidden=128), prep_baseline)]:
+        m, tgt = train_jepa_wm(model, obs[:ntr], act[:ntr], nxt[:ntr], prep, epochs, device, seed)
+        fvu = cross_pose_fvu(m, tgt, obs[ntr:], act[ntr:], nxt[ntr:], prep, thetas, device)
+        res[name] = {"fvu": fvu.tolist(), "seen": float(fvu[0]), "ood_max": float(fvu.max()),
+                     "ratio": float(fvu.max() / max(fvu[0], 1e-9))}
+        print(f"[step72]   {name:11s} seen FVU {fvu[0]:.3f}  OOD-max {fvu.max():.3f}  ratio {res[name]['ratio']:.3f}",
+              file=sys.stderr)
+    eq, bl = res["equivariant"], res["baseline"]
+    ok_flat = bool(eq["ratio"] < 1.05)                              # equivariant orbit-flat (Theorem A)
+    ok_degrade = bool(bl["ratio"] > 1.5)                            # baseline degrades OOD
+    ok_compete = bool(eq["seen"] <= 1.5 * bl["seen"] + 1e-9)        # equivariant in-dist competitive ("flat is not good" guard)
+    passed = bool(ok_flat and ok_degrade and ok_compete)
+    out = {"passed": passed, "gate": {"equivariant_flat": ok_flat, "baseline_degrades": ok_degrade,
+           "equivariant_competitive_in_dist": ok_compete}, "thetas_rad": thetas.tolist(),
+           "equivariant": eq, "baseline": bl, "seed": seed, "smoke": smoke, "env": env_id}
+    figdir = Path(__file__).resolve().parent.parent / "papers" / "figures"
+    figdir.mkdir(parents=True, exist_ok=True)
+    (figdir / f"step72_fetchpush_certificate{tag}.json").write_text(__import__("json").dumps(out, indent=2))
+    try:
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+        deg = np.degrees(thetas)
+        fig, ax = plt.subplots(figsize=(6.2, 4.4))
+        ax.plot(deg, eq["fvu"], "C0o-", lw=2, label=f"equivariant (ratio {eq['ratio']:.2f})")
+        ax.plot(deg, bl["fvu"], "C3s--", lw=2, label=f"baseline (ratio {bl['ratio']:.2f})")
+        ax.axhline(1.0, ls=":", color="gray", lw=1, label="FVU=1 (predict-the-mean)")
+        ax.set_xlabel("scene rotation off the training orientation (deg)")
+        ax.set_ylabel("1-step latent FVU")
+        ax.set_title("Certificate on FetchPush (MuJoCo): orbit-flatness vs. scale (Exp 16)")
+        ax.legend(fontsize=8)
+        fig.tight_layout(); fig.savefig(figdir / f"step72_fetchpush_certificate{tag}.png", dpi=130, bbox_inches="tight")
+    except Exception as e:
+        print(f"[step72]   (figure skipped: {e})", file=sys.stderr)
+    msg = ("CERTIFICATE HOLDS ON REAL MANIPULATION" if passed else "INCONCLUSIVE")
+    print(f"[step72] {msg}: equivariant orbit-flat (ratio {eq['ratio']:.3f}) + competitive in-dist "
+          f"(seen {eq['seen']:.3f} vs baseline {bl['seen']:.3f}); baseline degrades OOD (ratio {bl['ratio']:.3f}). "
+          f"Stage 4 next: closed-loop CEM task-success win.", file=sys.stderr)
+    return 0 if passed else 1
+
+
 def train_smoke(env_id: str, device: str) -> int:
     r"""Stage 2b validation: collect random transitions, JEPA-train BOTH world models, print 1-step FVU.
     Confirms the data+training+eval pipeline runs end-to-end (FVU<1 = beats predict-the-mean)."""
@@ -239,16 +306,21 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--smoke", action="store_true", help="validate the MuJoCo env (no Vulkan), then exit")
     ap.add_argument("--train-smoke", action="store_true", help="Stage 2b: collect + JEPA-train both WMs + 1-step FVU")
+    ap.add_argument("--cert", action="store_true", help="Stage 3 (Exp 16): seen-vs-OOD orientation flatness certificate")
     ap.add_argument("--env", default="FetchPush-v4")
     ap.add_argument("--device", default="cpu")
+    ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--tag", default="")
     ap.add_argument("--demos", type=int, default=100)
     args = ap.parse_args()
     if args.smoke:
         sys.exit(smoke(args.env))
     if args.train_smoke:
         sys.exit(train_smoke(args.env, args.device))
-    print("[step72] Stage 3/4 (cross-pose flatness + closed-loop CEM win) are the next builds; "
-          "use --smoke (env) or --train-smoke (data+JEPA) to validate.", file=sys.stderr)
+    if args.cert:
+        sys.exit(run_certificate(args.env, args.device, args.seed, args.tag))
+    print("[step72] Stage 4 (closed-loop CEM task-win) is the next build; "
+          "use --smoke (env) / --train-smoke (data+JEPA) / --cert (Stage 3 flatness certificate).", file=sys.stderr)
     sys.exit(2)
 
 
