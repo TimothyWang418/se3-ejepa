@@ -12,6 +12,7 @@ main.out
 main.xdv
 iclr2026_conference.sty
 iclr2026_conference.bst
+iclr_refs.bib
 figures/
 *.otf
 # Keep: build_iclr.py, README.md, main.pdf (the deliverable)
