@@ -59,11 +59,21 @@ reset. Override the CUDA wheel if your driver needs it: `TORCH_CUDA=cu118 bash s
 
 ## 4. Run
 
-- Verify GPU + sim: `bash scripts/setup_cuda_box.sh` prints a green/red summary at the end.
-- The embodied-certificate experiment scaffold is `experiments/step72_maniskill_certificate.py`
-  (see its docstring for the design: equivariant latent JEPA + equivariant CEM vs a scaled
-  non-equivariant baseline, sample-efficiency + cross-pose success). Start with its `--smoke` mode to
-  validate the env end-to-end before the real run.
+- Verify the box: `bash scripts/setup_cuda_box.sh` prints a green/red summary (torch+CUDA, MuJoCo env reset).
+- The embodied-certificate experiment is **`experiments/step72_mujoco_certificate.py`** (MuJoCo / Gymnasium-Robotics
+  FetchPush — no Vulkan). Its `--smoke` validates the env end-to-end; the model/planner/eval are TODO stubs to wire.
+
+### ManiSkill on WSL2 — known dead-end (use MuJoCo instead)
+
+ManiSkill/SAPIEN needs **CUDA↔Vulkan interop** (`VK_KHR_external_memory` / `external_semaphore`) to share buffers
+between PhysX-CUDA physics and the Vulkan renderer on one GPU. On WSL2 you only get GPU-Vulkan if the **Windows NVIDIA
+driver ships a native WSL Vulkan ICD** (`/usr/lib/wsl/lib/libnvidia-vulkan*`). Some drivers don't (they give CUDA but
+not Vulkan); then the only Vulkan is **Mesa Dozen (dzn)** over Direct3D12 — which works for `vulkaninfo`
+(`Microsoft Direct3D12 (NVIDIA ...)`, `driverName=Dozen`) **but lacks the external-memory/semaphore extensions**, so
+SAPIEN fails with `Failed to find a supported physical device "cuda:0"`. If `ls /usr/lib/wsl/lib/ | grep vulkan`
+is empty, ManiSkill is not happening on that box — use the MuJoCo path (this is why `step72` is MuJoCo). To get dzn at
+all (for other Vulkan apps): `sudo add-apt-repository ppa:kisak/kisak-mesa -y && sudo apt full-upgrade -y`, then
+`export VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/dzn_icd.json`.
 
 ## Common WSL2 gotchas
 

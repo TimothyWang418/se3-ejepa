@@ -37,8 +37,13 @@ echo "-- python env --"
 uv venv --python 3.11 .venv && source .venv/bin/activate || { fail "venv create failed"; exit 1; }
 uv pip install --quiet "torch" --index-url "https://download.pytorch.org/whl/${TORCH_CUDA}" \
   && ok "torch (${TORCH_CUDA}) installed" || fail "torch install failed (try a different TORCH_CUDA)"
-uv pip install --quiet mani-skill \
-  && ok "mani-skill installed" || warn "mani-skill install failed — check the ManiSkill docs for your CUDA"
+# MuJoCo path (the one that works on WSL2 — no Vulkan needed): Gymnasium-Robotics Fetch tasks
+uv pip install --quiet gymnasium-robotics mujoco \
+  && ok "mujoco + gymnasium-robotics installed (no-Vulkan manipulation path)" || warn "mujoco/gymnasium-robotics failed"
+# ManiSkill is OPTIONAL: it needs CUDA<->Vulkan interop that a WSL2 box without a native NVIDIA Vulkan ICD lacks
+# (the dzn/D3D12 fallback has no VK_KHR_external_memory) — so it typically FAILS on WSL2. Install but don't rely on it.
+uv pip install --quiet mani-skill 2>/dev/null \
+  && ok "mani-skill installed (optional; often unusable on WSL2 — use the MuJoCo path)" || warn "mani-skill skipped"
 # project deps (equivariant stack); tolerate partial failures so the GPU checks still run
 uv pip install --quiet numpy scipy matplotlib e3nn 2>/dev/null && ok "core scientific stack" || warn "some project deps failed"
 
@@ -58,11 +63,18 @@ if command -v vulkaninfo >/dev/null 2>&1; then
     warn "vulkaninfo did not list an NVIDIA GPU — ManiSkill rendering may fail (update the Windows driver)"; fi
 else warn "vulkaninfo missing"; fi
 
-# 4c. ManiSkill env reset smoke (offscreen)
-SAPIEN_HEADLESS=1 python - <<'PY' 2>/dev/null && echo -e "  \033[0;32m[ok]\033[0m   ManiSkill env reset works" || echo -e "  \033[0;33m[warn]\033[0m ManiSkill smoke failed — see docs/remote_3080.md gotchas"
-import gymnasium as gym, mani_skill.envs  # noqa
-env = gym.make("PickCube-v1", num_envs=1, obs_mode="state", render_mode="none")
-obs, _ = env.reset(seed=0); env.step(env.action_space.sample()); env.close()
+# 4c. MuJoCo env reset smoke (the PRIMARY render-free check — works on WSL2 without Vulkan)
+python - <<'PY' 2>/dev/null && ok "MuJoCo (FetchPush) env reset works — the no-Vulkan manipulation path is live" || fail "MuJoCo smoke failed"
+import gymnasium as gym, gymnasium_robotics
+gym.register_envs(gymnasium_robotics)
+env = gym.make("FetchPush-v4"); env.reset(seed=0); env.step(env.action_space.sample()); env.close()
 PY
 
-echo "== done. If all green: 'source .venv/bin/activate' then run experiments/step72_maniskill_certificate.py --smoke =="
+# 4d. ManiSkill smoke (OPTIONAL — expected to fail on WSL2 without native NVIDIA Vulkan; informational only)
+SAPIEN_HEADLESS=1 python - <<'PY' 2>/dev/null && echo -e "  \033[0;32m[ok]\033[0m   ManiSkill works too (bonus)" || echo -e "  \033[0;33m[warn]\033[0m ManiSkill unavailable (expected on WSL2 — use the MuJoCo path, step72_mujoco_certificate.py)"
+import gymnasium as gym, mani_skill.envs  # noqa
+env = gym.make("PickCube-v1", num_envs=1, obs_mode="state", render_mode="none")
+env.reset(seed=0); env.step(env.action_space.sample()); env.close()
+PY
+
+echo "== done. If MuJoCo is green: 'source .venv/bin/activate' then run experiments/step72_mujoco_certificate.py --smoke =="
