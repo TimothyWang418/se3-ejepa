@@ -66,9 +66,10 @@ def split_source() -> tuple[str, str]:
 MAIN_FIGS = ["hero_certified_region", "step65_horizon_tightness", "step70_lorenz_horizon", "step59_pusht_certificate"]
 
 
-def relocate_figures(body: str) -> str:
-    r"""Move every embedded figure whose basename is NOT in MAIN_FIGS into an appendix after the references; leave a
-    one-line pointer where it stood. Returns the rewritten body (with an appended '## A  Additional figures')."""
+def relocate_figures(body: str) -> tuple[str, str]:
+    r"""Move every embedded figure whose basename is NOT in MAIN_FIGS out of the body; leave a one-line pointer where
+    it stood. Returns (body_without_those_figures, appendix_markdown). The appendix is injected AFTER the bibliography
+    (post-pandoc) so the order is main text -> references -> appendix."""
     fig_re = re.compile(r"^!\[(?P<cap>.*?)\]\(figures/(?P<name>[\w.-]+)\.(?:png|pdf|jpe?g)\)\s*$", re.MULTILINE)
     moved: list[str] = []
 
@@ -81,20 +82,33 @@ def relocate_figures(body: str) -> str:
         return f"*(Figure A{n}, Appendix A.)*"                 # inline pointer
 
     new_body = fig_re.sub(repl, body)
+    appendix = ""
     if moved:
-        appendix = ("\n\n## A. Additional figures\n\n"
+        appendix = ("## A. Additional figures\n\n"
                     "Supporting figures relocated from the main text (the main-text figures are the hero schematic, "
                     "the tightness construction, the Lorenz horizon lift, and the real-contact-dynamics certificate).\n\n"
                     + "\n\n".join(moved) + "\n")
-        new_body = new_body + appendix
     print(f"figures: {len(MAIN_FIGS)} kept inline, {len(moved)} relocated to Appendix A")
-    return new_body
+    return new_body, appendix
+
+
+def inject_appendix(appendix_md: str) -> None:
+    r"""Render the appendix markdown to a LaTeX fragment and splice it AFTER \bibliography (i.e. just before
+    \end{document}), so references precede the appendix. Figures use [H] (float package) to stay under their heading."""
+    if not appendix_md.strip():
+        return
+    frag = subprocess.run(["pandoc", "-f", "markdown", "-t", "latex"], input=appendix_md,
+                          capture_output=True, text=True, check=True).stdout
+    tex = MAIN_TEX.read_text(encoding="utf-8")
+    block = "\n\\clearpage\n\\appendix\n" + frag + "\n"
+    tex = tex.replace("\\end{document}", block + "\\end{document}", 1)
+    MAIN_TEX.write_text(tex, encoding="utf-8")
+    print("appendix: spliced after the bibliography")
 
 
 def build_combined(abstract: str, body: str) -> None:
     r"""YAML frontmatter (title + abstract block scalar) + body. Pandoc renders title/abstract from metadata so the
     abstract goes inside ICLR's \begin{abstract} with math/markdown intact."""
-    body = relocate_figures(body)
     ab_indented = "\n".join("  " + ln for ln in abstract.splitlines())
     fm = f'---\ntitle: "{TITLE}"\nauthor: "Anonymous authors"\nabstract: |\n{ab_indented}\n---\n\n'
     COMBINED.write_text(fm + body, encoding="utf-8")
@@ -120,12 +134,17 @@ def run_pandoc() -> None:
     subprocess.run([
         "pandoc", str(COMBINED), "--standalone", "-o", str(MAIN_TEX),
         "-H", str(PREAMBLE),
+        "--natbib",                                       # @key -> \citet/\citep ; emits \bibliography
+        "--bibliography", str(PAPERS / "iclr_refs.bib"),
+        "-V", "biblio-style=iclr2026_conference",         # official ICLR .bst
         "--pdf-engine=tectonic",
     ], check=True)
     tex = MAIN_TEX.read_text(encoding="utf-8")
     # ICLR anonymous double-blind author block
     tex = re.sub(r"\\author\{Anonymous authors\}",
                  "\\\\author{Anonymous authors \\\\\\\\ Paper under double-blind review}", tex, count=1)
+    # pandoc emits the bib with an absolute path; tectonic runs in HERE, so reference it by stem
+    tex = re.sub(r"\\bibliography\{[^}]*iclr_refs\}", "\\\\bibliography{iclr_refs}", tex)
     MAIN_TEX.write_text(tex, encoding="utf-8")
     print(f"main.tex: {tex.count(chr(10)) + 1} lines")
 
@@ -134,13 +153,14 @@ def copy_assets() -> None:
     # ICLR style files (only the .sty is strictly needed; tectonic auto-fetches fancyhdr/natbib/eso-pic)
     for name in ["iclr2026_conference.sty", "iclr2026_conference.bst"]:
         shutil.copy2(ICLR_KIT / name, HERE / name)
+    shutil.copy2(PAPERS / "iclr_refs.bib", HERE / "iclr_refs.bib")   # bibliography for natbib
     # Termes OTFs
     for name in FONT_BASENAMES:
         if not (HERE / name).exists():
             shutil.copy2(OLD_ARXIV / name, HERE / name)
-    # figures referenced by the body
-    body = COMBINED.read_text(encoding="utf-8")
-    refs = sorted(set(re.findall(r"figures/([\w.-]+\.(?:png|pdf|jpg|jpeg))", body)))
+    # figures referenced by the FINAL main.tex (includes the appendix figures injected post-pandoc)
+    tex = MAIN_TEX.read_text(encoding="utf-8")
+    refs = sorted(set(re.findall(r"figures/([\w.-]+\.(?:png|pdf|jpg|jpeg))", tex)))
     if FIGDIR.exists():
         shutil.rmtree(FIGDIR)
     FIGDIR.mkdir(parents=True)
@@ -164,9 +184,11 @@ def compile_pdf() -> None:
 
 if __name__ == "__main__":
     ensure_template()
-    ab, body = split_source()
-    build_combined(ab, body)
+    ab, full_body = split_source()
+    main_body, appendix_md = relocate_figures(full_body)
+    build_combined(ab, main_body)
     write_preamble()
     run_pandoc()
-    copy_assets()
+    inject_appendix(appendix_md)     # splice the appendix AFTER \bibliography (references precede appendix)
+    copy_assets()                    # scans the final main.tex, so it grabs the appendix figures too
     compile_pdf()

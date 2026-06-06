@@ -82,10 +82,10 @@ with a measured and now lower-bounded boundary, elsewhere.
 
 **What is classical, what is folklore, and what is new.** We are deliberately explicit, because two of the four
 ingredients are not ours. The *upper* horizon bound (Theorem B) is the classical Lyapunov / numerical-weather-prediction
-predictability law (Lorenz, 1969). The orbit-constant-error fact underlying the configuration certificate — *both*
+predictability law [@lorenz1969predictability]. The orbit-constant-error fact underlying the configuration certificate — *both*
 directions, including the converse of Lemma 2 — is essentially classical **invariant decision theory**: an equivariant
 procedure has orbit-constant risk, and orbit-constant risk against a rich enough equivariant family pins the procedure
-to the equivariant class (Eaton, 1989; Lehmann & Romano). Proposition 6's lower bound is, mathematically, the textbook
+to the equivariant class [@eaton1989; @lehmann2005testing; @berger1985]. Proposition 6's lower bound is, mathematically, the textbook
 fact that a perturbation along an expanding mode grows like $e^{\lambda T}$; its only twist is to seed that growth with
 the *equivariance residual* $\epsilon$ rather than an initial-condition error. **Our contribution is therefore the
 *synthesis*, not the individual statements:** assembling these into a single **computable, multi-step, per-channel**
@@ -195,11 +195,11 @@ between augmentation and equivariance **must break over horizon** at the predict
 take the spectrum $\{\lambda_j\}$ as given; on a *learned* model we must ask whether the *locally* measured spectrum
 governs the *multi-step* horizon. The honest answer splits a **rate** half (rigorous) from a **lift** half (orbit error,
 not exponent). Let $\phi$ be the true dynamics with an ergodic invariant measure $\mu$, $\log^+\lVert D\phi\rVert\in
-L^1(\mu)$. By the **Oseledets multiplicative ergodic theorem**, $\tfrac1t\log\lVert\delta_t\rVert\to\lambda_1$ $\mu$-a.e.
+L^1(\mu)$. By the **Oseledets multiplicative ergodic theorem** [@oseledets1968], $\tfrac1t\log\lVert\delta_t\rVert\to\lambda_1$ $\mu$-a.e.
 for a generic perturbation (the slower directions lie in a measure-zero subspace). *(a) Non-degenerate ($\lambda_1>0$):*
 $T(\epsilon)=\tfrac1{\lambda_1}\log(\epsilon_{\mathrm{res}}/\epsilon)+o(t)$ — Theorem B's law with $\lambda_1$ now the
 *measurable* asymptotic rate. The lift to a learned $\hat\phi$ is an *orbit-error* statement: on uniformly hyperbolic
-$\phi$ the shadowing lemma bounds the forecast-horizon *floor* $\sim\tfrac1{\lambda_1}\log(1/\delta)$ for one-step error
+$\phi$ the shadowing lemma [@pilyugin1999shadowing] bounds the forecast-horizon *floor* $\sim\tfrac1{\lambda_1}\log(1/\delta)$ for one-step error
 $\delta$, but it controls trajectory closeness, **not** the Lyapunov exponent (which is only upper-semicontinuous under
 $C^1$ perturbation). That $\hat\phi$ *reproduces* $\lambda_1$ is therefore **empirical** (E2), not a corollary. *(b)
 Degenerate ($\lambda_1\approx0$, near-neutral):* the leading-order log-law degenerates (no finite-slope staircase); the
@@ -214,8 +214,7 @@ the *conserved/invariant* ones, and ties the configuration axis to the horizon a
 
 **Proposition 4 (isotypic placement).** A conserved charge of the dynamics must live in a specific isotypic block of
 $\rho$: a scalar invariant (energy) in the trivial ($\ell{=}0$) block; a vector charge (angular momentum) in the
-$\ell{=}1$ block, recoverable only through the unique degree-2 cross-product equivariant. Placement is *forced* by
-representation theory, not chosen.
+$\ell{=}1$ block, recoverable only through the unique degree-2 cross-product equivariant. Placement is *forced* by representation theory [@goodman2009symmetry], not chosen.
 
 **Proposition 5 (conservation $\Rightarrow$ unbounded horizon).** Let $Q:\mathcal Z\to W$ be a charge the model
 conserves to one-step defect $\eta$ (i.e. $\lVert Q(f z)-Q(z)\rVert\le\eta$). Then the $T$-step *charge-value*
@@ -254,7 +253,7 @@ and its certified-horizon slope $\mathrm{d}T/\mathrm{d}\log(1/\epsilon)=1.3$–$
 $1/\lambda=1.44$: chaotic channels are certified to $3$–$10$ steps, slow/invariant channels to $\ge 90$ — matching
 *both* Theorem B (upper) and Proposition 6 (lower). **The decisive test is whether this lifts to a learned model of a
 genuinely chaotic system, not a planted spectrum.** It does: we integrate the **Lorenz** attractor
-($\sigma{=}10,\rho{=}28,\beta{=}8/3$; $\lambda_1\approx0.9056$, singular-hyperbolic with an SRB measure [Tucker, 2002]),
+($\sigma{=}10,\rho{=}28,\beta{=}8/3$; $\lambda_1\approx0.9056$, singular-hyperbolic with an SRB measure [@tucker2002lorenz]),
 train a plain one-step MLP of the $\Delta t$-map (relMSE $<10^{-4}$), and run the staircase **on the learned model**.
 The certified horizon is linear in $\log(1/\epsilon)$ ($R^2{=}0.975$–$0.995$, 3 seeds), and the learned model's
 Lyapunov exponent — read off as the staircase slope — **matches the true** $\lambda_1$ to $1$–$8\%$
@@ -302,7 +301,7 @@ horizon faster than equivariant" sub-gate is met on 1/3 seeds and reported `INCO
 
 **(E6) The certificate is not $\mathrm{SO}(2)$-specific, and transfers to pixels at no accuracy cost.** It lifts to
 non-abelian $\mathrm{SO}(3)$ on 3D point clouds (learned equivariant rollout exactly flat, ratio $1.000$, with a
-$7.4{\times}$-*smaller* model than the baseline). On raw rendered pixels (PushT, exact $C_4$), **frame averaging** —
+$7.4{\times}$-*smaller* model than the baseline). On raw rendered pixels (PushT, exact $C_4$), **frame averaging** [@puny2022frame] —
 a plain CNN/MLP made exactly $C_4$-equivariant by a Reynolds average over grid rotations — keeps the exact orbit-flat
 certificate (ratio $1.000$) while being **accuracy-neutral**: it matches or beats an unconstrained CNN on a
 collapse-robust metric (fraction-of-variance-unexplained ratio $0.68$–$1.07$, mean $0.84$, 3 seeds), with a healthier
@@ -338,22 +337,21 @@ this is a toy demonstration of the principle, not a benchmark.
 
 **Single-shot certified equivariance is our $T{=}1$ slice.** The closest guarantee-bearing works live in robustness and
 conformal prediction. Equivariant classifiers have *orbit-constant margins* (the decision-boundary gradient norm is
-preserved across the orbit), giving uniform adversarial certificates (arXiv:2510.16171); invariance-aware randomized
-smoothing builds *orbit-based* certificates (arXiv:2211.14207); and Equivariantized Conformal Prediction (eCP,
-arXiv:2602.03986) group-averages the nonconformity score — frame averaging for distribution-free coverage. **All are
+preserved across the orbit), giving uniform adversarial certificates [@orbitmargin]; invariance-aware randomized
+smoothing builds *orbit-based* certificates [@randsmooth]; and Equivariantized Conformal Prediction (eCP) [@ecp] group-averages the nonconformity score — frame averaging for distribution-free coverage. **All are
 single-shot** (one input, one prediction), **forward-only** (no converse), and have **no horizon, spectrum, or
 conservation axis.** They are exactly the $T{=}1$, $\epsilon$-independent slice of our certificate: our contribution is
 the multi-step stratification (Theorem B, tight by Proposition 6), the converse (Lemma 2), and the Noether bridge to
 unbounded horizon (Proposition 5).
 
-**Learned conservation laws.** Noether Networks (Alet et al., 2021; arXiv:2112.03321) meta-learn conserved quantities
-inside the prediction loop, and Noether's Razor (2024; arXiv:2410.08087) learns symmetries-as-conserved-quantities by
+**Learned conservation laws.** Noether Networks [@noethernet] meta-learn conserved quantities
+inside the prediction loop, and Noether's Razor [@noetherrazor] learns symmetries-as-conserved-quantities by
 Bayesian model selection. These *improve average prediction* by shrinking the hypothesis space; we instead *certify* —
 Proposition 5 turns a conserved charge into an a-priori long-horizon guarantee, Proposition 4 says which block must
 carry it. Guarantee versus average accuracy.
 
 **Jacobian-regularized world models.** "Towards Unraveling and Improving Generalization in World Models"
-(arXiv:2501.00195) penalizes the latent-transition Jacobian to damp rollout error propagation — a heuristic for
+[@jacobianwm] penalizes the latent-transition Jacobian to damp rollout error propagation — a heuristic for
 robustness. Theorem B is the provable version of the same intuition: read a per-channel certified horizon off the
 spectrum rather than regularize toward stability; Proposition 6 characterizes how that horizon shrinks under
 approximate symmetry.
@@ -365,8 +363,7 @@ and their critics target a *distributional* (second-order) property; our certifi
 guarantee, and predicts precisely when a data-discovered latent anisotropy will fail to generalize (off the orbit).
 
 **Predictability horizons.** The $T(\epsilon)\sim\log(1/\epsilon)/\lambda$ law is classical for dynamical systems
-(Lyapunov; numerical weather prediction); that the *local* spectrum governs the *asymptotic* rate is the Oseledets
-multiplicative ergodic theorem, and on uniformly hyperbolic systems the shadowing lemma bounds a perturbed model's
+(Lyapunov; numerical weather prediction); that the *local* spectrum governs the *asymptotic* rate is the Oseledets multiplicative ergodic theorem [@oseledets1968], and on uniformly hyperbolic systems the shadowing lemma [@pilyugin1999shadowing] bounds a perturbed model's
 forecast-horizon floor (it controls orbit error, not the exponent). Our contribution is to (i) prove the law *tight* for
 a *learned* latent world model and **measure it on a learned model of genuinely chaotic dynamics** (Lorenz, E2 — the
 learned model's exponent matches the true one to $1$–$8\%$); (ii) **characterize when it lifts** (Proposition 7: the
@@ -423,44 +420,4 @@ already trusts are the one-step slice of this picture. *Scale buys interpolation
 
 ---
 
-## References
-
-- **Orbit-constant margins for equivariant networks** — orbit-invariant classification margin; single-shot, forward
-  only. arXiv:2510.16171.
-- **Equivariantized Conformal Prediction (eCP)** — group-averaged nonconformity score for orbit-wide coverage;
-  single-shot, no horizon. arXiv:2602.03986.
-- **Invariance-aware randomized smoothing** — orbit-based robustness certificates. arXiv:2211.14207.
-- **Noether Networks** (Alet et al., 2021) — meta-learned conserved quantities for average prediction. arXiv:2112.03321.
-- **Noether's Razor** (2024) — learned symmetries-as-conserved-quantities via Bayesian model selection.
-  arXiv:2410.08087.
-- **Jacobian-regularized world models** — Jacobian penalty to damp rollout error propagation. arXiv:2501.00195.
-- **Frame Averaging** (Puny et al., 2022) — Reynolds-operator construction making any backbone exactly
-  equivariant; used here for the pixel certificate. Its known *expressivity* (FA preserves a universal backbone's
-  power) is what our $T{=}1$ accuracy-neutrality (E6) reflects, and a map equals its own frame average iff it is
-  equivariant — the trivial $T{=}1$ converse our Lemma 2 generalizes to the multi-step rollout. arXiv:2110.03336.
-
-*Classical foundations (we are explicit that the single-axis facts are not new; our contribution is their synthesis):*
-
-- **Invariant decision theory** — the orbit-constancy of an equivariant procedure's risk, and its converse
-  (orbit-constant risk against a rich equivariant family pins the procedure to the equivariant class): Eaton, *Group
-  Invariance Applications in Statistics* (1989); Lehmann & Romano, *Testing Statistical Hypotheses* (invariance
-  chapter); Berger, *Statistical Decision Theory*. This is the correct, $\sim$50-year-old provenance of our Theorem A
-  forward fact *and* Lemma 2's converse.
-- **Structure of equivariant maps / universal approximation** — Maron et al., *On the Universality of Invariant
-  Networks* (2019); Yarotsky, *Universal approximations of invariant maps* (2022); Dym & Maron, *Universality of
-  Rotation-Equivariant Point Cloud Networks* (2021); Goodman & Wallach, *Symmetry, Representations, and Invariants*
-  (the $\mathrm{Sym}^k/\Lambda^k$ decompositions behind Proposition 4).
-- **Predictability horizon / perturbation growth / ergodic rate** — Lorenz, *Atmospheric predictability* (1969);
-  Oseledets, *A multiplicative ergodic theorem* (1968) — the local/finite-time exponent converges a.e. to the
-  asymptotic rate $\lambda_1$, the rigorous half of Proposition 7; Pilyugin, *Shadowing in Dynamical Systems* (1999) —
-  on *uniformly* hyperbolic sets, bounds a perturbed model's forecast-horizon *floor* (orbit error, not the exponent);
-  Tucker, *A rigorous ODE solver and Smale's 14th problem* (2002) and Araújo–Pacífico–Pujals–Viana (2009) — the
-  geometric Lorenz attractor is *singular*-hyperbolic with an SRB measure (so the MET applies) but is **not** uniformly
-  hyperbolic (so classical shadowing does not formally cover it — hence E2's exponent-lift is empirical). The
-  $T(\epsilon)\sim\log(1/\epsilon)/\lambda$ law and the $e^{\lambda T}$ growth of a seeded perturbation are classical;
-  our twist is to seed the growth with the *equivariance residual* (Proposition 6) and to characterize *when* the local
-  spectrum governs a learned model's horizon (Proposition 7).
-
-*Companion line.* This paper is a focused extraction of the project's *Certified World Models* program; the full
-experiment suite, the closed-loop clause, the discovery/generation re-framing, and the complete proofs appear in the
-companion manuscript `paper2_certified_world_models.md`.
+*Companion note.* This paper is a focused extraction of a broader certified-world-models program; the full experiment suite, the closed-loop clause, the discovery/generation re-framing, and the complete proofs appear in a companion manuscript (omitted here for anonymity).

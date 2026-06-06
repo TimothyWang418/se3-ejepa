@@ -38,4 +38,9 @@ paper2-quick: paper2-hero paper2-build
 iclr-build:
 	pandoc papers/iclr_certified_horizons.md -o papers/iclr_certified_horizons.pdf \
 	  --pdf-engine=tectonic --resource-path=papers -V geometry:margin=1in -V fontsize=10pt \
-	  -V colorlinks=true -V linkcolor=NavyBlue
+	  -V colorlinks=true -V linkcolor=NavyBlue \
+	  --citeproc --bibliography=papers/iclr_refs.bib --metadata reference-section-title=References
+
+# Official ICLR 2026 conference-format submission (anonymous, 9-page main text, natbib + official .bst)
+iclr-submission:
+	.venv/bin/python papers/iclr_submission/build_iclr.py
