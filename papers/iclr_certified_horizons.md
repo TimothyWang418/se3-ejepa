@@ -28,8 +28,10 @@ dynamics, and is vacuous on near-neutral dynamics, which *predicts* where the ce
 leaving it to chance. Empirically, the horizon law is recovered on a controlled-spectrum latent to $0.4\%$ and — the
 decisive test — **lifts to a learned model of genuinely chaotic dynamics**: across a class (Lorenz, Hénon, Rössler) the
 learned model's Lyapunov exponent matches the textbook value to $1$–$12\%$ ($R^2{=}0.96$–$1.00$, 3 seeds), a transfer
-made rigorous (not merely observed) by a finite-horizon continuity bound (Proposition 8) whose predicted
-fidelity-dependent bias the data confirm; on a real physics-engine contact simulator (PushT)
+made rigorous (not merely observed) by a finite-horizon continuity bound (Proposition 8); and on a **$40$-dimensional**
+learned model ($40$-D Lorenz-96) a $\mathbb{Z}_N$-equivariant model recovers the *full* Lyapunov spectrum
+($R^2{=}0.98$–$0.99$) — hence the per-channel certified horizons — where a dense model of equal data fails ($R^2{<}0$),
+the configuration axis *helping* the horizon axis. On a real physics-engine contact simulator (PushT)
 the *orbit-flatness* certificate holds for a learned model exactly (ratio $1.000$) while non-equivariant baselines of up
 to $160{\times}$ the parameters retain a $2$–$3{\times}$ out-of-distribution penalty; and the certificate transfers from
 the circle to non-abelian $\mathrm{SO}(3)$ and — via frame averaging — to raw pixels at **no accuracy cost relative to
@@ -259,18 +261,14 @@ $180^\circ$ flips), training the equivariance checks on the **6 generators** cer
 compositions to $\sim10^{-33}$ error, while a non-equivariant baseline degrades from $1.6\!\times\!10^{-5}$ on the
 generators to $0.59$ on held-out compositions. Six checks, sixty-four guarantees (Lemma 1).
 
-**(E2) The horizon staircase, on a controlled spectrum and on a learned model of *real chaotic dynamics*.** First, on a
-controlled latent with a tunable Lyapunov spectrum, the model recovers the chaotic Lyapunov exponent to within $0.4\%$,
-and its certified-horizon slope $\mathrm{d}T/\mathrm{d}\log(1/\epsilon)=1.3$–$1.6$ across seeds brackets the predicted
-$1/\lambda=1.44$: chaotic channels are certified to $3$–$10$ steps, slow/invariant channels to $\ge 90$ — matching
-*both* Theorem B (upper) and Proposition 6 (lower). **The decisive test is whether this lifts to a learned model of a
-genuinely chaotic system, not a planted spectrum.** It does: we integrate the **Lorenz** attractor
-($\sigma{=}10,\rho{=}28,\beta{=}8/3$; $\lambda_1\approx0.9056$, singular-hyperbolic with an SRB measure [@tucker2002lorenz]),
-train a plain one-step MLP of the $\Delta t$-map (relMSE $<10^{-4}$), and run the staircase **on the learned model**.
-The certified horizon is linear in $\log(1/\epsilon)$ ($R^2{=}0.975$–$0.995$, 3 seeds), and the learned model's
-Lyapunov exponent — read off as the staircase slope — **matches the true** $\lambda_1$ to $1$–$8\%$
-($\hat\lambda_1{=}0.895/0.919/0.977$ vs $0.9056$) — a one-step-accurate model could drift to a wrong *multi-step* rate,
-and that it does not is exactly Proposition 8's finite-horizon continuity, not a shadowing corollary.
+**(E2) The horizon staircase, on a controlled spectrum and learned models of *real chaotic dynamics*.** On a controlled
+latent with a tunable Lyapunov spectrum the model recovers the chaotic exponent to $0.4\%$ and its certified-horizon
+slope brackets the predicted $1/\lambda$ — matching *both* Theorem B (upper) and Proposition 6 (lower). It then
+**lifts to a learned model of a genuinely chaotic system, not a planted spectrum**: a plain one-step MLP of the
+**Lorenz** $\Delta t$-map (singular-hyperbolic, SRB measure [@tucker2002lorenz]; relMSE $<10^{-4}$) gives a staircase
+linear in $\log(1/\epsilon)$ ($R^2{=}0.975$–$0.995$, 3 seeds) whose slope matches the true $\lambda_1$ to $1$–$8\%$ — a
+one-step-accurate model could drift to a wrong *multi-step* rate; that it does not is Proposition 8's finite-horizon
+continuity, not a shadowing corollary.
 **And the law is not a Lorenz coincidence: the identical learned-model staircase recovers the textbook exponent across
 a class** — the **Hénon** map ($\lambda_1{\approx}0.419$/step; rel-err $8$–$12\%$, $3/3$ seeds), the small-exponent
 **Rössler** flow ($\lambda_1{\approx}0.0714$; $8$–$9\%$, $2/3$ — the small-exponent stress case), and Lorenz: a 2D
@@ -279,9 +277,20 @@ residual finite-$T$ truncation of Proposition 8 ($\sim\!9$–$10\%$). Conversely
 7's *degenerate* branch ($\lambda_1\approx0$): a learned-model probe finds the spectrum does *not* predict the rollout
 ($R^2{=}0.02$) — the horizon axis vacuous, predicted not patched.
 
+**The spectral law lifts to a *high-dimensional* learned model — and there structure becomes necessary.** On $40$-D
+**Lorenz-96** ($F{=}8$; Liouville pins $\sum_j\lambda_j{=}-N$, recovered to $0.0\%$), a $\mathbb{Z}_N$-equivariant
+cyclic-conv recovers the *full* $40$-D spectrum ($R^2{=}0.98$–$0.99$, $3$ seeds; Kaplan–Yorke $\sim\!27$; $13$ of
+$\sim\!14$ positive) — hence the per-channel certified horizons — while a dense MLP of equal data **fails**
+($R^2{<}0$, $\lambda_1$ inflated $\sim\!3\times$; both succeed at $N{\le}20$, so the gap is a high-$N$ effect). The
+**configuration axis** (the $\mathbb{Z}_N$ symmetry) thus *helps the horizon axis* — structure recovers a
+high-dimensional spectral horizon an unstructured model cannot. (Needs a multi-step rollout loss; one-step MSE
+underestimates the Jacobian — Proposition 8's $C^1$ caveat in high $N$.)
+
 ![The horizon staircase on a learned model of real chaotic dynamics (E2, Lorenz). **Left:** the learned one-step model's perturbation growth tracks the true Lorenz integrator over $550$ steps. **Right:** the certified horizon $T(\epsilon_0)$ on the *learned* model is linear in $\log(1/\epsilon_0)$ ($R^2{=}0.995$), and the measured slope sits on the prediction $1/(\lambda_1 dt)$ from the textbook Lorenz exponent — Theorem B's law lifted to a learned model of a genuinely chaotic system (Proposition 7(a)).](figures/step70_lorenz_horizon.png)
 
 ![The certified-horizon law across a class of learned chaotic models (E2). The identical learned-model staircase on a 2D map (Hénon), a small-exponent flow (Rössler), and a large-exponent flow (Lorenz) is linear in $\log(1/\epsilon_0)$ and its slope (blue) recovers the textbook exponent (red dashed). The law is a property of chaotic dynamics, not of Lorenz; the residual bias is decomposed by Proposition 8.](figures/step71_multichaos_horizon.png)
+
+![High-dimensional spectral horizon (E2, $40$-D Lorenz-96). **Left:** recovered vs. true Lyapunov exponent for all $40$ channels — the $\mathbb{Z}_N$-equivariant cyclic-conv (blue) lies on $y=x$ ($R^2{=}0.98$); the dense MLP (red ×) is scattered far off ($R^2{=}-1.1$). **Right:** per-channel certified horizon $\log(1/\epsilon)/\lambda_j$: the equivariant model tracks the truth across the spectrum. Structure recovers the high-dimensional spectral horizon a dense model of equal data cannot.](figures/step74_lorenz96_spectrum.png)
 
 ![The horizon $\times$ resolution staircase on a controlled spectrum (E2). The measured certified horizon per channel as the demanded resolution $\epsilon$ sharpens, recovering $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$ (slope $1.3$–$1.6$): chaotic channels are certified to a few steps, slow/invariant channels to dozens.](figures/step52_horizon_resolution.png)
 
@@ -405,21 +414,15 @@ group-invariant subspace (Noether hinge); and (iv) make the forward direction's 
   in. The real-ish experiments (E5 PushT, E6 $\mathrm{SO}(3)$) validate *flatness*, not the hinge's emergence in a
   learned model of un-constructed dynamics — that remains open.
 - **The horizon axis lifts to learned models of real *chaotic* dynamics, with a continuity bound, and is vacuous on
-  near-neutral dynamics (scope, not a bug).** E2 validates the certified-horizon law on a synthetic constant-spectrum
-  latent, analytically (Proposition 6, step65), and — the decisive case — on *learned* models of a **class** of
-  genuinely chaotic systems (**Lorenz, Hénon, Rössler** — a 2D map and two flows spanning an order of magnitude in
-  exponent), where the staircase is linear ($R^2{=}0.96$–$1.00$) and the learned exponent matches the textbook value to
-  $1$–$12\%$. Proposition 7 explains the regime structure: the horizon axis is informative iff the dynamics is
-  spectrally non-degenerate ($\lambda_1>0$). The **PushT interior is the degenerate branch** ($\lambda_1\approx0$,
-  near-neutral): a learned-PushT probe (`experiments/step67`) finds the local Jacobian spectrum does *not* predict the
-  multi-step rollout ($R^2\approx0.02$) — *predicted* by Proposition 7(b), not a defect of the certificate. Two honest
-  caveats remain. (i) The lift is backed by **Proposition 8** — the *finite-time* exponent is continuous in the dynamics,
-  so a $\delta$-accurate model recovers it up to $O(\delta)$ — rather than by shadowing, which transfers only the
-  forecast-horizon *floor*, not the asymptotic exponent (upper-semicontinuous under $C^1$ perturbation; classical
-  shadowing does not even formally cover singular-hyperbolic Lorenz). The residual: we verify $C^1$-closeness only via
-  one-step error (an $L^2$ proxy), and Proposition 8's $T$-uniformity assumes a dominated splitting we do not certify. (ii) The *configuration* axis (orbit-flatness,
-  ratio $1.000$) is the part that holds on real PushT at the contact level; the horizon axis's real-dynamics evidence is
-  Lorenz, a $3$D ODE, not a contact simulator.
+  near-neutral dynamics (scope, not a bug).** E2 validates the law on a synthetic spectrum (analytically, Proposition 6),
+  on a *class* of low-D chaotic systems (Lorenz/Hénon/Rössler, $R^2{=}0.96$–$1.00$, exponent to $1$–$12\%$), and on a
+  **$40$-D** learned model (Lorenz-96, full-spectrum $R^2{=}0.98$–$0.99$). Proposition 7 explains the regime: the horizon
+  axis is informative iff $\lambda_1>0$ — the **PushT interior is the degenerate branch** (a learned-PushT probe finds
+  $R^2{\approx}0.02$, predicted by 7(b)). Honest caveats: (i) the lift is backed by Proposition 8 (the *finite-time*
+  exponent is continuous in the dynamics), not shadowing (which transfers only the forecast-horizon floor, not the
+  asymptotic exponent), but we verify $C^1$-closeness only via one-step $L^2$ error — and in high $N$ that gap is real
+  and load-bearing (a dense MLP is one-step-accurate yet mis-estimates the $40$-D spectrum; $\mathbb{Z}_N$-structure is
+  what closes it); (ii) the horizon axis's real-dynamics evidence is chaotic ODEs/maps, not a contact simulator.
 - **Scale and modality.** All experiments are $1$–$2$-GPU. The exact flatness of the certificate transfers across
   modalities (structured state, $\mathrm{SO}(3)$ point clouds, pixels), but absolute multi-step accuracy on raw pixels
   at this scale is poor for *every* architecture (an artifact of the anti-collapse-regularized JEPA latent, not of

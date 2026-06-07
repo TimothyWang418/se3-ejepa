@@ -100,7 +100,10 @@ Our contributions are:
    pixel model matches an unconstrained CNN and is horizon-stable, so the prior costs nothing — and a lift of the
    **horizon law to a learned model of genuinely chaotic dynamics** (Lorenz, Experiment 14: the learned model's
    Lyapunov exponent, read as the certified-horizon staircase slope, *matches* the true exponent to $1\text{–}8\%$,
-   instantiating Proposition 7(a)).
+   instantiating Proposition 7(a)), and a lift to a **high-dimensional** learned model (Experiment 18, $40$-D
+   Lorenz-96) where the configuration axis *helps the horizon axis*: a $\mathbb{Z}_N$-equivariant model recovers the
+   full $40$-D Lyapunov spectrum ($R^2{=}0.98\text{–}0.99$) — hence the per-channel certified horizons — while a dense
+   model of equal data fails ($R^2{<}0$).
 
 We are explicit about scope (§7): this is a mechanism-and-theory paper with $1$–$2$-GPU proof-of-principle, not a
 scaled benchmark, and the hinge's lift to *approximate* symmetry is open.
@@ -1002,6 +1005,36 @@ did not measure.
 
 ![Experiment 17 (the task-level certificate on FetchPush, seed 0; the other seeds match). Planned terminal object→goal distance vs. scene rotation off the training orientation. The equivariant planning stack (blue; equivariant WM + equivariant goal-readout + $G$-equivariant CEM) produces an exactly orbit-flat plan (ratio $1.000$); the scaled-baseline stack (red dashed) degrades $4$–$10\times$ out of the training orientation. The whole planner is $\mathrm{SO}(2)$-equivariant by construction (proven to the float floor in a unit test), so closed-loop behaviour is orbit-invariant — Theorem A carried through the planner.](figures/step73_fetchpush_planning_s0.png)
 
+### 5.16 The spectral horizon law on a *high-dimensional* learned model — where structure helps the horizon axis (Experiment 18)
+
+Experiments 14–15 lifted the horizon law to learned models of *low*-dimensional chaos (Lorenz/Hénon/Rössler, $2$–$3$D,
+the *leading* exponent). Theorem B's real content is **per-channel and spectral**: each Lyapunov direction $j$ has its
+own certified horizon $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$. **Experiment 18** makes the whole spectral
+stratification real on a *high*-dimensional learned model — and, in doing so, ties the configuration axis to the horizon
+axis. We use **Lorenz-96** ($N{=}40$, $F{=}8$), the standard high-dimensional chaos benchmark, whose divergence is
+$-N$, so by Liouville the spectrum sums to $-N$ *exactly* ($\sum_j\lambda_j=-40$; the estimator reproduces it to
+$0.0\%$, `tests/test_step74.py`). We learn the $\Delta t$-map and recover the model's full Lyapunov spectrum by
+Benettin QR on its autograd Jacobian.
+
+Two findings. **(i) One-step accuracy is not enough — the Jacobian is.** A one-step-MSE fit is perfect in *value*
+(relMSE $\sim\!10^{-4}$) yet mis-estimates the spectrum, because the Lyapunov exponents live in the *Jacobian*, which an
+$L^2$ value-loss does not constrain — a concrete, high-dimensional instance of Proposition 8's $C^1$-vs-$L^2$ caveat. A
+**multi-step rollout loss** (matching a $K$-step unroll) constrains the *composed* Jacobian $\prod_t D\hat\phi(\hat
+x_t)$ — exactly the Lyapunov operator — and fixes it. **(ii) At high dimension, structure is what makes it work.**
+Lorenz-96 is locally coupled and $\mathbb{Z}_N$-cyclically symmetric. A **$\mathbb{Z}_N$-equivariant cyclic-conv** model
+(circular convolutions; banded-circulant Jacobian, $O(N)$ noise) **recovers the $40$-D spectrum** — full-spectrum
+$R^2{=}0.982$/$0.995$/$0.985$ across $3$ seeds, Kaplan–Yorke dimension $27$–$28$ vs the true $\sim\!27$, and $13$ of
+$\sim\!14$ positive exponents — while a **dense MLP** of comparable capacity on the *same* data **fails catastrophically**
+($R^2{=}-1.1$/$-1.4$/$-2.8$; its $N\times N$ Jacobian noise scales with dimension and inflates $\lambda_1$ by $\sim\!3\times$
+and $\mathrm{KY}$ to $\sim\!35$). At $N{=}10$–$20$ *both* models succeed; the gap is a high-$N$ effect (the MLP's
+unstructured Jacobian noise growing with $N$). The leading exponent is the hardest single number — recovered to
+$2$–$24\%$ (seed-dependent) — but the *whole spectrum*, hence the per-channel certified horizons, is recovered. **This is
+the configuration axis (the $\mathbb{Z}_N$ symmetry of the dynamics) *helping the horizon axis*** (spectrum recovery): the
+same structure that gives the orbit-flatness certificate also makes the high-dimensional horizon law learnable where an
+unstructured model of equal data cannot.
+
+![Experiment 18 (the high-dimensional spectral horizon law, $N{=}40$ Lorenz-96, seed 0; the other seeds match). **(a)** Recovered vs. true Lyapunov exponent for all $40$ channels: the $\mathbb{Z}_N$-equivariant cyclic-conv (blue) lies on $y=x$ ($R^2{=}0.98$); the dense MLP (red ×) is scattered far off ($R^2{=}-1.1$), over-amplifying the spectrum. **(b)** Per-channel certified horizon $T_j(\epsilon{=}0.01)=\log(1/\epsilon)/\lambda_j$ across the positive exponents: the equivariant model (blue) tracks the truth (black) — short horizons ($\sim$few steps) for the most chaotic channels, long ($\sim\!350$ steps) for the weakly chaotic ones. Structure recovers the spectral stratification a dense model of equal data cannot.](figures/step74_lorenz96_spectrum.png)
+
 ---
 
 ## 6. Related Work
@@ -1309,7 +1342,7 @@ writes its figure and JSON to `papers/figures/`. The multi-seed steps commit per
 configuration-flatness experiment (Experiment 1) self-aggregates its three seeds into the means in
 `step47_certificate.json`. Experiment 16 writes its per-seed certificates directly to
 `step72_fetchpush_certificate_s{0,1,2}.json` (the seed min–max quoted in §5.14); Experiment 17 likewise to
-`step73_fetchpush_planning_s{0,1,2}.json` (§5.15). The full test suite passes together; `tests/conftest.py` isolates the float64
+`step73_fetchpush_planning_s{0,1,2}.json` (§5.15); Experiment 18 to `step74_lorenz96_spectrum{,_seed1,_seed2}.json` (§5.16). The full test suite passes together; `tests/conftest.py` isolates the float64
 experiments from the float32 codebase. One command reproduces the paper end-to-end — `make paper2` (multi-seed
 re-runs $\to$ figures $\to$ tests $\to$ PDF), with `make paper2-quick` for the figures-and-PDF fast path; everything
 is CPU/MPS, no CUDA.
@@ -1333,3 +1366,4 @@ is CPU/MPS, no CUDA.
 | 15 | **Horizon law across a class of chaotic systems** | `experiments/step71_multichaos_horizon.py` | `tests/test_step71.py` | 3 | same learned-model staircase on a 2D map + two flows: Hénon $\hat\lambda_1{=}0.45$–$0.47$ vs $0.419$ (rel-err $8$–$12\%$, $3/3$ seeds), Lorenz $1$–$5\%$ ($3/3$), small-exponent Rössler $0.065$–$0.066$ vs $0.0714$ ($8$–$9\%$, $2/3$ — one seed's $\sim\!1500$-step horizon under-crossed). Validates Prop. 8: the $O(\delta)$ bias falls $44\%\!\to\!8\%$ as fidelity rises (Rössler); the true-system staircase isolates the finite-$T$ truncation (~$9$–$10\%$) |
 | 16 | **Certificate on a standard manipulation benchmark (FetchPush / MuJoCo)** | `experiments/step72_mujoco_certificate.py` | `tests/test_step72_wm_equivariance.py`, `tests/test_fetchpush_symmetry.py` | 3 | learned $\mathrm{VN}$ equivariant world model exactly orbit-flat over the $\mathrm{SO}(2)_z$ scene rotation (OOD/seen FVU ratio $1.000$, $3/3$; equivariance unit-tested $\sim10^{-15}$). $\sim7\times$-larger MLP degrades $211$/$1037$/$1445\times$ OOD (CUDA confirms $19$–$382\times$), exceeding predict-the-mean. Cleanest structure-vs-scale cut: baseline interpolates the single training orientation competitively-to-better (in-dist tax $0.8$–$4.1\times$, equiv *cheaper* on seed 2) yet has no certificate (Lemma 2). $\mathrm{SO}(2)_z$ approximate (fixed base; Thm A representation regime) |
 | 17 | **Certificate at the planning level on FetchPush** | `experiments/step73_fetchpush_planning.py` | `tests/test_step73_planner_equivariance.py` | 3 | equivariant WM $+$ equivariant goal-readout head $+$ $G$-equivariant CEM: the whole planner is $\mathrm{SO}(2)$-equivariant, proven to the float floor (head $3\mathrm{e}{-}16$, step+readout $6\mathrm{e}{-}16$, **CEM search $2\mathrm{e}{-}16$**). Learned-model planning certificate: equivariant planned-distance orbit-flat (ratio $1.000$, $3/3$); baseline planner degrades $4.1$/$8.5$/$10.3\times$ OOD. Real-env `is_success` (`--realenv` random and `--scripted` goal-directed data, CUDA): **INCONCLUSIVE** — learned WM+CEM stuck at $\approx7\%$ for both stacks regardless of data, though the scripted *policy* solves the task $33\%$. `--diagnose`: model accurate (readout RMSE $<1$cm) yet CEM $0\%$ at every horizon $=$ **model exploitation** (architecture-agnostic, not an equivariance cost) |
+| 18 | **High-D spectral horizon: structure helps (Lorenz-96 $N{=}40$)** | `experiments/step74_lorenz96_spectrum.py` | `tests/test_step74.py` | 3 | $\mathbb{Z}_N$-equivariant cyclic-conv recovers the full $40$-D Lyapunov spectrum (R$^2$ $0.982$/$0.995$/$0.985$; KY $27$–$28$ vs $\sim27$; $13$/$\sim14$ positive; $\lambda_1$ to $2$–$24\%$) where a dense MLP of equal data **fails** (R$^2$ $-1.1$/$-1.4$/$-2.8$). Liouville unit test $\sum\lambda_j=-N$ to $0.0\%$. Needs a multi-step rollout loss (one-step $L^2$ underestimates the Jacobian — Prop 8's $C^1$ caveat in high D). Config axis helps the horizon axis |
