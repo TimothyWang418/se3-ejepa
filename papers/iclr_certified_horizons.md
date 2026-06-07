@@ -278,7 +278,7 @@ residual finite-$T$ truncation of Proposition 8 ($\sim\!9$–$10\%$). Conversely
 ($R^2{=}0.02$) — the horizon axis vacuous, predicted not patched.
 
 **The spectral law lifts to a *high-dimensional* learned model — and there structure becomes necessary.** On $40$-D
-**Lorenz-96** ($F{=}8$; Liouville pins $\sum_j\lambda_j{=}-N$, recovered to $0.0\%$), a $\mathbb{Z}_N$-equivariant
+**Lorenz-96** [@lorenz1996predictability] ($F{=}8$; Liouville pins $\sum_j\lambda_j{=}-N$, recovered to $0.0\%$), a $\mathbb{Z}_N$-equivariant
 cyclic-conv recovers the *full* $40$-D spectrum ($R^2{=}0.98$–$0.99$, $3$ seeds; Kaplan–Yorke $\sim\!27$; $13$ of
 $\sim\!14$ positive) — hence the per-channel certified horizons — while a dense MLP of equal data **fails**
 ($R^2{<}0$, $\lambda_1$ inflated $\sim\!3\times$; both succeed at $N{\le}20$, so the gap is a high-$N$ effect). The
