@@ -999,9 +999,12 @@ blind spots (actions it wrongly predicts reach the goal) — the classic model-b
 It is **architecture-agnostic** (it hits the baseline identically) and has nothing to do with the certificate: the plan
 is still provably orbit-flat (4a), and the prediction certificate (Experiment 16) still holds. This is the embodied
 analogue of the pixel result (Experiment 13): *the geometric prior is free; absolute closed-loop competence is the open
-part.* A genuine task-success win on FetchPush would need robust model-based control (action/uncertainty
-regularization, ensembles) or a learned policy — real future work, not a knob. We do not claim a downstream task win we
-did not measure.
+part.* We even tried the **standard fix** for model exploitation — a $5$-model equivariant **ensemble with a CEM
+disagreement penalty** (PETS-style; `experiments/step75_ensemble_mbrl.py`) — and it **also** stays at the $\approx7\%$
+give-away floor in-distribution: the obvious robust-MBRL patch does not beat exploitation here at $1$-GPU scale. So a
+genuine task-success win on FetchPush needs more than the standard fix — substantially more compute, or a different
+controller class (a learned policy / offline RL rather than CEM-MPC) — real future work, not a knob. We do not claim a
+downstream task win we did not measure.
 
 ![Experiment 17 (the task-level certificate on FetchPush, seed 0; the other seeds match). Planned terminal object→goal distance vs. scene rotation off the training orientation. The equivariant planning stack (blue; equivariant WM + equivariant goal-readout + $G$-equivariant CEM) produces an exactly orbit-flat plan (ratio $1.000$); the scaled-baseline stack (red dashed) degrades $4$–$10\times$ out of the training orientation. The whole planner is $\mathrm{SO}(2)$-equivariant by construction (proven to the float floor in a unit test), so closed-loop behaviour is orbit-invariant — Theorem A carried through the planner.](figures/step73_fetchpush_planning_s0.png)
 
@@ -1183,8 +1186,10 @@ subspace via the Noether hinge; and fold all of it into a single multi-axis cert
   problem — its goal-readout decodes the object position to $<\!1$ cm — but CEM gets $0\%$ at every horizon because it
   **exploits the model off-distribution** (the classic model-based-RL pitfall). This is architecture-agnostic and
   unrelated to equivariance — the certificate holds exactly; it is the embodied analogue of the pixel result (the prior
-  is free, absolute closed-loop competence is the open part). A real task win needs robust model-based control or a
-  learned policy — future work, not a knob. We do not claim a task win we did not measure.
+  is free, absolute closed-loop competence is the open part). The standard fix (a $5$-model equivariant ensemble with a
+  CEM disagreement penalty, step75) **also** stays at the give-away floor — so a real task win needs more than the
+  obvious robust-MBRL patch: more compute, or a learned policy / offline RL rather than CEM-MPC. We do not claim a task
+  win we did not measure.
 - **Pixels (Experiment 13, §5.11): structure is free; absolute accuracy is the open part.** The certificate transfers
   *exactly* to rendered pixels, and — via frame averaging — at **no accuracy cost** relative to an unconstrained CNN
   (matches-or-beats it on collapse-robust FVU, with a healthier latent and a horizon-stable rollout; §5.11). The honest
