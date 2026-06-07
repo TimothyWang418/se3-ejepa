@@ -130,13 +130,15 @@ $|w|$ for the length of a word $w\in\langle S\rangle$.
 
 ### 3.1 The configuration axis, and why only structure has it
 
-**Theorem A (orbit-constant error).** Under (A1)–(A4), for every $w\in\langle S\rangle$ and all $x$,
-$\mathrm{Err}_T(w\cdot x)=\mathrm{Err}_T(x)$. *Proof sketch.* By induction the rolled-out predictor $f^{(T)}$ is
+**Theorem A (orbit-constant error).** Under (A1)–(A4), for every $w\in\langle S\rangle$, all $x$, and any action
+sequence (transported by $w$), $\mathrm{Err}_T(w\cdot x)=\mathrm{Err}_T(x)$ (Appendix B gives the action-explicit
+statement and proof). *Proof sketch.* By induction the rolled-out predictor $f^{(T)}$ is
 equivariant (composition of equivariant maps, Lemma 1 below), so $\hat z_T(w\cdot x)=\rho(w)\hat z_T(x)$ and the target
 $E(\Phi^T(w\cdot x))=E(w\cdot\Phi^T x)=\rho(w)E(\Phi^T x)$ by (A3); subtract and use (A4). $\square$
 
-**Lemma 1 (composition closure).** If (A1)–(A4) hold on each generator $g_i\in S$, they hold on every word
-$w\in\langle S\rangle$. Thus **$k$ generator checks certify an exponentially large set**: $k$ checks on $S$ yield a
+**Lemma 1 (composition closure).** If the equivariance assumptions (A1)–(A3) hold on each generator $g_i\in S$, they
+hold on every word $w\in\langle S\rangle$ ((A4) is a global property of $\rho$ as a homomorphism into $O(\mathcal Z)$,
+automatic for all $w$). Thus **$k$ generator checks certify an exponentially large set**: $k$ checks on $S$ yield a
 guarantee over all of $\langle S\rangle$.
 
 **Lemma 2 (the certificate characterizes equivariance — the converse).** Let $\rho:G\to O(\mathcal Z)$ act *freely* on
