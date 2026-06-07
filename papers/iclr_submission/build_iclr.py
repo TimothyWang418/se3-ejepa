@@ -123,6 +123,7 @@ def write_preamble() -> None:
         "\\setmainfont{texgyretermes}[Path=./, Extension=.otf, "
         "UprightFont=*-regular, BoldFont=*-bold, ItalicFont=*-italic, BoldItalicFont=*-bolditalic]\n"
         "\\setmathfont{texgyretermes-math.otf}[Path=./]\n"
+        "\\usepackage{longtable,booktabs,array}\n"  # pandoc renders markdown tables (Appendix C repro map) as longtable
         "\\setcounter{secnumdepth}{-1}\n"          # keep manual heading numbers; in-text §3.2/E2 stay valid
         "\\renewcommand{\\_}{\\textunderscore\\allowbreak}\n",
         encoding="utf-8",
@@ -186,6 +187,11 @@ if __name__ == "__main__":
     ensure_template()
     ab, full_body = split_source()
     main_body, appendix_md = relocate_figures(full_body)
+    # Appendix B: full proofs (unlimited — appended after the figures appendix, both after the bibliography).
+    proofs = PAPERS / "iclr_proofs_appendix.md"
+    if proofs.exists():
+        appendix_md = (appendix_md + "\n\n" if appendix_md.strip() else "") + proofs.read_text(encoding="utf-8")
+        print("appendix: + Appendix B (full proofs)")
     build_combined(ab, main_body)
     write_preamble()
     run_pandoc()

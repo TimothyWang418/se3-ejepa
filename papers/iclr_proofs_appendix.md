@@ -1,0 +1,253 @@
+## B. Proofs
+
+We restate each formal claim and give a complete proof. Notation is as in §2: an encoder $E:\mathcal X\to\mathcal Z$, a
+predictor $f:\mathcal Z\times\mathcal A\to\mathcal Z$, true dynamics $\Phi$, a group $G$ acting on situations
+($x\mapsto g\cdot x$), latents (via $\rho$), and actions (via $\sigma$). The $T$-step rollout under an action sequence
+$\bar a=(a_0,\dots,a_{T-1})$ is $\hat z_T(x;\bar a)=f(\cdot,a_{T-1})\circ\cdots\circ f(E(x),a_0)$, the target is
+$E(\Phi^T(x;\bar a))$, and $\mathrm{Err}_T(x;\bar a)=\lVert \hat z_T(x;\bar a)-E(\Phi^T(x;\bar a))\rVert$. For a word
+$w\in\langle S\rangle$ we write $\bar a^{\,w}=(\sigma(w)a_0,\dots,\sigma(w)a_{T-1})$ for the action sequence transported
+by $w$; the configuration-axis statements compare the rollout at $x$ under $\bar a$ with the rollout at $w\cdot x$ under
+$\bar a^{\,w}$ (the natural pairing, since $G$ acts on actions as well).
+
+### Lemma 1 (composition closure)
+
+*Statement.* If (A1)–(A3) hold on every generator $g_i\in S$, they hold on every word $w\in\langle S\rangle$.
+
+*Proof.* Induction on word length $|w|$. For $|w|=0$, $w=e$ and $\rho(e)=I$, $\sigma(e)=I$, $e\cdot x=x$, so all three
+are trivial. For $|w|=1$, $w=g_i$ is a generator, true by hypothesis. Inductive step: write $w=g_i\,w'$ with $|w'|=m$
+and assume the claim for $w'$. Using that $\rho,\sigma$ are homomorphisms and the action is a left action:
+$$
+E\big((g_i w')\cdot x\big)=E\big(g_i\cdot(w'\cdot x)\big)\overset{\text{(A1)}}{=}\rho(g_i)E(w'\cdot x)
+\overset{\text{IH}}{=}\rho(g_i)\rho(w')E(x)=\rho(g_iw')E(x),
+$$
+which is (A1) for $w$. For (A2), for all $z,a$,
+$$
+f\big(\rho(w)z,\sigma(w)a\big)=f\big(\rho(g_i)\rho(w')z,\sigma(g_i)\sigma(w')a\big)
+\overset{\text{(A2)}}{=}\rho(g_i)f\big(\rho(w')z,\sigma(w')a\big)\overset{\text{IH}}{=}\rho(g_i)\rho(w')f(z,a)=\rho(w)f(z,a).
+$$
+For (A3), $\Phi\big(w\cdot x,\sigma(w)a\big)=\Phi\big(g_i\cdot(w'\cdot x),\sigma(g_i)\sigma(w')a\big)
+\overset{\text{(A3)}}{=}g_i\cdot\Phi(w'\cdot x,\sigma(w')a)\overset{\text{IH}}{=}g_i\cdot w'\cdot\Phi(x,a)=w\cdot\Phi(x,a)$.
+$\square$
+
+A consequence we use repeatedly: the rolled-out predictor is equivariant, $\hat z_T(\rho(w)z;\bar a^{\,w})=\rho(w)\hat
+z_T(z;\bar a)$, by applying (A2)-for-$w$ at each of the $T$ steps.
+
+### Theorem A (orbit-constant error)
+
+*Statement.* Under (A1)–(A4), for every $w\in\langle S\rangle$, every $x$, and every action sequence $\bar a$,
+$\mathrm{Err}_T(w\cdot x;\bar a^{\,w})=\mathrm{Err}_T(x;\bar a)$.
+
+*Proof.* By (A1) and Lemma 1, $\hat z_T(w\cdot x;\bar a^{\,w})=\hat z_T(\rho(w)E(x)\,;\bar a^{\,w})=\rho(w)\hat
+z_T(E(x);\bar a)$, i.e. the model rollout transforms by $\rho(w)$. For the target, Lemma 1 applied to (A3) gives
+$\Phi^T(w\cdot x;\bar a^{\,w})=w\cdot\Phi^T(x;\bar a)$, hence by (A1) $E\big(\Phi^T(w\cdot x;\bar a^{\,w})\big)
+=\rho(w)E\big(\Phi^T(x;\bar a)\big)$. Subtracting,
+$$
+\mathrm{Err}_T(w\cdot x;\bar a^{\,w})=\big\lVert \rho(w)\big(\hat z_T(x;\bar a)-E(\Phi^T(x;\bar a))\big)\big\rVert
+\overset{\text{(A4)}}{=}\big\lVert \hat z_T(x;\bar a)-E(\Phi^T(x;\bar a))\big\rVert=\mathrm{Err}_T(x;\bar a),
+$$
+where (A4) ($\rho(w)$ orthogonal, as $\rho$ is a homomorphism into $O(\mathcal Z)$) preserves the norm. $\square$
+
+### Lemma 2 (the certificate characterizes equivariance — the converse)
+
+*Statement.* Let $\rho:G\to O(\mathcal Z)$ act **freely** on an open set $U\subseteq\mathcal Z$. If a predictor $f$ has
+orbit-constant error $\lVert f-\Phi\rVert$ on $U$ for **every** equivariant target $\Phi$, then $f$ is equivariant on
+$U$ (i.e. $f(\rho(g)z)=\rho(g)f(z)$ for all $z\in U$, $g\in G$ with $\rho(g)z\in U$).
+
+*Proof.* Fix $z\in U$ and $g\in G$. For an arbitrary $c\in\mathcal Z$ define a target on the orbit $G\cdot z$ by
+$\Phi_c(\rho(h)z):=\rho(h)\,c$. This is well defined: freeness means the map $h\mapsto\rho(h)z$ is injective, so each
+orbit point determines a unique $h$; and $\Phi_c$ is equivariant by construction, $\Phi_c(\rho(h')\rho(h)z)=\rho(h'h)c
+=\rho(h')\Phi_c(\rho(h)z)$. Orbit-constancy of $\lVert f-\Phi_c\rVert$ at the two orbit points $z$ and $\rho(g)z$ reads
+$$
+\lVert f(z)-\Phi_c(z)\rVert=\lVert f(\rho(g)z)-\Phi_c(\rho(g)z)\rVert
+\;\Longleftrightarrow\;\lVert f(z)-c\rVert=\lVert f(\rho(g)z)-\rho(g)c\rVert .
+$$
+Since $\rho(g)$ is orthogonal, $\lVert f(\rho(g)z)-\rho(g)c\rVert=\lVert \rho(g)^{-1}f(\rho(g)z)-c\rVert$. Thus
+$\lVert f(z)-c\rVert=\lVert \rho(g)^{-1}f(\rho(g)z)-c\rVert$ for **all** $c\in\mathcal Z$. Two points $p,q$ with
+$\lVert p-c\rVert=\lVert q-c\rVert$ for all $c$ are equal (set $c=p$ to get $\lVert q-p\rVert=0$). Therefore
+$f(z)=\rho(g)^{-1}f(\rho(g)z)$, i.e. $f(\rho(g)z)=\rho(g)f(z)$. $\square$
+
+*Remark (continuity).* $\Phi_c$ is in general only defined on the orbit and need not extend to a continuous global
+target. When $G$ is compact with closed orbits, a continuous $G$-equivariant extension of $\Phi_c$ to a neighbourhood
+exists (e.g. by an equivariant tubular-neighbourhood/averaging construction), so the converse holds even when the class
+of admissible targets is restricted to continuous dynamics, not only the full algebraic class. Together with Theorem A
+this gives the characterization *orbit-constant error $\iff$ equivariance*, and hence: **no non-equivariant predictor
+has the certificate, at any parameter count.**
+
+### Theorem B (spectral degradation — upper bound)
+
+*Statement.* Let $\epsilon_{\max}=\max_i\sup_x\lVert E(g_i\cdot x)-\rho(g_i)E(x)\rVert$ be the encoder residual,
+$\delta$ a uniform per-step predictor error $\sup_{z,a}\lVert f(z,a)-E(\Phi(E^{-1}z,a))\rVert$, and suppose the rollout's
+latent Jacobian is, in a local frame, block-diagonal with channel-$j$ multiplier $e^{\lambda_j}$ and basis condition
+number $\kappa_j$. Then for a word $w$ of length $m=|w|$,
+$$
+\big\lvert \mathrm{Err}_T(w\cdot x;\bar a^{\,w})-\mathrm{Err}_T(x;\bar a)\big\rvert\;\le\;\sum_j c_j\,(m\,\epsilon_{\max}+T\,\delta)\,e^{\lambda_j T},\qquad c_j=O(\kappa_j).
+$$
+
+*Proof.* Write the orbit-error variation as the norm of the difference between the two rollouts' residual vectors.
+Relative to the exactly-equivariant idealization (Theorem A), two perturbation sources break orbit-constancy. (i) The
+**encoder defect**: along the word $w=g_{i_1}\cdots g_{i_m}$, each generator contributes a latent perturbation of size
+$\le\epsilon_{\max}$ to $E(w\cdot x)-\rho(w)E(x)$; by the triangle inequality and orthogonality of each $\rho(g_{i_\ell})$
+these accumulate to $\lVert E(w\cdot x)-\rho(w)E(x)\rVert\le m\,\epsilon_{\max}$, a perturbation injected at $t=0$. (ii)
+The **predictor defect**: at each of the $T$ steps the rollout deviates from the equivariant push-forward by $\le\delta$.
+Let $u_t$ denote the injected perturbation at step $t$ ($\lVert u_0\rVert\le m\epsilon_{\max}$, $\lVert u_t\rVert\le\delta$
+for $t\ge1$). Linearizing the rollout about the unperturbed trajectory, the contribution of $u_t$ to the terminal latent
+is $D f^{(T-t)}\,u_t$, where $Df^{(T-t)}$ is the product of $T-t$ one-step Jacobians. In the local frame, the
+channel-$j$ component is amplified by $\prod e^{\lambda_j}=e^{\lambda_j(T-t)}\le e^{\lambda_j T}$ for $\lambda_j>0$ (and
+by $\le1$, hence $\le e^{\lambda_j T}$ trivially, for $\lambda_j\le0$), up to the basis condition number $\kappa_j$.
+Summing over the injection times and channels,
+$$
+\big\lVert \textstyle\sum_t Df^{(T-t)}u_t\big\rVert\le\sum_j\kappa_j\Big(\lVert u_0\rVert+\sum_{t\ge1}\lVert u_t\rVert\Big)e^{\lambda_j T}
+\le\sum_j\kappa_j\,(m\,\epsilon_{\max}+T\,\delta)\,e^{\lambda_j T},
+$$
+and the orbit-error variation is bounded by this quantity (the residual difference is exactly the propagated
+perturbation, up to second order in $\epsilon_{\max},\delta$, which the local-linear regime discards). Setting
+$c_j=O(\kappa_j)$ gives the bound. As $\epsilon_{\max},\delta\to0$ the right-hand side vanishes and Theorem A is
+recovered. The certified horizon for channel $j$ — the largest $T$ with the bound $\le\epsilon_{\mathrm{res}}$ — is
+$T_j(\epsilon)\sim\frac1{\lambda_j}\log\frac1\epsilon$ for $\lambda_j>0$, and $T_j=\infty$ for $\lambda_j\le0$. $\square$
+
+*Scope.* This is a first-order propagation bound: the constants $c_j$ absorb the local non-normality (the change of
+basis that diagonalizes the Jacobian), and the linearization is valid while the propagated perturbation stays within the
+local-linear neighbourhood — exactly the regime in which a finite-resolution certificate is meaningful. Proposition 6
+shows the *form* $\Theta(\log(1/\epsilon)/\lambda)$ is not improvable.
+
+### Proposition 6 (the horizon is tight — matching lower bound)
+
+*Statement.* Fix an expansive channel on which the latent map is locally linear with multiplier $a=e^\lambda$,
+$\lambda>0$. There exist an exactly equivariant target $\Phi$ and an $\epsilon$-approximately-equivariant model — a
+*perfect* equivariant predictor $f=\Phi$ ($\delta=0$) and an encoder equal to the exact-equivariant one except for a
+single defect $E(g\cdot x)=\rho(g)E(x)+\epsilon u$ at one orbit point ($\lVert u\rVert=1$, $u$ in the channel) — such
+that $\big\lvert \mathrm{Err}_T(g\cdot x)-\mathrm{Err}_T(x)\big\rvert=\epsilon\,e^{\lambda T}$.
+
+*Proof.* Along $x$'s trajectory the model is exact, so $\mathrm{Err}_T(x)=0$. At $g\cdot x$, the encoder produces
+$E(g\cdot x)=\rho(g)E(x)+\epsilon u$. Because $f=\Phi$ is equivariant and acts linearly with multiplier $a$ on the
+channel, the $T$-step rollout is
+$$
+\hat z_T(g\cdot x)=f^{T}\big(\rho(g)E(x)+\epsilon u\big)=\rho(g)\,f^{T}(E x)+a^{T}\epsilon u,
+$$
+using linearity to split the defect and equivariance of $f^T$ (Lemma 1) on the first term. The target is, by (A3) and
+encoder-exactness off the single defect, $E(\Phi^T(g\cdot x))=E(g\cdot\Phi^T x)=\rho(g)E(\Phi^T x)=\rho(g)f^T(Ex)$.
+Subtracting and using (A4),
+$$
+\mathrm{Err}_T(g\cdot x)=\lVert a^T\epsilon u\rVert=\epsilon\,e^{\lambda T},\qquad\text{so}\quad\big\lvert\mathrm{Err}_T(g\cdot x)-\mathrm{Err}_T(x)\big\rvert=\epsilon\,e^{\lambda T}. \square
+$$
+Thus the largest horizon with orbit-variation $\le\epsilon_{\mathrm{res}}$ is
+$T=\frac1\lambda\log\frac{\epsilon_{\mathrm{res}}}{\epsilon}=\Theta\!\big(\frac1\lambda\log\frac1\epsilon\big)$, matching
+the upper bound of Theorem B. Consequently a certificate derived from an $\epsilon>0$ equivariance residual cannot
+promise predictability beyond $T\sim\frac1\lambda\log\frac1\epsilon$ on any expansive channel (worst case over admissible
+targets); only $\epsilon=0$ (exact equivariance) or $\lambda\le0$ (conservation/contraction) gives an unbounded horizon.
+
+### Proposition 7 (scope — when the local spectrum certifies a learned model's horizon)
+
+*Statement.* Let $\phi$ have an ergodic invariant measure $\mu$ with $\log^+\lVert D\phi\rVert\in L^1(\mu)$. **(a)
+Non-degenerate ($\lambda_1>0$):** the certified horizon obeys $T(\epsilon)=\frac1{\lambda_1}\log(\epsilon_{\mathrm{res}}/\epsilon)+o(t)$, with $\lambda_1$ the measurable
+asymptotic rate. **(b) Degenerate ($\lambda_1\approx0$):** the leading-order log-law degenerates and the one-step
+spectrum carries no finite-slope horizon rate.
+
+*Proof.* By the Oseledets multiplicative ergodic theorem, for $\mu$-a.e. $x$ and Lebesgue-a.e. perturbation direction
+$v$ (those not lying in the measure-zero slower Oseledets subspaces), $\frac1t\log\lVert D\phi^t_x v\rVert\to\lambda_1$.
+Hence the perturbation magnitude satisfies $\lVert\delta_t\rVert=\lVert D\phi^t_x v\rVert=e^{(\lambda_1+o(1))t}\lVert\delta_0\rVert$. **(a)** The certified horizon is the largest $T$ with
+$\lVert\delta_T\rVert\le\epsilon_{\mathrm{res}}$ starting from resolution $\epsilon$; solving
+$e^{(\lambda_1+o(1))T}\epsilon=\epsilon_{\mathrm{res}}$ gives
+$T(\epsilon)=\frac1{\lambda_1}\log(\epsilon_{\mathrm{res}}/\epsilon)+o(T)$, which is Theorem B's law with $\lambda_1$ the
+Oseledets rate. **(b)** If $\lambda_1=0$ (or $\to0$), the exponent in $\lVert\delta_t\rVert=e^{(\lambda_1+o(1))t}$
+vanishes to leading order, so $\log\lVert\delta_t\rVert$ is $o(t)$: there is no finite, $\epsilon$-independent slope
+$\mathrm dT/\mathrm d\log(1/\epsilon)$, the leading-order law is empty, and the one-step Jacobian spectrum does not
+determine a multi-step horizon. $\square$
+
+The dichotomy is the *scope* of the horizon certificate: informative exactly on spectrally non-degenerate dynamics. It
+predicts, rather than patches, the failure on near-neutral dynamics (the learned-PushT-interior probe, where $\lambda_1\approx0$ and the local spectrum does not predict the rollout, $R^2\approx0.02$). The *lift* to a learned
+$\hat\phi$ — that $\hat\phi$ reproduces $\lambda_1$ — is not a corollary of shadowing (which controls trajectory
+closeness, not the asymptotic exponent, the latter being only upper-semicontinuous under $C^1$ perturbation); it is the
+finite-horizon continuity statement of Proposition 8.
+
+### Proposition 8 (finite-horizon exponent transfer)
+
+*Statement.* The finite-time exponent $\lambda_1^{(T)}(\phi)=\frac1T\,\mathbb E_x\log\lVert D\phi^T_x\rVert$ is locally
+Lipschitz in $\phi$ in the $C^1$ topology. Consequently a learned $\hat\phi$ with $\lVert\hat\phi-\phi\rVert_{C^1}\le\delta$ recovers the certified-horizon staircase slope up to an $O(\delta)$ model-fidelity bias plus the
+finite-$T$ truncation $\lvert\lambda_1^{(T)}-\lambda_1\rvert$; under a dominated splitting the bias is $T$-uniform.
+
+*Proof.* Fix $T$ and a base point $x$ and let $D\phi^T_x=\prod_{t=0}^{T-1}D\phi_{\phi^t x}$ be the $T$-step cocycle. For
+two dynamics $\phi,\hat\phi$ with $\lVert\hat\phi-\phi\rVert_{C^1}\le\delta$, each one-step Jacobian satisfies $\lVert
+D\hat\phi-D\phi\rVert\le\delta$ (definition of the $C^1$ norm), and the orbits stay $O(\delta)$-close over the finite
+horizon $T$ (Grönwall over $T$ bounded steps). A finite product of matrices is a Lipschitz function of its factors on
+any bounded set: if $\lVert A_t\rVert,\lVert \hat A_t\rVert\le M$ and $\lVert\hat A_t-A_t\rVert\le\delta'$, then
+$\lVert\prod\hat A_t-\prod A_t\rVert\le T M^{T-1}\delta'$, and $\log\lVert\cdot\rVert$ is Lipschitz away from $0$ (the
+norm is bounded below by hyperbolicity along the expanding direction). Averaging over $x$ and dividing by $T$,
+$$
+\big\lvert \lambda_1^{(T)}(\hat\phi)-\lambda_1^{(T)}(\phi)\big\rvert\;\le\;L_T\,\delta,
+$$
+a (horizon-dependent) Lipschitz bound — the $O(\delta)$ fidelity bias. The staircase slope estimates
+$\lambda_1^{(T)}(\hat\phi)$; the remaining gap to the *asymptotic* $\lambda_1$ is the finite-$T$ truncation
+$\lvert\lambda_1^{(T)}(\phi)-\lambda_1\rvert\to0$. Under a dominated splitting the asymptotic exponent is continuous in
+the dynamics (Bochi–Viana), so the constant $L_T$ can be taken uniform in $T$ and the truncation decays uniformly,
+making the recovered exponent $T$-uniformly close to $\lambda_1$ up to $O(\delta)$. The bound is **falsifiable**: the
+recovered exponent must tighten as $\delta$ (one-step error) drops — confirmed empirically (Rössler: relative error
+$44\%\to8\%$ as training fidelity improves). $\square$
+
+*Honest caveat.* We verify $C^1$-closeness only through the one-step error (an $L^2$ proxy for the Jacobian distance),
+and the high-dimensional experiment shows this proxy degrades with dimension: a one-step-accurate dense model can have
+an inaccurate Jacobian and hence a wrong spectrum; structure (a $\mathbb{Z}_N$-equivariant, banded-Jacobian model)
+restores it. The dominated-splitting hypothesis is assumed, not certified, for the learned models.
+
+### Proposition 4 (isotypic placement)
+
+*Statement.* A conserved charge $Q:\mathcal Z\to W$ that is $G$-equivariant (intertwines $\rho$ with a representation
+$\tau$ on $W$, $Q\circ\rho(g)=\tau(g)\circ Q$) has its non-trivial action confined to the $\tau$-isotypic component of
+$\rho$: a scalar invariant (trivial $\tau$, $\ell{=}0$) reads off the invariant block; a vector charge ($\tau$ the
+standard $\ell{=}1$ representation, e.g. angular momentum) reads off the $\ell{=}1$ block and, when built bilinearly
+from $\ell{=}1$ latent features, is realized by the **unique** equivariant degree-2 map — the cross product.
+
+*Proof.* Decompose $\rho\cong\bigoplus_\mu \rho_\mu^{\oplus n_\mu}$ into isotypic components ($\rho_\mu$ the distinct
+irreducibles). Restricted to the source, the equivariant linear part of $Q$ is an intertwiner $\rho\to\tau$. By Schur's
+lemma, $\mathrm{Hom}_G(\rho_\mu,\tau)=0$ unless $\rho_\mu\cong\tau$, so any equivariant (linear) read-out of a
+$\tau$-type charge must vanish on every isotypic block $\mu\not\cong\tau$ and is supported on the $\tau$-isotypic block —
+"placement is forced, not chosen." For a **bilinear** charge built from two $\ell{=}1$ (vector) latent features in
+$\mathrm{SO}(3)$, the Clebsch–Gordan decomposition $\mathbf 1\otimes\mathbf 1=\mathbf 0\oplus\mathbf 1\oplus\mathbf 2$
+contains the target $\ell{=}1$ ($\mathbf 1$) exactly once; the corresponding equivariant projection is the antisymmetric
+part, i.e. the cross product (the scalar $\mathbf 0$ is the dot product, the $\mathbf 2$ the symmetric-traceless part).
+Uniqueness up to scale is again Schur ($\dim\mathrm{Hom}_G(\mathbf 1\otimes\mathbf 1,\mathbf 1)=1$). $\square$
+
+### Proposition 5 (conservation $\Rightarrow$ unbounded horizon)
+
+*Statement.* Let $Q:\mathcal Z\to W$ be a charge the model conserves to one-step defect $\eta$, i.e. $\lVert
+Q(f(z,a))-Q(z)\rVert\le\eta$ for all $(z,a)$ along the rollout, and let the true dynamics conserve $Q$ exactly
+($Q(z_{t+1})=Q(z_t)$), with matched initial charge $Q(\hat z_0)=Q(z_0)$. Then the $T$-step charge-value error obeys
+$\lVert Q(\hat z_T)-Q(z_T)\rVert\le T\eta$ — linear in $T$, never $e^{\lambda T}$ — and at $\eta=0$ the charge is
+certified to all horizons.
+
+*Proof.* Telescoping the model rollout and using the one-step defect at each step,
+$$
+\lVert Q(\hat z_T)-Q(\hat z_0)\rVert=\Big\lVert\sum_{t=0}^{T-1}\big(Q(\hat z_{t+1})-Q(\hat z_t)\big)\Big\rVert
+\le\sum_{t=0}^{T-1}\lVert Q(\hat z_{t+1})-Q(\hat z_t)\rVert\le T\eta.
+$$
+The true charge is conserved, $Q(z_T)=Q(z_0)$, and $Q(\hat z_0)=Q(z_0)$ by hypothesis, so
+$\lVert Q(\hat z_T)-Q(z_T)\rVert=\lVert Q(\hat z_T)-Q(z_0)\rVert=\lVert Q(\hat z_T)-Q(\hat z_0)\rVert\le T\eta$. The growth
+is linear; at $\eta=0$ it is $0$ for all $T$, an unbounded certified horizon for the charge value. $\square$
+
+*Scope.* The statement is about the **charge value** $Q(\hat z_T)$, not the full latent state, and the defect $\eta$ is
+exact only under an equivariant symplectic discretization of a $G$-invariant Hamiltonian flow (momenta exactly
+conserved, energy to $O(\Delta t^p)$); for a general learned $f$, $\eta$ is measured. The converse fails: a slow
+($\lambda\le0$) channel need not carry a conserved charge.
+
+## C. Reproducibility
+
+All experiments are CPU/single-GPU, run with explicit random seeds, and **honestly gated**: a run prints
+`INCONCLUSIVE` rather than loosen a threshold. Anonymized code accompanies the submission; every figure and the
+per-seed JSONs are regenerated by the scripts below, and load-bearing claims carry equivariance/protocol unit tests.
+
+Experiment-to-code map (claim — code — test — seeds):
+
+- **E1** configuration certificate ($\mathbb{Z}_2^6$: $6\!\to\!64$) — `experiments/step49_iching_certificate.py` — (1 seed).
+- **E2** horizon staircase (controlled spectrum; analytic tightness) — `experiments/step52_horizon_resolution.py`, `step65` — `tests/test_step52_horizon_resolution.py` — (3).
+- **E2** horizon on a learned model of *real* chaos (Lorenz) — `experiments/step70_lorenz_horizon.py` — `tests/test_step70.py` — (3).
+- **E2** horizon across a *class* (Hénon, Rössler, Lorenz) — `experiments/step71_multichaos_horizon.py` — `tests/test_step71.py` — (3).
+- **E2** **high-dimensional** spectral horizon (40-D Lorenz-96; structure vs. dense) — `experiments/step74_lorenz96_spectrum.py` — `tests/test_step74.py` (Liouville $\sum_j\lambda_j=-N$) — (3).
+- **Proposition 6** tightness (numerical confirmation of the lower bound) — `experiments/step65_horizon_tightness.py` — (3).
+- Certificate on real contact dynamics (PushT) — `experiments/step59_pusht_certificate.py` — (3).
+- **E3** approximate-symmetry degradation — `experiments/step53_approximate_symmetry.py` — (3).
+
+Multi-seed steps commit per-seed JSONs to `papers/figures/`; every range in the text is the seed min–max from those
+files. The estimator behind the horizon experiments is anchored by an exact physical invariant: for Lorenz-96 the
+vector-field divergence is $-N$, so $\sum_j\lambda_j=-N$ exactly, which the Benettin-QR estimator reproduces to $0.0\%$
+(`tests/test_step74.py`) before any learned-model spectrum is trusted. The full test suite passes together; everything
+is CPU/MPS (no CUDA required). A single command rebuilds the paper end-to-end from the committed JSONs.

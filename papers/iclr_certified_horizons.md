@@ -441,4 +441,4 @@ already trusts are the one-step slice of this picture. *Scale buys interpolation
 
 ---
 
-*Companion note.* This paper is a focused extraction of a broader certified-world-models program; the full experiment suite and complete proofs appear in a companion manuscript (omitted here for anonymity).
+*Reproducibility and scope.* Full proofs of all claims are in **Appendix B**; a reproducibility appendix (anonymized code, experiment-to-code map, seed/gate discipline) is in **Appendix C**. This paper is a focused extraction of a broader certified-world-models program; the complete experiment suite (embodied benchmarks, discovery/generation) is deferred to an extended version.
