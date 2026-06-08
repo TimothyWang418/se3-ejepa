@@ -243,6 +243,123 @@ def certificate(model, mu, sd, N: int, eps: float = 0.01, n_steps: int = 2000, w
             "T1": T1, "T1_lo": T1_lo, "T1_hi": T1_hi, "eps": eps}
 
 
+# --------------------------------------------------------------------------------------------------------------- #
+# Phase 3 — an EXACTLY Z_N-orbit-equivariant PLANNER (model-predictive control). Given the trained action-conditioned
+# WM and a raw initial state x0, return a control sequence u_{0:H} that drives the predicted trajectory toward the
+# UNSTABLE uniform fixed point x_i = F (chaos suppression). We work entirely in the WM's NORMALIZED coordinates.
+#
+# Exact-equivariance construction (a deterministic GRADIENT planner from the Z_N-invariant zero control). This mirrors
+# the *principle* behind step73's equivariant CEM (cf. tests/test_step73_planner_equivariance.py, link iii): an
+# optimizer that is equivariant-by-construction, started from a symmetric initialization, stays exactly equivariant
+# when the model is exactly equivariant and the cost is invariant. step73 achieved this for SO(2) via isotropic
+# covariance + scene-covariant (rotated-noise) CEM; for the discrete cyclic group Z_N the *cleanest* equivariant
+# optimizer is plain projected gradient descent from u=0 — no stochastic noise to rotate, so nothing can break the
+# symmetry. Concretely, writing the shift S = roll(., s):
+#   * the WM is exactly equivariant:        phi_hat(S x, S u) = S phi_hat(x, u)              (L96ControlledConv)
+#   * the target x_target = (F - mu)/sd is a CONSTANT vector, so S x_target = x_target;
+#   * hence the rollout cost J(u; x0) = sum_t || x_hat_t - x_target ||^2 is JOINTLY Z_N-invariant:
+#         J(S u; S x0) = J(u; x0)                                                            (sum over sites)
+#   * therefore the gradient is equivariant:  grad_u J(S u; S x0) = S grad_u J(u; x0)        (S is a permutation
+#         == orthogonal, and it commutes with the per-site clamp and the elementwise GD update);
+#   * starting from u^(0) = 0 (which satisfies S.0 = 0), by induction every projected-GD iterate commutes with S, so
+#         plan(S x0) = S plan(x0)   EXACTLY (to float round-off).
+# We use plain fixed-step GD + a per-coordinate clamp |u| <= u_max (the box bound is permutation-equivariant under Z_N,
+# unlike SO(2) where a box would break rotation symmetry and a DISK bound is required) so the iteration is a pure
+# elementwise/linear map that provably commutes with the shift; no Adam state, no momentum, no stochasticity.
+# Note (honest): gradients through a chaotic rollout amplify with H (the same lambda_1 the Phase-2 certificate reads),
+# so this is kept to a MODEST horizon — that "horizon matters" tension is itself part of the co-demonstration story.
+# --------------------------------------------------------------------------------------------------------------- #
+def plan_control(model, x0, mu, sd, H: int, u_max: float = 1.0, n_iter: int = 40, lr: float = 0.1,
+                 seed: int = 0) -> torch.Tensor:
+    r"""Plan a chaos-suppressing control sequence $u_{0:H}$ for the action-conditioned WM, **exactly**
+    $\mathbb{Z}_N$-orbit-equivariant: shifting the initial condition shifts the plan, ``plan(roll(x0, s)) ==
+    roll(plan(x0), s)`` to float round-off.
+
+    A deterministic projected-gradient planner started from the $\mathbb{Z}_N$-invariant zero control. The predicted
+    rollout in the WM's **normalized** frame, $z_0=(x_0-\mu)/\sigma$, $z_{t+1}=\hat\phi(z_t,u_t)$, is scored against the
+    unstable uniform fixed point $x_i=F$ — i.e. $x_{\rm target}=(F-\mu)/\sigma$ (a **constant** vector) — by the
+    $\mathbb{Z}_N$-**invariant** cost $J=\sum_{t=1}^{H}\lVert z_t-x_{\rm target}\rVert^2$. Because $\hat\phi$ is exactly
+    equivariant and $J$ is invariant, $\nabla_u J(Su;Sx_0)=S\,\nabla_u J(u;x_0)$ for any cyclic shift $S$; starting at
+    $u\equiv 0$ (which is shift-invariant) every clamped GD step commutes with $S$, so the returned plan is exactly
+    orbit-equivariant by construction. The control is clamped to $\lvert u\rvert\le u_{\max}$ each step (a per-site box,
+    which **is** $\mathbb{Z}_N$-equivariant).
+
+    Args:
+        model: trained (or untrained — equivariant by construction) WM, ``model(z, u) -> z_next`` in normalized coords.
+        x0: ``(N,)`` **RAW** (un-normalized) initial state; normalized internally by ``(x0 - mu) / sd``.
+        mu, sd: ``(N,)`` normalization stats (from :func:`collect_data`).
+        H: planning horizon (number of control steps; returns ``(H, N)``). Keep modest — see the chaotic-gradient note.
+        u_max: per-coordinate control bound (box, $\mathbb{Z}_N$-equivariant). n_iter, lr: GD iterations and step size.
+        seed: accepted for API symmetry / determinism; the planner is deterministic (init $u=0$), so it only pins the
+            RNG state and does not affect the result.
+
+    Returns:
+        ``(H, N)`` ``float64`` control sequence, clamped to $[-u_{\max}, u_{\max}]$, exactly $\mathbb{Z}_N$-equivariant.
+
+    Shapes: ``x0: (N,)`` raw -> ``u: (H, N)`` (normalized-frame rollout internally; controls live in raw forcing units).
+    """
+    torch.manual_seed(seed)                                    # determinism only; planner init is the fixed u=0
+    model.eval()
+    mu = mu.to(DTYPE); sd = sd.to(DTYPE)
+    N = x0.shape[-1]
+    z0 = ((x0.to(DTYPE) - mu) / sd).detach()                   # normalized initial state (no grad through x0)
+    x_target = ((F_FORCE - mu) / sd).detach()                  # constant target = uniform fixed point x_i = F
+
+    u = torch.zeros(H, N, dtype=DTYPE, requires_grad=True)     # Z_N-invariant init: S . 0 = 0
+    for _ in range(n_iter):
+        z = z0.clone()
+        cost = z.new_zeros(())
+        for t in range(H):
+            z = model(z, u[t])                                 # one WM step under the planned control u_t
+            cost = cost + ((z - x_target) ** 2).sum()          # Z_N-invariant per-step cost (sum over sites)
+        (grad,) = torch.autograd.grad(cost, u)                 # grad_u J; equivariant because phi_hat & J are
+        with torch.no_grad():
+            u -= lr * grad                                     # fixed-step GD: a pure elementwise/linear update
+            u.clamp_(-u_max, u_max)                            # per-site box bound (Z_N-equivariant)
+    return u.detach()
+
+
+def rollout_cost(model, x0, mu, sd, u: torch.Tensor) -> float:
+    r"""Open-loop predicted chaos-suppression cost of a control sequence ``u`` under the WM, in normalized coords:
+    $\sum_{t=1}^{H}\lVert z_t-x_{\rm target}\rVert^2$ with $z_0=(x_0-\mu)/\sigma$, $z_{t+1}=\hat\phi(z_t,u_t)$ and the
+    constant target $x_{\rm target}=(F-\mu)/\sigma$. Used to compare a plan against the zero control (smoke)."""
+    model.eval()
+    mu = mu.to(DTYPE); sd = sd.to(DTYPE)
+    with torch.no_grad():
+        z = ((x0.to(DTYPE) - mu) / sd)
+        x_target = (F_FORCE - mu) / sd
+        cost = 0.0
+        for t in range(u.shape[0]):
+            z = model(z, u[t].to(DTYPE))
+            cost += float(((z - x_target) ** 2).sum())
+    return cost
+
+
+def _smoke_phase3() -> None:
+    r"""Train a small equivariant conv WM, pick an on-attractor state, and confirm the planner's control REDUCES the
+    open-loop predicted chaos-suppression cost vs the zero control. Not a pytest test (it trains)."""
+    torch.manual_seed(0)
+    N = 12
+    data = collect_data(N=N, n_traj=2000, K=3, seed=0)
+    model, mu, sd, relmse = train_wm("conv", N, data, seed=0, epochs=20, K=3)
+    # On-attractor initial state (raw): a mid-trajectory point of the true uncontrolled field.
+    traj = step74.attractor_traj(N, 400, 0, "cpu").double()
+    x0 = traj[len(traj) // 2].clone()
+
+    H = 6
+    u_zero = torch.zeros(H, N, dtype=DTYPE)
+    u_plan = plan_control(model, x0, mu, sd, H=H, u_max=1.0, n_iter=40, lr=0.1, seed=0)
+    cost_zero = rollout_cost(model, x0, mu, sd, u_zero)
+    cost_plan = rollout_cost(model, x0, mu, sd, u_plan)
+    print(f"[step79 phase3 smoke] N={N} conv WM one-step relMSE {relmse:.2e}", file=sys.stderr)
+    print(f"[step79 phase3 smoke] H={H} predicted cost: zero-control {cost_zero:.4f} -> planned {cost_plan:.4f} "
+          f"({100.0 * (1.0 - cost_plan / cost_zero):.1f}% reduction)", file=sys.stderr)
+    assert cost_plan < cost_zero, \
+        f"planner did not reduce predicted cost: planned {cost_plan:.4f} >= zero-control {cost_zero:.4f}"
+    print("[step79 phase3 smoke] PASS: the equivariant planner reduces the open-loop predicted chaos-suppression "
+          "cost vs the zero control.", file=sys.stderr)
+
+
 def _smoke_phase2() -> None:
     r"""Train a small equivariant conv WM and read its certified horizon $T_1(\epsilon)$ with a bootstrap CI off the
     autonomous ($u{=}0$) map. Not a pytest test (it trains). Confirms the learned predictor is chaotic ($\lambda_1>0$)

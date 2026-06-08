@@ -35,6 +35,19 @@ def test_world_model_conv_is_equivariant_mlp_is_not() -> None:
     print("PASS: controlled conv WM is Z_N-equivariant; MLP baseline is not.")
 
 
+def test_planner_is_orbit_equivariant() -> None:
+    torch.manual_seed(0); N = 12
+    model = s79.make_equivariant_wm(N).double()       # untrained equivariant WM is enough (equivariant by construction)
+    mu = torch.zeros(N, dtype=DT); sd = torch.ones(N, dtype=DT)
+    x0 = torch.randn(N, dtype=DT)
+    for s in (1, 5):
+        u_a = s79.plan_control(model, x0, mu, sd, H=6, seed=0)
+        u_b = s79.plan_control(model, torch.roll(x0, s), mu, sd, H=6, seed=0)
+        assert torch.allclose(u_b, torch.roll(u_a, s, dims=-1), atol=1e-6), \
+            f"shift {s}: planner not orbit-equivariant (max diff {(u_b-torch.roll(u_a,s,-1)).abs().max():.2e})"
+    print("PASS: planner commutes with the Z_N shift (exactly orbit-equivariant).")
+
+
 def test_true_controlled_map_certificate_is_chaotic() -> None:
     import numpy as np
     import step78_certified_horizon_ci as s78
@@ -54,5 +67,6 @@ def test_true_controlled_map_certificate_is_chaotic() -> None:
 if __name__ == "__main__":
     test_controlled_dynamics_is_ZN_equivariant()
     test_world_model_conv_is_equivariant_mlp_is_not()
+    test_planner_is_orbit_equivariant()
     test_true_controlled_map_certificate_is_chaotic()
-    print("step79 phase-0+1 guard PASS.")
+    print("step79 phase-0+1+3 guard PASS.")
