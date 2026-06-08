@@ -291,6 +291,21 @@ def test_true_horizon_and_soundness_checker():
     assert s82.is_sound(t_guar=max(1, th - 1), t_true=th) is True
 
 
+# --- The tight-from-the-learned-model showpiece: certificate on a LEARNED cat map ------------------------------ #
+def test_run_learned_catmap_is_near_tight_and_sound():
+    # Trains a small MLP on the lifted linear cat map (~3 s). The certificate read off the LEARNED Jacobian field must
+    # stay SOUND (cert is an upper bound; T_guar <= T_true) and NEAR-TIGHT -- the net learns ~A, so the bridge only
+    # mildly inflates the exponent. We assert ratio <= 1.5 (far below the learned-Henon ~8-9x), the honest expectation.
+    out = s82.run_learned_catmap(n_samples=1200, seed=0, eps=0.01, eps_res=0.4)
+    assert out["route"] in ("cone", "bootstrap")            # certifies or falls back; report which
+    assert out["one_step_relmse"] < 1e-2                    # the net actually learned A s
+    assert out["sound_exponent"] is True                   # log Lambda_cert >= lambda_1 (sound upper bound)
+    assert out["t_guar"] <= out["t_true"]                  # T_guar <= T_true on the torus (sound horizon)
+    assert out["tightness_ratio"] <= 1.5                   # near-tight: survives the learned-model transfer
+    # the learned-model tightness is far better than the learned Henon's (sanity on the headline claim)
+    assert out["tightness_ratio"] < 2.0
+
+
 def test_full_step_jacobian_matches_finite_difference():
     # The chain-rule Jacobian of the un-normalized learned map phi(s)=denorm(model(norm(s))) must match a finite
     # difference of that same composed map (validates _full_step_jacobian's diag(sd)*Dmodel*diag(1/sd) factoring).

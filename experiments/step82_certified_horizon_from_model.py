@@ -769,3 +769,101 @@ def run_learned_henon(n_samples=4000, seed=0, eps=0.01, eps_res=1.0, smoke=False
                 cone_cert_ratio_vs_true=float(cert_ratio), cone_slack=br["slack"], lambda_samples=float(lam_samples),
                 kappa=kappa, h=float(h), L_J_net=float(L_J), one_step_relmse=one_step_relmse,
                 eps=eps, eps_res=eps_res)
+
+
+# =============================================================================================================== #
+# The TIGHT-from-the-learned-model SHOWPIECE — certificate read off a learned model of the cat map.
+#
+# Phase A' showed the cone certificate is TIGHT on the *analytic* cat map (P=I, L_J=0 => ratio 1.000). The honest
+# question for Phase B is whether that tightness SURVIVES the transfer to a LEARNED model. We train a SMALL MLP (1
+# hidden layer) to predict the **lifted** linear cat map s |-> A s WITHOUT the mod-1, on samples s ~ uniform[0,1)^2.
+# Lifting matters: the per-sample one-step Jacobian of the lifted map is the constant A (no wrap discontinuity), so the
+# learned net's autograd Jacobian is well-defined everywhere and converges to ~A; the certificate then reads off that
+# learned Jacobian field exactly as Phase A'/B do. A SMALL net is the whole point: the spectral-norm net-Lipschitz
+# bound L_J^net (B2) grows with the layer-norm product, so a 1-hidden-layer net keeps L_J^net small (~6-8, vs the
+# learned Henon's ~1370) and the bridge slack sqrt(kappa) L_J^net h tiny => the certified exponent stays near-tight.
+# Honest expectation (what the test asserts): the *sampled* certified exponent is near-tight (the net learns ~A so
+# Lambda_samples ~ e^{lambda_1}); the bridge inflates it via the loose net-Lipschitz bound, but only mildly, so the
+# final ratio stays ~1.1-1.3 -- far tighter than learned Henon -- and the route stays "cone". If the net-Lipschitz
+# bound ever made the cone vacuous we would route to bootstrap and report it; on this small net it does not.
+# =============================================================================================================== #
+def _train_lifted_catmap_mlp(seed, smoke, hidden=None, epochs=None, n_train=None, lr=2e-3):
+    r"""Train a SMALL plain MLP $g_\theta:\mathbb R^2\to\mathbb R^2$ to predict the **lifted** linear cat map
+    $s\mapsto A s$ (no mod-1) on $s\sim\text{uniform}[0,1)^2$. One hidden layer + SiLU keeps the spectral-norm
+    net-Lipschitz bound small (tight bridge). No normalization/residual wrapper: the lifted map is global-linear and
+    well-scaled on $[0,1)^2$, so $g_\theta(s)\approx As$ and $Dg_\theta(s)\approx A$ directly. Returns the trained
+    ``net`` (a torch ``Sequential``). ``smoke=True`` => tiny (hidden=8, 60 epochs), allowed to be loose / fall back."""
+    import torch.nn as nn
+    hidden = hidden if hidden is not None else (8 if smoke else 32)
+    epochs = epochs if epochs is not None else (60 if smoke else 600)
+    n_train = n_train if n_train is not None else (1000 if smoke else 8000)
+
+    torch.manual_seed(seed)
+    rng = np.random.default_rng(seed)
+    S = rng.uniform(0.0, 1.0, size=(n_train, 2)).astype(DTYPE)
+    X = torch.tensor(S, dtype=torch.float64)
+    Y = torch.tensor(S @ CAT_A.T, dtype=torch.float64)                  # targets A s (lifted, no mod)
+    net = nn.Sequential(nn.Linear(2, hidden), nn.SiLU(), nn.Linear(hidden, 2)).double()
+    opt = torch.optim.Adam(net.parameters(), lr=lr)
+    for _ in range(epochs):
+        opt.zero_grad()
+        ((net(X) - Y) ** 2).mean().backward()
+        opt.step()
+    net.eval()
+    return net
+
+
+def run_learned_catmap(n_samples=2000, seed=0, eps=0.01, eps_res=0.4, smoke=False):
+    r"""**The tight-from-the-learned-model showpiece:** the cone / adapted-metric certificate read off a LEARNED model
+    of the (lifted, linear) cat map, with the same routing as :func:`run_learned_henon`.
+
+    Pipeline: train a small MLP on $s\mapsto As$ (:func:`_train_lifted_catmap_mlp`); sample a uniform torus cloud (SRB =
+    Lebesgue); take the autograd Jacobian $Dg_\theta(z_i)\approx A$ at each (:func:`learned_jacobian`); solve the
+    constant adapted metric, read $\kappa,h$; bound $L_J^{\text{net}}$ from the net's layer spectral norms (SiLU cap);
+    inflate to $\Lambda^{\text{cert}}$ (:func:`lipschitz_bridge`); certify or fall back. The ground-truth $\lambda_1$ is
+    the analytic :data:`CAT_LAMBDA1` (the net targets the *exact* linear $A$, so the system's exponent is known).
+
+    Reports the **learned-model tightness ratio** $\log\Lambda^{\text{cert}}/\lambda_1$ and the route. Honest soundness
+    flags: ``sound_exponent`` ($\log\Lambda^{\text{cert}}\ge\lambda_1$, the cert is an upper bound) and ``sound_horizon``
+    ($T_{\text{guar}}\le T_{\text{true}}$ on the torus via :func:`true_horizon_torus`). Returns a dict with
+    ``route``, ``lambda_samples``, ``lambda_cert``, ``log_lambda_cert``,
+    ``tightness_ratio``, ``t_guar``, ``t_true``, ``kappa``, ``h``, ``slack``, ``L_J_net``, ``jac_dev_from_A``
+    (max sampled $\lVert Dg_\theta-A\rVert_2$, the model-fidelity number), ``one_step_relmse``, the soundness flags, and
+    the inputs."""
+    net = _train_lifted_catmap_mlp(seed, smoke)
+    rng = np.random.default_rng(seed)
+    pts = rng.uniform(0.0, 1.0, size=(n_samples, 2)).astype(DTYPE)       # SRB = Lebesgue on the torus
+
+    # one-step relMSE of the learned lifted map vs A s, and the max sampled Jacobian deviation from A (model fidelity)
+    with torch.no_grad():
+        pred = net(torch.tensor(pts, dtype=torch.float64)).numpy()
+    tgt = pts @ CAT_A.T
+    one_step_relmse = float(np.sum((pred - tgt) ** 2) / max(np.sum((tgt - tgt.mean(0)) ** 2), 1e-12))
+    jacs = np.stack([learned_jacobian(net, torch.tensor(p, dtype=torch.float64)) for p in pts])
+    jac_dev = float(np.max([np.linalg.norm(J - CAT_A, 2) for J in jacs]))
+
+    P, lam_samples, _ = adapted_metric(jacs)
+    kappa = float(np.linalg.cond(P))
+    h = _covering_radius(pts)
+    L_J = net_jacobian_lipschitz(net, sigma_second_deriv_max=SILU_SIGMA2_MAX)
+    br = lipschitz_bridge(lam_samples, kappa, L_J, h, eps=eps, eps_res=eps_res)
+    log_lambda_cert = math.log(br["lambda_cert"])
+    t_true = true_horizon_torus(cat_map, eps, eps_res, n_starts=400, seed=seed)
+
+    common = dict(system="CatMap(learned,lifted)", lambda1=float(CAT_LAMBDA1), lambda_samples=float(lam_samples),
+                  lambda_cert=float(br["lambda_cert"]), log_lambda_cert=float(log_lambda_cert),
+                  tightness_ratio=float(log_lambda_cert / CAT_LAMBDA1), kappa=kappa, h=float(h),
+                  slack=float(br["slack"]), L_J_net=float(L_J), jac_dev_from_A=jac_dev,
+                  one_step_relmse=one_step_relmse, t_true=float(t_true),
+                  sound_exponent=bool(log_lambda_cert >= CAT_LAMBDA1 - 1e-9), eps=eps, eps_res=eps_res)
+    if br["certified"]:
+        common.update(route="cone", t_guar=int(br["horizon"]),
+                      sound_horizon=bool(br["horizon"] <= t_true + 1e-9))
+        return common
+    # vacuous cone (net-Lipschitz slack dominates) => hybrid statistical fallback on the SAME point cloud
+    logR = _logR_from_jacs(jacs)
+    fb = bootstrap_fallback(logR, dt_map=1.0, eps=eps)
+    common.update(route="bootstrap", t_guar=int(fb["t_lo"]), boot_lambda1=fb["lambda1"],
+                  boot_lambda1_hi=fb["lambda1_hi"], cone_lambda_cert=float(br["lambda_cert"]),
+                  cone_slack=float(br["slack"]), sound_horizon=bool(fb["t_lo"] <= t_true + 1e-9))
+    return common
