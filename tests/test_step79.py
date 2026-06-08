@@ -79,6 +79,47 @@ def test_stabilize_run_is_orbit_equivariant() -> None:
     print("PASS: stabilize_run is exactly Z_N-orbit-equivariant in the near-F start (controls + traj).")
 
 
+def test_certified_T1_steps_units_conversion() -> None:
+    # Phase 5b UNITS FIX: certificate()['T1'] is in TIME units; the certified horizon in MAP STEPS is T1/DTMAP, NOT
+    # round(T1). With DTMAP=0.01, a T1 of ~3 time units must convert to ~300 steps (NOT 3). Guards the load-bearing
+    # conversion the whole re-observation decision rests on. Also: abstain (T1=None) -> 1, and the >=1 clamp holds.
+    import step74_lorenz96_spectrum as s74
+    assert abs(s74.DTMAP - 0.01) < 1e-12, f"this test assumes DTMAP=0.01, got {s74.DTMAP}"
+    steps = s79.certified_T1_steps({"T1": 3.0701})
+    assert steps == round(3.0701 / s74.DTMAP) == 307, f"expected 307 map steps, got {steps}"   # NOT round(3.07)=3
+    assert steps != 3, "units bug: certified_T1_steps must NOT collapse a ~3-time-unit horizon to ~3 steps"
+    assert s79.certified_T1_steps({"T1": None}) == 1, "abstain (T1=None) must fall back to 1 step"
+    assert s79.certified_T1_steps({"T1": 0.001}) == 1, "horizon must be clamped to >= 1 step"
+    print(f"PASS: certified_T1_steps converts TIME->MAP STEPS (T1=3.07 -> {steps} steps, not 3).")
+
+
+def test_reobserve_run_interval_monotonicity() -> None:
+    # Phase 5b: reobserve_run with interval=1 re-observes EVERY step (never blind) -> ~zero violations and
+    # n_observations ~= T_total; with interval=T_total it observes only at the ends -> the MOST violations. The WM here
+    # is the (untrained) equivariant conv; its u=0 map differs from the true dynamics, so a long blind forecast WILL
+    # accumulate error -> the monotonicity is structural (more re-observation => no more violations than less).
+    torch.manual_seed(0); N = 12
+    model = s79.make_equivariant_wm(N).double()
+    mu = torch.zeros(N, dtype=DT); sd = torch.ones(N, dtype=DT)
+    T_total = 60
+    # A nontrivial true trajectory (uncontrolled field) the WM must forecast.
+    import step74_lorenz96_spectrum as s74
+    x_seq = s74.attractor_traj(N, T_total, 0, "cpu").double()[:T_total + 1]   # (T_total+1, N)
+    r_obs1 = s79.reobserve_run(model, mu, sd, N, x_seq, interval=1, eps=0.01)
+    r_full = s79.reobserve_run(model, mu, sd, N, x_seq, interval=T_total, eps=0.01)
+    # interval=1: observed every step -> all recorded errors are 0 -> zero violations; n_obs = T_total + 1 (incl. t=0).
+    assert r_obs1["violation_rate"] == 0.0, f"interval=1 should have zero violations, got {r_obs1['violation_rate']}"
+    assert r_obs1["n_observations"] == T_total + 1, \
+        f"interval=1 should observe every step (n_obs={T_total + 1}), got {r_obs1['n_observations']}"
+    # interval=T_total observes the fewest times and must have the HIGHEST violation rate of the two.
+    assert r_full["n_observations"] < r_obs1["n_observations"], "interval=T_total must observe fewer times"
+    assert r_full["violation_rate"] >= r_obs1["violation_rate"], \
+        f"longer interval must not have FEWER violations ({r_full['violation_rate']} vs {r_obs1['violation_rate']})"
+    print(f"PASS: reobserve_run monotone — interval=1 viol={r_obs1['violation_rate']:.2f} "
+          f"(n_obs={r_obs1['n_observations']})  <=  interval={T_total} viol={r_full['violation_rate']:.2f} "
+          f"(n_obs={r_full['n_observations']}).")
+
+
 def test_true_controlled_map_certificate_is_chaotic() -> None:
     import numpy as np
     import step78_certified_horizon_ci as s78
@@ -101,5 +142,7 @@ if __name__ == "__main__":
     test_planner_is_orbit_equivariant()
     test_closed_loop_control_is_orbit_flat()
     test_stabilize_run_is_orbit_equivariant()
+    test_certified_T1_steps_units_conversion()
+    test_reobserve_run_interval_monotonicity()
     test_true_controlled_map_certificate_is_chaotic()
-    print("step79 phase-0+1+3+4+5a guard PASS.")
+    print("step79 phase-0+1+3+4+5a+5b guard PASS.")
