@@ -447,7 +447,12 @@ its predictor-Jacobian spectrum — and the output is the certified region.
 
 This is implemented and unit-tested (`src/certify.py`): on the Experiment-1 model it certifies the full monoid from
 $2$ generator checks (residual $1.2\times10^{-7}$) and returns $48$ contractive channels certified to *every*
-horizon plus the binding expansive channel's $\log(1/\epsilon)$ horizon. The certificate is thus an operational tool,
+horizon plus the binding expansive channel's $\log(1/\epsilon)$ horizon. *The reported horizon is an interval, not a point:* the spectrum $\{\lambda_j\}$ is estimated with a
+block-bootstrap confidence interval calibrated against the Liouville anchor $\sum_j\lambda_j=-N$ where one exists
+(`experiments/step78`, `tests/test_step78.py`) — which captures estimation *noise* but **not** *misspecification*: a
+reproducibly-wrong model carries tight bars around a wrong spectrum (the dense MLP of §5.16 is the example), so the
+structural prior — not the error bar — is what makes the recovered spectrum trustworthy. *Statistics quantifies
+estimation noise; structure delivers correctness.* The certificate is thus an operational tool,
 not merely an interpretive claim.
 
 ---

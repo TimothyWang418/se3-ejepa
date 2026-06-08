@@ -249,7 +249,7 @@ Together: **the certified region is the coarse ($\epsilon$ large), invariant/con
 
 The certificate is *computable a priori*, without testing the unseen situation. Algorithm 1: (i) check (A1)–(A4) on
 the $k$ generators to a residual $\epsilon_{\max}$; (ii) estimate the predictor Jacobian spectrum $\{\lambda_j\}$ at the
-query latent; (iii) report, for a target situation $w\in\langle S\rangle$, horizon $T$, resolution $\epsilon$, whether
+query latent (reported with a block-bootstrap CI, calibrated against the Liouville anchor; `experiments/step78`); (iii) report, for a target situation $w\in\langle S\rangle$, horizon $T$, resolution $\epsilon$, whether
 $(w,T,\epsilon)$ lies in the certified region $\{|\Delta\mathrm{Err}|\le\epsilon\}$ implied by Theorem B / Proposition 6,
 escalating conserved channels to unbounded horizon via Proposition 5.
 
