@@ -133,10 +133,17 @@ def collect_data(N: int, n_traj: int, K: int, seed: int, u_max: float = 1.0):
         x = rk4_controlled(x, controls[:, k, :])
         targets_raw[:, k, :] = x
 
-    # Normalization stats over ALL visited states (starts + every rolled target).
+    # Normalization stats over ALL visited states (starts + every rolled target). We pool over BOTH the batch AND the
+    # N sites to a single SCALAR mean/std (broadcast back to length N), instead of per-site stats. Two reasons:
+    #   (i) the controlled Lorenz-96 attractor is statistically Z_N-symmetric (every site is dynamically equivalent), so
+    #       the per-site empirical mean/std differ ONLY by finite-sample noise -- a scalar is the symmetric estimator;
+    #   (ii) a scalar (equivalently, a roll-invariant constant vector mu*1, sd*1) is EXACTLY Z_N-invariant, S(mu*1)=mu*1.
+    #       This is what makes the normalized rollout commute with the cyclic shift: (roll(x,s)-mu)/sd = roll((x-mu)/sd,s).
+    #       Per-site mu/sd would inject an O(1) symmetry break into the normalized frame (mu,sd not roll-invariant), which
+    #       would degrade the planner's orbit-equivariance from machine precision to ~1e-1 (see Phase 4 orbit_flatness).
     visited = torch.cat([x0.unsqueeze(1), targets_raw], dim=1).reshape(-1, N)   # (n_traj*(K+1), N)
-    mu = visited.mean(0)
-    sd = visited.std(0) + 1e-8
+    mu = visited.mean().repeat(N)                              # scalar mean, broadcast to (N,): Z_N-invariant
+    sd = (visited.std() + 1e-8).repeat(N)                      # scalar std,  broadcast to (N,): Z_N-invariant
 
     starts = (x0 - mu) / sd
     targets = (targets_raw - mu) / sd                          # controls stay RAW (already bounded)
@@ -333,6 +340,143 @@ def rollout_cost(model, x0, mu, sd, u: torch.Tensor) -> float:
             z = model(z, u[t].to(DTYPE))
             cost += float(((z - x_target) ** 2).sum())
     return cost
+
+
+# --------------------------------------------------------------------------------------------------------------- #
+# Phase 4 — a CLOSED-LOOP MPC runner on the TRUE controlled dynamics, and the measurement that the equivariant
+# planner gives ORBIT-FLAT control (the *configuration* axis of the co-demonstration). At each MPC step we re-plan
+# from the current raw state (receding horizon), apply ONLY the first control u_0 to the TRUE rk4_controlled map, and
+# record the realized state. Because BOTH the planner and the true dynamics are exactly Z_N-equivariant, a cyclic
+# shift of the initial condition produces an exactly shifted closed-loop trajectory and an exactly shifted applied-
+# control sequence -- so the realized cost (a shift-invariant sum over sites) is INVARIANT along the orbit: the
+# closed-loop control is "orbit-flat" to machine precision (cost ratio -> 1.000, control mismatch ~ float round-off).
+# Concretely, writing the shift S = roll(., s):
+#   * plan(S x0) = S plan(x0)            (plan_control, exactly Z_N-orbit-equivariant)  => u_0(S x0) = S u_0(x0)
+#   * rk4_controlled(S x, S u) = S rk4_controlled(x, u)   (true field is jointly Z_N-equivariant in (x, u))
+#   * by induction every realized state x_t(S x0) = S x_t(x0), and every applied control u^{(t)}(S x0) = S u^{(t)}(x0);
+#   * the per-state target is F * 1 (a CONSTANT, S-invariant vector), so ||x_t - F 1|| is invariant under S
+#         => cost(S x0) = cost(x0) EXACTLY (to float round-off).
+# This exactness is independent of u_max and of whether the WM is trained: it is a structural symmetry statement.
+# u_max only sets how hard the planner can push (control AUTHORITY) -- we default it to 4.0 (not 1.0) so the closed
+# loop can MEANINGFULLY suppress the chaos (visible cost drop vs no control), which the later decision contrast needs.
+# --------------------------------------------------------------------------------------------------------------- #
+def closed_loop(model, x0, mu, sd, H: int, n_steps: int, u_max: float = 4.0, n_iter: int = 30, lr: float = 0.1,
+                seed: int = 0) -> dict:
+    r"""Closed-loop model-predictive control on the TRUE controlled Lorenz-96 dynamics, driving the state toward the
+    unstable uniform fixed point $x_i=F$ (chaos suppression). Receding-horizon MPC: starting from the **raw** state
+    ``x0``, for each of ``n_steps`` we re-plan a length-``H`` control sequence with :func:`plan_control` from the
+    *current* state, apply ONLY the first control $u_0$ to the TRUE map :func:`rk4_controlled` (zero-order hold), advance
+    the realized state, and record it.
+
+    Because both :func:`plan_control` and :func:`rk4_controlled` are exactly $\mathbb{Z}_N$-equivariant, the realized
+    closed-loop trajectory is exactly orbit-equivariant in ``x0`` (see :func:`orbit_flatness`).
+
+    Args:
+        model: action-conditioned WM, ``model(z, u) -> z_next`` in normalized coords (equivariant by construction).
+        x0: ``(N,)`` **RAW** initial state.  mu, sd: ``(N,)`` normalization stats (passed through to the planner).
+        H: per-step planning horizon.  n_steps: number of closed-loop (apply-first-control) MPC steps.
+        u_max, n_iter, lr, seed: forwarded to :func:`plan_control` at every MPC step.
+
+    Returns:
+        dict with ``"traj"`` ``(n_steps+1, N)`` realized RAW states (row 0 = ``x0``), ``"controls"`` ``(n_steps, N)`` the
+        first-controls actually applied, and ``"cost"`` (float) = time-averaged $\lVert x_t - F\mathbf 1\rVert$ over the
+        realized trajectory (RAW coords, target $=F$ uniform, averaged over all ``n_steps+1`` realized states).
+    """
+    model.eval()
+    mu = mu.to(DTYPE); sd = sd.to(DTYPE)
+    N = x0.shape[-1]
+    x_cur = x0.to(DTYPE).clone()
+    target = F_FORCE * torch.ones(N, dtype=DTYPE)              # uniform fixed point x_i = F, in RAW coords
+
+    traj = torch.empty(n_steps + 1, N, dtype=DTYPE)
+    controls = torch.empty(n_steps, N, dtype=DTYPE)
+    traj[0] = x_cur
+    for t in range(n_steps):
+        u = plan_control(model, x_cur, mu, sd, H, u_max=u_max, n_iter=n_iter, lr=lr, seed=seed)   # (H, N)
+        u0 = u[0]                                              # apply ONLY the first control (receding horizon)
+        x_cur = rk4_controlled(x_cur, u0).detach()            # advance the TRUE controlled dynamics one step
+        traj[t + 1] = x_cur
+        controls[t] = u0
+
+    # Time-averaged distance to the uniform target over the realized trajectory (all n_steps+1 states), RAW coords.
+    cost = float((traj - target).norm(dim=-1).mean())
+    return {"traj": traj, "controls": controls, "cost": cost}
+
+
+def orbit_flatness(model, x0, mu, sd, H: int, n_steps: int, s: int, u_max: float = 4.0, n_iter: int = 30,
+                   lr: float = 0.1, seed: int = 0) -> dict:
+    r"""Measure that the closed-loop control is **orbit-flat**: run :func:`closed_loop` from ``x0`` and from the cyclic
+    shift ``roll(x0, s)``, and quantify how invariant the realized cost is along the $\mathbb{Z}_N$ orbit.
+
+    For an exactly $\mathbb{Z}_N$-equivariant planner on the exactly equivariant true dynamics, the rolled run is the
+    cyclic shift of the original run: applied controls satisfy $u^{(t)}(\mathrm{roll}(x_0,s))=\mathrm{roll}(u^{(t)}(x_0),
+    s)$ and, since the cost is a sum over sites against the shift-invariant target $F\mathbf 1$, the realized cost is
+    invariant ($\text{ratio}\to 1.000$). The ``control_mismatch`` is then $\sim$ machine precision.
+
+    Returns:
+        dict with ``"ratio"`` = ``cost(roll x0) / cost(x0)``, ``"control_mismatch"`` = $\max_t \lVert u^{(t)}(\mathrm{
+        roll}(x_0,s)) - \mathrm{roll}(u^{(t)}(x_0), s)\rVert$, and ``"cost_x0"`` / ``"cost_rolled"`` (the two raw costs).
+    """
+    out0 = closed_loop(model, x0, mu, sd, H, n_steps, u_max=u_max, n_iter=n_iter, lr=lr, seed=seed)
+    out_s = closed_loop(model, torch.roll(x0.to(DTYPE), s), mu, sd, H, n_steps,
+                        u_max=u_max, n_iter=n_iter, lr=lr, seed=seed)
+
+    # Per-step applied-control mismatch: the rolled run's controls vs the (shifted) original run's controls.
+    rolled_ctrl = torch.roll(out0["controls"], s, dims=-1)    # (n_steps, N) -> roll each applied u_0 by s sites
+    control_mismatch = float((out_s["controls"] - rolled_ctrl).norm(dim=-1).max())
+
+    cost_x0 = out0["cost"]; cost_rolled = out_s["cost"]
+    ratio = cost_rolled / cost_x0
+    return {"ratio": ratio, "control_mismatch": control_mismatch, "cost_x0": cost_x0, "cost_rolled": cost_rolled}
+
+
+def _smoke_phase4() -> None:
+    r"""Train a small equivariant conv WM, pick an on-attractor state, and run the CLOSED-LOOP MPC on the TRUE
+    controlled dynamics. Report the controlled realized cost vs the uncontrolled (zero-control) realized cost over the
+    same horizon, and the suppression ratio (controlled / uncontrolled). Not a pytest test (it trains)."""
+    torch.manual_seed(0)
+    N = 12
+    data = collect_data(N=N, n_traj=3000, K=3, seed=0)
+    model, mu, sd, relmse = train_wm("conv", N, data, seed=0, epochs=25, K=3)
+    # On-attractor initial state (raw): a mid-trajectory point of the true uncontrolled field.
+    traj = step74.attractor_traj(N, 400, 0, "cpu").double()
+    x0 = traj[len(traj) // 2].clone()
+
+    H, n_steps = 8, 40
+    out = closed_loop(model, x0, mu, sd, H=H, n_steps=n_steps, u_max=4.0)
+    cost_ctrl = out["cost"]
+
+    # Uncontrolled baseline: roll the SAME true dynamics from x0 with zero control over the same horizon.
+    target = F_FORCE * torch.ones(N, dtype=DTYPE)
+    x = x0.to(DTYPE).clone()
+    unc = torch.empty(n_steps + 1, N, dtype=DTYPE); unc[0] = x
+    for t in range(n_steps):
+        x = rk4_controlled(x, torch.zeros(N, dtype=DTYPE))
+        unc[t + 1] = x
+    cost_unc = float((unc - target).norm(dim=-1).mean())
+
+    # Sanity that the planner is FAITHFUL (the modest suppression is a horizon/geometry limit, not a transfer failure):
+    # compare the WM's OWN predicted open-loop cost under the plan vs zero control from x0.
+    u_plan = plan_control(model, x0, mu, sd, H=H, u_max=4.0)
+    pred_zero = rollout_cost(model, x0, mu, sd, torch.zeros(H, N, dtype=DTYPE))
+    pred_plan = rollout_cost(model, x0, mu, sd, u_plan)
+
+    supp = cost_ctrl / cost_unc
+    print(f"[step79 phase4 smoke] N={N} conv WM one-step relMSE {relmse:.2e}", file=sys.stderr)
+    print(f"[step79 phase4 smoke] H={H} n_steps={n_steps} u_max=4.0  realized cost (RAW ||x - F*1||, time-avg):",
+          file=sys.stderr)
+    print(f"[step79 phase4 smoke]   controlled (closed-loop MPC) {cost_ctrl:.4f}  vs  uncontrolled (u=0) {cost_unc:.4f}",
+          file=sys.stderr)
+    print(f"[step79 phase4 smoke]   WM-predicted open-loop (one plan from x0): zero {pred_zero:.3f} -> planned "
+          f"{pred_plan:.3f} ({100.0 * (1.0 - pred_plan / pred_zero):.1f}% predicted reduction)", file=sys.stderr)
+    print(f"[step79 phase4 smoke]   suppression ratio (controlled/uncontrolled) = {supp:.3f}  "
+          f"({100.0 * (1.0 - supp):.1f}% lower)" if supp < 1 else
+          f"[step79 phase4 smoke]   suppression ratio (controlled/uncontrolled) = {supp:.3f}  "
+          f"(WARN: controlled is HIGHER)", file=sys.stderr)
+    # Orbit-flatness side-check (the configuration axis): control mismatch + cost ratio along the Z_N orbit.
+    of = orbit_flatness(model, x0, mu, sd, H=H, n_steps=n_steps, s=3, u_max=4.0)
+    print(f"[step79 phase4 smoke]   orbit-flatness: control_mismatch {of['control_mismatch']:.2e}  "
+          f"cost ratio {of['ratio']:.6f}", file=sys.stderr)
 
 
 def _smoke_phase3() -> None:

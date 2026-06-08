@@ -48,6 +48,17 @@ def test_planner_is_orbit_equivariant() -> None:
     print("PASS: planner commutes with the Z_N shift (exactly orbit-equivariant).")
 
 
+def test_closed_loop_control_is_orbit_flat() -> None:
+    torch.manual_seed(0); N = 12
+    model = s79.make_equivariant_wm(N).double()      # untrained equivariant WM: planner still exactly equivariant
+    mu = torch.zeros(N, dtype=DT); sd = torch.ones(N, dtype=DT)
+    x0 = torch.randn(N, dtype=DT)
+    of = s79.orbit_flatness(model, x0, mu, sd, H=5, n_steps=8, s=3, u_max=4.0, n_iter=10)
+    assert of["control_mismatch"] < 1e-8, f"closed-loop control not orbit-flat: mismatch {of['control_mismatch']:.2e}"
+    assert abs(of["ratio"] - 1.0) < 1e-6, f"closed-loop cost ratio {of['ratio']:.6f} not ~1.000"
+    print(f"PASS: closed-loop control orbit-flat (mismatch {of['control_mismatch']:.1e}, ratio {of['ratio']:.6f}).")
+
+
 def test_true_controlled_map_certificate_is_chaotic() -> None:
     import numpy as np
     import step78_certified_horizon_ci as s78
@@ -68,5 +79,6 @@ if __name__ == "__main__":
     test_controlled_dynamics_is_ZN_equivariant()
     test_world_model_conv_is_equivariant_mlp_is_not()
     test_planner_is_orbit_equivariant()
+    test_closed_loop_control_is_orbit_flat()
     test_true_controlled_map_certificate_is_chaotic()
-    print("step79 phase-0+1+3 guard PASS.")
+    print("step79 phase-0+1+3+4 guard PASS.")
