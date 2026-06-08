@@ -548,3 +548,35 @@ certificate never *changed a decision*.** Brainstorm → spec (`docs/specs/2026-
 - **Folded:** paper2 **§5.17 (Experiment 19)** + contribution clause + figure `step79_reobservation.png`; ICLR **E9**
   (figure-free; PushT cert figure relocated to Appendix A + §6/§7 trims to hold **≤9pp**, Conclusion on p9, 0 unresolved
   cites). `test_step79/80/81` green (26 tests, 8 s). Both PDFs rebuilt.
+
+## [2026-06-08] Experiment 20 — the certified horizon made literal (Lever B: Theorem B′ + `step82`)
+
+Turns the staircase's *posterior* slope-read (Exp 14–18 *measure* $\hat\lambda_1\approx\lambda_1$) into an
+*a-priori* **sound** certificate read off the learned model's own Jacobian — and characterizes the exact regime
+where that certificate is *tight*. Plan → subagent-driven TDD (`step82` + `test_step82.py`); commit `fec83b9`.
+
+- **Theorem B′ (cone / adapted-metric certified horizon)** — a continuous SPD field $P(z)$ + constant $\Lambda$ with
+  $D\hat\phi^\top P(\hat\phi)D\hat\phi\preceq\Lambda^2 P$ gives $\lambda_1(\hat\phi)\le\log\Lambda$ and a guaranteed
+  $T_{\mathrm{guar}}(\epsilon)=\lfloor(\log(\epsilon_{\rm res}/\epsilon)-\tfrac12\log\kappa)/\log\Lambda\rfloor$ from
+  $\hat\phi$ **alone** (no true dynamics, no true $\lambda_1$). Sound for any feasible $(P,\Lambda)$, tight at the
+  adapted (Oseledets) metric ($\Lambda\to e^{\lambda_1}$); continuum bridge via $h$-cover + $L_J,L_P$-Lipschitz
+  ($\Lambda^{\rm cert}=\Lambda_{\rm samples}+\sqrt\kappa L_J h+O(L_P h)$); the adapted metric is the analytic dual of
+  a forward-invariant cone field, **uniform hyperbolicity = exactly the regime a tight $(P,\Lambda)$ exists**.
+- **Cat map (uniformly hyperbolic) = tight.** Certified exponent $= \lambda_1=\log\frac{3+\sqrt5}{2}$ to machine
+  precision on the **true** map ($1.00\times$), **$1.17\times$** on a *learned* net (3 seeds, all sound,
+  $T_{\rm guar}\le T_{\rm true}$); nonlinear **Anosov perturbation** stays tight ($1.06\times$). Cone margin $+0.6$.
+- **Hénon (non-uniformly hyperbolic, homoclinic tangencies) = sound but conservative.** Certified exponent
+  $3.16\times$ the true; **cone-margin diagnostic goes negative ($-26.9$)** → certificate **abstains**, routes to a
+  step78 bootstrap horizon ($T_{\rm guar}{=}10\le T_{\rm true}{=}13$) rather than over-claim.
+- **Stretch systems (Lorenz, Rössler, 40-D Lorenz-96)** — cone abstains (black-box net-Jacobian-Lipschitz tax makes
+  the continuum bridge vacuous); abstention is the safe move.
+- **G2 soundness $= 1.0$ over all 36 (system, seed, $\epsilon$) cells** (4 main systems). Abstention **validated**:
+  where cone abstains, the bootstrap fallback is genuinely *not* sound vs. the true system ($3/9$ stretch cells) —
+  exactly why abstaining is correct.
+- **Honest framing = a *characterization*, not just a method:** a tight a-priori certified horizon from a learned
+  model is achievable *exactly* in the uniformly-hyperbolic regime, and the certificate **self-diagnoses** the regime
+  (cone margin) — a tightness dimension on the scope theorem (Prop 7), analytic dual of Theorem B.
+- **Folded:** paper2 **§5.18 (Experiment 20)** + figure `step82_certified_horizon.png`; **Theorem B′ + proof +
+  remarks** adjacent to Theorem B (§3.2); contribution-1 clause (makes *"Certified"* literal); abstract reordered to
+  lead with load-bearing claims (tagline "*Scale buys interpolation; structure buys a certified horizon.*" first
+  sentence; hedges live in §6/§7). PDF rebuilt. `step82`, `fec83b9`.
