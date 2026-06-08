@@ -39,6 +39,7 @@ Run (Phase A make-or-break):
 import math
 
 import numpy as np
+import torch
 from scipy.linalg import eigh
 from scipy.optimize import minimize
 from scipy.spatial import cKDTree
@@ -496,3 +497,30 @@ def tightness_comparison(n_samples=2000, seed=0, eps=0.01):
                                               np.random.default_rng(seed).uniform(-1, 1, size=(200, 2))])),
             anosov=False),
     }
+
+
+# =============================================================================================================== #
+# Phase B — the actual contribution: the SAME cone / adapted-metric certificate, but read off a LEARNED model's
+# Jacobian field instead of the analytic one. This is what makes the ICLR title's "Certified *from the learned
+# model*" literal rather than aspirational. Two extra honest costs appear that Phase A/A' did not pay:
+#
+#   1. The Jacobian is now an AUTOGRAD Jacobian of a trained net (B1), not a closed form.
+#   2. The Lipschitz constant L_J = Lip(z -> D net(z)) is no longer analytic; for a black-box net we can only bound it
+#      from the layers' spectral norms (B2). That bound is SOUND but typically loose -- the honest price of certifying
+#      a learned model. When it is so loose that the cone bridge goes vacuous, we DO NOT loosen anything: we route to a
+#      step78 block-bootstrap fallback on the SAME point cloud (B3), taking the UPPER lambda_1 confidence bound (the
+#      fastest plausible divergence => the most conservative / shortest horizon). Reporting `route` = "cone" vs
+#      "bootstrap" is itself an honest finding -- both are publishable outcomes (the controller decides framing).
+#
+# We REUSE the Phase-A machinery unchanged (adapted_metric -> lipschitz_bridge -> t_guar, _covering_radius) and
+# step71's MLP + on_attractor_trajs + exact training recipe (do NOT modify step71); the fallback reuses step78.
+# =============================================================================================================== #
+
+
+def learned_jacobian(net, z):
+    r"""Autograd Jacobian $D(\text{net})(z)$ of a torch map at a single point ``z`` (1-D tensor). Returns a ``(d, d)``
+    float64 numpy array. This replaces the analytic ``henon_jac`` / ``cat_jac`` of Phase A/A' with the Jacobian field of
+    a *learned* net -- the only change needed to read the certificate off the model. Forward shape: ``z: (d,) -> (d, d)``."""
+    z = z.detach().clone().to(torch.float64).requires_grad_(True)
+    J = torch.autograd.functional.jacobian(lambda u: net(u), z, create_graph=False)
+    return J.detach().double().numpy()

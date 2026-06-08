@@ -227,3 +227,25 @@ def test_tightness_comparison_cat_tight_henon_loose():
     assert cat["tightness_ratio"] <= 1.02           # cat map is tight
     assert hen["tightness_ratio"] >= 2.0            # Henon is the loose (sound-but-conservative) companion
     assert cat["anosov"] is True and hen["anosov"] is False
+
+
+# =============================================================================================================== #
+# Phase B — the contribution: the SAME certificate read off a LEARNED model's Jacobian field. Tests stay fast and
+# training-free (the autograd-Jacobian, the sound net-Lipschitz bound, the bootstrap fallback, and the routing); the
+# heavy training-and-certify runs live in run_learned_henon / run_learned_catmap, smoke-tested with tiny nets.
+# =============================================================================================================== #
+import torch  # noqa: E402
+
+
+# --- B1: autograd Jacobian of a learned map -------------------------------------------------------------------- #
+def test_learned_jacobian_matches_finite_difference():
+    torch.manual_seed(0)
+    net = torch.nn.Sequential(torch.nn.Linear(2, 16), torch.nn.Tanh(), torch.nn.Linear(16, 2)).double()
+    z = torch.tensor([0.1, -0.2], dtype=torch.float64)
+    J = s82.learned_jacobian(net, z)                        # (2,2) numpy
+    fd = np.zeros((2, 2)); e = 1e-6
+    base = net(z).detach().numpy()
+    for j in range(2):
+        zp = z.clone(); zp[j] += e
+        fd[:, j] = (net(zp).detach().numpy() - base) / e
+    assert np.max(np.abs(J - fd)) < 1e-4
