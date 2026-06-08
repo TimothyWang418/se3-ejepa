@@ -1,5 +1,5 @@
 ---
-title: "Certified Predictability Horizons for Equivariant World Models"
+title: "Scale Buys Interpolation, Structure Buys a Horizon: Certified Predictability for Equivariant World Models"
 subtitle: "How far a world model can promise — tightly, and only with structure."
 author: "Hongbo Wang"
 created: 2026-06-05
@@ -8,37 +8,20 @@ venue: "ICLR submission draft (focused extraction of the Certified World Models 
 
 ## Abstract
 
-Scaling a world model lowers its average error but issues **no guarantee about any specific unseen situation, and none
-about how far into the future it can be trusted.** We give a different *kind* of result for **equivariant** latent
-world models: a **computable, multi-step certificate of the predictable horizon.** For a model whose encoder and latent
-predictor are $G$-equivariant with an orthogonal representation, the $T$-step rollout error is provably *constant over
-the entire orbit* of group-related situations (Theorem A), and the *horizon* to which this holds is governed
-channel-by-channel by the predictor's spectrum: a channel with Lyapunov exponent $\lambda_j$ is certified to horizon
-$T_j(\epsilon)=\Theta\!\big(\tfrac1{\lambda_j}\log\tfrac1\epsilon\big)$ — upper-bounded by the classical
-predictability law and lower-bounded by a worst-case construction (Proposition 6), so the *form* is two-sided:
-approximate equivariance is horizon-limited at this rate, while a channel is certified to *unbounded* horizon **iff** it
-is conserved or invariant (the Noether hinge, Propositions 4–5). The certificate is *equivalent* to equivariance
-(Lemma 2), so **no non-equivariant model possesses it at
-any scale**, and §3.3 makes this quantitative (a resolution-independent orbit vs. an $\epsilon/L$-tube); the existing
-single-shot certified-equivariance guarantees (robustness margins, equivariant conformal prediction) are the $T{=}1$,
-$\epsilon$-independent slice of this picture. Our contribution is the *synthesis* into one computable
-certificate for learned world models, with a **scope theorem** (Proposition 7)
-that says *when* the locally-measured spectrum governs a learned model's horizon: it does on spectrally non-degenerate
-dynamics, and is vacuous on near-neutral dynamics, which *predicts* where the certificate is informative rather than
-leaving it to chance.
-
-Empirically, the horizon law is recovered on a controlled-spectrum latent to $0.4\%$ and — the
-decisive test — **lifts to a learned model of genuinely chaotic dynamics**: across a class (Lorenz, Hénon, Rössler) the
-learned model's Lyapunov exponent matches the textbook value to $1$–$12\%$ ($R^2{=}0.96$–$1.00$, 3 seeds), a transfer
-made rigorous (not merely observed) by a finite-horizon continuity bound (Proposition 8); and on a **$40$-dimensional**
-learned model ($40$-D Lorenz-96) a $\mathbb{Z}_N$-equivariant model recovers the *full* Lyapunov spectrum
-($R^2{=}0.98$–$0.99$) — hence the per-channel certified horizons — where a dense model of equal data fails ($R^2{<}0$),
-*as does a same-trained recurrent model* (so the gap is structural, not a matter of architecture family),
-the configuration axis *helping* the horizon axis. On a real physics-engine contact simulator (PushT)
-the *orbit-flatness* certificate holds for a learned model exactly (ratio $1.000$) while non-equivariant baselines of up
-to $160{\times}$ the parameters retain a $2$–$3{\times}$ out-of-distribution penalty; and the certificate transfers from
-the circle to non-abelian $\mathrm{SO}(3)$ and — via frame averaging — to raw pixels at **no accuracy cost relative to
-an unconstrained CNN** (both absolute-limited; §6). *Scale buys interpolation; structure buys a certified horizon.*
+*Scale buys interpolation; structure buys a certified horizon.* Scaling a world model lowers its average error but
+guarantees nothing about a *specific* unseen situation, or *how far* it can be trusted. For **equivariant** latent
+world models we give a computable, multi-step **certificate of the predictable horizon**: the $T$-step rollout error is
+provably *constant over the entire orbit* of group-related situations (Theorem A), and the horizon to which this holds
+is set channel-by-channel by the predictor spectrum, $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$ — two-sided
+(Theorem B and a matching lower bound, Proposition 6), so approximate equivariance is provably horizon-limited while
+conserved or invariant channels reach *unbounded* horizon (the Noether hinge). The certificate is *equivalent* to
+equivariance (Lemma 2): **no non-equivariant model has it at any scale**; existing single-shot certified-equivariance
+guarantees are its $T{=}1$ slice. Empirically the spectral law lifts to learned models of genuinely chaotic dynamics —
+Lorenz, Hénon, Rössler, and a $40$-dimensional Lorenz-96 model where a $\mathbb{Z}_N$-equivariant network recovers the
+full Lyapunov spectrum ($R^2{=}0.98$) while a dense *and* a same-trained recurrent model fail. Finally, a cone/adapted-metric
+certificate (Theorem B′) makes "certified" **literal** — a sound, a-priori-guaranteed horizon read from the learned
+model, provably tight on uniformly-hyperbolic dynamics and self-abstaining where it cannot. A scope theorem
+(Proposition 7) says when the law is informative; §6 states the $1$–$2$-GPU scope.
 
 ---
 
@@ -88,20 +71,19 @@ We are explicit about scope (§6): this is a mechanism-and-theory contribution a
 benchmark; the certificate is *exact* where the group is a genuine dynamical symmetry and *gracefully approximate*,
 with a measured and now lower-bounded boundary, elsewhere.
 
-**What is new, and what we build on.** The contribution occupies a corner a prior-art sweep finds *empty* — no work
+**What is new.** The contribution occupies a corner a prior-art sweep finds *empty* — no work
 combines equivariance with a certified, two-sided spectral horizon; the closest guarantee-bearing neighbours each
-miss the intersection [@conradie2026trustkoopman; @lillemark2026flowm; @mo2026symmetry] (distinguished in §5). We reach
-it by *synthesizing* three classical pillars, which we credit explicitly, with new results. **The pillars (not ours):**
-the *upper* horizon bound is the classical Lyapunov / numerical-weather-prediction law [@lorenz1969predictability];
-orbit-constant risk and its converse are classical **invariant decision theory** [@eaton1989; @lehmann2005testing; @berger1985];
-the $e^{\lambda T}$ growth (Proposition 6) is textbook. **The new results:** (i) Proposition 6's *matching lower bound* — growth seeded by the *equivariance residual* $\epsilon$ rather
+miss the intersection [@conradie2026trustkoopman; @lillemark2026flowm; @mo2026symmetry] (distinguished in §5). **The new
+results:** (i) Proposition 6's *matching lower bound* — growth seeded by the *equivariance residual* $\epsilon$ rather
 than an initial-condition error — making the horizon two-sided and approximate equivariance provably horizon-limited;
 (ii) the scope and continuity bounds (Propositions 7–8) lifting the law to *learned* chaotic models, where shadowing
-cannot transfer the exponent; and (iii) the **structure-vs-recurrence separation** (E2) — among Markov models only the equivariant one
+cannot transfer the exponent; (iii) the **structure-vs-recurrence separation** (E2) — among Markov models only the equivariant one
 recovers a $40$-D spectrum, while an unstructured *recurrent* model provably cannot, by the conditional-Lyapunov
-condition. These assemble (Algorithm 1) into one certificate *exclusive to structure* (Lemma 2) whose unbounded-horizon
-subspace is the conserved/invariant one (the Noether hinge). Honest credit, not novelty inflation, is what lets the
-synthesis be trusted.
+condition; and (iv) **Theorem B′** turns the certificate from *measured* into *literal* — a sound, a-priori horizon read
+from the learned model, tight on uniformly-hyperbolic dynamics and self-abstaining elsewhere. These assemble
+(Algorithm 1) into one certificate *exclusive to structure* (Lemma 2) whose unbounded-horizon
+subspace is the conserved/invariant one (the Noether hinge). We credit the classical pillars we build on — the
+Lyapunov/NWP horizon law, invariant decision theory, and the $e^{\lambda T}$ growth — explicitly in §3 and §5.
 
 ![The predictability certificate at a glance. **Left:** in the configuration $\times$ horizon plane, an equivariant model certifies the *entire* generated monoid $\langle S\rangle$ — every composition, from $k$ generator checks (Lemma 1) — up to a horizon ceiling set by the predictor spectrum (Theorem B, tight by Proposition 6); a non-equivariant model of any size certifies only a small interpolation tube. **Right:** the horizon $\times$ resolution trade-off $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$ — conserved/invariant ($\lambda\le0$) channels are certified to all horizons (eclipses, millennia), chaotic ($\lambda>0$) channels shrink as the demanded resolution sharpens (weather, $\sim$two weeks).](figures/hero_certified_region.png)
 
@@ -371,6 +353,18 @@ efficient accuracy-vs-observation frontier *untuned* ($2/3$ seeds, asymptotic-$\
 honestly optimistic, Prop. 8) — active perception, honestly **not** short-horizon control (the horizon outruns the
 receding-horizon controller). It lifts to a $\mathbb{Z}_N$ pendulum ring and a frame-averaged $\mathbb{Z}_2$ double
 pendulum — a **class property** across two groups and high/low dimension (`step79`–`step81`).
+
+**(E10) The certified horizon, made literal — and its exact regime.** E2 *measures* that a learned model's Lyapunov
+exponent matches the truth; Theorem B′ *certifies* it. A computable cone/adapted-metric certificate reads a **sound,
+a-priori** upper bound on the learned model's top exponent off its Jacobian field — a guaranteed horizon
+$T_{\mathrm{guar}}(\epsilon)$ from the model alone. On **uniformly-hyperbolic** dynamics it is *tight*: on a hyperbolic
+toral automorphism (cat map) the certified exponent equals the true $\lambda_1$ to machine precision (true map) and to
+$1.17\times$ on a *learned* net ($3$ seeds, sound, $T_{\mathrm{guar}}\le T_{\mathrm{true}}$), a nonlinear Anosov
+perturbation staying tight ($1.06\times$). On **non-uniformly-hyperbolic** dynamics (Hénon, with homoclinic tangencies)
+a single metric is provably limited — the certificate is *sound but $\sim\!3\times$ conservative*, its own cone-margin
+diagnostic turns negative, and it **abstains** (routing to a statistical bootstrap horizon) rather than over-claim. So a
+tight a-priori certified horizon from a learned model is achievable *exactly* in the uniformly-hyperbolic regime, and
+the certificate **self-diagnoses** which regime it is in (`step82`).
 
 ---
 

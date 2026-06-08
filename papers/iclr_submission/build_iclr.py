@@ -27,7 +27,7 @@ COMBINED = HERE / "_iclr_combined.md"
 PREAMBLE = HERE / "preamble_iclr.tex"
 MAIN_TEX = HERE / "main.tex"
 FIGDIR = HERE / "figures"
-TITLE = "Certified Predictability Horizons for Equivariant World Models"
+TITLE = "Scale Buys Interpolation, Structure Buys a Horizon: Certified Predictability for Equivariant World Models"
 FONT_BASENAMES = ["texgyretermes-regular.otf", "texgyretermes-bold.otf", "texgyretermes-italic.otf",
                   "texgyretermes-bolditalic.otf", "texgyretermes-math.otf"]
 

@@ -110,6 +110,14 @@ basis that diagonalizes the Jacobian), and the linearization is valid while the 
 local-linear neighbourhood — exactly the regime in which a finite-resolution certificate is meaningful. Proposition 6
 shows the *form* $\Theta(\log(1/\epsilon)/\lambda)$ is not improvable.
 
+### Theorem B′ (cone / adapted-metric certified horizon)
+
+**Theorem B′ (cone / adapted-metric certified horizon).** Let $\hat\phi:\mathcal U\to\mathcal U$ be $C^1$ on a compact forward-invariant $\mathcal U\subset\mathbb R^d$. Suppose there exist a continuous field of symmetric positive-definite matrices $z\mapsto P(z)$ and a constant $\Lambda\ge 1$ with $D\hat\phi(z)^\top P(\hat\phi(z))\,D\hat\phi(z)\preceq \Lambda^2 P(z)$ for all $z\in\mathcal U$. Let $\kappa=\big(\sup_z\lambda_{\max}P(z)\big)/\big(\inf_z\lambda_{\min}P(z)\big)$. Then $\lambda_1(\hat\phi)\le\log\Lambda$, and the linearized rollout error from an $\epsilon$-perturbation stays $\le\epsilon_{\mathrm{res}}$ for all $T\le T_{\mathrm{guar}}(\epsilon)=\big\lfloor(\log(\epsilon_{\mathrm{res}}/\epsilon)-\tfrac12\log\kappa)/\log\Lambda\big\rfloor$ — computed from $\hat\phi$ alone.
+
+*Proof.* Put $V(z,v)=v^\top P(z)v$. The hypothesis gives $V(\hat\phi(z),D\hat\phi(z)v)\le\Lambda^2 V(z,v)$; iterating along an orbit $z_{t+1}=\hat\phi(z_t)$, $v_{t+1}=D\hat\phi(z_t)v_t$, yields $V(z_T,v_T)\le\Lambda^{2T}V(z_0,v_0)$ with $v_T=D\hat\phi^T(z_0)v_0$. Since $\lambda_{\min}(P(z))\|v\|^2\le V(z,v)\le\lambda_{\max}(P(z))\|v\|^2$, $\|D\hat\phi^T(z_0)\|\le\sqrt\kappa\,\Lambda^T$, so $\lambda_1\le\log\Lambda$ ($\sqrt\kappa$ is sub-exponential). The horizon bound follows from $\sqrt\kappa\,\Lambda^T\epsilon\le\epsilon_{\mathrm{res}}$. $\square$
+
+*Remarks.* (i) First-order statement; Proposition 8's $C^1$-vs-$L^2$ caveat applies. (ii) Sound for any feasible $(P,\Lambda)$, tight when $P$ is the adapted (Oseledets) metric ($\Lambda\to e^{\lambda_1}$). (iii) **Continuum certificate:** verified on an $h$-cover with $D\hat\phi,P$ Lipschitz ($L_J,L_P$), it holds on all of $\mathcal U$ with $\Lambda^{\mathrm{cert}}=\Lambda_{\mathrm{samples}}+\sqrt\kappa\,L_J h+O(L_P h)$. (iv) Uniform hyperbolicity is precisely the regime where a $(P,\Lambda)$ exists with $\Lambda\to e^{\lambda_1}$; the cone-margin diagnostic detects it.
+
 ### Proposition 6 (the horizon is tight — matching lower bound)
 
 *Statement.* Fix an expansive channel on which the latent map is locally linear with multiplier $a=e^\lambda$,
