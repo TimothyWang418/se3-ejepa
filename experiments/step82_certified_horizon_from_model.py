@@ -750,23 +750,34 @@ def run_learned_henon(n_samples=4000, seed=0, eps=0.01, eps_res=1.0, smoke=False
     # certified-exponent ratio vs the textbook Henon lambda_1 = 0.419/step (sound iff >= 1): the honest looseness number
     cert_ratio = math.log(br["lambda_cert"]) / HENON_LAMBDA1_REF
 
+    # Full Gate-G1 cone-acceptance (same as run_true_henon, never loosened): the cone is only meaningfully accepted if
+    # it is BOTH non-vacuous (T_guar>=1) AND beats the trivial Euclidean continuum bound max_i||D_i|| + L_J h (the
+    # constant-identity metric). A learned net's L_J^net is so loose that the slack L_J h can dominate BOTH bounds, in
+    # which case "t_guar>=1" can squeak through arithmetically while the cone adds nothing over Euclidean -- that is a
+    # vacuous-in-spirit cone, and the honest route is the bootstrap hybrid.
+    euclid_bound = float(max(np.linalg.norm(D, 2) for D in jacs)) + L_J * h
+    beats_euclidean = bool(br["lambda_cert"] < euclid_bound)
+    cone_ok = bool(br["certified"] and beats_euclidean)
+
     # ALWAYS compute the bootstrap cross-check on the SAME Jacobian sequence (the fallback's number), so the report can
     # compare the deterministic cone vs the statistical horizon regardless of which route the gate selects.
     logR = _logR_from_jacs(jacs)
     fb = bootstrap_fallback(logR, dt_map=1.0, eps=eps)
 
-    if br["certified"]:
+    if cone_ok:
         return dict(system="Henon(learned)", route="cone", lambda_samples=float(lam_samples),
                     lambda_cert=br["lambda_cert"], log_lambda_cert=math.log(br["lambda_cert"]),
                     cert_ratio_vs_true=float(cert_ratio), t_guar=int(br["horizon"]),
                     kappa=kappa, h=float(h), slack=br["slack"], L_J_net=float(L_J),
+                    euclid_bound=euclid_bound, beats_euclidean=beats_euclidean,
                     boot_t_lo=int(fb["t_lo"]), boot_lambda1=fb["lambda1"], boot_lambda1_hi=fb["lambda1_hi"],
                     one_step_relmse=one_step_relmse, eps=eps, eps_res=eps_res)
-    # vacuous cone (net-Lipschitz slack dominates) => hybrid statistical fallback on the SAME point cloud
+    # vacuous-in-spirit cone (net-Lipschitz slack dominates / loses to Euclidean) => hybrid statistical fallback
     return dict(system="Henon(learned)", route="bootstrap", t_guar=int(fb["t_lo"]),
                 lambda1=fb["lambda1"], lambda1_hi=fb["lambda1_hi"], t_hi=int(fb["t_hi"]),
                 cone_lambda_cert=br["lambda_cert"], cone_log_lambda_cert=math.log(br["lambda_cert"]),
-                cone_cert_ratio_vs_true=float(cert_ratio), cone_slack=br["slack"], lambda_samples=float(lam_samples),
+                cone_cert_ratio_vs_true=float(cert_ratio), cone_slack=br["slack"], cone_t_guar=int(br["horizon"]),
+                euclid_bound=euclid_bound, beats_euclidean=beats_euclidean, lambda_samples=float(lam_samples),
                 kappa=kappa, h=float(h), L_J_net=float(L_J), one_step_relmse=one_step_relmse,
                 eps=eps, eps_res=eps_res)
 
