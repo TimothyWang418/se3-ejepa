@@ -325,3 +325,62 @@ def test_full_step_jacobian_matches_finite_difference():
             sp = s.copy(); sp[j] += e
             fd[:, j] = (phi(sp) - base) / e
         assert np.max(np.abs(J - fd)) < 1e-4
+
+
+# =============================================================================================================== #
+# Phase C — validation gates (G1/G2/G3), soundness, and the honest stretch cone-abstention. Tests stay fast: the
+# eps-rescaling of the horizon and the soundness checker are pure-arithmetic; the stretch attempt + dim-general true
+# horizon are tiny smokes. The full multi-seed run() (the heavy entry point) is NOT a pytest.
+# =============================================================================================================== #
+def test_horizon_at_eps_cone_matches_t_guar_and_is_monotone():
+    # Cone-route result: _horizon_at_eps must reproduce t_guar(Lambda_cert, kappa, eps, eps_res) exactly, and shrinking
+    # eps (sharper resolution demand) can only lengthen the horizon.
+    cone = {"route": "cone", "lambda_cert": 1.4, "kappa": 3.0}
+    assert s82._horizon_at_eps(cone, 0.01, 1.0) == s82.t_guar(1.4, 3.0, 0.01, 1.0)
+    assert s82._horizon_at_eps(cone, 1e-4, 1.0) >= s82._horizon_at_eps(cone, 1e-2, 1.0)
+
+
+def test_horizon_at_eps_bootstrap_uses_upper_cb_and_floors_at_log():
+    # Bootstrap-route result: the conservative horizon is floor(log(1/eps)/lambda1_hi) from the UPPER CB (matching
+    # bootstrap_fallback's t_lo); a non-positive upper CB => unbounded (HORIZON_INF).
+    boot = {"route": "bootstrap", "lambda1_hi": 0.5}
+    assert s82._horizon_at_eps(boot, 0.01, 1.0) == int(math.floor(math.log(1 / 0.01) / 0.5))
+    assert s82._horizon_at_eps({"route": "bootstrap", "lambda1_hi": -0.1}, 0.01, 1.0) == s82.HORIZON_INF
+    # consistency with bootstrap_fallback's own t_lo on a synthetic chaotic logR (same eps, dt_map=1)
+    rng = np.random.default_rng(0)
+    logR = rng.normal(0.4, 0.1, size=(2000, 2)) * np.array([1.0, -1.0])
+    fb = s82.bootstrap_fallback(logR, dt_map=1.0, eps=0.01)
+    assert s82._horizon_at_eps({"route": "bootstrap", "lambda1_hi": fb["lambda1_hi"]}, 0.01, 1.0) == fb["t_lo"]
+
+
+def test_true_horizon_nd_reduces_and_pins_identity():
+    # A stationary identity map never separates => the dim-general first-crossing pins at the budget T_max (any dim).
+    assert s82._true_horizon_nd(lambda z: z, dim=3, eps=0.01, eps_res=1.0, n_starts=8, seed=0, burn=0, T_max=15) == 15
+    # On the 2-D Henon map it returns a finite positive horizon (a sanity that the d>2 helper also handles d=2).
+    th = s82._true_horizon_nd(s82.henon_map, dim=2, eps=0.01, eps_res=1.0, n_starts=12, seed=0, burn=200, T_max=2000)
+    assert 1 <= th < 2000
+
+
+def test_is_sound_boundary():
+    # G2's soundness predicate: T_guar <= T_true is sound (under-promise); strictly greater is a violation.
+    assert s82.is_sound(t_guar=5, t_true=5) is True
+    assert s82.is_sound(t_guar=4, t_true=5) is True
+    assert s82.is_sound(t_guar=6, t_true=5) is False
+
+
+def test_attempt_stretch_routes_and_records_abstention_smoke():
+    # Tiny smoke of the stretch cone-attempt on a 3-D flow: fit ONCE, one record per eps. It must NOT crash, must route
+    # (cone|bootstrap), and must record the honest-abstention fields. On a smoke-scale net the cone is expected to
+    # abstain -> bootstrap (the net-Lipschitz bridge is vacuous), the CORRECT outcome; we assert shape + routing here.
+    per_eps = s82._attempt_stretch("Lorenz", eps_list=(0.1, 0.01), seed=0, eps_res=1.0, smoke=True)
+    assert set(per_eps) == {"0.1", "0.01"}                             # one record per eps from a single fit
+    out = per_eps["0.01"]
+    assert out.get("skipped") is None                                  # the dense-MLP flow path wires cleanly
+    assert out["route"] in ("cone", "bootstrap")
+    assert out["certified_or_abstained"] in ("certified", "abstained")
+    assert out["cone_margin"] is None                                  # 3-D: the 2-D slope cone is undefined => None
+    for k in ("bootstrap_T_guar", "t_guar", "t_true", "sound", "L_J_net"):
+        assert k in out
+    assert out["t_guar"] >= 1
+    # smaller eps (sharper resolution) => the certified horizon cannot shrink (monotone in the closed form)
+    assert per_eps["0.01"]["t_guar"] >= per_eps["0.1"]["t_guar"]
