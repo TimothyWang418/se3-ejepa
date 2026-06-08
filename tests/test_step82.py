@@ -29,3 +29,13 @@ def test_henon_jacobian_matches_finite_difference():
 def test_henon_jacobian_lipschitz_is_exact():
     # D phi depends only on x via the (0,0) entry = -2a x ; Lip = 2a = 2.8
     assert abs(s82.HENON_JAC_LIP - 2.8) < 1e-12
+
+
+def test_t_guar_matches_closed_form_and_is_monotone():
+    Lam, kappa, eps_res = 1.5, 4.0, 1.0
+    expected = math.floor((math.log(eps_res / 0.01) - 0.5 * math.log(kappa)) / math.log(Lam))
+    assert s82.t_guar(Lam, kappa, 0.01, eps_res) == expected
+    # smaller eps (sharper resolution demand at fixed eps_res) => longer horizon
+    assert s82.t_guar(Lam, kappa, 1e-4, eps_res) >= s82.t_guar(Lam, kappa, 1e-2, eps_res)
+    # Lambda = 1 (no expansion) => unbounded horizon sentinel
+    assert s82.t_guar(1.0, 1.0, 0.01, 1.0) == s82.HORIZON_INF

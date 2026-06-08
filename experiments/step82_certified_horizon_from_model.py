@@ -46,6 +46,23 @@ HENON_A, HENON_B = 1.4, 0.3
 # Jacobian's spectral norm is 1-Lipschitz in that entry, so Lip(z -> D phi) = 2a = 2.8 EXACTLY.
 HENON_JAC_LIP = 2.0 * HENON_A          # = 2.8
 
+# Sentinel for a non-expanding certified map (log Lambda <= 0): the certified horizon is unbounded. A large finite
+# integer keeps t_guar's return type a plain int (vs math.inf), so callers can compare/min/round without special-casing.
+HORIZON_INF = 10**9
+
+
+def t_guar(Lambda, kappa, eps, eps_res):
+    r"""Theorem B' certified horizon (in MAP STEPS) from the verified constants alone:
+    $T_{\text{guar}}=\lfloor(\log(\epsilon_{\text{res}}/\epsilon)-\tfrac12\log\kappa)/\log\Lambda\rfloor$.
+
+    A perturbation of size $\epsilon$ is amplified by at most $\sqrt\kappa\,\Lambda^T$ (Theorem B'), so it first may reach
+    the resolution $\epsilon_{\text{res}}$ at the floor above. If $\Lambda\le1$ the metric certifies NO net expansion, so
+    the horizon is unbounded -> :data:`HORIZON_INF`. Returns a non-negative ``int`` (clamped at 0)."""
+    if Lambda <= 1.0 + 1e-15:
+        return HORIZON_INF
+    val = (math.log(eps_res / eps) - 0.5 * math.log(max(kappa, 1.0))) / math.log(Lambda)
+    return max(0, int(math.floor(val)))
+
 
 def henon_map(s):
     r"""True Henon map $\phi(x,y)=(1-a x^2+y,\;b x)$ with $(a,b)=(1.4,0.3)$. ``s: (..., 2) -> (..., 2)``, float64."""
