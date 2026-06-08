@@ -249,3 +249,18 @@ def test_learned_jacobian_matches_finite_difference():
         zp = z.clone(); zp[j] += e
         fd[:, j] = (net(zp).detach().numpy() - base) / e
     assert np.max(np.abs(J - fd)) < 1e-4
+
+
+# --- B2: a SOUND net Jacobian-Lipschitz bound from layer spectral norms ---------------------------------------- #
+def test_net_jacobian_lipschitz_upper_bounds_empirical_on_samples():
+    torch.manual_seed(1)
+    net = torch.nn.Sequential(torch.nn.Linear(2, 16), torch.nn.Tanh(), torch.nn.Linear(16, 2)).double()
+    Lhat = s82.net_jacobian_lipschitz(net)
+    rng = np.random.default_rng(2)
+    worst = 0.0
+    for _ in range(200):
+        a = torch.tensor(rng.uniform(-1, 1, 2), dtype=torch.float64)
+        b = a + torch.tensor(rng.uniform(-1e-3, 1e-3, 2), dtype=torch.float64)
+        Ja, Jb = s82.learned_jacobian(net, a), s82.learned_jacobian(net, b)
+        worst = max(worst, np.linalg.norm(Ja - Jb, 2) / max(np.linalg.norm((a - b).numpy()), 1e-12))
+    assert Lhat >= worst - 1e-9     # sound: the analytic bound dominates every sampled local slope

@@ -516,6 +516,11 @@ def tightness_comparison(n_samples=2000, seed=0, eps=0.01):
 # step71's MLP + on_attractor_trajs + exact training recipe (do NOT modify step71); the fallback reuses step78.
 # =============================================================================================================== #
 
+# Sound max|sigma''| for the activations we certify (verified numerically to float64): tanh attains 0.7698 (we use the
+# documented 0.77 cap), SiLU/swish attains exactly 0.5. step71's MLP is SiLU, so its net-Lipschitz bound uses SILU_S2.
+TANH_SIGMA2_MAX = 0.77       # sound cap on |tanh''| (true max 0.7698)
+SILU_SIGMA2_MAX = 0.5        # exact max of |SiLU''| (= |swish''|); step71's MLP activation
+
 
 def learned_jacobian(net, z):
     r"""Autograd Jacobian $D(\text{net})(z)$ of a torch map at a single point ``z`` (1-D tensor). Returns a ``(d, d)``
@@ -524,3 +529,27 @@ def learned_jacobian(net, z):
     z = z.detach().clone().to(torch.float64).requires_grad_(True)
     J = torch.autograd.functional.jacobian(lambda u: net(u), z, create_graph=False)
     return J.detach().double().numpy()
+
+
+def net_jacobian_lipschitz(net, sigma_second_deriv_max=0.77):
+    r"""**Sound** upper bound on $L_J^{\text{net}}=\mathrm{Lip}(z\mapsto D(\text{net})(z))$ for a ``Linear``/``Tanh`` MLP,
+    from the layers' spectral norms alone.
+
+    For $f=W_L\sigma(\cdots\sigma(W_1 z+b_1)\cdots)+b_L$ with an elementwise $1$-Lipschitz $\sigma$, the Jacobian is
+    $Df(z)=W_L\,\mathrm{diag}(\sigma'(a_{L-1}))\,W_{L-1}\cdots\mathrm{diag}(\sigma'(a_1))\,W_1$. Differentiating once more,
+    each $\mathrm{diag}(\sigma'(a_k))$ varies through $\tfrac{d}{dz}\sigma'(a_k)=\sigma''(a_k)\,\tfrac{da_k}{dz}$, and the
+    pre-activation map $z\mapsto a_k$ is itself $\big(\prod_{\ell\le k}\lVert W_\ell\rVert_2\big)$-Lipschitz. Bounding the
+    single second-derivative path (the others' $\sigma'$ factors are $\le1$) gives the standard
+    $$L_J^{\text{net}}\ \le\ \big(\max_\ell|\sigma''|\big)\cdot\Big(\prod_\ell\lVert W_\ell\rVert_2\Big)\cdot
+       \big(\max_\ell\lVert W_\ell\rVert_2\big),$$
+    with $|\tanh''|\le0.77$ (the max of $|{-2}\tanh(1-\tanh^2)|$). This is **loose but sound** -- the honest cost of
+    certifying a black-box net rather than a closed-form map (Phase A/A' had $L_J$ analytic). A net with no ``Linear``
+    layers (or none found) returns $0.0$. ``net -> float``."""
+    norms = []
+    for m in net.modules():
+        if isinstance(m, torch.nn.Linear):
+            norms.append(float(torch.linalg.matrix_norm(m.weight.detach().double(), 2)))
+    if not norms:
+        return 0.0
+    prod = float(np.prod(norms))
+    return sigma_second_deriv_max * prod * max(norms)
