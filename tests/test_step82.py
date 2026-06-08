@@ -274,3 +274,31 @@ def test_bootstrap_fallback_returns_a_horizon_interval():
     out = s82.bootstrap_fallback(logR, dt_map=1.0, eps=0.01)
     assert out["t_lo"] >= 1 and out["t_hi"] >= out["t_lo"]
     assert out["lambda1_hi"] >= out["lambda1"]    # upper CB used for the conservative horizon
+
+
+# --- B4: run_learned_henon (train step71 MLP -> certificate or hybrid fallback) -------------------------------- #
+def test_run_learned_henon_smoke_routes_and_is_sound():
+    out = s82.run_learned_henon(n_samples=300, seed=0, eps=0.01, eps_res=1.0, smoke=True)
+    assert out["route"] in ("cone", "bootstrap")          # certifies or falls back, never crashes
+    assert out["t_guar"] >= 1
+
+
+def test_full_step_jacobian_matches_finite_difference():
+    # The chain-rule Jacobian of the un-normalized learned map phi(s)=denorm(model(norm(s))) must match a finite
+    # difference of that same composed map (validates _full_step_jacobian's diag(sd)*Dmodel*diag(1/sd) factoring).
+    net, mu, sd = s82._train_henon_mlp(seed=0, smoke=True)
+    rng = np.random.default_rng(0)
+    for _ in range(8):
+        s = rng.uniform(-0.3, 0.3, size=2)
+        J = s82._full_step_jacobian(net, mu, sd, s)
+        fd = np.zeros((2, 2)); e = 1e-6
+
+        def phi(z):  # un-normalized one-step map: denorm(model(norm(z)))
+            zt = torch.tensor((z - mu) / sd, dtype=torch.float64)
+            return net(zt).detach().numpy() * sd + mu
+
+        base = phi(s)
+        for j in range(2):
+            sp = s.copy(); sp[j] += e
+            fd[:, j] = (phi(sp) - base) / e
+        assert np.max(np.abs(J - fd)) < 1e-4

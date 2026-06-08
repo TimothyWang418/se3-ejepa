@@ -53,6 +53,9 @@ HENON_A, HENON_B = 1.4, 0.3
 # D phi(s) = [[-2a x, 1], [b, 0]] depends only on x; the only varying entry is -2a x with slope 2a in x, and the
 # Jacobian's spectral norm is 1-Lipschitz in that entry, so Lip(z -> D phi) = 2a = 2.8 EXACTLY.
 HENON_JAC_LIP = 2.0 * HENON_A          # = 2.8
+# Textbook largest Lyapunov exponent of the Henon map (a=1.4, b=0.3): lambda_1 ~= 0.419 /step (step71's reference).
+# Used only as the denominator of the honest certified-exponent looseness ratio log(Lambda_cert)/lambda_1 (sound iff >=1).
+HENON_LAMBDA1_REF = 0.419
 
 # Sentinel for a non-expanding certified map (log Lambda <= 0): the certified horizon is unbounded. A large finite
 # integer keeps t_guar's return type a plain int (vs math.inf), so callers can compare/min/round without special-casing.
@@ -591,3 +594,148 @@ def bootstrap_fallback(logR, dt_map, eps=0.01, n_boot=400, block=50, seed=0, alp
     t_point = max(0, int(math.floor(L / lam1))) if lam1 > 0 else HORIZON_INF
     return dict(lambda1=lam1, lambda1_lo=lam1_lo, lambda1_hi=lam1_hi,
                 t_point=t_point, t_lo=t_lo, t_hi=t_hi)
+
+
+# --------------------------------------------------------------------------------------------------------------- #
+# B4 helpers — train a step71.MLP on the Henon one-step map and read the certificate off ITS Jacobian field.
+#
+# step71's exact recipe (read from step71.run_system, NOT guessed): per-coordinate normalize the on-attractor
+# trajectories with mu = flat.mean(0), sd = flat.std(0)+1e-9; the residual MLP `model(z)=z+net(z)` is trained so that
+# `model(norm(s_t)) ~= norm(s_{t+1})` under MSE. The full one-step map in STATE space is therefore
+#     phi(s) = denorm(model(norm(s))),   norm(s)=(s-mu)/sd,   denorm(z)=z*sd+mu,
+# whose Jacobian factors by the chain rule (the affine norm/denorm have constant linear parts diag(1/sd), diag(sd)):
+#     Dphi(s) = diag(sd) . Dmodel(norm(s)) . diag(1/sd) = diag(sd) . (I + Dnet(zhat)) . diag(1/sd),   zhat=norm(s).
+# This is the plan's contract diag(sd)*Df_net*diag(1/sd)+I. We REUSE step71.MLP, step71.on_attractor_trajs and
+# step71.SYSTEMS["Henon"] for the data; the training loop here mirrors step71.run_system (Adam 1e-3, batch 512) but is
+# kept local so this experiment is self-contained and never mutates step71's globals (SEED/EPOCHS).
+# --------------------------------------------------------------------------------------------------------------- #
+def _train_henon_mlp(seed, smoke, hidden=None, epochs=None, n_traj=None, traj_len=None):
+    r"""Train a :class:`step71.MLP` residual one-step predictor on the Henon map, mirroring step71's normalized-residual
+    recipe. Returns ``(net, mu, sd)`` where ``net`` is the trained MLP (predicts the normalized next state from the
+    normalized state) and ``mu, sd`` are the per-coordinate normalization stats (float64 numpy, shape ``(2,)``).
+
+    ``smoke=True`` uses a tiny net (hidden=16) and few epochs (8) and few short trajectories so the wiring smoke is
+    fast (~1 s) and is *allowed* to route to the bootstrap fallback. The full run uses step71-scale capacity."""
+    import torch.nn as nn
+    hidden = hidden if hidden is not None else (16 if smoke else 256)
+    epochs = epochs if epochs is not None else (8 if smoke else 200)
+    n_traj = n_traj if n_traj is not None else (12 if smoke else 200)
+    traj_len = traj_len if traj_len is not None else (200 if smoke else 1500)
+
+    rng = np.random.default_rng(seed)
+    torch.manual_seed(seed)
+    cfg = step71.SYSTEMS["Henon"]
+    traj = step71.on_attractor_trajs(cfg, rng, n_traj, traj_len)        # (m, traj_len+1, 2), on-attractor
+    flat = traj.reshape(-1, 2)
+    mu, sd = flat.mean(0), flat.std(0) + 1e-9                            # step71's exact normalization
+    S = (traj - mu) / sd
+    s_in = torch.tensor(S[:, :-1].reshape(-1, 2), dtype=torch.float64)
+    s_out = torch.tensor(S[:, 1:].reshape(-1, 2), dtype=torch.float64)
+
+    net = step71.MLP(2, hidden=hidden).double()                         # residual: forward(z) = z + inner(z)
+    opt = torch.optim.Adam(net.parameters(), lr=1e-3)
+    g = torch.Generator().manual_seed(seed)
+    n = s_in.shape[0]
+    for _ in range(epochs):
+        perm = torch.randperm(n, generator=g)
+        for i in range(0, n, 512):
+            idx = perm[i:i + 512]
+            opt.zero_grad()
+            ((net(s_in[idx]) - s_out[idx]) ** 2).mean().backward()
+            opt.step()
+    net.eval()
+    return net, mu.astype(DTYPE), sd.astype(DTYPE)
+
+
+def _full_step_jacobian(net, mu, sd, s):
+    r"""Chain-rule Jacobian of the un-normalized learned one-step map $\phi(s)=\mathrm{denorm}(\text{model}(\mathrm{norm}(s)))$
+    at a single state ``s``:
+    $$D\phi(s)=\mathrm{diag}(sd)\,D\text{model}(\hat z)\,\mathrm{diag}(1/sd),\qquad \hat z=(s-\mu)/sd,$$
+    where $D\text{model}(\hat z)=$ :func:`learned_jacobian` of the residual net (already $=I+D\text{net}$). Returns a
+    ``(2, 2)`` float64 numpy array -- the learned-model analogue of :func:`henon_jac`. ``s: (2,) -> (2, 2)``."""
+    s = np.asarray(s, dtype=DTYPE)
+    zhat = torch.tensor((s - mu) / sd, dtype=torch.float64)
+    Dmodel = learned_jacobian(net, zhat)                                # (2,2): D(model)(zhat) = I + D(net)(zhat)
+    return (np.diag(sd) @ Dmodel @ np.diag(1.0 / sd)).astype(DTYPE)
+
+
+def _logR_from_jacs(jacs):
+    r"""Benettin-style QR accumulation of a *sequence* of one-step Jacobians (in orbit order) into the per-step
+    $\log|\mathrm{diag}(R)|$ series that :func:`step78.bootstrap_spectrum_ci` block-bootstraps. We evolve an orthonormal
+    frame $Q$ under the supplied Jacobians, $Z_t=D_t Q_{t-1}=Q_t R_t$, and record $\log|\mathrm{diag}(R_t)|$ (the local
+    log-stretches). The sampled point cloud is concatenated on-attractor trajectory segments, so consecutive Jacobians
+    are orbit-ordered; bootstrapping the time-average over these rows yields the spectrum CI (the conjugating diagonal
+    of the normalization is constant and cancels in the asymptotic rate, so doing this on the un-normalized $D\phi$ is
+    equivalent to the normalized map up to the bridge's covering term). ``jacs: (n, d, d) -> (n, d)`` log-stretches."""
+    jacs = np.asarray(jacs, dtype=DTYPE)
+    d = jacs.shape[-1]
+    Q = np.eye(d, dtype=DTYPE)
+    rows = []
+    for D in jacs:
+        Z = D @ Q
+        Q, R = np.linalg.qr(Z)
+        # fix sign convention so diag(R) > 0 (QR is unique up to signs); the log-magnitudes are sign-independent
+        rows.append(np.log(np.abs(np.diagonal(R)).clip(min=1e-300)))
+    return np.array(rows)                                               # (n, d), sorted by the QR's running order
+
+
+def run_learned_henon(n_samples=4000, seed=0, eps=0.01, eps_res=1.0, smoke=False):
+    r"""**Phase-B contribution:** the cone / adapted-metric certificate read off a LEARNED Henon model's Jacobian field,
+    with a step78 bootstrap hybrid fallback when the net-Lipschitz bridge is vacuous.
+
+    Pipeline: train a :class:`step71.MLP` on the Henon one-step map (:func:`_train_henon_mlp`); take the chain-rule
+    Jacobian $D\phi(z_i)$ of the *un-normalized* learned map at each on-attractor sample (:func:`_full_step_jacobian`);
+    solve the constant adapted metric $(P,\Lambda_{\text{samples}})$ and read $\kappa,h$ exactly as Phase A; bound the
+    learned Jacobian field's Lipschitz constant $L_J^{\text{net}}$ from the net's layer spectral norms
+    (:func:`net_jacobian_lipschitz`, SiLU cap); and inflate to $\Lambda^{\text{cert}}$ (:func:`lipschitz_bridge`).
+
+    **Routing (never loosened):** if the bridged certificate is non-vacuous ($T_{\text{guar}}\ge1$) the route is
+    ``"cone"`` (pure deterministic a-priori certificate). Otherwise -- the net-Lipschitz bound is the honest loose price
+    of a black-box net and may make the bridge vacuous -- we route to ``"bootstrap"``: a block-bootstrap of the leading
+    exponent on the SAME Jacobian sequence (:func:`_logR_from_jacs` -> :func:`bootstrap_fallback`), taking the upper CB
+    for a conservative statistical horizon. Both are publishable; we report which.
+
+    Returns a dict with ``route``, ``t_guar``, and route-specific diagnostics (cone: ``lambda_cert``/``kappa``/``h``/
+    ``slack``/``L_J_net``; bootstrap: ``lambda1_hi``/``cone_lambda_cert``/``cone_slack``/``L_J_net`` so the vacuity is
+    auditable), plus ``one_step_relmse`` (did the model learn the map?) and the inputs."""
+    net, mu, sd = _train_henon_mlp(seed, smoke)
+    rng = np.random.default_rng(seed)
+    cfg = step71.SYSTEMS["Henon"]
+    trajs = step71.on_attractor_trajs(cfg, rng, n=max(8, n_samples // 200), length=300)
+    pts = np.concatenate([t[:-1] for t in trajs], axis=0)[:n_samples].astype(DTYPE)
+
+    # one-step relMSE of the learned map on these points (in normalized space, step71's metric) -- a model-quality flag
+    Zhat = torch.tensor((pts - mu) / sd, dtype=torch.float64)
+    with torch.no_grad():
+        pred = net(Zhat).numpy() * sd + mu
+    nxt = henon_map(pts)
+    one_step_relmse = float(np.sum((pred - nxt) ** 2) / max(np.sum((nxt - nxt.mean(0)) ** 2), 1e-12))
+
+    jacs = np.stack([_full_step_jacobian(net, mu, sd, s) for s in pts])
+    P, lam_samples, _ = adapted_metric(jacs)
+    kappa = float(np.linalg.cond(P))
+    h = _covering_radius(pts)
+    L_J = net_jacobian_lipschitz(net, sigma_second_deriv_max=SILU_SIGMA2_MAX)
+    br = lipschitz_bridge(lam_samples, kappa, L_J, h, eps=eps, eps_res=eps_res)
+    # certified-exponent ratio vs the textbook Henon lambda_1 = 0.419/step (sound iff >= 1): the honest looseness number
+    cert_ratio = math.log(br["lambda_cert"]) / HENON_LAMBDA1_REF
+
+    # ALWAYS compute the bootstrap cross-check on the SAME Jacobian sequence (the fallback's number), so the report can
+    # compare the deterministic cone vs the statistical horizon regardless of which route the gate selects.
+    logR = _logR_from_jacs(jacs)
+    fb = bootstrap_fallback(logR, dt_map=1.0, eps=eps)
+
+    if br["certified"]:
+        return dict(system="Henon(learned)", route="cone", lambda_samples=float(lam_samples),
+                    lambda_cert=br["lambda_cert"], log_lambda_cert=math.log(br["lambda_cert"]),
+                    cert_ratio_vs_true=float(cert_ratio), t_guar=int(br["horizon"]),
+                    kappa=kappa, h=float(h), slack=br["slack"], L_J_net=float(L_J),
+                    boot_t_lo=int(fb["t_lo"]), boot_lambda1=fb["lambda1"], boot_lambda1_hi=fb["lambda1_hi"],
+                    one_step_relmse=one_step_relmse, eps=eps, eps_res=eps_res)
+    # vacuous cone (net-Lipschitz slack dominates) => hybrid statistical fallback on the SAME point cloud
+    return dict(system="Henon(learned)", route="bootstrap", t_guar=int(fb["t_lo"]),
+                lambda1=fb["lambda1"], lambda1_hi=fb["lambda1_hi"], t_hi=int(fb["t_hi"]),
+                cone_lambda_cert=br["lambda_cert"], cone_log_lambda_cert=math.log(br["lambda_cert"]),
+                cone_cert_ratio_vs_true=float(cert_ratio), cone_slack=br["slack"], lambda_samples=float(lam_samples),
+                kappa=kappa, h=float(h), L_J_net=float(L_J), one_step_relmse=one_step_relmse,
+                eps=eps, eps_res=eps_res)
