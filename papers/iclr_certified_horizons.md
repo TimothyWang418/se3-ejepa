@@ -85,21 +85,20 @@ We are explicit about scope (§6): this is a mechanism-and-theory contribution a
 benchmark; the certificate is *exact* where the group is a genuine dynamical symmetry and *gracefully approximate*,
 with a measured and now lower-bounded boundary, elsewhere.
 
-**What is classical, what is folklore, and what is new.** We are deliberately explicit, because two of the four
-ingredients are not ours. The *upper* horizon bound (Theorem B) is the classical Lyapunov / numerical-weather-prediction
-predictability law [@lorenz1969predictability]. The orbit-constant-error fact underlying the configuration certificate — *both*
-directions, including the converse of Lemma 2 — is essentially classical **invariant decision theory**: an equivariant
-procedure has orbit-constant risk, and orbit-constant risk against a rich enough equivariant family pins the procedure
-to the equivariant class [@eaton1989; @lehmann2005testing; @berger1985]. Proposition 6's lower bound is, mathematically, the textbook
-fact that a perturbation along an expanding mode grows like $e^{\lambda T}$; its only twist is to seed that growth with
-the *equivariance residual* $\epsilon$ rather than an initial-condition error. **Our contribution is therefore the
-*synthesis*, not the individual statements:** assembling these into a single **computable, multi-step, per-channel**
-predictability certificate for *learned equivariant world models* (Algorithm 1), tying its unbounded-horizon subspace
-to the conserved/invariant channels (the Noether hinge), instantiating it on real-physics-engine contact dynamics, and
-showing it is exclusive to structure. The "single-shot certified equivariance is our $T{=}1$ slice" framing (§5) is
-accurate *positioning*, not a contribution; and the cleanest *quantitative* "scale cannot buy it" statement is the
-resolution-independent orbit vs. $\epsilon/L$-tube separation of §3.3, which we lean on rather than Lemma 2's algebraic
-converse (whose continuous-target form we only assert, §6).
+**What is new, and what we build on.** The contribution occupies a corner a prior-art sweep finds *empty* — no work
+combines equivariance with a certified, two-sided spectral horizon; the closest guarantee-bearing neighbours each
+miss the intersection [@conradie2026trustkoopman; @lillemark2026flowm; @mo2026symmetry] (distinguished in §5). We reach
+it by *synthesizing* three classical pillars, which we credit explicitly, with new results. **The pillars (not ours):**
+the *upper* horizon bound is the classical Lyapunov / numerical-weather-prediction law [@lorenz1969predictability];
+orbit-constant risk and its converse are classical **invariant decision theory** [@eaton1989; @lehmann2005testing; @berger1985];
+the $e^{\lambda T}$ growth (Proposition 6) is textbook. **The new results:** (i) Proposition 6's *matching lower bound* — growth seeded by the *equivariance residual* $\epsilon$ rather
+than an initial-condition error — making the horizon two-sided and approximate equivariance provably horizon-limited;
+(ii) the scope and continuity bounds (Propositions 7–8) lifting the law to *learned* chaotic models, where shadowing
+cannot transfer the exponent; and (iii) the **structure-vs-recurrence separation** (E2) — among Markov models only the equivariant one
+recovers a $40$-D spectrum, while an unstructured *recurrent* model provably cannot, by the conditional-Lyapunov
+condition. These assemble (Algorithm 1) into one certificate *exclusive to structure* (Lemma 2) whose unbounded-horizon
+subspace is the conserved/invariant one (the Noether hinge). Honest credit, not novelty inflation, is what lets the
+synthesis be trusted.
 
 ![The predictability certificate at a glance. **Left:** in the configuration $\times$ horizon plane, an equivariant model certifies the *entire* generated monoid $\langle S\rangle$ — every composition, from $k$ generator checks (Lemma 1) — up to a horizon ceiling set by the predictor spectrum (Theorem B, tight by Proposition 6); a non-equivariant model of any size certifies only a small interpolation tube. **Right:** the horizon $\times$ resolution trade-off $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$ — conserved/invariant ($\lambda\le0$) channels are certified to all horizons (eclipses, millennia), chaotic ($\lambda>0$) channels shrink as the demanded resolution sharpens (weather, $\sim$two weeks).](figures/hero_certified_region.png)
 

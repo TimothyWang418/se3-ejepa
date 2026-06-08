@@ -103,7 +103,9 @@ Our contributions are:
    instantiating Proposition 7(a)), and a lift to a **high-dimensional** learned model (Experiment 18, $40$-D
    Lorenz-96) where the configuration axis *helps the horizon axis*: a $\mathbb{Z}_N$-equivariant model recovers the
    full $40$-D Lyapunov spectrum ($R^2{=}0.98\text{–}0.99$) — hence the per-channel certified horizons — while a dense
-   model of equal data fails ($R^2{<}0$).
+   model of equal data fails ($R^2{<}0$) — as does a same-trained *recurrent* GRU (Step 77), pinning the separation to
+   *structure*, not recurrence or training (a recurrent model's hidden Lyapunov modes violate the conditional-Lyapunov
+   condition at high $N$; a Markov model's Jacobian is exactly $N\times N$).
 
 We are explicit about scope (§7): this is a mechanism-and-theory paper with $1$–$2$-GPU proof-of-principle, not a
 scaled benchmark, and the hinge's lift to *approximate* symmetry is open.
