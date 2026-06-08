@@ -125,3 +125,35 @@ Reuse, do **not** modify: `step70` (Lorenz), `step71` (Hénon/Rössler/Lorenz mu
 - No new chaotic systems beyond {Hénon (lead), Lorenz, Rössler, L96 (stretch)} — all already in the codebase.
 - No attempt at an unconditional true-system a-priori guarantee (impossible; §1).
 - No control / planning loop here — this is the *certificate*; its actionability is Lever C's separate concern.
+
+## 10. Revision 2026-06-08b — cat-map tight pivot (after Phase A)
+
+Phase A landed G1 on the true Hénon map (sound, non-vacuous, beats Euclidean) but the constant-$P$ certified
+exponent is **3.15× the true** $\lambda_1$ (certified $\log\Lambda^{\text{cert}}{=}1.32$ vs true $0.42$; $T_{\text{guar}}{=}3$
+vs true $\sim\!11$). Working out *why* surfaced a real obstruction, not an effort gap:
+
+- Hénon ($a{=}1.4$) is **non-uniformly hyperbolic** (homoclinic tangencies; Benedicks–Carleson) → no global uniform
+  cone field → a smooth-field $P(z)$ is obstructed near tangencies.
+- Single-step metrics (constant *or* field) cap at the single-step operator-norm scale; the only lever that beats it is
+  $k$-step Jacobian products, whose continuum-bridge Lipschitz grows $\sim M^{2k}$ ($M=\sup\lVert D\phi\rVert\approx3.7$)
+  → bridge slack vacuous for $k\ge3$. **So ~3× is near the rigorous continuum-certificate limit *on Hénon*.**
+
+**Pivot.** Tight certification belongs to **uniformly hyperbolic** dynamics. New tight lead = **(perturbed) cat map /
+hyperbolic toral automorphism**: $A=\bigl(\begin{smallmatrix}2&1\\1&1\end{smallmatrix}\bigr)$ is *symmetric* ⇒ $P{=}I$
+gives $\Lambda=\rho(A)=\tfrac{3+\sqrt5}{2}=e^{\lambda_1}$ **exactly**, with $L_J{=}0$ (constant Jacobian) ⇒ trivial bridge
+— **tight by construction**; a small smooth perturbation stays Anosov (structural stability), is genuinely nonlinear,
+and has small $L_J$ ⇒ the bridge still closes. **Hénon is retained as the honest "sound-but-conservative on
+non-uniformly-hyperbolic" companion.**
+
+The combined result is *richer* than forcing Hénon tight (which is mathematically obstructed): the certificate is
+**provably tight on uniformly-hyperbolic dynamics** (cat map: certified $=$ true exponent to machine precision),
+**soundly conservative on non-uniformly-hyperbolic dynamics** (Hénon: sound, ~3× by the genuine worst-case-vs-typical
+margin), and **knows which regime it is in** — a *tightness dimension* on Proposition 7's scope theorem.
+
+**New tasks (Phase A′, extend `step82`, reuse `adapted_metric`/`lipschitz_bridge`/`t_guar`):** `cat_map`/`cat_jac`
+(+ analytic $\lambda_1=\log\tfrac{3+\sqrt5}{2}$); `perturbed_cat_map`/`perturbed_cat_jac` (+ analytic $L_J$ from the
+perturbation's second derivative + a global uniform-hyperbolicity cone-margin check + Benettin $\lambda_1>0$);
+`run_true_catmap` / `run_true_perturbed_catmap` (certified exponent $\approx\lambda_1$, ratio $\to 1$); the
+tightness comparison cat-map (~1.0×) vs Hénon (~3.15×). The pure linear cat map is the guaranteed-tight anchor
+(tight by construction); the perturbation is the nonlinear upgrade — fall back to the linear anchor if the
+perturbation is not cleanly Anosov. Then Phase B (learned cat map) + Phase C (validation) proceed as before.
