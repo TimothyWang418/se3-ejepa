@@ -357,12 +357,20 @@ high-error distractors, an explorer that maximizes certified-region growth certi
 exactly $7$ observations (the generator basis — each generator unlocks an exponential swath, Lemma 1), whereas an
 error-curiosity explorer is lured by the irreducible-noise distractors and certifies only $1\%$ at the same budget (3
 seeds; random $\sim2\%$). So "expand your certified region" is a **noise-immune** epistemic drive that beats
-prediction-error curiosity — the classic *noisy-TV* failure mode — for compositional coverage. *Honest scope:* the
-baseline is *raw-error* curiosity; a sophisticated information-gain agent would also learn to avoid aleatoric noise.
-The certificate's contribution is that it supplies that immunity **for free and provably**, with no noise model — and
-this is a toy demonstration of the principle, not a benchmark.
+prediction-error curiosity — the classic *noisy-TV* failure mode. *Honest scope:* against *raw-error* curiosity (a
+sophisticated information-gain agent would also avoid aleatoric noise); the certificate supplies that immunity **for
+free and provably**, no noise model — a toy demonstration of the principle, not a benchmark.
 
 ![Certificate-driven active inference (E8). On a $\mathbb{Z}_2^7$ compositional world with noisy distractor actions, an explorer that maximizes the *certified region* certifies all $128$ compositions in exactly $7$ observations (the generator basis), while a prediction-error-curiosity explorer is lured by the high-error distractors and certifies almost nothing at the same budget.](figures/step69_certificate_driven_exploration.png)
+
+**(E9) Both axes on one system, and the certificate changes a decision.** E1–E8 carry the two axes on *separate*
+systems and never let the certificate *act*. On **controlled Lorenz-96** (add a control $u_i$; exact $\mathbb{Z}_N$)
+both hold at once: an equivariant planner (A5) gives orbit-flat control on *genuine* chaos ($\lambda_1{\approx}1.8$,
+residual $8\!\times\!10^{-16}$), and the certified $T_1(\epsilon)$ drives an **active re-observation** schedule on the
+efficient accuracy-vs-observation frontier *untuned* ($2/3$ seeds, asymptotic-$\epsilon$ regime; tight-$\epsilon$
+honestly optimistic, Prop. 8) — active perception, honestly **not** short-horizon control (the horizon outruns the
+receding-horizon controller). It lifts to a $\mathbb{Z}_N$ pendulum ring and a frame-averaged $\mathbb{Z}_2$ double
+pendulum — a **class property** across two groups and high/low dimension (`step79`–`step81`).
 
 ---
 
@@ -424,20 +432,17 @@ non-equivariant certified Koopman forecasts [@conradie2026trustkoopman] and equi
   in. The real-ish experiments (E5 PushT, E6 $\mathrm{SO}(3)$) validate *flatness*, not the hinge's emergence in a
   learned model of un-constructed dynamics — that remains open.
 - **The horizon axis lifts to learned models of real *chaotic* dynamics, with a continuity bound, and is vacuous on
-  near-neutral dynamics (scope, not a bug).** E2 validates the law on a synthetic spectrum (analytically, Proposition 6),
-  on a *class* of low-D chaotic systems (Lorenz/Hénon/Rössler, $R^2{=}0.96$–$1.00$, exponent to $1$–$12\%$), and on a
-  **$40$-D** learned model (Lorenz-96, full-spectrum $R^2{=}0.98$–$0.99$). Proposition 7 explains the regime: the horizon
-  axis is informative iff $\lambda_1>0$ — the **PushT interior is the degenerate branch** (a learned-PushT probe finds
-  $R^2{\approx}0.02$, predicted by 7(b)). Honest caveats: (i) the lift is backed by Proposition 8 (the *finite-time*
-  exponent is continuous in the dynamics), not shadowing (which transfers only the forecast-horizon floor, not the
-  asymptotic exponent), but we verify $C^1$-closeness only via one-step $L^2$ error — and in high $N$ that gap is real
-  and load-bearing (a dense MLP — and a same-trained recurrent GRU — is one-step-accurate yet mis-estimates the $40$-D
-  spectrum; $\mathbb{Z}_N$-structure is what closes it); (ii) the horizon axis's real-dynamics evidence is chaotic ODEs/maps, not a contact simulator.
-- **Scale and modality.** All experiments are $1$–$2$-GPU. The exact flatness of the certificate transfers across
-  modalities (structured state, $\mathrm{SO}(3)$ point clouds, pixels), but absolute multi-step accuracy on raw pixels
-  at this scale is poor for *every* architecture (an artifact of the anti-collapse-regularized JEPA latent, not of
-  equivariance); a strong few-step pixel predictor at small scale is an architecture-agnostic open problem orthogonal
-  to the certificate.
+  near-neutral dynamics (scope, not a bug).** E2 validates the law on a synthetic spectrum, a *class* of low-D chaotic
+  systems (Lorenz/Hénon/Rössler, exponent to $1$–$12\%$), and a **$40$-D** learned model ($R^2{=}0.98$–$0.99$);
+  Proposition 7 makes it informative iff $\lambda_1>0$ — the **PushT interior is the degenerate branch**
+  ($R^2{\approx}0.02$, predicted by 7(b)). Caveats: the lift rests on Proposition 8 (finite-time continuity), not
+  shadowing, yet we verify $C^1$-closeness only via one-step $L^2$ error — in high $N$ a real gap (a dense MLP, and a
+  recurrent GRU, is one-step-accurate yet mis-estimates the $40$-D spectrum; $\mathbb{Z}_N$-structure closes it); and
+  the real-dynamics evidence is chaotic ODEs/maps, not a contact simulator.
+- **Scale and modality.** All experiments are $1$–$2$-GPU. The certificate's exact flatness transfers across modalities
+  (state, $\mathrm{SO}(3)$ point clouds, pixels), but absolute multi-step accuracy on raw pixels is poor for *every*
+  architecture at this scale (the anti-collapse JEPA latent, not equivariance); a strong few-step pixel predictor is an
+  architecture-agnostic open problem orthogonal to the certificate.
 
 ---
 
@@ -451,4 +456,4 @@ already trusts are the one-step slice of this picture. *Scale buys interpolation
 
 ---
 
-*Reproducibility and scope.* Full proofs of all claims are in **Appendix B**; a reproducibility appendix (anonymized code, experiment-to-code map, seed/gate discipline) is in **Appendix C**. This paper is a focused extraction of a broader certified-world-models program; the complete experiment suite (embodied benchmarks, discovery/generation) is deferred to an extended version.
+*Reproducibility and scope.* Full proofs are in **Appendix B**, a reproducibility appendix (anonymized code, experiment-to-code map, seed/gate discipline) in **Appendix C**. This is a focused extraction of a broader program; the full suite is deferred to an extended version.

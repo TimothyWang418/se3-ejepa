@@ -61,9 +61,10 @@ def split_source() -> tuple[str, str]:
 
 
 # Keep only the load-bearing figures inline (the at-a-glance picture, the tightness proof = "central claim",
-# the Lorenz headline, and the real-contact-dynamics result); relocate the rest to an unlimited appendix so the
-# MAIN TEXT meets ICLR's strict 9-page limit. (Appendix + references do not count toward the 9 pages.)
-MAIN_FIGS = ["hero_certified_region", "step65_horizon_tightness", "step70_lorenz_horizon", "step59_pusht_certificate"]
+# and the Lorenz headline); relocate the rest — including the PushT real-contact-dynamics figure, whose result E5's
+# prose fully carries — to an unlimited appendix so the MAIN TEXT meets ICLR's strict 9-page limit (the E9
+# co-demonstration paragraph needed the room). (Appendix + references do not count toward the 9 pages.)
+MAIN_FIGS = ["hero_certified_region", "step65_horizon_tightness", "step70_lorenz_horizon"]
 
 
 def relocate_figures(body: str) -> tuple[str, str]:

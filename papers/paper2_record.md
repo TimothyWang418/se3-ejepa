@@ -517,3 +517,34 @@ Lyapunov spectra without symmetry, so your dense-MLP baseline is the wrong one."
   E2 + §5 + §6 (compressed; main text re-verified **≤9pp**, 0 unresolved cites; PDF 1147 KiB); `iclr_refs.bib` **+11**
   entries (Pathak'17/'18, Vlachas, Hart, Kobayashi, TrustKoopman, FloWM, Mo, Wang/Walters, Delliaux, Ordoñez).
   Tests `test_step74/76/77` green.
+
+## [2026-06-08] Experiment 19 — certified-control co-demonstration, lifted to a *class* (Steps 79–81; user: "完整闭环控制" → "连佐证也跑(摆环+双摆),凑 class-lift")
+
+Closes the two structural gaps a reviewer flags: **the two certificate axes never met on one system**, and **the
+certificate never *changed a decision*.** Brainstorm → spec (`docs/specs/2026-06-07-step5-...`) → plan
+(`docs/plans/2026-06-07-step79-...`) → subagent-driven TDD. Anchor + 2 corroborators, all honest-gated.
+
+- **Step 79 anchor (`step79_certified_control.py` + `test_step79.py`, 8 tests)** — **controlled Lorenz-96**
+  ($\dot x_i{=}(x_{i+1}{-}x_{i-2})x_{i-1}{-}x_i{+}F{+}u_i$, exact $\mathbb{Z}_N$). Action-conditioned $\mathbb{Z}_N$-conv
+  WM (one-step relMSE $2\times10^{-6}$) + exactly-$\mathbb{Z}_N$-equivariant gradient-MPC planner.
+  **(C) config axis:** orbit-flat control on *genuine* chaos ($\lambda_1{\approx}1.8$), residual $8\times10^{-16}$ —
+  the orbit-flatness certificate realized on real chaos, not near-neutral PushT. **(H) horizon axis:** certified
+  $T_1(\epsilon)$ + step78 bootstrap CI off the WM spectrum. **(D) decision:** **D1 short-horizon control = honest
+  NEGATIVE** (certified horizon $\gg$ the receding-horizon controller's few-step depth — units-bug caught: $T_1$ is in
+  *time* units, $T_1/\Delta t_{\rm map}\approx256$ map steps, not $\approx3$); **D2 active re-observation = QUALIFIED
+  WIN** — re-observe every $T_1(\epsilon)/\Delta t$ steps sits on the efficient violation-vs-observation frontier
+  ($2/3$ seeds) *untuned*, in the asymptotic-Lyapunov regime ($\epsilon{=}0.2$); at $\epsilon{=}0.01$ the certificate
+  is honestly optimistic (**Prop. 8 finite-horizon $\delta$-bias**, ratio $\approx0.05$).
+- **Step 80 corroborator (`step80_pendulum_ring.py` + `test_step80.py`)** — driven-damped $\mathbb{Z}_N$
+  coupled-pendulum ring ($N{=}10$, $10$ positive exponents, Liouville $=-N\gamma$ exact). *Mechanical* analog. Orbit-flat
+  $10^{-16}$, same optimistic→predictive transition (knee $\epsilon{=}0.3$), same $2/3$ frontier. Seed-for-seed parallel.
+- **Step 81 corroborator (`step81_double_pendulum.py` + `test_step81.py`)** — chaotic double pendulum, **different
+  group** ($\mathbb{Z}_2$ reflection, not $\mathbb{Z}_N$). Equivariant WM by **frame averaging** (the E13 device);
+  $4$-D, $1$ positive exponent (λ₁≈0.44), so carries H+D2 but *not* the exponential-monoid config story. Reflection-
+  orbit-flat $4\times10^{-17}$, same horizon validation (knee $\epsilon{=}0.7$, most-optimistic WM), same $2/3$ frontier.
+- **Class-lift:** the certificate-driven re-observation law is a **class property of locally-coupled chaotic systems
+  with an exact symmetry** — two groups ($\mathbb{Z}_N$, $\mathbb{Z}_2$), high/low dimension, abstract/mechanical —
+  mirroring the existing Lorenz→Hénon→Rössler and SO(2)→SO(3) lifts.
+- **Folded:** paper2 **§5.17 (Experiment 19)** + contribution clause + figure `step79_reobservation.png`; ICLR **E9**
+  (figure-free; PushT cert figure relocated to Appendix A + §6/§7 trims to hold **≤9pp**, Conclusion on p9, 0 unresolved
+  cites). `test_step79/80/81` green (26 tests, 8 s). Both PDFs rebuilt.
