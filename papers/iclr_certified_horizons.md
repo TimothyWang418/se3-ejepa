@@ -285,7 +285,10 @@ cyclic-conv recovers the *full* $40$-D spectrum ($R^2{=}0.98$–$0.99$, $3$ seed
 $\sim\!14$ positive) — hence the per-channel certified horizons — while a dense MLP of equal data **fails**
 ($R^2{<}0$, $\lambda_1$ inflated $\sim\!3\times$; both succeed at $N{\le}20$, so the gap is a high-$N$ effect). The
 **configuration axis** (the $\mathbb{Z}_N$ symmetry) thus *helps the horizon axis* — structure recovers a
-high-dimensional spectral horizon an unstructured model cannot. (Needs a multi-step rollout loss; one-step MSE
+high-dimensional spectral horizon an unstructured model cannot — *and not for want of recurrence:* a GRU-BPTT [@vlachas2020rnn] that recovers at
+$N{=}12$ ($R^2{=}0.93$–$0.99$) still fails at $N{=}40$ ($R^2{\approx}-0.3$, $3$ seeds), its joint-state $(x,h)$ Jacobian
+carrying hidden modes that break the conditional-Lyapunov condition [@hart2024attractor] at high $N$ where a Markov
+$N\times N$ Jacobian has none. (Needs a multi-step rollout loss; one-step MSE
 underestimates the Jacobian — Proposition 8's $C^1$ caveat in high $N$.)
 
 ![The horizon staircase on a learned model of real chaotic dynamics (E2, Lorenz). **Left:** the learned one-step model's perturbation growth tracks the true Lorenz integrator over $550$ steps. **Right:** the certified horizon $T(\epsilon_0)$ on the *learned* model is linear in $\log(1/\epsilon_0)$ ($R^2{=}0.995$), and the measured slope sits on the prediction $1/(\lambda_1 dt)$ from the textbook Lorenz exponent — Theorem B's law lifted to a learned model of a genuinely chaotic system (Proposition 7(a)).](figures/step70_lorenz_horizon.png)
@@ -397,7 +400,10 @@ a *learned* latent world model and **measure it on learned models of a class of 
 Hénon, Rössler, E2 — matched to $1$–$12\%$), made rigorous by a finite-horizon continuity bound (Proposition 8) where
 shadowing fails; (ii) **characterize when it lifts** (Proposition 7: the non-degenerate/degenerate dichotomy,
 synthesizing Oseledets for the rate with shadowing for the floor); (iii) tie its unbounded-horizon subspace to the
-group-invariant subspace (Noether hinge); and (iv) make the forward direction's converse a theorem (Lemma 2).
+group-invariant subspace (Noether hinge); and (iv) make the forward direction's converse a theorem (Lemma 2). Recovering a chaotic spectrum from a *learned* model is itself known, *conditionally* on the model's contracting modes
+[@hart2024attractor] — the reason the recurrent baseline (E2) fails at high $N$; the closest concurrent guarantees are
+non-equivariant certified Koopman forecasts [@conradie2026trustkoopman] and equivariant-but-uncertified world models
+[@lillemark2026flowm; @mo2026symmetry], none combining equivariance with a certified two-sided spectral horizon.
 
 ---
 
@@ -423,8 +429,8 @@ group-invariant subspace (Noether hinge); and (iv) make the forward direction's 
   $R^2{\approx}0.02$, predicted by 7(b)). Honest caveats: (i) the lift is backed by Proposition 8 (the *finite-time*
   exponent is continuous in the dynamics), not shadowing (which transfers only the forecast-horizon floor, not the
   asymptotic exponent), but we verify $C^1$-closeness only via one-step $L^2$ error — and in high $N$ that gap is real
-  and load-bearing (a dense MLP is one-step-accurate yet mis-estimates the $40$-D spectrum; $\mathbb{Z}_N$-structure is
-  what closes it); (ii) the horizon axis's real-dynamics evidence is chaotic ODEs/maps, not a contact simulator.
+  and load-bearing (a dense MLP — and a same-trained recurrent GRU — is one-step-accurate yet mis-estimates the $40$-D
+  spectrum; $\mathbb{Z}_N$-structure is what closes it); (ii) the horizon axis's real-dynamics evidence is chaotic ODEs/maps, not a contact simulator.
 - **Scale and modality.** All experiments are $1$–$2$-GPU. The exact flatness of the certificate transfers across
   modalities (structured state, $\mathrm{SO}(3)$ point clouds, pixels), but absolute multi-step accuracy on raw pixels
   at this scale is poor for *every* architecture (an artifact of the anti-collapse-regularized JEPA latent, not of

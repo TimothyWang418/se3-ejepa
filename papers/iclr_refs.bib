@@ -160,3 +160,106 @@
   pages   = {1423--1485},
   year    = {2005},
 }
+
+% ============================================================================================================
+% Added 2026-06 after a literature-collision sweep (5 fronts). Front 1 (learned-model spectrum recovery) is
+% established prior art we MUST cite; TrustKoopman / FloWM / Mo are CONCURRENT near-neighbours; Wang / Delliaux /
+% Ordonez are equivariant-world-model neighbours. Fronts 4 (equivariance x certified horizon) and 5 (structure-
+% beats-scale high-D spectrum recovery) had NO close hit. arXiv ids verified; some venue/page details best-known.
+% ============================================================================================================
+
+% ---- Front 1: Lyapunov / Koopman spectra FROM LEARNED MODELS (data-driven, not classical integrators) ----
+@article{pathak2017lyapunov,
+  title   = {Using Machine Learning to Replicate Chaotic Attractors and Calculate {Lyapunov} Exponents from Data},
+  author  = {Pathak, Jaideep and Lu, Zhixin and Hunt, Brian R. and Girvan, Michelle and Ott, Edward},
+  journal = {Chaos},
+  volume  = {27},
+  number  = {12},
+  pages   = {121102},
+  year    = {2017},
+  note    = {arXiv:1710.07313},
+}
+@article{pathak2018modelfree,
+  title   = {Model-Free Prediction of Large Spatiotemporally Chaotic Systems from Data: A Reservoir Computing Approach},
+  author  = {Pathak, Jaideep and Hunt, Brian and Girvan, Michelle and Lu, Zhixin and Ott, Edward},
+  journal = {Physical Review Letters},
+  volume  = {120},
+  number  = {2},
+  pages   = {024102},
+  year    = {2018},
+}
+@article{vlachas2020rnn,
+  title   = {Backpropagation Algorithms and Reservoir Computing in Recurrent Neural Networks for the Forecasting of Complex Spatiotemporal Dynamics},
+  author  = {Vlachas, Pantelis R. and Pathak, Jaideep and Hunt, Brian R. and Sapsis, Themistoklis P. and Girvan, Michelle and Ott, Edward and Koumoutsakos, Petros},
+  journal = {Neural Networks},
+  volume  = {126},
+  pages   = {191--217},
+  year    = {2020},
+  note    = {arXiv:1910.05266},
+}
+@article{hart2024attractor,
+  title   = {Attractor reconstruction with reservoir computers: The effect of the reservoir's conditional {Lyapunov} exponents on faithful attractor reconstruction},
+  author  = {Hart, Joseph D.},
+  journal = {Chaos},
+  volume  = {34},
+  number  = {4},
+  pages   = {043123},
+  year    = {2024},
+  note    = {arXiv:2401.00885},
+}
+@article{kobayashi2024lyapunov,
+  title   = {{Lyapunov} analysis of data-driven models of high dimensional dynamics using reservoir computing},
+  author  = {Kobayashi, Miki U. and Nakai, Kengo and Saiki, Yoshitaka},
+  journal = {Journal of Physics: Complexity},
+  volume  = {5},
+  number  = {2},
+  pages   = {025024},
+  year    = {2024},
+}
+
+% ---- Concurrent near-neighbours (must cite + distinguish) ----
+@misc{conradie2026trustkoopman,
+  title  = {Trustworthy {Koopman} Operator Learning: Invariance Diagnostics and Error Bounds},
+  author = {Conradie, Gustav and Boull{\'e}, Nicolas and Loiseau, Jean-Christophe and Brunton, Steven L. and Colbrook, Matthew J.},
+  year   = {2026},
+  eprint = {2603.15091},
+  archivePrefix = {arXiv},
+}
+@misc{lillemark2026flowm,
+  title  = {Flow Equivariant World Models: Memory for Partially Observed Dynamic Environments},
+  author = {Lillemark, Lasse and Huang, Yuchen and Zhan, Eric and Du, Yilun and Keller, T. Anderson},
+  year   = {2026},
+  eprint = {2601.01075},
+  archivePrefix = {arXiv},
+  note   = {ICML 2026},
+}
+@misc{mo2026symmetry,
+  title  = {Symmetry-Protected {Lyapunov} Neutral Modes in Equivariant Recurrent Networks},
+  author = {Mo, Hanson Hanxuan},
+  year   = {2026},
+  eprint = {2605.03338},
+  archivePrefix = {arXiv},
+}
+
+% ---- Equivariant world-model / RL neighbours ----
+@inproceedings{wang2022so2,
+  title     = {{SO(2)}-Equivariant Reinforcement Learning},
+  author    = {Wang, Dian and Walters, Robin and Platt, Robert},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2022},
+  note      = {arXiv:2203.04439},
+}
+@misc{delliaux2025group,
+  title  = {Learning Abstract World Models with a Group-Structured Latent Space},
+  author = {Delliaux, Thomas and Vu, Nguyen-Khanh and Fran{\c{c}}ois-Lavet, Vincent and van der Pol, Elise and Rachelson, Emmanuel},
+  year   = {2025},
+  eprint = {2506.01529},
+  archivePrefix = {arXiv},
+}
+@misc{ordonez2025equivariant,
+  title  = {Equivariant Representation Learning for Symmetry-Aware Inference with Guarantees},
+  author = {Ord{\'o}{\~n}ez-Apraez, Daniel and Kosti{\'c}, Vladimir and Fr{\"o}hlich, Christian and Brandt, Gregory and Lounici, Karim and Pontil, Massimiliano},
+  year   = {2025},
+  eprint = {2505.19809},
+  archivePrefix = {arXiv},
+}

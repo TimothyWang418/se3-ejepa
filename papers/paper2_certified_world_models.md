@@ -1030,13 +1030,35 @@ $R^2{=}0.982$/$0.995$/$0.985$ across $3$ seeds, Kaplan–Yorke dimension $27$–
 $\sim\!14$ positive exponents — while a **dense MLP** of comparable capacity on the *same* data **fails catastrophically**
 ($R^2{=}-1.1$/$-1.4$/$-2.8$; its $N\times N$ Jacobian noise scales with dimension and inflates $\lambda_1$ by $\sim\!3\times$
 and $\mathrm{KY}$ to $\sim\!35$). At $N{=}10$–$20$ *both* models succeed; the gap is a high-$N$ effect (the MLP's
-unstructured Jacobian noise growing with $N$). The leading exponent is the hardest single number — recovered to
+unstructured Jacobian noise growing with $N$).
+
+**Recurrence is not the missing ingredient — structure is.** A skeptic notes that the spectrum-from-data literature
+recovers Lyapunov spectra with *recurrent* models — reservoir computing (Pathak et al. 2017; Kobayashi et al. 2024)
+and RNN-BPTT (Vlachas et al. 2020) — not feedforward MLPs. So we add the strongest such baseline: a **GRU trained by
+BPTT** with the *identical* recipe as the conv/MLP (same data, residual map, $K$-step rollout loss, plus
+hidden-state-noise regularization for closed-loop stability). It is a *validated* recoverer — at $N{=}12$ it recovers
+the spectrum to $R^2{=}0.93$–$0.99$ ($3/3$ seeds) — yet at $N{=}40$ it **fails like the MLP**
+($R^2{=}-0.22$/$-0.29$/$-0.29$; positive count inflated to $24$–$35$ vs. true $\sim\!14$), for a *structural* reason
+that sharpens the claim. A recurrent model's autonomous map lives on the **joint state** $(x,h)$, so its Jacobian
+carries $H$ extra *hidden* Lyapunov modes; the leading $N$ approximate the truth only if all $H$ fall below the true
+minimum exponent — **Hart's conditional-Lyapunov condition** (Hart 2024). The noise regularizer enforces it
+at low $N$ (spurious-mode ceiling $-49$, far below the true minimum $-3.9$) but it **breaks at high $N$** (the ceiling
+rises to $\sim\!-0.3$, near-neutral, so the hidden modes intrude). A **Markov** (feedforward) model has a Jacobian that
+is *exactly* $N\times N$ — no hidden modes, no conditional-Lyapunov burden — so the structure-vs-scale comparison
+**among Markov models is confound-free**, and there only the $\mathbb{Z}_N$ prior recovers the high-$N$ spectrum.
+*Structure — not recurrence, training regime, scale, or one-step accuracy — is what closes it.* (The recurrent route
+remains a valid recoverer in its own regime — low-to-moderate $N$ with the conditional-Lyapunov condition met —
+orthogonal to, not a counterexample of, the structure-vs-scale axis. `experiments/step77`, `tests/test_step77.py`.)
+
+The leading exponent is the hardest single number — recovered to
 $2$–$24\%$ (seed-dependent) — but the *whole spectrum*, hence the per-channel certified horizons, is recovered. **This is
 the configuration axis (the $\mathbb{Z}_N$ symmetry of the dynamics) *helping the horizon axis*** (spectrum recovery): the
 same structure that gives the orbit-flatness certificate also makes the high-dimensional horizon law learnable where an
 unstructured model of equal data cannot.
 
 ![Experiment 18 (the high-dimensional spectral horizon law, $N{=}40$ Lorenz-96, seed 0; the other seeds match). **(a)** Recovered vs. true Lyapunov exponent for all $40$ channels: the $\mathbb{Z}_N$-equivariant cyclic-conv (blue) lies on $y=x$ ($R^2{=}0.98$); the dense MLP (red ×) is scattered far off ($R^2{=}-1.1$), over-amplifying the spectrum. **(b)** Per-channel certified horizon $T_j(\epsilon{=}0.01)=\log(1/\epsilon)/\lambda_j$ across the positive exponents: the equivariant model (blue) tracks the truth (black) — short horizons ($\sim$few steps) for the most chaotic channels, long ($\sim\!350$ steps) for the weakly chaotic ones. Structure recovers the spectral stratification a dense model of equal data cannot.](figures/step74_lorenz96_spectrum.png)
+
+![Experiment 18, the recurrent baseline ($N{=}40$ Lorenz-96, seed 0; the other two seeds match). The **GRU-BPTT** baseline (green circles) — a *validated* spectrum-recoverer at $N{=}12$ ($R^2{=}0.93$–$0.99$, $3/3$ seeds) — **fails** to recover the $40$-D spectrum ($R^2{\approx}-0.3$), scattered like the dense MLP (red ×), while the $\mathbb{Z}_N$-equivariant conv (blue) lies on $y{=}x$. A recurrent model's joint-state $(x,h)$ Jacobian carries $H$ hidden Lyapunov modes that, at high $N$, rise above the true minimum exponent (violating Hart's conditional-Lyapunov condition); a Markov model's Jacobian is *exactly* $N\times N$ and has none. Structure — not recurrence — recovers the high-dimensional spectrum.](figures/step77_gru_baseline.png)
 
 ---
 
@@ -1159,6 +1181,31 @@ spectrum certifies the horizon — Proposition 7's dichotomy: informative on spe
 ($\lambda_1>0$), vacuous on near-neutral dynamics ($\lambda_1\approx0$, the PushT interior) — synthesizing Oseledets
 (for the rate) and shadowing (for the floor) with the certificate; (iii) tie its slow subspace to the group-invariant
 subspace via the Noether hinge; and fold all of it into a single multi-axis certificate for equivariant models.
+
+**Lyapunov spectra from learned models.** That a *learned* (not numerically-integrated) model recovers a chaotic
+system's Lyapunov spectrum is established prior art: reservoir computers recover full spectra and tie forecast skill to
+$\sim$5–8 Lyapunov times (Pathak et al. 2017, 2018), RNN-BPTT does the same (Vlachas et al. 2020), and both
+extend to high-dimensional flows (Kobayashi et al. 2024); faithful recovery from a *recurrent* model is *conditional*
+on the learned model's own contracting modes — the conditional-Lyapunov criterion (Hart 2024). We therefore do
+*not* claim spectrum-recovery-from-a-learned-model as novel. Our contribution is to make it **two-sided/tight,
+per-channel, and certified** for an *equivariant latent world model*, and (Experiment 18) to identify that
+conditional-Lyapunov burden as exactly what sinks the unstructured *recurrent* route at high $N$ where a Markov
+equivariant model — whose Jacobian is *exactly* $N\times N$ — succeeds.
+
+**Concurrent certified and equivariant neighbours.** TrustKoopman (Conradie et al. 2026) derives certified
+multi-step error bounds for data-driven Koopman/Perron–Frobenius forecasts — the closest *certified-rollout* neighbour
+— but over classical EDMD with **no equivariance** (its "invariance" is Koopman-subspace, not group), one-sided rather
+than two-sided/tight, and with no conservation axis. Flow-Equivariant World Models (Lillemark et al. 2026) build an
+equivariant world model for stable long-horizon prediction, but evaluate it perceptually with **no certificate,
+spectrum, or conserved-channel** statement. Symmetry-Protected Lyapunov Neutral Modes (Mo 2026) proves an
+equivariant flow has $\ge\dim(G/H)$ zero exponents tangent to the group orbit — adjacent to our Noether hinge
+(Propositions 4–5) — but as equivariant-RNN expressivity theory, without the certificate, the two-sided horizon, or the
+representation-theoretic charge placement. More broadly: model-free equivariant RL gives orbit-constant *value*
+functions (Wang et al. 2022) (no learned forward model or horizon); group-structured latent world models
+(Delliaux et al. 2025) are empirical (no certificate); and equivariant representation learning with guarantees
+(Ordóñez-Apraez et al. 2025) bounds a *static* conditional-expectation operator's spectrum, not a multi-step dynamics
+horizon. The equivariance $\times$ certified-horizon intersection, and the structure-beats-scale high-$N$ spectrum
+recovery, remain ours.
 
 ---
 
@@ -1333,6 +1380,20 @@ all single-shot and forward-only, none with the multi-step horizon, the converse
 
 The $T(\epsilon)\sim\log(1/\epsilon)/\lambda$ predictability-horizon law itself is classical (Lyapunov / Lorenz;
 standard numerical-weather-prediction practice).
+
+**Spectrum-from-learned-models and concurrent neighbours** (added in the Step 77 / Experiment 18 baseline pass):
+
+- **Pathak et al. (2017)** — reservoir computing recovers Lyapunov exponents from data. *Chaos* 27:121102; arXiv:1710.07313.
+- **Pathak et al. (2018)** — model-free prediction of large spatiotemporally chaotic systems; forecast skill measured in Lyapunov-time units. *Phys. Rev. Lett.* 120:024102.
+- **Vlachas et al. (2020)** — RNN-BPTT recovers full Lyapunov spectra (Lorenz, Kuramoto–Sivashinsky). *Neural Networks* 126:191–217; arXiv:1910.05266.
+- **Hart (2024)** — attractor/spectrum reconstruction with reservoirs requires a *conditional-Lyapunov* condition (the hidden modes must be sufficiently contracting). *Chaos* 34:043123; arXiv:2401.00885.
+- **Kobayashi et al. (2024)** — Lyapunov analysis of reservoir models of high-dimensional dynamics (Lorenz-96 $K{=}8$, 3D Navier–Stokes). *J. Phys. Complexity* 5:025024.
+- **Conradie et al. (2026)** — TrustKoopman: certified multi-step error bounds for data-driven Koopman / Perron–Frobenius forecasts (classical EDMD; no equivariance; one-sided). arXiv:2603.15091.
+- **Lillemark et al. (2026)** — Flow Equivariant World Models: an equivariant world model for long-horizon prediction (empirical; no certificate/spectrum). arXiv:2601.01075 (ICML 2026).
+- **Mo (2026)** — Symmetry-Protected Lyapunov Neutral Modes in Equivariant Recurrent Networks (orbit-tangent zero modes; RNN-expressivity theory). arXiv:2605.03338.
+- **Wang et al. (2022)** — $\mathrm{SO}(2)$-Equivariant Reinforcement Learning (model-free orbit-constant value/policy; no world model). ICLR 2022; arXiv:2203.04439.
+- **Delliaux et al. (2025)** — Learning Abstract World Models with a Group-Structured Latent Space (empirical; no certificate). arXiv:2506.01529.
+- **Ordóñez-Apraez et al. (2025)** — Equivariant Representation Learning with Guarantees (a *static* conditional-expectation operator spectrum, not a dynamics horizon). arXiv:2505.19809.
 
 ---
 

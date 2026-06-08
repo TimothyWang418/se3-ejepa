@@ -487,3 +487,33 @@ After the gap-closing batch, user picked "全做" on four deepening directions; 
   the deepening pass (plays to the researcher's geometry/ergodic-theory strength, zero compute).
 - Full suite **96 tests**; paper2 PDF 1329 KiB / 13 figures; arXiv bundle rebuilt (22 members). ICLR fold + arXiv
   submit instructions + embodied-benchmark plan are the wrap-up.
+
+---
+
+## [2026-06-07] Structure-vs-scale baseline hardening (Step 76 ESN + Step 77 GRU) — defends Exp 18
+
+A literature-collision sweep (5 fronts, deep-research, 102 agents) found Fronts 4 (equivariance × certified horizon)
+and 5 (structure-beats-scale high-$N$ spectrum) **open**, but Front 1 (spectrum-from-learned-models:
+Pathak/Vlachas/Hart/Kobayashi) is must-cite prior art that exposes a real reviewer attack on Exp 18: *"RC/RNN recover
+Lyapunov spectra without symmetry, so your dense-MLP baseline is the wrong one."* Closed it empirically.
+
+- **Step 77 (`step77_lorenz96_gru_baseline.py` + `test_step77.py`)** — a **GRU-BPTT** baseline (Vlachas's tool) trained
+  with the *identical* recipe as the conv/MLP (same data / residual / $K{=}5$ rollout / Adam, + hidden-noise reg for
+  closed-loop stability). **Positive control $N{=}12$: $R^2{=}0.93$–$0.99$ ($3/3$, a validated recoverer). Test
+  $N{=}40$: $R^2{=}-0.22$/$-0.29$/$-0.29$ ($3/3$ FAIL)** — fails like the dense MLP while the $\mathbb{Z}_N$-conv
+  recovers ($R^2{=}0.98$–$0.99$). **STRUCTURE STILL WINS on all 3 seeds.** Folded into §5.16 (figure
+  `step77_gru_baseline.png`).
+- **Mechanism (the deep framing).** A recurrent model's autonomous map lives on joint state $(x,h)$; its Jacobian
+  carries $H$ hidden Lyapunov modes that must fall below the true minimum (**Hart 2024 conditional-Lyapunov**).
+  Hidden-noise reg enforces it at low $N$ (spurious ceiling $-49\ll$ true min $-3.9$) but it **breaks at high $N$**
+  (ceiling $\to-0.3$, near-neutral; positive count inflates $24$–$35$ vs true $14$). A **Markov** (feedforward) model
+  has a Jacobian *exactly* $N\times N$ — no hidden modes — so structure-vs-scale among Markov models is confound-free.
+  *Structure, not recurrence/training/scale/one-step-accuracy, closes it.*
+- **Step 76 (`step76_lorenz96_reservoir_baseline.py` + `test_step76.py`)** — ESN/reservoir baseline (analytic-Jacobian
+  thin-frame Benettin–QR vs autograd + finite-difference cross-checks; both unit tests pass). **Parked:** at the native
+  $\Delta t{=}0.01$ a plain ESN is closed-loop-unstable (a known fine-$\Delta t$ artifact, not a bug); the GRU is the
+  canonical recurrent baseline. Kept as a second prong (Kobayashi reservoir lineage).
+- **Folded:** paper2 §5.16 (GRU paragraph + 3-way figure) + §6 (two related-work paragraphs, all 11 new cites); ICLR
+  E2 + §5 + §6 (compressed; main text re-verified **≤9pp**, 0 unresolved cites; PDF 1147 KiB); `iclr_refs.bib` **+11**
+  entries (Pathak'17/'18, Vlachas, Hart, Kobayashi, TrustKoopman, FloWM, Mo, Wang/Walters, Delliaux, Ordoñez).
+  Tests `test_step74/76/77` green.
