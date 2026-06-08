@@ -138,3 +138,24 @@ def adapted_metric(jacs, succ_jacs=None, mode="constant"):
     Lam, P = _metric_opnorm(best.x, jacs, d)
     P = P / np.trace(P) * d                          # normalize trace = d (cosmetic; cond(P) and Lambda unchanged)
     return P, float(Lam), float(best.fun)
+
+
+def lipschitz_bridge(lambda_samples, kappa, L_J, h, L_P=0.0, eps=0.01, eps_res=1.0):
+    r"""Inflate the sampled metric op-norm to a **continuum-sound** bound, then check non-vacuity (G1, part 1).
+
+    The LMI is verified only on the finite point cloud $\{z_i\}$; to certify ALL of the $h$-covered set we bound how much
+    $\lVert P^{1/2}D\hat\phi(z)P^{-1/2}\rVert$ can grow between samples. With $L_J=\mathrm{Lip}(z\mapsto D\hat\phi)$ and a
+    constant metric ($L_P=0$),
+    $$\Lambda^{\text{cert}}=\Lambda_{\text{samples}}+\underbrace{\sqrt\kappa\,L_J\,h+L_P\,h}_{\text{slack}}\ \ge\
+       \Lambda_{\text{samples}},$$
+    so the bridge ONLY inflates $\Lambda$ — $\log\Lambda^{\text{cert}}\ge\lambda_1$ stays an upper bound (sound by
+    construction; it can never make the horizon spuriously long). The certificate is **non-vacuous** iff the resulting
+    $T_{\text{guar}}(\epsilon)\ge1$.
+
+    Returns ``dict(lambda_cert, slack, horizon, certified)`` (``certified`` = ``horizon >= 1`` only — the beats-Euclidean
+    half of G1 is checked by the caller, which knows the Euclidean bound)."""
+    slack = math.sqrt(max(kappa, 1.0)) * L_J * h + L_P * h
+    lambda_cert = lambda_samples + slack
+    horizon = t_guar(lambda_cert, kappa, eps, eps_res)
+    return dict(lambda_cert=float(lambda_cert), slack=float(slack),
+                horizon=horizon, certified=bool(horizon >= 1))

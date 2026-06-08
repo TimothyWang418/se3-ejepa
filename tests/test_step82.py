@@ -58,3 +58,17 @@ def test_adapted_metric_beats_euclidean_on_rotated_expansion():
     P, Lam, _ = s82.adapted_metric(jacs)
     assert Lam < np.linalg.norm(A, 2) - 1e-3        # strictly better than Euclidean
     assert Lam >= 1.2 - 1e-2                          # cannot beat the spectral radius
+
+
+def test_lipschitz_bridge_inflates_lambda_and_is_sound():
+    # Continuum-certified Lambda = Lambda_samples + sqrt(kappa) * L_J * h
+    out = s82.lipschitz_bridge(lambda_samples=1.30, kappa=4.0, L_J=2.8, h=0.01)
+    assert abs(out["lambda_cert"] - (1.30 + 2.0 * 2.8 * 0.01)) < 1e-12   # sqrt(4)=2
+    assert out["lambda_cert"] > 1.30                                      # bridge only inflates (sound)
+
+
+def test_lipschitz_bridge_vacuous_when_slack_dominates():
+    # Huge grid spacing => Lambda_cert explodes => horizon vacuous => certified=False
+    out = s82.lipschitz_bridge(lambda_samples=1.30, kappa=4.0, L_J=2.8, h=10.0,
+                               eps=0.01, eps_res=1.0)
+    assert out["certified"] is False
