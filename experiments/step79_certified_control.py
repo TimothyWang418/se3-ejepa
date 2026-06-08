@@ -18,10 +18,12 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-# step74 supplies the (uncontrolled) Lorenz-96 attractor sampler we reuse for on-attractor initial states. Import it;
-# do NOT modify it. (Its module-level constants — DT, F_FORCE — agree with ours.)
+# step74 supplies the (uncontrolled) Lorenz-96 attractor sampler we reuse for on-attractor initial states. step78
+# supplies the certified-horizon machinery (Benettin-QR log|R| series + block-bootstrap spectrum CI + horizon
+# interval). Import both; do NOT modify them. (step74's module-level constants — DT, F_FORCE — agree with ours.)
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import step74_lorenz96_spectrum as step74  # noqa: E402
+import step78_certified_horizon_ci as step78  # noqa: E402
 
 DTYPE = torch.float64
 F_FORCE = 8.0
@@ -177,6 +179,90 @@ def train_wm(kind: str, N: int, data, seed: int, epochs: int = 60, K: int = 5):
         y = targets[:, 0, :]
         one_step_relmse = (((pred - y) ** 2).sum(-1) / (y ** 2).sum(-1).clamp_min(1e-12)).mean().item()
     return model, mu, sd, one_step_relmse
+
+
+# --------------------------------------------------------------------------------------------------------------- #
+# Phase 2 — read a CERTIFIED HORIZON T_j(eps) with a bootstrap CI off the trained action-conditioned world model.
+# The WM is action-conditioned: hat_phi(x, u). The certificate is a property of the predictor's *autonomous* (free-
+# running) dynamics, so we read it from the **zero-control map** g(x) = hat_phi(x, u=0) -- the learned Delta t-map the
+# model would iterate if no control were applied. We run Benettin-QR on g's autograd Jacobian to get the predictor's
+# Lyapunov spectrum, block-bootstrap a per-channel CI (reusing step78), and turn lambda_1's CI into a certified-horizon
+# interval T_1(eps) in [T_lo, T_hi] = [log(1/eps)/lambda_hi, log(1/eps)/lambda_lo]. (Lyapunov exponents are coordinate-
+# invariant, so doing this in the WM's normalized frame is exact -- no need to map back to physical units.)
+# --------------------------------------------------------------------------------------------------------------- #
+def certificate(model, mu, sd, N: int, eps: float = 0.01, n_steps: int = 2000, warmup: int = 400,
+                n_boot: int = 1000, block: int = 50, seed: int = 0) -> dict:
+    r"""Certified horizon $T_j(\epsilon)$ with a block-bootstrap CI, read off a trained action-conditioned world model.
+
+    The predictor $\hat\phi(x,u)$ is action-conditioned; the certificate is a property of its **autonomous map**
+    $g(x_n)=\hat\phi(x_n,u{=}0)$ (the free-running $\Delta t$-map under zero control), in the WM's **normalized**
+    coordinates $x_n=(x-\mu)/\sigma$. We run Benettin–QR on $g$'s autograd Jacobian at an on-attractor operating point
+    to estimate the predictor's Lyapunov spectrum, block-bootstrap a per-channel CI (reusing :mod:`step78`), and convert
+    $\lambda_1$'s CI into the certified-horizon interval $T_1(\epsilon)\in[\log(1/\epsilon)/\lambda_{\rm hi},
+    \log(1/\epsilon)/\lambda_{\rm lo}]$. Because Lyapunov exponents are coordinate-invariant, working in the normalized
+    frame is exact. If the $\lambda_1$ CI straddles/$\le 0$ (non-chaotic predictor), the certificate **abstains**: the
+    $T$ fields are ``None`` (see :func:`step78.horizon_interval`).
+
+    Args:
+        model: trained WM with signature ``model(x, u) -> x_next`` in normalized coords (e.g. from :func:`train_wm`).
+        mu, sd: ``(N,)`` normalization stats from :func:`collect_data` (used only to place ``x0`` on the attractor).
+        N: state dimension.  eps: resolution at which the horizon is reported.
+        n_steps, warmup: post-warmup QR steps and warmup steps for the Benettin frame.
+        n_boot, block, seed: moving-block-bootstrap settings for the per-channel spectrum CI.
+
+    Returns:
+        dict with keys ``lambda`` (sorted-descending point spectrum, len-N list), ``lambda_lo``/``lambda_hi`` (per-channel
+        CI lists), ``lambda1`` (float, fastest exponent), ``lambda1_ci`` (``[lo, hi]``), ``T1``/``T1_lo``/``T1_hi``
+        (floats, or ``None`` on abstain), and ``eps``.
+    """
+    model.eval()
+    mu = mu.to(DTYPE); sd = sd.to(DTYPE)
+
+    # Autonomous map in NORMALIZED coords: the WM predicting one step under zero control. autograd flows through it so
+    # step78.qr_logR_series can take the Jacobian D_x g at each step.
+    def g(xn: torch.Tensor) -> torch.Tensor:
+        return model(xn, torch.zeros_like(xn))
+
+    # On-attractor operating point: burn-in trajectory of the TRUE uncontrolled field, normalized to the WM's frame, and
+    # take a mid-trajectory state (well past burn-in, representative of the attractor).
+    traj = step74.attractor_traj(N, n_steps // 4, seed, "cpu").double()    # (n_steps//4 + 1, N) raw on-attractor states
+    x0 = ((traj[len(traj) // 2] - mu) / sd).detach()                       # normalized mid-trajectory operating point
+
+    logR = step78.qr_logR_series(g, x0, n_steps, warmup)                   # (n_steps, N) per-step log|diag(R)|
+    point, lo, hi = step78.bootstrap_spectrum_ci(logR, step74.DTMAP, n_boot, block, seed)   # sorted desc, each len N
+
+    # Binding channel = fastest positive exponent = index 0 after the descending sort (if it is positive). Its certified
+    # horizon interval comes from the lambda1 CI; the point horizon from the point lambda1.
+    iv = step78.horizon_interval(lo[0], hi[0], eps) if point[0] > 0 else None
+    T1 = (float(np.log(1.0 / eps) / point[0]) if point[0] > 0 else None)
+    T1_lo = (float(iv[0]) if iv is not None else None)
+    T1_hi = (float(iv[1]) if iv is not None else None)
+
+    return {"lambda": point.tolist(), "lambda_lo": lo.tolist(), "lambda_hi": hi.tolist(),
+            "lambda1": float(point[0]), "lambda1_ci": [float(lo[0]), float(hi[0])],
+            "T1": T1, "T1_lo": T1_lo, "T1_hi": T1_hi, "eps": eps}
+
+
+def _smoke_phase2() -> None:
+    r"""Train a small equivariant conv WM and read its certified horizon $T_1(\epsilon)$ with a bootstrap CI off the
+    autonomous ($u{=}0$) map. Not a pytest test (it trains). Confirms the learned predictor is chaotic ($\lambda_1>0$)
+    and yields a finite, positive certified horizon $T_1$."""
+    torch.manual_seed(0)
+    N = 12
+    data = collect_data(N=N, n_traj=2000, K=3, seed=0)
+    model, mu, sd, relmse = train_wm("conv", N, data, seed=0, epochs=20, K=3)
+    cert = certificate(model, mu, sd, N, eps=0.01, n_steps=800, warmup=150, n_boot=300, block=40)
+    l1, (l1_lo, l1_hi) = cert["lambda1"], cert["lambda1_ci"]
+    print(f"[step79 phase2 smoke] N={N} conv WM one-step relMSE {relmse:.2e}", file=sys.stderr)
+    print(f"[step79 phase2 smoke] lambda1 = {l1:.4f}  CI[{l1_lo:.4f}, {l1_hi:.4f}]  (eps={cert['eps']})",
+          file=sys.stderr)
+    print(f"[step79 phase2 smoke] T1 = {cert['T1']}  [T1_lo={cert['T1_lo']}, T1_hi={cert['T1_hi']}] (map steps)",
+          file=sys.stderr)
+    assert l1 > 0, f"learned WM autonomous map not chaotic: lambda1 = {l1:.4f} <= 0"
+    assert cert["T1"] is not None and np.isfinite(cert["T1"]) and cert["T1"] > 0, \
+        f"certified horizon T1 not finite-positive: {cert['T1']}"
+    print("[step79 phase2 smoke] PASS: trained WM yields a chaotic certificate (lambda1>0) with a finite positive "
+          "certified horizon T1 and a bootstrap CI.", file=sys.stderr)
 
 
 def _smoke() -> None:

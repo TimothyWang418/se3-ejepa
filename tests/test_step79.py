@@ -35,7 +35,24 @@ def test_world_model_conv_is_equivariant_mlp_is_not() -> None:
     print("PASS: controlled conv WM is Z_N-equivariant; MLP baseline is not.")
 
 
+def test_true_controlled_map_certificate_is_chaotic() -> None:
+    import numpy as np
+    import step78_certified_horizon_ci as s78
+    import step74_lorenz96_spectrum as s74
+    torch.manual_seed(0); N = 12
+    traj = s74.attractor_traj(N, 400, 0, "cpu").double()
+    mu, sd = traj.mean(0), traj.std(0) + 1e-8
+    x0 = (traj[len(traj)//2] - mu) / sd
+    g = lambda xn: (s79.rk4_controlled(xn * sd + mu, torch.zeros_like(xn)) - mu) / sd
+    logR = s78.qr_logR_series(g, x0, n_steps=1200, warmup=200)
+    point, lo, hi = s78.bootstrap_spectrum_ci(logR, s74.DTMAP, n_boot=400, block=40, seed=0)
+    assert lo[0] > 0, f"true controlled map (u=0) must be chaotic; lambda1 CI [{lo[0]:.3f},{hi[0]:.3f}]"
+    assert abs(float(point.sum()) - (-N)) / N < 0.05, "Liouville sum(lambda)=-N must hold for the controlled field at u=0"
+    print(f"PASS: true controlled-map certificate is chaotic (lambda1 CI>0) and honors Liouville.")
+
+
 if __name__ == "__main__":
     test_controlled_dynamics_is_ZN_equivariant()
     test_world_model_conv_is_equivariant_mlp_is_not()
+    test_true_controlled_map_certificate_is_chaotic()
     print("step79 phase-0+1 guard PASS.")
