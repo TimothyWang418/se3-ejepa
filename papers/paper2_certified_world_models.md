@@ -23,7 +23,9 @@ predictor recovers a planted Lyapunov exponent to within $0.4\%$ and its certifi
 $\log(1/\epsilon)$ law — and, on a learned model of the genuinely chaotic **Lorenz** system, the learned model's
 Lyapunov exponent (the certified-horizon slope) **matches the true** exponent to $1\text{–}8\%$, with a scope theorem
 (Proposition 7) characterizing when this lift holds (spectrally non-degenerate dynamics) and explaining where it does
-not (near-neutral dynamics);
+not (near-neutral dynamics); and on a **$40$-dimensional** learned model a $\mathbb{Z}_N$-equivariant network recovers
+the *full* Lyapunov spectrum ($R^2{=}0.98$–$0.99$) where a dense — *and a same-trained recurrent* — model of equal data
+fails ($R^2{<}0$), structure recovering a high-dimensional horizon an unstructured model cannot;
 on an $\mathrm{SO}(2)$ mechanical system the conserved (slowest) quantities organize into
 the architecturally invariant channels — a **Noether hinge** linking the configuration axis to the horizon axis,
 whose forward direction (*conserved $\Rightarrow$ slow*) we prove: a conserved charge's prediction error grows
@@ -555,6 +557,21 @@ All experiments are CPU/$1$-GPU-scale, run with explicit random seeds, and **gat
 rather than loosen a threshold. Load-bearing results are additionally guarded by unit tests. The experiment-to-code
 map, seed counts, and headline numbers are collected in Appendix A; multi-seed ranges below are seed min–max over
 three seeds unless noted.
+
+The load-bearing experiments and the claims they test, at a glance:
+
+| § | Axis / claim tested | System | Headline result | Backed by |
+|---|---|---|---|---|
+| 5.1 | Configuration axis is *exponential* | $\mathbb{Z}_2^6$ compositional | $6$ generator checks certify all $2^6{=}64$ compositions; baseline degrades off-generator | Lemma 1 |
+| 5.2 | Horizon $\times$ resolution staircase | controlled spectrum | $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$ recovered per channel | Theorem B |
+| 5.4 | Structure *vs.* scale (config axis) | orbit-flatness | equivariant orbit-flat; an $88\times$ baseline stays $10$–$155\times$ above the floor OOD | Lemma 2 |
+| 5.5 | Approximate-symmetry degradation | broken-symmetry world | graceful, linear in $\epsilon_{\text{world}}$ to a measured threshold | Proposition 6 |
+| 5.7 | Certificate on *real contact dynamics* | PushT (physics engine) | learned model orbit-flat (ratio $1.000$); $160\times$ baseline keeps a $2$–$3\times$ OOD penalty | Theorem A |
+| 5.9 | Certificate $\to$ *task* competence | closed-loop control | orbit-invariant pose control to the float floor; scaled baseline degrades | Theorem A $+$ (A5) |
+| 5.10–5.11 | Not $\mathrm{SO}(2)$-specific; pixels | $\mathrm{SO}(3)$ point clouds, raw pixels | ratio $1.000$; frame averaging is *accuracy-neutral* | Theorem A |
+| 5.12–5.13 | Horizon law on *real chaos* | learned Lorenz / Hénon / Rössler | learned $\lambda_1$ matches textbook to $1$–$12\%$ ($R^2{=}0.96$–$1.00$) | Thm B, Props 7–8 |
+| 5.14–5.15 | Standard benchmark $+$ planning | MuJoCo FetchPush | exactly orbit-flat; $7\times$ baseline degrades OOD; equivariant planner provably orbit-flat | Theorem A |
+| 5.16 | **Structure beats scale at high $N$** | $40$-D Lorenz-96 | $\mathbb{Z}_N$-conv recovers the full spectrum ($R^2{=}0.98$–$0.99$); dense MLP **and** a same-trained recurrent GRU fail ($R^2{<}0$) | Thm B $+$ conditional-Lyapunov |
 
 ### 5.1 The configuration axis
 

@@ -18,19 +18,22 @@ $T_j(\epsilon)=\Theta\!\big(\tfrac1{\lambda_j}\log\tfrac1\epsilon\big)$ — uppe
 predictability law and lower-bounded by a worst-case construction (Proposition 6), so the *form* is two-sided:
 approximate equivariance is horizon-limited at this rate, while a channel is certified to *unbounded* horizon **iff** it
 is conserved or invariant (the Noether hinge, Propositions 4–5). The certificate is *equivalent* to equivariance
-(Lemma 2, the converse of a classical invariant-decision-theory fact), so **no non-equivariant model possesses it at
+(Lemma 2), so **no non-equivariant model possesses it at
 any scale**, and §3.3 makes this quantitative (a resolution-independent orbit vs. an $\epsilon/L$-tube); the existing
 single-shot certified-equivariance guarantees (robustness margins, equivariant conformal prediction) are the $T{=}1$,
-$\epsilon$-independent slice of this picture. Our contribution is the *synthesis* of these facts into one computable
-certificate for learned world models, not the individual statements — together with a **scope theorem** (Proposition 7)
+$\epsilon$-independent slice of this picture. Our contribution is the *synthesis* into one computable
+certificate for learned world models, with a **scope theorem** (Proposition 7)
 that says *when* the locally-measured spectrum governs a learned model's horizon: it does on spectrally non-degenerate
 dynamics, and is vacuous on near-neutral dynamics, which *predicts* where the certificate is informative rather than
-leaving it to chance. Empirically, the horizon law is recovered on a controlled-spectrum latent to $0.4\%$ and — the
+leaving it to chance.
+
+Empirically, the horizon law is recovered on a controlled-spectrum latent to $0.4\%$ and — the
 decisive test — **lifts to a learned model of genuinely chaotic dynamics**: across a class (Lorenz, Hénon, Rössler) the
 learned model's Lyapunov exponent matches the textbook value to $1$–$12\%$ ($R^2{=}0.96$–$1.00$, 3 seeds), a transfer
 made rigorous (not merely observed) by a finite-horizon continuity bound (Proposition 8); and on a **$40$-dimensional**
 learned model ($40$-D Lorenz-96) a $\mathbb{Z}_N$-equivariant model recovers the *full* Lyapunov spectrum
 ($R^2{=}0.98$–$0.99$) — hence the per-channel certified horizons — where a dense model of equal data fails ($R^2{<}0$),
+*as does a same-trained recurrent model* (so the gap is structural, not a matter of architecture family),
 the configuration axis *helping* the horizon axis. On a real physics-engine contact simulator (PushT)
 the *orbit-flatness* certificate holds for a learned model exactly (ratio $1.000$) while non-equivariant baselines of up
 to $160{\times}$ the parameters retain a $2$–$3{\times}$ out-of-distribution penalty; and the certificate transfers from
