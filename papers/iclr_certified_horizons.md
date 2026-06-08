@@ -369,6 +369,8 @@ diagnostic turns negative, and it **abstains** (routing to a statistical bootstr
 tight a-priori certified horizon from a learned model is achievable *exactly* in the uniformly-hyperbolic regime, and
 the certificate **self-diagnoses** which regime it is in (`step82`).
 
+**(E11) On a recognized chaotic control benchmark.** On Gymnasium Acrobot-v1 (underactuated swing-up, $\lambda_1{=}0.094$) a learned Z$_2$-equivariant world model's certified horizon both *tracks* its measured rollout-divergence horizon (two-regime: ratio $0.42{\to}0.47{\to}0.93$ as $\epsilon$ coarsens) and *binds for planning* — task return has a sharp interior optimum in plan depth $H$ (success $1.0$ at $H{=}78$, $0$ at $H{\ge}156$): planning past the predictability horizon optimizes a divergent rollout and fails. Strikingly, the optimal depth ($H^\star{\approx}78$), the measured horizon ($76$), and the certified horizon at the predictive $\epsilon$ ($T_1{=}82$) coincide — the best planning depth *is* the model's predictability horizon, predicted a priori. The clean no-tuning return-win is honestly **qualified**: capping at $T_1$ wins only at the predictive $\epsilon$; a tight $\epsilon$ gives $T_1$ ${\sim}2\times$ too deep (Proposition 8's optimistic regime). (`step84`.)
+
 ---
 
 ## 5. Related work

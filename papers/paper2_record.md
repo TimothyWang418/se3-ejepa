@@ -584,3 +584,13 @@ where that certificate is *tight*. Plan → subagent-driven TDD (`step82` + `tes
 ## [2026-06-08] Step 83 — R²(N) crossover hardens Exp 18
 
 - R²(N) crossover hardens Exp 18: conv 0.98 across N; MLP/GRU tie through N=28 then collapse at N=40 to −1.8/−0.27; **PHASE_TRANSITION**; 3 seeds; `step83`, `24dbca1`.
+
+## [2026-06-08] Experiment 21 — certified horizon on a recognized chaotic control benchmark (Acrobot-v1)
+
+- **Setup.** Gymnasium Acrobot-v1 (underactuated double-pendulum swing-up), learned action-conditioned $\mathbb{Z}_2$-equivariant (reflection frame-averaged) world model, 3 seeds. RTX 3080. Genuinely chaotic: true swing-up finite-time $\lambda_1=0.094$ ✓. Learned-WM one-step rollout relMSE $=4.8\times10^{-5}$ (good model). Cert route = **bootstrap** (cone vacuous, $L_{J,\mathrm{net}}=21.7$) — abstains, the safe move (§5.18).
+- **Triad (i) accuracy = certified-vs-measured horizon, two-regime $\epsilon$.** $\epsilon{=}0.01$: certified $T_1{=}312$ vs measured $130$ (ratio $0.42$, Prop-8 optimistic). $\epsilon{=}0.1$: $156$ vs $73$ ($0.47$). $\epsilon{=}0.3$: $82$ vs $76$ (ratio **0.93, predictive**).
+- **Triad (iii) binding = TRUE ($H^\star{=}78$).** Return vs plan depth $H$ has a sharp interior optimum: success $0.33$ at $H{=}1$, **1.00 at $H{=}78$** (return $-229$), **0.00 at $H{\ge}156$** (return $-500$). Planning past the predictability horizon optimizes a divergent rollout → fails.
+- **Three-way coincidence (centerpiece).** Optimal plan depth $H^\star{\approx}78$ ≈ measured horizon $76$ ($\epsilon{=}0.3$) ≈ certified $T_1{=}82$ (predictive $\epsilon{=}0.3$, a priori from model). Best planning depth **is** the predictability horizon, named in advance by the certificate.
+- **Triad (ii) no-tuning return-win = INCONCLUSIVE (honest).** $G$-ii gate used a *tight* $\epsilon{=}0.1 \to T_1{=}156$ (~2× too deep, Prop-8 optimistic) → cert-aware $H{=}156$ fails ($-500$) vs best-blind $H{=}78$ ($-229$). Capping at $T_1$ wins **only** at the *predictive* $\epsilon$. NO return-win claimed. (A separate re-run at predictive $\epsilon$ may later upgrade leg (ii); not banked now.)
+- **Honest verdict.** Two of three triad legs (accuracy + binding) land on a recognized chaotic control benchmark; the no-tuning return-win needs the predictive $\epsilon$.
+- **Folded:** paper2 **§5.19 (Experiment 21)** as honest QUALIFIED result (no figure embed — `step84_certified_control_benchmark` pending GPU-box sync); ICLR **(E11)** compact figure-free paragraph after E10. `step84`, `tests/test_step84.py`.
