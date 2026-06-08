@@ -264,3 +264,13 @@ def test_net_jacobian_lipschitz_upper_bounds_empirical_on_samples():
         Ja, Jb = s82.learned_jacobian(net, a), s82.learned_jacobian(net, b)
         worst = max(worst, np.linalg.norm(Ja - Jb, 2) / max(np.linalg.norm((a - b).numpy()), 1e-12))
     assert Lhat >= worst - 1e-9     # sound: the analytic bound dominates every sampled local slope
+
+
+# --- B3: the step78 block-bootstrap hybrid fallback ------------------------------------------------------------ #
+def test_bootstrap_fallback_returns_a_horizon_interval():
+    # synthetic chaotic logR (one positive channel) -> a finite horizon interval
+    rng = np.random.default_rng(0)
+    logR = rng.normal(0.4, 0.1, size=(2000, 2)) * np.array([1.0, -1.0])  # ch0 expand, ch1 contract
+    out = s82.bootstrap_fallback(logR, dt_map=1.0, eps=0.01)
+    assert out["t_lo"] >= 1 and out["t_hi"] >= out["t_lo"]
+    assert out["lambda1_hi"] >= out["lambda1"]    # upper CB used for the conservative horizon

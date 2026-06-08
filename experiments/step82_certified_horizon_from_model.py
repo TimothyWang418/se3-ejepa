@@ -553,3 +553,41 @@ def net_jacobian_lipschitz(net, sigma_second_deriv_max=0.77):
         return 0.0
     prod = float(np.prod(norms))
     return sigma_second_deriv_max * prod * max(norms)
+
+
+# step78 supplies the calibrated block-bootstrap CI on the Lyapunov spectrum and the horizon-interval conversion. We
+# REUSE bootstrap_spectrum_ci + horizon_interval for the hybrid fallback; do NOT modify step78.
+import experiments.step78_certified_horizon_ci as step78  # noqa: E402
+
+
+def bootstrap_fallback(logR, dt_map, eps=0.01, n_boot=400, block=50, seed=0, alpha=0.1):
+    r"""**Hybrid backstop** for when the net-Lipschitz cone bridge goes vacuous (B2's bound too loose to certify): a
+    *statistical* certified horizon from the SAME Jacobian field, via a block-bootstrap of the leading Lyapunov exponent.
+
+    We feed the per-step $\log|\mathrm{diag}(R)|$ series (Benettin-QR along the learned orbit, :func:`_logR_from_jacs`)
+    to :func:`step78.bootstrap_spectrum_ci`, then take the **UPPER** confidence bound $\lambda_1^{\text{hi}}$ -- the
+    *fastest plausible divergence* -- and convert it to the **shortest** (most conservative) horizon. The conversion is
+    the same $T=\log(1/\epsilon)/\lambda$ monotone-decreasing map that :func:`step78.horizon_interval` uses; we inline it
+    rather than call ``horizon_interval`` because that helper's $\lambda\le0$ abstention is keyed to its *first* argument
+    (the lower CB), whereas the *conservative* horizon we need is keyed to the *upper* CB, so the per-endpoint guard
+    below is the correct sign-aware form. This is "conservative" in the SAME direction as the cone certificate (it
+    under-promises the horizon), but the guarantee is now *statistical* (a CI coverage level), not the cone's
+    deterministic a-priori bound -- an honest weaker fallback, reported as ``route="bootstrap"``.
+
+    The **conservative** (shortest) horizon $t_{\text{lo}}=\lfloor\log(1/\epsilon)/\lambda_1^{\text{hi}}\rfloor$ is the
+    load-bearing output and is well-defined whenever $\lambda_1^{\text{hi}}>0$. The optimistic (longest) horizon
+    $t_{\text{hi}}=\lfloor\log(1/\epsilon)/\lambda_1^{\text{lo}}\rfloor$ is finite only when the *lower* CB
+    $\lambda_1^{\text{lo}}>0$ (the spectrum is sign-stably chaotic); if the $\lambda_1$ CI straddles $0$ (sign-unstable)
+    the longest horizon is unbounded -> :data:`HORIZON_INF` (we never return a nonsensical negative $T$). If even
+    $\lambda_1^{\text{hi}}\le0$ the bootstrap sees no expansion at all and the whole horizon is unbounded. Returns
+    ``dict(lambda1, lambda1_lo, lambda1_hi, t_point, t_lo, t_hi)`` (all horizons non-negative ``int``)."""
+    lam, lam_lo, lam_hi = step78.bootstrap_spectrum_ci(logR, dt_map, n_boot, block, seed, alpha)
+    lam1, lam1_lo, lam1_hi = float(lam[0]), float(lam_lo[0]), float(lam_hi[0])
+    L = math.log(1.0 / eps)
+    # conservative (shortest) horizon from the UPPER CB lam1_hi (fastest plausible divergence)
+    t_lo = max(0, int(math.floor(L / lam1_hi))) if lam1_hi > 0 else HORIZON_INF
+    # optimistic (longest) horizon from the LOWER CB lam1_lo; only finite when sign-stably chaotic (lam1_lo > 0)
+    t_hi = max(0, int(math.floor(L / lam1_lo))) if lam1_lo > 0 else HORIZON_INF
+    t_point = max(0, int(math.floor(L / lam1))) if lam1 > 0 else HORIZON_INF
+    return dict(lambda1=lam1, lambda1_lo=lam1_lo, lambda1_hi=lam1_hi,
+                t_point=t_point, t_lo=t_lo, t_hi=t_hi)
