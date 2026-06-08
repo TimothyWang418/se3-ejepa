@@ -414,6 +414,36 @@ def true_horizon_torus(true_map, eps, eps_res, n_starts=400, seed=0, max_t=200):
     return float(np.median(crossed))
 
 
+def true_horizon(true_map, eps, eps_res, n_starts=40, seed=0, burn=300, T_max=4000):
+    r"""Empirical first-crossing horizon on the TRUE (Euclidean) system -- the soundness ground truth $T_{\text{true}}$
+    the certificate must under-promise. We burn $n_{\text{starts}}$ random inits onto the attractor, perturb each by a
+    size-$\epsilon$ random displacement, evolve the pair under ``true_map``, and report the **median** first step $T$ at
+    which the Euclidean separation $\lVert\delta_T\rVert$ exceeds the resolution $\epsilon_{\text{res}}$. (The torus
+    analogue with mod-1 distance is :func:`true_horizon_torus`.) ``-> int``."""
+    rng = np.random.default_rng(seed)
+    s0 = rng.uniform(-0.3, 0.3, size=(n_starts, 2)).astype(DTYPE)
+    for _ in range(burn):
+        s0 = np.array([true_map(s) for s in s0])
+    cross = []
+    for s in s0:
+        sp = s + eps * rng.standard_normal(2) / math.sqrt(2)
+        a, b = s.copy(), sp.copy()
+        t = T_max
+        for k in range(1, T_max + 1):
+            a, b = true_map(a), true_map(b)
+            if np.linalg.norm(b - a) > eps_res:
+                t = k
+                break
+        cross.append(t)
+    return int(np.median(cross))
+
+
+def is_sound(t_guar, t_true):
+    r"""Soundness self-check (Gate G2): the certified horizon must NOT exceed the true first-crossing horizon, i.e.
+    $T_{\text{guar}}\le T_{\text{true}}$ (the certificate under-promises). ``-> bool``."""
+    return bool(t_guar <= t_true)
+
+
 def _run_cat_certificate(map_fn, jac_fn, L_J, lambda1, system, n_samples, seed, eps, eps_res, n_true=400):
     r"""Shared cat-map pipeline (linear & perturbed): uniform torus sample -> analytic Jacobians -> constant adapted
     metric (:func:`adapted_metric`) -> Lipschitz bridge (:func:`lipschitz_bridge`) -> certified exponent & horizon, plus

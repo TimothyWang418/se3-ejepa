@@ -283,6 +283,14 @@ def test_run_learned_henon_smoke_routes_and_is_sound():
     assert out["t_guar"] >= 1
 
 
+def test_true_horizon_and_soundness_checker():
+    th = s82.true_horizon(s82.henon_map, eps=0.01, eps_res=1.0, n_starts=20, seed=0)
+    assert th >= 1
+    # soundness checker: a deliberately too-long certified horizon is flagged as a violation
+    assert s82.is_sound(t_guar=th + 5, t_true=th) is False
+    assert s82.is_sound(t_guar=max(1, th - 1), t_true=th) is True
+
+
 def test_full_step_jacobian_matches_finite_difference():
     # The chain-rule Jacobian of the un-normalized learned map phi(s)=denorm(model(norm(s))) must match a finite
     # difference of that same composed map (validates _full_step_jacobian's diag(sd)*Dmodel*diag(1/sd) factoring).
