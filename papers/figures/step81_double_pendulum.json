@@ -1,0 +1,710 @@
+{
+  "system": "chaotic double pendulum (Z_2 reflection)",
+  "group": "Z_2 (2-element reflection g.x=-x)",
+  "corroborator_of": "step79 controlled Lorenz-96 + step80 pendulum ring (both Z_N)",
+  "scope": "targets the H (horizon) + D2 (re-observation) axes + a 2-element reflection-orbit-flat check; the DP is 4-D with ONE positive Lyapunov exponent and Z_2 is a 2-element group, so there is NO exponential-monoid/compositional configuration story here \u2014 establishing H + D2 are not specific to Z_N or to high dimension.",
+  "dim": 4,
+  "n_positive_exponents": 1,
+  "m": 1.0,
+  "l": 1.0,
+  "g": 1.0,
+  "gamma": 0.0,
+  "dt_map": 0.02,
+  "energy_shell": 2.0,
+  "one_step_relmse": 8.471264607382181e-05,
+  "learned_u0_lambda1": 0.2927539891025866,
+  "learned_u0_lambda1_ci": [
+    0.14862887103346542,
+    0.40848042657183453
+  ],
+  "T_total": 1500,
+  "n_seeds": 3,
+  "eps_tight": 0.01,
+  "eps_mid": 0.2,
+  "eps_hi": 0.3,
+  "eps_pred": 0.7,
+  "eps_pred_panel": 0.7,
+  "frontier_wins_tight": 0,
+  "frontier_wins_mid": 0,
+  "frontier_wins_hi": 0,
+  "frontier_wins_pred": 2,
+  "note": "two-regime story matches the Z_N anchor+ring: certificate OPTIMISTIC at small eps (ratio<<1, Prop-8 delta-bias), PREDICTIVE at the larger-eps knee where the cert-aware interval lands on the efficient frontier (2/3 seeds, MATCHING anchor+ring). The DP's predictive knee is eps=0.7 (vs Lorenz-96's 0.2, the ring's 0.3) \u2014 its WM is more optimistic at fixed eps; the knee is clean (frontier drops back to 1/3 by eps=0.8 as the certified interval overshoots below the median). The conservative DP's local lambda_1 fluctuates across its energy shell, so the certificate uses a longer (6000-step/1500-warmup) QR to mix to a faithful lambda_1 ~0.44 \u2014 a spectrum-faithfulness setting applied identically to every interval; D2 gate (_frontier_verdict) unchanged across all three steps (79/80/81).",
+  "regimes": {
+    "0.01": {
+      "seeds": {
+        "0": {
+          "T1_steps": 787,
+          "T1_time": 15.730512161780833,
+          "lambda1": 0.2927539891025866,
+          "lambda1_ci": [
+            0.14862887103346542,
+            0.40848042657183453
+          ],
+          "empirical_median_horizon_steps": 2.0,
+          "empirical_p25": 1.0,
+          "empirical_p75": 3.0,
+          "empirical_mean": 2.7,
+          "empirical_n_censored": 0,
+          "validation_ratio_empirical_over_certified": 0.0025412960609911056,
+          "rows": [
+            {
+              "interval": 1574,
+              "n_observations": 1,
+              "violation_rate": 0.9993333333333333,
+              "max_error": 3.0336798231877666,
+              "is_cert": false
+            },
+            {
+              "interval": 3148,
+              "n_observations": 1,
+              "violation_rate": 0.9993333333333333,
+              "max_error": 3.0336798231877666,
+              "is_cert": false
+            },
+            {
+              "interval": 787,
+              "n_observations": 2,
+              "violation_rate": 0.998,
+              "max_error": 3.0336798231877666,
+              "is_cert": true
+            },
+            {
+              "interval": 393,
+              "n_observations": 4,
+              "violation_rate": 0.9953333333333333,
+              "max_error": 2.216964804710459,
+              "is_cert": false
+            },
+            {
+              "interval": 196,
+              "n_observations": 8,
+              "violation_rate": 0.9826666666666667,
+              "max_error": 1.6147867932726483,
+              "is_cert": false
+            }
+          ],
+          "on_frontier": false,
+          "cert_viol": 0.998,
+          "cert_obs": 2
+        },
+        "1": {
+          "T1_steps": 632,
+          "T1_time": 12.649916838755374,
+          "lambda1": 0.3640474672433653,
+          "lambda1_ci": [
+            0.23061389586355863,
+            0.5322241641852078
+          ],
+          "empirical_median_horizon_steps": 2.0,
+          "empirical_p25": 1.0,
+          "empirical_p75": 3.0,
+          "empirical_mean": 2.2,
+          "empirical_n_censored": 0,
+          "validation_ratio_empirical_over_certified": 0.0031645569620253164,
+          "rows": [
+            {
+              "interval": 2528,
+              "n_observations": 1,
+              "violation_rate": 0.9986666666666667,
+              "max_error": 5.364941627720411,
+              "is_cert": false
+            },
+            {
+              "interval": 1264,
+              "n_observations": 2,
+              "violation_rate": 0.9953333333333333,
+              "max_error": 5.364941627720411,
+              "is_cert": false
+            },
+            {
+              "interval": 632,
+              "n_observations": 3,
+              "violation_rate": 0.994,
+              "max_error": 3.7403083410767053,
+              "is_cert": true
+            },
+            {
+              "interval": 316,
+              "n_observations": 5,
+              "violation_rate": 0.992,
+              "max_error": 2.569818793946907,
+              "is_cert": false
+            },
+            {
+              "interval": 158,
+              "n_observations": 10,
+              "violation_rate": 0.9826666666666667,
+              "max_error": 1.9898171864121244,
+              "is_cert": false
+            }
+          ],
+          "on_frontier": false,
+          "cert_viol": 0.994,
+          "cert_obs": 3
+        },
+        "2": {
+          "T1_steps": 748,
+          "T1_time": 14.965149576547274,
+          "lambda1": 0.30772630520212857,
+          "lambda1_ci": [
+            0.15216126386538908,
+            0.4506343356307528
+          ],
+          "empirical_median_horizon_steps": 2.0,
+          "empirical_p25": 2.0,
+          "empirical_p75": 2.25,
+          "empirical_mean": 2.475,
+          "empirical_n_censored": 0,
+          "validation_ratio_empirical_over_certified": 0.00267379679144385,
+          "rows": [
+            {
+              "interval": 2992,
+              "n_observations": 1,
+              "violation_rate": 0.9993333333333333,
+              "max_error": 4.938552618059825,
+              "is_cert": false
+            },
+            {
+              "interval": 1496,
+              "n_observations": 2,
+              "violation_rate": 0.998,
+              "max_error": 4.938552618059825,
+              "is_cert": false
+            },
+            {
+              "interval": 748,
+              "n_observations": 3,
+              "violation_rate": 0.9966666666666667,
+              "max_error": 4.938552618059825,
+              "is_cert": true
+            },
+            {
+              "interval": 374,
+              "n_observations": 5,
+              "violation_rate": 0.9933333333333333,
+              "max_error": 4.718027980010551,
+              "is_cert": false
+            },
+            {
+              "interval": 187,
+              "n_observations": 9,
+              "violation_rate": 0.9893333333333333,
+              "max_error": 2.3777407906732044,
+              "is_cert": false
+            }
+          ],
+          "on_frontier": false,
+          "cert_viol": 0.9966666666666667,
+          "cert_obs": 3
+        }
+      }
+    },
+    "0.2": {
+      "seeds": {
+        "0": {
+          "T1_steps": 275,
+          "T1_time": 5.497578076963872,
+          "lambda1": 0.2927539891025866,
+          "lambda1_ci": [
+            0.14862887103346542,
+            0.40848042657183453
+          ],
+          "empirical_median_horizon_steps": 45.0,
+          "empirical_p25": 18.0,
+          "empirical_p75": 59.0,
+          "empirical_mean": 44.2,
+          "empirical_n_censored": 0,
+          "validation_ratio_empirical_over_certified": 0.16363636363636364,
+          "rows": [
+            {
+              "interval": 1100,
+              "n_observations": 2,
+              "violation_rate": 0.9233333333333333,
+              "max_error": 3.0336798231877666,
+              "is_cert": false
+            },
+            {
+              "interval": 550,
+              "n_observations": 3,
+              "violation_rate": 0.816,
+              "max_error": 3.0336798231877666,
+              "is_cert": false
+            },
+            {
+              "interval": 275,
+              "n_observations": 6,
+              "violation_rate": 0.77,
+              "max_error": 2.058101229556071,
+              "is_cert": true
+            },
+            {
+              "interval": 137,
+              "n_observations": 11,
+              "violation_rate": 0.584,
+              "max_error": 1.6810006279038585,
+              "is_cert": false
+            },
+            {
+              "interval": 68,
+              "n_observations": 23,
+              "violation_rate": 0.322,
+              "max_error": 1.4797246108913193,
+              "is_cert": false
+            }
+          ],
+          "on_frontier": false,
+          "cert_viol": 0.77,
+          "cert_obs": 6
+        },
+        "1": {
+          "T1_steps": 221,
+          "T1_time": 4.4209562138175595,
+          "lambda1": 0.3640474672433653,
+          "lambda1_ci": [
+            0.23061389586355863,
+            0.5322241641852078
+          ],
+          "empirical_median_horizon_steps": 27.0,
+          "empirical_p25": 16.75,
+          "empirical_p75": 37.5,
+          "empirical_mean": 28.9,
+          "empirical_n_censored": 0,
+          "validation_ratio_empirical_over_certified": 0.12217194570135746,
+          "rows": [
+            {
+              "interval": 884,
+              "n_observations": 2,
+              "violation_rate": 0.9406666666666667,
+              "max_error": 4.7951710832230665,
+              "is_cert": false
+            },
+            {
+              "interval": 442,
+              "n_observations": 4,
+              "violation_rate": 0.8933333333333333,
+              "max_error": 2.666321693508594,
+              "is_cert": false
+            },
+            {
+              "interval": 221,
+              "n_observations": 7,
+              "violation_rate": 0.8266666666666667,
+              "max_error": 2.666321693508594,
+              "is_cert": true
+            },
+            {
+              "interval": 110,
+              "n_observations": 14,
+              "violation_rate": 0.6,
+              "max_error": 1.4505246563170195,
+              "is_cert": false
+            },
+            {
+              "interval": 55,
+              "n_observations": 28,
+              "violation_rate": 0.3353333333333333,
+              "max_error": 0.8708352693426166,
+              "is_cert": false
+            }
+          ],
+          "on_frontier": false,
+          "cert_viol": 0.8266666666666667,
+          "cert_obs": 7
+        },
+        "2": {
+          "T1_steps": 262,
+          "T1_time": 5.2300953322042085,
+          "lambda1": 0.30772630520212857,
+          "lambda1_ci": [
+            0.15216126386538908,
+            0.4506343356307528
+          ],
+          "empirical_median_horizon_steps": 34.5,
+          "empirical_p25": 28.0,
+          "empirical_p75": 45.5,
+          "empirical_mean": 42.85,
+          "empirical_n_censored": 0,
+          "validation_ratio_empirical_over_certified": 0.1316793893129771,
+          "rows": [
+            {
+              "interval": 1048,
+              "n_observations": 2,
+              "violation_rate": 0.932,
+              "max_error": 4.938552618059825,
+              "is_cert": false
+            },
+            {
+              "interval": 524,
+              "n_observations": 3,
+              "violation_rate": 0.9073333333333333,
+              "max_error": 4.612940660521245,
+              "is_cert": false
+            },
+            {
+              "interval": 262,
+              "n_observations": 6,
+              "violation_rate": 0.8453333333333334,
+              "max_error": 2.3034979077627793,
+              "is_cert": true
+            },
+            {
+              "interval": 131,
+              "n_observations": 12,
+              "violation_rate": 0.7066666666666667,
+              "max_error": 2.4654277826638475,
+              "is_cert": false
+            },
+            {
+              "interval": 65,
+              "n_observations": 24,
+              "violation_rate": 0.49,
+              "max_error": 1.3140919256804975,
+              "is_cert": false
+            }
+          ],
+          "on_frontier": false,
+          "cert_viol": 0.8453333333333334,
+          "cert_obs": 6
+        }
+      }
+    },
+    "0.3": {
+      "seeds": {
+        "0": {
+          "T1_steps": 206,
+          "T1_time": 4.112575230884526,
+          "lambda1": 0.2927539891025866,
+          "lambda1_ci": [
+            0.14862887103346542,
+            0.40848042657183453
+          ],
+          "empirical_median_horizon_steps": 62.5,
+          "empirical_p25": 27.0,
+          "empirical_p75": 98.25,
+          "empirical_mean": 70.2,
+          "empirical_n_censored": 0,
+          "validation_ratio_empirical_over_certified": 0.30339805825242716,
+          "rows": [
+            {
+              "interval": 824,
+              "n_observations": 2,
+              "violation_rate": 0.9693333333333334,
+              "max_error": 3.0336798231877666,
+              "is_cert": false
+            },
+            {
+              "interval": 412,
+              "n_observations": 4,
+              "violation_rate": 0.8373333333333334,
+              "max_error": 2.141161153718815,
+              "is_cert": false
+            },
+            {
+              "interval": 206,
+              "n_observations": 8,
+              "violation_rate": 0.5913333333333334,
+              "max_error": 1.575517098510126,
+              "is_cert": true
+            },
+            {
+              "interval": 103,
+              "n_observations": 15,
+              "violation_rate": 0.32266666666666666,
+              "max_error": 1.4200368003203503,
+              "is_cert": false
+            },
+            {
+              "interval": 51,
+              "n_observations": 30,
+              "violation_rate": 0.1,
+              "max_error": 0.71799297841423,
+              "is_cert": false
+            }
+          ],
+          "on_frontier": false,
+          "cert_viol": 0.5913333333333334,
+          "cert_obs": 8
+        },
+        "1": {
+          "T1_steps": 165,
+          "T1_time": 3.307186322274512,
+          "lambda1": 0.3640474672433653,
+          "lambda1_ci": [
+            0.23061389586355863,
+            0.5322241641852078
+          ],
+          "empirical_median_horizon_steps": 43.5,
+          "empirical_p25": 23.0,
+          "empirical_p75": 53.5,
+          "empirical_mean": 42.025,
+          "empirical_n_censored": 0,
+          "validation_ratio_empirical_over_certified": 0.2636363636363636,
+          "rows": [
+            {
+              "interval": 660,
+              "n_observations": 3,
+              "violation_rate": 0.8786666666666667,
+              "max_error": 4.211033999357005,
+              "is_cert": false
+            },
+            {
+              "interval": 330,
+              "n_observations": 5,
+              "violation_rate": 0.724,
+              "max_error": 4.211033999357005,
+              "is_cert": false
+            },
+            {
+              "interval": 165,
+              "n_observations": 10,
+              "violation_rate": 0.5346666666666666,
+              "max_error": 1.9898171864121244,
+              "is_cert": true
+            },
+            {
+              "interval": 82,
+              "n_observations": 19,
+              "violation_rate": 0.34,
+              "max_error": 2.2981238030246125,
+              "is_cert": false
+            },
+            {
+              "interval": 41,
+              "n_observations": 37,
+              "violation_rate": 0.124,
+              "max_error": 1.1576461779458302,
+              "is_cert": false
+            }
+          ],
+          "on_frontier": false,
+          "cert_viol": 0.5346666666666666,
+          "cert_obs": 10
+        },
+        "2": {
+          "T1_steps": 196,
+          "T1_time": 3.912479316758807,
+          "lambda1": 0.30772630520212857,
+          "lambda1_ci": [
+            0.15216126386538908,
+            0.4506343356307528
+          ],
+          "empirical_median_horizon_steps": 54.5,
+          "empirical_p25": 41.0,
+          "empirical_p75": 65.0,
+          "empirical_mean": 61.725,
+          "empirical_n_censored": 0,
+          "validation_ratio_empirical_over_certified": 0.2780612244897959,
+          "rows": [
+            {
+              "interval": 784,
+              "n_observations": 2,
+              "violation_rate": 0.93,
+              "max_error": 4.938552618059825,
+              "is_cert": false
+            },
+            {
+              "interval": 392,
+              "n_observations": 4,
+              "violation_rate": 0.8526666666666667,
+              "max_error": 4.085123066191182,
+              "is_cert": false
+            },
+            {
+              "interval": 196,
+              "n_observations": 8,
+              "violation_rate": 0.7326666666666667,
+              "max_error": 2.1164846680463314,
+              "is_cert": true
+            },
+            {
+              "interval": 98,
+              "n_observations": 16,
+              "violation_rate": 0.5173333333333333,
+              "max_error": 1.8447041647815308,
+              "is_cert": false
+            },
+            {
+              "interval": 49,
+              "n_observations": 31,
+              "violation_rate": 0.20733333333333334,
+              "max_error": 1.1985609692466432,
+              "is_cert": false
+            }
+          ],
+          "on_frontier": false,
+          "cert_viol": 0.7326666666666667,
+          "cert_obs": 8
+        }
+      }
+    },
+    "0.7": {
+      "seeds": {
+        "0": {
+          "T1_steps": 61,
+          "T1_time": 1.2183435827197104,
+          "lambda1": 0.2927539891025866,
+          "lambda1_ci": [
+            0.14862887103346542,
+            0.40848042657183453
+          ],
+          "empirical_median_horizon_steps": 134.0,
+          "empirical_p25": 65.5,
+          "empirical_p75": 172.25,
+          "empirical_mean": 129.875,
+          "empirical_n_censored": 0,
+          "validation_ratio_empirical_over_certified": 2.19672131147541,
+          "rows": [
+            {
+              "interval": 244,
+              "n_observations": 7,
+              "violation_rate": 0.43333333333333335,
+              "max_error": 2.473212374748739,
+              "is_cert": false
+            },
+            {
+              "interval": 122,
+              "n_observations": 13,
+              "violation_rate": 0.15066666666666667,
+              "max_error": 2.2087993921861786,
+              "is_cert": false
+            },
+            {
+              "interval": 61,
+              "n_observations": 25,
+              "violation_rate": 0.014666666666666666,
+              "max_error": 1.0977862858324305,
+              "is_cert": true
+            },
+            {
+              "interval": 30,
+              "n_observations": 51,
+              "violation_rate": 0.0,
+              "max_error": 0.4977223225484088,
+              "is_cert": false
+            },
+            {
+              "interval": 15,
+              "n_observations": 101,
+              "violation_rate": 0.0,
+              "max_error": 0.2512644276618153,
+              "is_cert": false
+            }
+          ],
+          "on_frontier": true,
+          "cert_viol": 0.014666666666666666,
+          "cert_obs": 25
+        },
+        "1": {
+          "T1_steps": 49,
+          "T1_time": 0.9797484559899318,
+          "lambda1": 0.3640474672433653,
+          "lambda1_ci": [
+            0.23061389586355863,
+            0.5322241641852078
+          ],
+          "empirical_median_horizon_steps": 101.0,
+          "empirical_p25": 69.75,
+          "empirical_p75": 137.75,
+          "empirical_mean": 114.1,
+          "empirical_n_censored": 0,
+          "validation_ratio_empirical_over_certified": 2.061224489795918,
+          "rows": [
+            {
+              "interval": 196,
+              "n_observations": 8,
+              "violation_rate": 0.492,
+              "max_error": 2.3981993667209816,
+              "is_cert": false
+            },
+            {
+              "interval": 98,
+              "n_observations": 16,
+              "violation_rate": 0.12733333333333333,
+              "max_error": 1.8346694935811227,
+              "is_cert": false
+            },
+            {
+              "interval": 49,
+              "n_observations": 31,
+              "violation_rate": 0.008666666666666666,
+              "max_error": 0.791156183657556,
+              "is_cert": true
+            },
+            {
+              "interval": 24,
+              "n_observations": 63,
+              "violation_rate": 0.0,
+              "max_error": 0.577611262891636,
+              "is_cert": false
+            },
+            {
+              "interval": 12,
+              "n_observations": 126,
+              "violation_rate": 0.0,
+              "max_error": 0.3264003744062555,
+              "is_cert": false
+            }
+          ],
+          "on_frontier": true,
+          "cert_viol": 0.008666666666666666,
+          "cert_obs": 31
+        },
+        "2": {
+          "T1_steps": 58,
+          "T1_time": 1.1590655004434935,
+          "lambda1": 0.30772630520212857,
+          "lambda1_ci": [
+            0.15216126386538908,
+            0.4506343356307528
+          ],
+          "empirical_median_horizon_steps": 111.0,
+          "empirical_p25": 91.75,
+          "empirical_p75": 229.25,
+          "empirical_mean": 158.525,
+          "empirical_n_censored": 0,
+          "validation_ratio_empirical_over_certified": 1.9137931034482758,
+          "rows": [
+            {
+              "interval": 232,
+              "n_observations": 7,
+              "violation_rate": 0.534,
+              "max_error": 2.7866778126922815,
+              "is_cert": false
+            },
+            {
+              "interval": 116,
+              "n_observations": 13,
+              "violation_rate": 0.19866666666666666,
+              "max_error": 1.7569841914229578,
+              "is_cert": false
+            },
+            {
+              "interval": 58,
+              "n_observations": 26,
+              "violation_rate": 0.05533333333333333,
+              "max_error": 1.2756307338670207,
+              "is_cert": true
+            },
+            {
+              "interval": 29,
+              "n_observations": 52,
+              "violation_rate": 0.0,
+              "max_error": 0.6378831463983092,
+              "is_cert": false
+            },
+            {
+              "interval": 14,
+              "n_observations": 108,
+              "violation_rate": 0.0,
+              "max_error": 0.2640539736434969,
+              "is_cert": false
+            }
+          ],
+          "on_frontier": false,
+          "cert_viol": 0.05533333333333333,
+          "cert_obs": 26
+        }
+      }
+    }
+  }
+}
