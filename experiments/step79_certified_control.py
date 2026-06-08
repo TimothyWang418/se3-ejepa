@@ -150,6 +150,90 @@ def collect_data(N: int, n_traj: int, K: int, seed: int, u_max: float = 1.0):
     return starts, controls, targets, mu, sd
 
 
+def collect_data_mixed(N: int, n_traj: int, K: int, seed: int, u_max: float = 1.0,
+                       near_frac: float = 0.5, sigma: float = 2.0):
+    r"""Like :func:`collect_data`, but the initial states are a **mix** of on-attractor points and **near-fixed-point**
+    perturbations of the unstable uniform state $x_i=F$. This is the Phase-5a data fix: the attractor sampler never
+    visits the unstable fixed point, so a WM trained on :func:`collect_data` is uncalibrated near $F$ — exactly the
+    region the local-stabilization decision operates in. We add segments seeded at $F\mathbf 1+\sigma\,\xi$,
+    $\xi\sim\mathcal N(0,I_N)$, rolled under fresh random controls, so the WM also learns the near-$F$ dynamics.
+
+    Composition: a fraction ``near_frac`` of the ``n_traj`` segments start near $F$ (drawn $F\mathbf 1+\sigma\,\xi$); the
+    rest start on the uncontrolled attractor (sampled along one long :func:`step74.attractor_traj`, as in
+    :func:`collect_data`). Both kinds are rolled ``K`` steps through :func:`rk4_controlled` under per-step random
+    zero-order-hold controls $u\sim\mathcal U[-u_{\max},u_{\max}]^N$.
+
+    Normalization: a single **SCALAR** ``mu, sd`` (broadcast to ``(N,)``, hence exactly $\mathbb{Z}_N$-invariant — see
+    the note in :func:`collect_data`) is pooled over **all visited states of BOTH pools** (every start + every rolled
+    target). Because the near-$F$ states cluster around the constant $F\mathbf 1$, including them keeps that region
+    inside the WM's normalized operating range. The scalar pooling is what preserves the planner's exact orbit-
+    equivariance (a per-site mu/sd would break $\mathbb{Z}_N$-invariance of the normalized frame).
+
+    Returns ``(starts, controls, targets, mu, sd)`` with the SAME contract as :func:`collect_data` (starts/targets
+    normalized, controls raw), all ``float64``. ``starts`` interleaves the two pools (attractor pool first, near-$F$
+    pool second); shapes ``starts:(n_traj,N)``, ``controls:(n_traj,K,N)``, ``targets:(n_traj,K,N)``.
+    """
+    assert 0.0 <= near_frac <= 1.0, f"near_frac must be in [0,1], got {near_frac}"
+    g = torch.Generator().manual_seed(seed)
+    n_near = int(round(near_frac * n_traj))                     # near-fixed-point segments
+    n_att = n_traj - n_near                                     # on-attractor segments
+
+    # Pool (a): on-attractor initial states (uncontrolled-field trajectory, subsampled), exactly as collect_data.
+    if n_att > 0:
+        traj = step74.attractor_traj(N, max(n_att * 2, n_att + 1), seed, device="cpu").to(DTYPE)
+        idx = torch.randperm(traj.shape[0], generator=g)[:n_att]
+        x0_att = traj[idx].clone()                             # (n_att, N) raw on-attractor states
+    else:
+        x0_att = torch.empty(0, N, dtype=DTYPE)
+
+    # Pool (b): near-fixed-point initial states F*1 + sigma * N(0, I). The fixed point is UNSTABLE, so these segments
+    # carry the local dynamics of the unstable manifold the stabilizer must contend with.
+    if n_near > 0:
+        x0_near = F_FORCE + sigma * torch.randn(n_near, N, generator=g, dtype=DTYPE)
+    else:
+        x0_near = torch.empty(0, N, dtype=DTYPE)
+
+    x0 = torch.cat([x0_att, x0_near], dim=0)                    # (n_traj, N) raw initial states (attractor ++ near-F)
+
+    # Random controls u ~ U[-u_max, u_max], one per (segment, step). Shape (n_traj, K, N).
+    controls = (2.0 * u_max) * torch.rand(n_traj, K, N, generator=g, dtype=DTYPE) - u_max
+
+    # Roll the TRUE controlled dynamics for both pools jointly; collect raw targets x_{t+1..t+K}.
+    targets_raw = torch.empty(n_traj, K, N, dtype=DTYPE)
+    x = x0.clone()
+    for k in range(K):
+        x = rk4_controlled(x, controls[:, k, :])
+        targets_raw[:, k, :] = x
+
+    # Scalar (Z_N-invariant) normalization over ALL visited states of BOTH pools (starts + every rolled target).
+    visited = torch.cat([x0.unsqueeze(1), targets_raw], dim=1).reshape(-1, N)   # (n_traj*(K+1), N)
+    mu = visited.mean().repeat(N)                              # scalar mean, broadcast to (N,): Z_N-invariant
+    sd = (visited.std() + 1e-8).repeat(N)                      # scalar std,  broadcast to (N,): Z_N-invariant
+
+    starts = (x0 - mu) / sd
+    targets = (targets_raw - mu) / sd                          # controls stay RAW (already bounded)
+    return starts, controls, targets, mu, sd
+
+
+def near_f_relmse(model, mu, sd, N: int, sigma: float = 2.0, n: int = 2000, K_eval: int = 1,
+                  u_max: float = 1.0, seed: int = 12345) -> float:
+    r"""Held-out one-step relMSE of ``model`` on a fresh **near-fixed-point** set (start $F\mathbf 1+\sigma\,\xi$, one
+    TRUE :func:`rk4_controlled` step under a random control). This is the Phase-5a data-fix gate: it checks the WM is
+    accurate in the near-$F$ region the stabilizer operates in (the region the attractor data never covers). A separate
+    seed from training. Returns the mean over sites-relative squared error $\lVert\hat x-x\rVert^2/\lVert x\rVert^2$."""
+    model.eval()
+    mu = mu.to(DTYPE); sd = sd.to(DTYPE)
+    g = torch.Generator().manual_seed(seed)
+    x0 = F_FORCE + sigma * torch.randn(n, N, generator=g, dtype=DTYPE)          # held-out near-F starts (raw)
+    u0 = (2.0 * u_max) * torch.rand(n, N, generator=g, dtype=DTYPE) - u_max     # held-out random control (raw)
+    with torch.no_grad():
+        x1_true = rk4_controlled(x0, u0)                                        # TRUE next state (raw)
+        z1 = model((x0 - mu) / sd, u0)                                          # WM next state (normalized)
+        x1_pred = z1 * sd + mu                                                  # back to raw coords
+        rel = ((x1_pred - x1_true) ** 2).sum(-1) / (x1_true ** 2).sum(-1).clamp_min(1e-12)
+    return float(rel.mean())
+
+
 def train_wm(kind: str, N: int, data, seed: int, epochs: int = 60, K: int = 5):
     r"""Train an action-conditioned world model with a $K$-step **rollout** loss, feeding the DATA's controls at each
     step: $z_0=\,$``starts``, $z_{k+1}=\hat\phi(z_k,u_k)$, matching $z_{k+1}$ to ``targets[:,k]``. One-step MSE constrains
@@ -430,6 +514,175 @@ def orbit_flatness(model, x0, mu, sd, H: int, n_steps: int, s: int, u_max: float
     return {"ratio": ratio, "control_mismatch": control_mismatch, "cost_x0": cost_x0, "cost_rolled": cost_rolled}
 
 
+# --------------------------------------------------------------------------------------------------------------- #
+# Phase 5a — the DECISION: LOCAL STABILIZATION of the UNSTABLE uniform fixed point x_i = F, and the contrast between a
+# CERTIFICATE-AWARE controller (re-plans with horizon H = T_1, the certified horizon ~ a few steps) and a HORIZON-BLIND
+# controller (plans with a long fixed H >> T_1, trusting the WM's rollout PAST its certified horizon, where it is
+# wrong). The mechanism the certificate governs: start NEAR F (a small perturbation F*1 + sigma*xi). The fixed point is
+# UNSTABLE, so without good control the state grows along the unstable manifold and ESCAPES into chaos. The cert-aware
+# controller plans only as far as the WM is trustworthy (H = T_1) and keeps ||x - F*1|| small; the blind controller
+# optimizes a long-horizon predicted cost the WM cannot honor, mis-stabilizes, and lets the state diverge faster.
+#
+# This is the SAME closed-loop MPC as Phase 4 (closed_loop drives toward F*1 via the equivariant plan_control), re-read
+# through deviation-from-F metrics. We REUSE closed_loop verbatim, so the run inherits Phase 4's EXACT orbit-
+# equivariance: stabilize_run(x0) and stabilize_run(roll(x0,s)) produce roll-related controls to machine precision
+# (the Phase-5a test checks this). The honest gate (D1) is that cert-aware mean_dev < the BEST horizon-blind mean_dev;
+# we do NOT loosen it -- if the blind controller wins, we report the honest numbers.
+# --------------------------------------------------------------------------------------------------------------- #
+def stabilize_run(model, mu, sd, x0, H: int, n_steps: int, u_max: float = 4.0, n_iter: int = 30, lr: float = 0.1,
+                  seed: int = 0) -> dict:
+    r"""Closed-loop receding-horizon MPC that tries to **stabilize** the unstable uniform fixed point $x_i=F$, started
+    from a raw near-$F$ state ``x0``. Re-plans a length-``H`` control every step with the exactly-equivariant
+    :func:`plan_control` (target $=F\mathbf 1$), applies ONLY the first control to the TRUE :func:`rk4_controlled` map,
+    and tracks the deviation $\lVert x_t-F\mathbf 1\rVert$.
+
+    ``H`` is the lever: ``H = T_1`` (certified horizon) is the **certificate-aware** setting; ``H \gg T_1`` is
+    **horizon-blind** (trusts the WM past where it is certified). Reuses :func:`closed_loop` verbatim, so the run is
+    exactly $\mathbb{Z}_N$-orbit-equivariant in ``x0`` (Phase 4 / :func:`orbit_flatness`).
+
+    Args:
+        model: action-conditioned WM, ``model(z,u)->z_next`` (normalized coords).  mu, sd: ``(N,)`` scalar stats.
+        x0: ``(N,)`` **RAW** near-$F$ initial state (e.g. $F\mathbf 1+\sigma\xi$).  H: per-step planning horizon.
+        n_steps: number of closed-loop steps.  u_max, n_iter, lr, seed: forwarded to :func:`plan_control`.
+
+    Returns:
+        dict with ``"traj"`` ``(n_steps+1,N)`` realized RAW states, ``"controls"`` ``(n_steps,N)`` applied first-controls,
+        ``"mean_dev"`` (time-avg $\lVert x_t-F\mathbf 1\rVert$ over all $n_{\rm steps}{+}1$ states), ``"final_dev"``
+        ($\lVert x_T-F\mathbf 1\rVert$), and ``"escaped"`` (bool: $\max_t\lVert x_t-F\mathbf 1\rVert>5\sigma\sqrt N$,
+        the escape threshold for an $F\mathbf 1+\sigma\xi$ perturbation of typical norm $\sigma\sqrt N$).
+    """
+    N = x0.shape[-1]
+    out = closed_loop(model, x0, mu, sd, H=H, n_steps=n_steps, u_max=u_max, n_iter=n_iter, lr=lr, seed=seed)
+    traj = out["traj"]                                          # (n_steps+1, N) realized RAW states
+    target = F_FORCE * torch.ones(N, dtype=DTYPE)               # uniform fixed point x_i = F (RAW)
+
+    dev = (traj - target).norm(dim=-1)                          # (n_steps+1,) ||x_t - F*1|| over the realized run
+    mean_dev = float(dev.mean())
+    final_dev = float(dev[-1])
+    # Escape: any realized state strays beyond 5 * (typical perturbation norm sigma*sqrt(N)). sigma is recovered from
+    # the run-supplied threshold below; here we pass it explicitly via the contrast caller. We use 5*sigma*sqrt(N).
+    sigma = stabilize_run._sigma                                # set by stabilization_contrast (default fallback below)
+    escape_thresh = 5.0 * sigma * (N ** 0.5)
+    escaped = bool((dev.max() > escape_thresh).item())
+    return {"traj": traj, "controls": out["controls"], "mean_dev": mean_dev, "final_dev": final_dev,
+            "escaped": escaped}
+
+
+stabilize_run._sigma = 2.0   # default perturbation scale for the escape threshold; stabilization_contrast overrides it
+
+
+def stabilization_contrast(model, mu, sd, N: int, seed: int, eps: float = 0.01, sigma: float = 2.0,
+                           n_steps: int = 60, u_max: float = 4.0, n_iter: int = 300, lr: float = 0.3,
+                           H_blind_list=None, cert_n_steps: int = 800, cert_warmup: int = 150,
+                           cert_n_boot: int = 300, cert_block: int = 40) -> dict:
+    r"""Run the Phase-5a **decision**: certificate-aware vs horizon-blind local stabilization of $x_i=F$, on one seed.
+
+    Reads the certified horizon $T_1=\mathrm{round}(\texttt{certificate}(\dots)[\texttt{'T1'}])$ (clamped to $\ge 1$),
+    sets the certificate-aware horizon $H_{\rm cert}=T_1$. For a single near-$F$ start $x_0=F\mathbf 1+\sigma\,\xi$
+    (seeded), runs :func:`stabilize_run` with $H=H_{\rm cert}$ and with each $H$ in ``H_blind_list`` (default
+    $[3T_1,6T_1,12T_1]$, clamped to a sensible range), plus an **uncontrolled** baseline ($u\equiv 0$, realized by
+    $H_{\rm cert}$ with ``u_max=0``). The honest gate D1 (checked by the caller) is $\texttt{cert.mean\_dev}<\min_H
+    \texttt{blind}_H.\texttt{mean\_dev}$.
+
+    The planner ``n_iter, lr`` default to a STRONGER optimizer than :func:`plan_control`'s weak default (the Phase-4
+    chaos-suppression default barely moves $u$ off zero over a short horizon — see the Phase-5a log). They are applied
+    IDENTICALLY to the cert-aware and the blind controllers, so this is a fairness setting (it gives the short-horizon
+    cert-aware controller its best shot), NOT a loosening of the gate.
+
+    Args:
+        model, mu, sd, N: trained WM + scalar stats + state dim.  seed: pins the near-$F$ start (and the certificate).
+        eps: certificate resolution.  sigma: near-$F$ perturbation scale (also sets the escape threshold).
+        n_steps: closed-loop length.  u_max: control authority.  n_iter, lr: planner GD budget (shared by all
+            controllers).  H_blind_list: explicit blind horizons (overrides the $[3,6,12]\times T_1$ default).
+            cert_n_steps, cert_warmup, cert_n_boot, cert_block: Benettin-QR / bootstrap budget for reading $T_1$
+            (smoke-grade defaults; $T_1$ is a rounded integer, robust to the lighter estimate).
+
+    Returns:
+        dict with ``"T1"`` (the rounded certified horizon used as $H_{\rm cert}$), ``"H_cert"``, ``"cert"`` (the cert-
+        aware :func:`stabilize_run` dict, sans heavy ``traj``), ``"blind"`` (``{H: stabilize_run-dict}``),
+        ``"uncontrolled"`` (the $u{=}0$ dict), ``"cost_vs_H"`` (``[(H, mean_dev), ...]`` sorted by $H$, cert + blind),
+        and ``"best_blind_mean_dev"`` (the minimum blind ``mean_dev``).
+    """
+    # Certified horizon off the autonomous (u=0) map of THIS trained WM. round, clamp to >= 1 (a horizon of 0 steps is
+    # not a usable plan). If the certificate abstains (T1 is None), we fall back to H_cert = 1 (most conservative).
+    # Smoke-grade QR budget by default (cert_*): T1 is read as a rounded integer, robust to the lighter spectrum est.
+    cert = certificate(model, mu, sd, N, eps=eps, n_steps=cert_n_steps, warmup=cert_warmup,
+                       n_boot=cert_n_boot, block=cert_block, seed=seed)
+    T1_raw = cert["T1"]
+    T1 = max(1, int(round(T1_raw))) if (T1_raw is not None and np.isfinite(T1_raw)) else 1
+
+    if H_blind_list is None:
+        # Default blind horizons: multiples of T1, clamped so the longest does not exceed n_steps (a plan longer than
+        # the whole episode is meaningless) and is at least T1+1 (must be strictly longer than the certified horizon).
+        H_blind_list = [m * T1 for m in (3, 6, 12)]
+    H_blind_list = sorted({max(T1 + 1, min(int(h), n_steps)) for h in H_blind_list})   # strictly > T1, <= n_steps
+
+    # Seeded near-F start, shared by ALL controllers on this seed (fair comparison from the SAME x0).
+    g = torch.Generator().manual_seed(seed)
+    x0 = F_FORCE + sigma * torch.randn(N, generator=g, dtype=DTYPE)
+
+    stabilize_run._sigma = sigma                                # escape threshold = 5 * sigma * sqrt(N)
+
+    def _light(d: dict) -> dict:                                # drop the heavy traj from the returned summary
+        return {"mean_dev": d["mean_dev"], "final_dev": d["final_dev"], "escaped": d["escaped"]}
+
+    # Certificate-aware: H = T1.  (same planner budget n_iter/lr as the blind runs -> fair).
+    cert_run = stabilize_run(model, mu, sd, x0, H=T1, n_steps=n_steps, u_max=u_max, n_iter=n_iter, lr=lr, seed=seed)
+    # Horizon-blind: each long H >> T1.
+    blind_runs = {h: stabilize_run(model, mu, sd, x0, H=h, n_steps=n_steps, u_max=u_max, n_iter=n_iter, lr=lr,
+                                   seed=seed)
+                  for h in H_blind_list}
+    # Uncontrolled baseline: same start, ZERO control authority (u_max=0 forces every clamped plan to u=0).
+    unc_run = stabilize_run(model, mu, sd, x0, H=T1, n_steps=n_steps, u_max=0.0, n_iter=n_iter, lr=lr, seed=seed)
+
+    cost_vs_H = sorted([(T1, cert_run["mean_dev"])] + [(h, r["mean_dev"]) for h, r in blind_runs.items()])
+    best_blind = min(r["mean_dev"] for r in blind_runs.values())
+
+    return {"T1": T1, "T1_raw": T1_raw, "H_cert": T1, "lambda1": cert["lambda1"],
+            "cert": _light(cert_run),
+            "blind": {h: _light(r) for h, r in blind_runs.items()},
+            "uncontrolled": _light(unc_run),
+            "cost_vs_H": cost_vs_H, "best_blind_mean_dev": best_blind}
+
+
+def _smoke_phase5a() -> None:
+    r"""Train one equivariant conv WM on **mixed** (attractor + near-$F$) data, verify near-$F$ accuracy, and run the
+    Phase-5a stabilization decision for seeds 0,1,2. Print, per seed: $T_1$, cert-aware ``mean_dev``, each blind $H$'s
+    ``mean_dev``, the uncontrolled ``mean_dev``, and which runs escaped. Reports the honest D1 verdict (cert-aware beats
+    the best blind on how many of the 3 seeds). Not a pytest test (it trains)."""
+    torch.manual_seed(0)
+    N, sigma, u_max = 16, 2.0, 8.0           # u_max=8 so control authority is NOT the binding constraint (probe-checked)
+    data = collect_data_mixed(N=N, n_traj=4000, K=3, seed=0, u_max=u_max, near_frac=0.5, sigma=sigma)
+    model, mu, sd, one_step = train_wm("conv", N, data, seed=0, epochs=30, K=3)
+    relF = near_f_relmse(model, mu, sd, N, sigma=sigma, u_max=u_max)
+    print(f"[step79 phase5a] N={N} mixed-data WM: in-sample one-step relMSE {one_step:.2e}  "
+          f"HELD-OUT near-F relMSE {relF:.2e} (gate < 1e-2)", file=sys.stderr)
+    if relF >= 1e-2:
+        print(f"[step79 phase5a] BLOCKED: near-F relMSE {relF:.2e} not < 1e-2 — WM not accurate near the fixed point.",
+              file=sys.stderr)
+        return
+
+    wins = 0
+    for seed in (0, 1, 2):
+        # Strong planner budget (n_iter=300, lr=0.3) applied IDENTICALLY to cert-aware and blind (fairness, not loosening).
+        out = stabilization_contrast(model, mu, sd, N, seed=seed, sigma=sigma, n_steps=60, u_max=u_max,
+                                     n_iter=300, lr=0.3)
+        T1, ca = out["T1"], out["cert"]; unc = out["uncontrolled"]
+        best_blind = out["best_blind_mean_dev"]
+        win = ca["mean_dev"] < best_blind
+        wins += int(win)
+        print(f"[step79 phase5a] seed {seed}: T1={T1} (lambda1={out['lambda1']:.3f})  "
+              f"cert-aware mean_dev {ca['mean_dev']:.4f}{' ESC' if ca['escaped'] else ''}  "
+              f"| uncontrolled {unc['mean_dev']:.4f}{' ESC' if unc['escaped'] else ''}", file=sys.stderr)
+        for h, r in sorted(out["blind"].items()):
+            print(f"[step79 phase5a]          blind H={h:>3d}: mean_dev {r['mean_dev']:.4f}"
+                  f"{' ESC' if r['escaped'] else ''}", file=sys.stderr)
+        print(f"[step79 phase5a]   D1 on seed {seed}: cert-aware {'<' if win else '>='} best blind "
+              f"({ca['mean_dev']:.4f} vs {best_blind:.4f}) -> {'cert WINS' if win else 'blind wins/ties'}",
+              file=sys.stderr)
+    print(f"[step79 phase5a] D1 verdict: cert-aware beats best blind on {wins}/3 seeds.", file=sys.stderr)
+
+
 def _smoke_phase4() -> None:
     r"""Train a small equivariant conv WM, pick an on-attractor state, and run the CLOSED-LOOP MPC on the TRUE
     controlled dynamics. Report the controlled realized cost vs the uncontrolled (zero-control) realized cost over the
@@ -542,4 +795,7 @@ def _smoke() -> None:
 
 
 if __name__ == "__main__":
-    _smoke()
+    # Optional phase selector: `python step79_certified_control.py [smoke|phase2|phase3|phase4|phase5a]` (default smoke).
+    _phases = {"smoke": _smoke, "phase2": _smoke_phase2, "phase3": _smoke_phase3,
+               "phase4": _smoke_phase4, "phase5a": _smoke_phase5a}
+    _phases.get(sys.argv[1] if len(sys.argv) > 1 else "smoke", _smoke)()

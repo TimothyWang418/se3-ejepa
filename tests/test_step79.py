@@ -59,6 +59,26 @@ def test_closed_loop_control_is_orbit_flat() -> None:
     print(f"PASS: closed-loop control orbit-flat (mismatch {of['control_mismatch']:.1e}, ratio {of['ratio']:.6f}).")
 
 
+def test_stabilize_run_is_orbit_equivariant() -> None:
+    # Phase 5a: stabilize_run wraps the exactly-equivariant closed-loop MPC, so a cyclic shift of the near-F start x0
+    # produces an exactly shifted applied-control sequence (and trajectory) on the equivariant WM. Untrained WM suffices
+    # (the planner is equivariant by construction). This guards that the Phase-5a metrics layer did not break the orbit
+    # symmetry the co-demonstration's configuration axis rests on.
+    torch.manual_seed(0); N = 12
+    model = s79.make_equivariant_wm(N).double()
+    mu = torch.zeros(N, dtype=DT); sd = torch.ones(N, dtype=DT)
+    s79.stabilize_run._sigma = 2.0
+    x0 = s79.F_FORCE + 2.0 * torch.randn(N, dtype=DT)         # a near-F start
+    for s in (1, 5):
+        a = s79.stabilize_run(model, mu, sd, x0, H=4, n_steps=6, u_max=4.0, n_iter=10, seed=0)
+        b = s79.stabilize_run(model, mu, sd, torch.roll(x0, s), H=4, n_steps=6, u_max=4.0, n_iter=10, seed=0)
+        mismatch = (b["controls"] - torch.roll(a["controls"], s, dims=-1)).norm(dim=-1).max()
+        assert float(mismatch) < 1e-8, f"shift {s}: stabilize_run controls not orbit-equivariant (max {float(mismatch):.2e})"
+        traj_mismatch = (b["traj"] - torch.roll(a["traj"], s, dims=-1)).norm(dim=-1).max()
+        assert float(traj_mismatch) < 1e-8, f"shift {s}: stabilize_run traj not orbit-equivariant (max {float(traj_mismatch):.2e})"
+    print("PASS: stabilize_run is exactly Z_N-orbit-equivariant in the near-F start (controls + traj).")
+
+
 def test_true_controlled_map_certificate_is_chaotic() -> None:
     import numpy as np
     import step78_certified_horizon_ci as s78
@@ -80,5 +100,6 @@ if __name__ == "__main__":
     test_world_model_conv_is_equivariant_mlp_is_not()
     test_planner_is_orbit_equivariant()
     test_closed_loop_control_is_orbit_flat()
+    test_stabilize_run_is_orbit_equivariant()
     test_true_controlled_map_certificate_is_chaotic()
-    print("step79 phase-0+1+3+4 guard PASS.")
+    print("step79 phase-0+1+3+4+5a guard PASS.")
