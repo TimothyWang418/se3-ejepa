@@ -274,6 +274,9 @@ $N{=}12$ ($R^2{=}0.93$–$0.99$) still fails at $N{=}40$ ($R^2{\approx}-0.3$, $3
 carrying hidden modes that break the conditional-Lyapunov condition [@hart2024attractor] at high $N$ where a Markov
 $N\times N$ Jacobian has none. (Needs a multi-step rollout loss; one-step MSE
 underestimates the Jacobian — Proposition 8's $C^1$ caveat in high $N$.)
+Sweeping $N\in\{12,20,28,40\}$ shows this is a **phase transition**, not a single-$N$ artifact: the $\mathbb{Z}_N$-conv holds $R^2>0.97$ throughout while the dense MLP and GRU are tied with it through $N{=}28$ and collapse at $N{=}40$ ($R^2{=}-1.8$, $-0.27$; $3$ seeds), hallucinating spurious positive exponents where the dimension outruns their unstructured Jacobian (`step83`).
+
+![Step 83. Full-spectrum Lyapunov $R^2$ vs. $N$: the $\mathbb{Z}_N$-conv holds across $N$ while the dense MLP and GRU collapse at $N{=}40$ — the single-$N$ separation is a phase transition.](figures/step83_rsquared_crossover.png)
 
 ![The horizon staircase on a learned model of real chaotic dynamics (E2, Lorenz). **Left:** the learned one-step model's perturbation growth tracks the true Lorenz integrator over $550$ steps. **Right:** the certified horizon $T(\epsilon_0)$ on the *learned* model is linear in $\log(1/\epsilon_0)$ ($R^2{=}0.995$), and the measured slope sits on the prediction $1/(\lambda_1 dt)$ from the textbook Lorenz exponent — Theorem B's law lifted to a learned model of a genuinely chaotic system (Proposition 7(a)).](figures/step70_lorenz_horizon.png)
 

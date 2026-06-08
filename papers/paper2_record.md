@@ -580,3 +580,7 @@ where that certificate is *tight*. Plan → subagent-driven TDD (`step82` + `tes
   remarks** adjacent to Theorem B (§3.2); contribution-1 clause (makes *"Certified"* literal); abstract reordered to
   lead with load-bearing claims (tagline "*Scale buys interpolation; structure buys a certified horizon.*" first
   sentence; hedges live in §6/§7). PDF rebuilt. `step82`, `fec83b9`.
+
+## [2026-06-08] Step 83 — R²(N) crossover hardens Exp 18
+
+- R²(N) crossover hardens Exp 18: conv 0.98 across N; MLP/GRU tie through N=28 then collapse at N=40 to −1.8/−0.27; **PHASE_TRANSITION**; 3 seeds; `step83`, `24dbca1`.
