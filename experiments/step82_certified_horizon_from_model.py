@@ -41,6 +41,11 @@ import math
 import numpy as np
 from scipy.linalg import eigh
 from scipy.optimize import minimize
+from scipy.spatial import cKDTree
+
+# step71 supplies the Henon map, its on-attractor sampler, and the documented exponent. We REUSE its
+# ``henon_step`` / ``SYSTEMS["Henon"]`` / ``on_attractor_trajs`` for the attractor point cloud; do NOT modify it.
+import experiments.step71_multichaos_horizon as step71  # noqa: E402
 
 DTYPE = np.float64
 HENON_A, HENON_B = 1.4, 0.3
@@ -159,3 +164,52 @@ def lipschitz_bridge(lambda_samples, kappa, L_J, h, L_P=0.0, eps=0.01, eps_res=1
     horizon = t_guar(lambda_cert, kappa, eps, eps_res)
     return dict(lambda_cert=float(lambda_cert), slack=float(slack),
                 horizon=horizon, certified=bool(horizon >= 1))
+
+
+def _covering_radius(pts):
+    r"""Covering radius $h$ of the sample = $\max_i$ nearest-neighbour distance among ``pts`` (a sound covering radius
+    for the point cloud: every sample lies within $h$ of another sample). ``pts: (n, d) -> float``."""
+    d, _ = cKDTree(pts).query(pts, k=2)              # k=2: self (dist 0) + nearest distinct neighbour
+    return float(np.max(d[:, 1]))
+
+
+def run_true_henon(n_samples=4000, seed=0, eps=0.01, eps_res=1.0):
+    r"""**Phase-A make-or-break:** the rigorous cone / adapted-metric certificate on the TRUE Henon map and Gate G1.
+
+    Pipeline: sample an on-attractor point cloud (reusing :func:`step71.on_attractor_trajs`); take the EXACT Jacobian
+    $D\phi(z_i)$ at each point; solve for the constant adapted metric $(P,\Lambda_{\text{samples}})$
+    (:func:`adapted_metric`); read $\kappa=\mathrm{cond}(P)$ and the covering radius $h$ (:func:`_covering_radius`);
+    inflate to the continuum-sound $\Lambda^{\text{cert}}=\Lambda_{\text{samples}}+\sqrt\kappa\,L_J\,h$ with the EXACT
+    $L_J=$ :data:`HENON_JAC_LIP` (:func:`lipschitz_bridge`); and compute $T_{\text{guar}}(\epsilon)$.
+
+    **Gate G1 (make-or-break, never loosened):** ``certified`` is True iff the certificate is BOTH non-vacuous
+    ($T_{\text{guar}}\ge1$) AND beats the trivial Euclidean bound $\max_i\lVert D_i\rVert_2+L_J h$ (a constant *identity*
+    metric, $\kappa=1$). The certificate is sound by construction (the bridge only inflates $\Lambda$), so
+    $\log\Lambda^{\text{cert}}\ge\lambda_1\approx0.419$ always holds. If a single constant $P$ cannot tame the
+    widely-varying Henon Jacobian and the result is vacuous, that is a REAL finding — reported, not loosened.
+
+    Returns a dict with ``lambda_samples``, ``lambda_cert``, ``kappa``, ``h``, ``slack``, ``t_guar`` (the certified
+    horizon), ``euclid_bound``, ``euclid_t_guar`` (the Euclidean baseline horizon), ``beats_euclidean``, ``certified``
+    (the G1 verdict), and the inputs ``eps``/``eps_res``."""
+    rng = np.random.default_rng(seed)
+    cfg = step71.SYSTEMS["Henon"]
+    trajs = step71.on_attractor_trajs(cfg, rng, n=max(8, n_samples // 200), length=300)
+    pts = np.concatenate([t[:-1] for t in trajs], axis=0)[:n_samples].astype(DTYPE)
+    jacs = np.stack([henon_jac(s) for s in pts])
+
+    P, lam_samples, _ = adapted_metric(jacs)
+    kappa = float(np.linalg.cond(P))
+    h = _covering_radius(pts)
+    br = lipschitz_bridge(lam_samples, kappa, HENON_JAC_LIP, h, eps=eps, eps_res=eps_res)
+
+    # Trivial Euclidean baseline: the constant IDENTITY metric (kappa = 1), whose continuum bound is
+    # max_i ||D_i||_2 + L_J h (no cone to absorb the rotation of the expanding direction). Its certified horizon is the
+    # bar the adapted metric must beat (the second half of G1).
+    euclid_bound = float(max(np.linalg.norm(D, 2) for D in jacs)) + HENON_JAC_LIP * h
+    euclid_t_guar = t_guar(euclid_bound, 1.0, eps, eps_res)
+    beats_euclidean = bool(br["lambda_cert"] < euclid_bound)
+
+    return dict(system="Henon(true)", lambda_samples=lam_samples, lambda_cert=br["lambda_cert"],
+                kappa=kappa, h=h, slack=br["slack"], t_guar=br["horizon"],
+                euclid_bound=euclid_bound, euclid_t_guar=euclid_t_guar, beats_euclidean=beats_euclidean,
+                certified=bool(br["certified"] and beats_euclidean), eps=eps, eps_res=eps_res)

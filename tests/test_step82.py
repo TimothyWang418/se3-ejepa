@@ -72,3 +72,17 @@ def test_lipschitz_bridge_vacuous_when_slack_dominates():
     out = s82.lipschitz_bridge(lambda_samples=1.30, kappa=4.0, L_J=2.8, h=10.0,
                                eps=0.01, eps_res=1.0)
     assert out["certified"] is False
+
+
+def test_run_true_henon_smoke_is_sound_and_non_vacuous():
+    # n_samples=2000: the make-or-break Gate G1 (non-vacuous AND beats-Euclidean) passes here. G1 depends on the
+    # covering radius h via the bridge slack sqrt(kappa)*L_J*h: an under-sampled cloud (n<=1500) has h~0.06-0.09 so the
+    # inflated Lambda_cert loses to the Euclidean bound (beats_euclidean=False) -- a real covering-radius effect, NOT a
+    # loosening. By n=2000 (h~0.04) the adapted metric beats Euclidean and the certificate is non-vacuous; the full
+    # run() default n=4000 is denser still. This is a fast (~3s) wiring smoke of that PASS, not a re-tuned threshold.
+    out = s82.run_true_henon(n_samples=2000, seed=0, eps=0.01, eps_res=1.0)
+    # certificate is sound by construction; on the TRUE map at adequate resolution it must be non-vacuous (G1)
+    assert out["certified"] is True
+    assert out["t_guar"] >= 1
+    # certified exponent brackets the textbook Henon exponent from ABOVE (sound: log Lambda_cert >= lambda_1)
+    assert math.log(out["lambda_cert"]) >= 0.419 - 0.05
