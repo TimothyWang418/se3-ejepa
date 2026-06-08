@@ -39,6 +39,8 @@ Run (Phase A make-or-break):
 import math
 
 import numpy as np
+from scipy.linalg import eigh
+from scipy.optimize import minimize
 
 DTYPE = np.float64
 HENON_A, HENON_B = 1.4, 0.3
@@ -77,3 +79,62 @@ def henon_jac(s):
     s = np.asarray(s, dtype=DTYPE)
     x = s[..., 0]
     return np.array([[-2.0 * HENON_A * x, 1.0], [HENON_B, 0.0]], dtype=DTYPE)
+
+
+# --------------------------------------------------------------------------------------------------------------- #
+# Theorem-B' constant adapted metric (a global common-Lyapunov metric). We seek a single SPD $P$ and the smallest
+# $\Lambda$ with $D_i^\top P D_i\preceq\Lambda^2 P$ for every sampled Jacobian $D_i$. Writing $P=P^{1/2}P^{1/2}$, this is
+# $\Lambda(P)=\max_i\lVert P^{1/2}D_i P^{-1/2}\rVert_2$ — the worst metric operator norm — which we minimize over $P$.
+# We parameterize $P=CC^\top$ by the log-Cholesky factor $C$ (lower-triangular, positive diagonal via $\exp$) so the
+# search is unconstrained and $P\succ0$ automatically, and minimize with derivative-free Nelder-Mead (d=2 is tiny and
+# the objective is non-smooth at norm ties — a gradient method would be brittle here). This is the SDP-free stand-in
+# for the LMI; the constant metric contributes $L_P=0$ to the Lipschitz bridge (the cleanest possible certificate).
+# --------------------------------------------------------------------------------------------------------------- #
+def _metric_opnorm(L_flat, jacs, d):
+    r"""Worst-case metric operator norm $\Lambda(P)=\max_i\lVert P^{1/2}D_i P^{-1/2}\rVert_2$ for $P=CC^\top$ encoded by
+    the log-Cholesky vector ``L_flat`` (lower-triangular fill; diagonal exponentiated for positivity). Returns
+    ``(Lambda, P)``.
+
+    We evaluate $\Lambda(P)$ via the **symmetric-definite generalized eigenproblem**
+    $\Lambda(P)^2=\max_i\lambda_{\max}\big(D_i^\top P D_i,\;P\big)$, which is *exactly* the metric operator norm
+    (verified to $10^{-8}$ over random SPD $P$) and is what the LMI $D_i^\top P D_i\preceq\Lambda^2 P$ literally asserts.
+    This is numerically stable even for the highly-sheared, ill-conditioned $P$ the optimum needs on a *defective*
+    (non-normal) Jacobian — unlike explicitly forming $P^{-1/2}$, which can throw a spurious ``LinAlgError`` on a probe
+    near $\mathrm{cond}(P)\sim10^{16}$. A probe that is not numerically PD returns a large finite penalty so the
+    derivative-free optimizer simply rejects it (never crashes); soundness is unaffected — this only evaluates a
+    candidate $P$, and the final certified $\Lambda$ is always the honest op-norm of the returned $P$."""
+    C = np.zeros((d, d))
+    idx = np.tril_indices(d)
+    C[idx] = L_flat
+    di = np.diag_indices(d)
+    C[di] = np.exp(np.clip(np.diag(C), -10, 10))     # positive diagonal => C full-rank => P = C C^T SPD
+    P = C @ C.T
+    try:
+        # Lambda(P)^2 = max_i lambda_max(D_i^T P D_i, P): the generalized (symmetric-definite) eigenproblem == the
+        # squared operator norm in the P-metric. eigh returns ascending eigenvalues; take the largest, clamp >= 0.
+        lam2 = max(float(eigh(D.T @ P @ D, P, eigvals_only=True)[-1]) for D in jacs)
+    except np.linalg.LinAlgError:
+        return 1e12, P                               # non-PD probe => huge finite penalty (optimizer rejects it)
+    return math.sqrt(max(lam2, 0.0)), P
+
+
+def adapted_metric(jacs, succ_jacs=None, mode="constant"):
+    r"""Solve for a constant adapted metric $P$ minimizing $\Lambda$ s.t. $D_i^\top P D_i\preceq\Lambda^2 P$ on all
+    sampled Jacobians (the Theorem-B' common-Lyapunov metric). Returns ``(P, Lambda, fun)`` where ``P`` is SPD with
+    trace normalized to $d$ (cosmetic; leaves $\mathrm{cond}(P)=\kappa$ and $\Lambda$ unchanged), ``Lambda`` is the
+    certified sample op-norm, and ``fun`` is the optimizer's final objective.
+
+    ``succ_jacs``/``mode`` are reserved for a future smooth field $P(z)$ (which would also need the successor Jacobians
+    $D\hat\phi(\hat\phi(z))$ and an $L_P$); the constant-$P$ path uses only ``jacs`` and has $L_P=0$.
+
+    Shapes: ``jacs: (n, d, d) -> (P: (d, d), Lambda: float, fun: float)``.
+    """
+    jacs = np.asarray(jacs, dtype=DTYPE)
+    d = jacs.shape[-1]
+    x0 = np.zeros(d * (d + 1) // 2)                  # P = I initial (zero log-Cholesky => unit diagonal, zero off-diag)
+    best = minimize(lambda v: _metric_opnorm(v, jacs, d)[0], x0,
+                    method="Nelder-Mead",
+                    options=dict(xatol=1e-8, fatol=1e-10, maxiter=4000))
+    Lam, P = _metric_opnorm(best.x, jacs, d)
+    P = P / np.trace(P) * d                          # normalize trace = d (cosmetic; cond(P) and Lambda unchanged)
+    return P, float(Lam), float(best.fun)

@@ -39,3 +39,22 @@ def test_t_guar_matches_closed_form_and_is_monotone():
     assert s82.t_guar(Lam, kappa, 1e-4, eps_res) >= s82.t_guar(Lam, kappa, 1e-2, eps_res)
     # Lambda = 1 (no expansion) => unbounded horizon sentinel
     assert s82.t_guar(1.0, 1.0, 0.01, 1.0) == s82.HORIZON_INF
+
+
+def test_adapted_metric_on_symmetric_matrix_recovers_spectral_norm():
+    # For a single symmetric matrix, the optimal constant metric gives Lambda = sigma_max = |max eig|.
+    A = np.array([[1.3, 0.0], [0.0, 0.7]], dtype=np.float64)
+    jacs = np.stack([A, A, A])
+    P, Lam, _ = s82.adapted_metric(jacs)
+    assert abs(Lam - 1.3) < 1e-2
+    # P is SPD
+    assert np.all(np.linalg.eigvalsh(P) > 0)
+
+
+def test_adapted_metric_beats_euclidean_on_rotated_expansion():
+    # A non-normal matrix: Euclidean op-norm overestimates; the adapted metric tightens toward rho(A)=1.2.
+    A = np.array([[1.2, 5.0], [0.0, 1.2]], dtype=np.float64)
+    jacs = np.stack([A, A])
+    P, Lam, _ = s82.adapted_metric(jacs)
+    assert Lam < np.linalg.norm(A, 2) - 1e-3        # strictly better than Euclidean
+    assert Lam >= 1.2 - 1e-2                          # cannot beat the spectral radius
