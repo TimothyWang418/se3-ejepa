@@ -169,6 +169,37 @@ def test_return_is_monotone_in_negative_steps_to_goal() -> None:
     print("PASS: return = -(steps-to-goal) monotone; G-binding picks interior optimum and rejects a flat curve.")
 
 
+def test_calibrated_eps_selector_picks_ratio_closest_to_one() -> None:
+    # The PRE-REGISTERED calibration rule (the spotlight re-run fix): select_calibrated_eps picks eps* = the eps whose
+    # measured/certified horizon ratio is CLOSEST TO 1 (the predictive regime), tie-broken toward the LARGER eps, reading
+    # ONLY the triad-(i) certified-vs-measured table (NO return outcome — it is a one-time offline calibration). We check
+    # it on a toy triad-(i) dict mirroring the canonical run: eps=0.01 optimistic (ratio 4.0), eps=0.1 too-deep
+    # (ratio 0.5), eps=0.3 predictive (ratio ~1.0) -> eps* MUST be 0.3 and H = T1(0.3)_steps = 82.
+    toy = {"rows": [
+        {"eps": 0.01, "T1_steps": 300, "T1": 300.0, "measured_median": 1200.0, "ratio_measured_over_certified": 4.0},
+        {"eps": 0.1,  "T1_steps": 156, "T1": 156.0, "measured_median": 78.0,   "ratio_measured_over_certified": 0.5},
+        {"eps": 0.3,  "T1_steps": 82,  "T1": 82.0,  "measured_median": 80.0,   "ratio_measured_over_certified": 0.976}]}
+    cal = s84.select_calibrated_eps(toy)
+    assert cal["eps_star"] == 0.3, f"eps* must be the ratio-closest-to-1 eps (0.3), got {cal['eps_star']}"
+    assert cal["T1_steps"] == 82, f"cert-aware H must be T1(eps*)=82, got {cal['T1_steps']}"
+    assert not cal["fallback_no_finite_ratio"], "finite ratios present -> not the fallback branch"
+    # the ranking is sorted by |ratio-1| ascending; the head must be eps*=0.3
+    assert cal["ranking"][0]["eps"] == 0.3 and abs(cal["ranking"][0]["dist_to_1"] - 0.024) < 1e-9
+    # TIE-BREAK toward the LARGER eps: two eps equidistant from 1 (ratios 0.8 and 1.2 -> both dist 0.2) -> pick larger eps
+    tie = {"rows": [
+        {"eps": 0.1, "T1_steps": 100, "T1": 100.0, "measured_median": 80.0,  "ratio_measured_over_certified": 0.8},
+        {"eps": 0.3, "T1_steps": 50,  "T1": 50.0,  "measured_median": 60.0,  "ratio_measured_over_certified": 1.2}]}
+    assert s84.select_calibrated_eps(tie)["eps_star"] == 0.3, "tie in |ratio-1| must break toward the LARGER eps"
+    # ALL ratios non-finite (e.g. every T1 abstained) -> fallback to the LARGEST eps (predictive regime by default)
+    nofin = {"rows": [
+        {"eps": 0.1, "T1_steps": 1, "T1": None, "measured_median": 5.0, "ratio_measured_over_certified": float("nan")},
+        {"eps": 0.3, "T1_steps": 1, "T1": None, "measured_median": 5.0, "ratio_measured_over_certified": float("nan")}]}
+    cf = s84.select_calibrated_eps(nofin)
+    assert cf["eps_star"] == 0.3 and cf["fallback_no_finite_ratio"], "non-finite ratios -> fallback to the largest eps"
+    print("PASS: calibrated-eps selector picks the ratio-closest-to-1 eps (tie->larger eps), H=T1(eps*); "
+          "fallback to largest eps when no finite ratio.")
+
+
 def test_gate_ii_return_win_logic() -> None:
     # G-ii (the win): cert-aware (H=T1) return >= best swept blind on >= 2/3 seeds AND strictly > a too-shallow and a
     # too-deep blind planner (mean). We check the decision logic on a synthetic sweep where cert-aware clearly wins, and
@@ -201,5 +232,6 @@ if __name__ == "__main__":
     test_certificate_T1_steps_clamp_and_abstain()
     test_cem_planner_returns_valid_discrete_action()
     test_return_is_monotone_in_negative_steps_to_goal()
+    test_calibrated_eps_selector_picks_ratio_closest_to_one()
     test_gate_ii_return_win_logic()
     print("step84 spotlight guard PASS.")

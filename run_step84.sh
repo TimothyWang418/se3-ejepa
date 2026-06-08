@@ -74,11 +74,14 @@ g0 = eq.get("G0", {}) or {}
 gb = eq.get("G_binding", {}) or {}
 gii = eq.get("G_ii", {}) or {}
 print(f"verdict: {d.get('verdict','?')}")
-print(f"equi WM: lambda1={cert.get('lambda1'):.4f} CI={cert.get('lambda1_ci')} "
-      f"T1_steps={cert.get('T1_steps')} route={cert.get('route')} relMSE={eq.get('one_step_relmse'):.3e}")
+print(f"equi WM: lambda1={cert.get('lambda1'):.4f} CI={cert.get('lambda1_ci')} route={cert.get('route')} "
+      f"relMSE={eq.get('one_step_relmse'):.3e}")
+# the PRE-REGISTERED calibrated-eps planning rule: plan at T1 of the eps where certified ~ measured
+print(f"CALIBRATED eps*={eq.get('eps_star')} -> cert-aware plan depth H=T1(eps*)={eq.get('T1_steps_calibrated')} "
+      f"(vs fixed-eps={eq.get('fixed_eps')} -> T1={eq.get('T1_steps_fixed_eps')})")
 print(f"gates(equi): G0={g0.get('passed')} (CI-strong={g0.get('strong')})  "
       f"G-binding={gb.get('passed')} (H*={gb.get('H_star')}, spread={gb.get('spread'):.1f}, flat={gb.get('flat')})  "
-      f"G-ii={gii.get('passed')}")
+      f"G-ii={gii.get('passed')} (cert-aware ret={gii.get('cert_mean')}, best-blind ret={gii.get('best_blind_mean')})")
 ti = (eq.get('triad_i') or {}).get('rows', [])
 for r in ti:
     print(f"  eps={r['eps']}: certified T1={r['T1_steps']} vs measured med={r['measured_median']:.0f} "
@@ -86,8 +89,8 @@ for r in ti:
 neq = d.get("non_equivariant", {}) or {}
 if neq:
     nc = neq.get("cert", {}) or {}; ng = neq.get("G_binding", {}) or {}; ngii = neq.get("G_ii", {}) or {}
-    print(f"non-equi WM (contrast): lambda1={nc.get('lambda1'):.4f} T1_steps={nc.get('T1_steps')} "
-          f"G-binding={ng.get('passed')} G-ii={ngii.get('passed')}")
+    print(f"non-equi WM (contrast): lambda1={nc.get('lambda1'):.4f} eps*={neq.get('eps_star')} "
+          f"T1(eps*)={neq.get('T1_steps_calibrated')} G-binding={ng.get('passed')} G-ii={ngii.get('passed')}")
 PYEOF
 )
 echo "$SUMMARY"
@@ -114,5 +117,26 @@ Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
 EOF
 ok "committed step84 results"
 
-git push && ok "pushed" || fail "git push failed (push manually so the controller can pull)"
+# 5. push (the 3080 commits + pushes so the controller can pull). The 3080 box's GitHub auth uses DEPRECATED password
+#    auth and may fail — if it does, don't silently swallow it: print a BIG clear banner + cat the JSON so the operator
+#    can copy the [step84] console block + the JSON back to Claude (the controller pushes manually). We do NOT touch git
+#    config here; the commit is already local, so nothing is lost on a failed push.
+if git push; then
+  ok "pushed"
+else
+  PUSH_RC=$?
+  echo ""
+  echo -e "${RED}########################################################################################${NC}"
+  echo -e "${RED}##  PUSH FAILED (git push exit $PUSH_RC) — the commit IS saved locally, NOTHING is lost.   ##${NC}"
+  echo -e "${RED}##                                                                                    ##${NC}"
+  echo -e "${RED}##  >>> copy the [step84] console block ABOVE + the JSON BELOW back to Claude <<<       ##${NC}"
+  echo -e "${RED}##  (this box's GitHub auth uses deprecated password auth; the controller will push     ##${NC}"
+  echo -e "${RED}##   manually — do NOT change git config on this box).                                  ##${NC}"
+  echo -e "${RED}########################################################################################${NC}"
+  echo ""
+  echo "----- BEGIN papers/figures/step84_certified_control_benchmark.json -----"
+  cat "${FIG}.json" || warn "(could not cat ${FIG}.json)"
+  echo ""
+  echo "----- END papers/figures/step84_certified_control_benchmark.json -----"
+fi
 echo "== done =="

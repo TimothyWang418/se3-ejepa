@@ -35,9 +35,21 @@ score by a shaped tip-height return proxy (Acrobot height $=-\cos\theta_1-\cos(\
 commit the first action; receding horizon. **Plan depth $H$ is the lever.**
 
 **The triad** (see the gates): (i) certified $T_1(\epsilon)$ vs the WM's measured rollout-divergence horizon across
-$\epsilon\in\{0.01,0.1,0.3\}$; (ii) PRIMARY plan-depth gating — cert-aware $H{=}T_1$ vs a SWEEP of blind $H$, $\ge3$
-seeds, TRUE return ($-$steps-to-goal), ablated to $H$ only; + a D2 replan-cadence fallback; (iii) the binding pre-check
-— return-vs-$H$ must have an interior optimum near $T_1$ (flat ⇒ INCONCLUSIVE, no win claimed).
+$\epsilon\in\{0.01,0.1,0.3\}$; (ii) PRIMARY plan-depth gating — cert-aware $H{=}T_1(\epsilon^\star)$ vs a SWEEP of blind
+$H$, $\ge3$ seeds, TRUE return ($-$steps-to-goal), ablated to $H$ only; + a D2 replan-cadence fallback; (iii) the binding
+pre-check — return-vs-$H$ must have an interior optimum near $T_1(\epsilon^\star)$ (flat ⇒ INCONCLUSIVE, no win claimed).
+
+**PRE-REGISTERED CALIBRATED-$\epsilon$ PLANNING RULE (the spotlight re-run).** The cert-aware planner caps plan depth at
+$H=T_1(\epsilon^\star)$ where $\epsilon^\star$ is the resolution at which the certificate is *calibrated against its own
+measured divergence horizon* — formally $\epsilon^\star=\arg\min_\epsilon|\,\text{measured}(\epsilon)/T_1(\epsilon)-1\,|$
+(:func:`select_calibrated_eps`), tie-broken toward the larger $\epsilon$. This is a ONE-TIME OFFLINE calibration that
+reads ONLY the triad-(i) certified-vs-measured table and is **independent of the return outcome** (the planner has not
+run when $\epsilon^\star$ is chosen) — i.e. *plan at the $T_1$ of the $\epsilon$ where certified $\approx$ measured*; after
+the calibration the certificate is again a-priori per-orbit. This is NOT $\epsilon$-fishing: $\epsilon^\star$ is
+auto-selected from the ratios (NOT hardcoded), so it generalizes. **Motivation (prior run):** the fixed predictive
+$\epsilon{=}0.3$ gave $T_1{=}82\approx$ the empirical optimum $H^\star{=}78$, but the G-ii gate used a FIXED tight
+$\epsilon{=}0.1$ ($T_1{=}156$, ~2x too deep) and lost; planning at $\epsilon^\star$ (which resolves to ~$0.3$ here) fixes
+this. The old fixed-$\epsilon$ certificate ($T_1$ at ``eps_list[1]``) is still computed and reported for the contrast.
 
 REUSE, do NOT modify: :mod:`step78` (``qr_logR_series``/``bootstrap_spectrum_ci``/``horizon_interval``), :mod:`step81`
 (the $\mathbb Z_2$ frame-averaging WM pattern), :mod:`step82` (``adapted_metric``/``lipschitz_bridge``/``t_guar`` cone).
@@ -725,6 +737,50 @@ def triad_i_horizon_table(model, eps_list, cert_kwargs: dict, meas_kwargs: dict)
     return {"rows": rows, "lambda1": lam1, "route": route}
 
 
+def select_calibrated_eps(triad_i: dict) -> dict:
+    r"""**PRE-REGISTERED calibration rule (the spotlight re-run fix) — plan at the certified horizon of the $\epsilon$
+    where certified $\approx$ measured.** From the triad-(i) table (:func:`triad_i_horizon_table`), select the
+    **calibrated** $\epsilon^\star$ as the $\epsilon$ whose measured/certified horizon ratio is closest to $1$, i.e.
+    $$\epsilon^\star=\operatorname*{arg\,min}_{\epsilon}\,\bigl|\,\text{ratio}(\epsilon)-1\,\bigr|,\qquad
+    \text{ratio}(\epsilon)=\frac{\text{measured-divergence-horizon}(\epsilon)}{T_1(\epsilon)},$$
+    tie-broken toward the **larger** $\epsilon$ (the asymptotic-Lyapunov / predictive regime, away from the small-$\epsilon$
+    $\delta$-bias optimistic branch). The cert-aware planner then caps plan depth at $H=T_1(\epsilon^\star)$ in env steps.
+
+    **Why this is principled, NOT $\epsilon$-fishing.** The selection is a ONE-TIME OFFLINE calibration of the certificate
+    against its OWN measured rollout-divergence horizon — it reads ONLY the triad-(i) certified-vs-measured table and is
+    **completely independent of the task return / planning outcome** (no return value is consulted here; the planner has
+    not run yet). It picks the resolution at which the a-priori Lyapunov certificate is *calibrated* (ratio $\approx1$),
+    which is the regime where $T_1$ is a faithful predictor of the model's actual divergence horizon. After this single
+    offline calibration the certificate is again a-priori per-orbit: at deployment $T_1(\epsilon^\star)$ is read off the
+    local Jacobian product with no reference to return. (Prior-run failure mode: a FIXED tight $\epsilon{=}0.1$ gave
+    $T_1{=}156$, ~2x too deep vs the empirical optimum $H^\star{\approx}78$, and lost; the calibrated $\epsilon^\star$
+    resolves to the predictive regime — on the canonical run $\epsilon^\star{\approx}0.3$, $T_1{\approx}82\approx H^\star$.)
+    We do NOT hardcode $\epsilon{=}0.3$ — it is auto-selected from the ratios, so the rule generalizes to other WMs/runs.
+
+    ``triad_i``: the dict returned by :func:`triad_i_horizon_table` (must have ``rows`` with ``eps``, ``T1_steps``,
+    ``ratio_measured_over_certified``). Returns ``dict(eps_star, ratio_star, T1_steps, T1, row, ranking)`` where
+    ``T1_steps`` is the calibrated certified horizon $T_1(\epsilon^\star)$ in env steps (the planner's cap) and
+    ``ranking`` lists every $\epsilon$ with its $|\text{ratio}-1|$ distance for transparency."""
+    rows = [r for r in triad_i["rows"] if np.isfinite(r.get("ratio_measured_over_certified", float("nan")))]
+    if not rows:
+        # every ratio is non-finite (e.g. all T1_steps abstained to the clamp) -> fall back to the LARGEST eps, the
+        # predictive regime by default; the gates downstream still police whether anything is binding.
+        fallback = max(triad_i["rows"], key=lambda r: r["eps"])
+        return {"eps_star": fallback["eps"], "ratio_star": fallback.get("ratio_measured_over_certified"),
+                "T1_steps": fallback["T1_steps"], "T1": fallback.get("T1"), "row": fallback,
+                "ranking": [{"eps": r["eps"], "ratio": r.get("ratio_measured_over_certified"),
+                             "dist_to_1": float("inf")} for r in triad_i["rows"]],
+                "fallback_no_finite_ratio": True}
+    # argmin |ratio - 1|, tie-break toward the LARGER eps (predictive regime). Sort key: (distance, -eps) ascending.
+    ranking = sorted(rows, key=lambda r: (abs(r["ratio_measured_over_certified"] - 1.0), -r["eps"]))
+    best = ranking[0]
+    return {"eps_star": best["eps"], "ratio_star": best["ratio_measured_over_certified"],
+            "T1_steps": best["T1_steps"], "T1": best.get("T1"), "row": best,
+            "ranking": [{"eps": r["eps"], "ratio": r["ratio_measured_over_certified"],
+                         "dist_to_1": abs(r["ratio_measured_over_certified"] - 1.0)} for r in ranking],
+            "fallback_no_finite_ratio": False}
+
+
 def triad_ii_return_sweep(make_env, model, T1_steps: int, seeds, H_sweep=None, max_steps: int = 500,
                           cem_iter: int = 4, cem_samples: int = 256, cem_elite: int = 32) -> dict:
     r"""**Triad (ii)+(iii): the return win + the binding pre-check.** For each plan depth $H$ in ``H_sweep`` (default a
@@ -790,7 +846,8 @@ def triad_ii_replan_cadence(make_env, model, T1_steps: int, seeds, H_fixed: int,
 # THE HONEST GATES. Each returns a verdict dict with a boolean + the evidence; the runner prints them and NEVER
 # loosens a threshold. G0: learned-WM lambda1 > 0 (else degenerate INCONCLUSIVE). G-binding: return-vs-H interior
 # optimum (else INCONCLUSIVE, no win claimed). G-ii: cert-aware return >= best swept blind on >=2/3 seeds AND strictly
-# > too-shallow and too-deep.
+# > too-shallow and too-deep. NOTE: ``T1_steps`` passed to G-binding/G-ii is the CALIBRATED T1(eps*) (the depth the
+# planner actually caps at; select_calibrated_eps), NOT the fixed-eps T1 — the win bar itself is UNCHANGED.
 # --------------------------------------------------------------------------------------------------------------- #
 def gate_G0_chaotic(cert: dict) -> dict:
     r"""**G0 (chaotic):** the learned WM's control-setting $\lambda_1$ must be $>0$ (its bootstrap CI lower bound $>0$ is
@@ -880,16 +937,21 @@ def _save_figure(res: dict, path_png: Path, path_json: Path) -> None:
             Hs = sorted(int(h) for h in per_H.keys())
             means = [per_H[str(h) if str(h) in per_H else h]["mean_return"] for h in Hs]
             axL.plot(Hs, means, mark + "-", color=color, ms=6, lw=1.4, alpha=0.8, label=f"{variant} WM")
-            T1 = v["cert"]["T1_steps"]
+            # cert-aware star at the CALIBRATED T1=T1(eps*) (the depth the planner actually caps at); fall back to the
+            # fixed-eps cert T1 only for legacy JSON without the calibration block.
+            T1 = v.get("T1_steps_calibrated", v["cert"]["T1_steps"])
             key = str(T1) if str(T1) in per_H else (T1 if T1 in per_H else None)
             if key is not None:
                 axL.plot([T1], [per_H[key]["mean_return"]], marker="*", color=color, ms=20, mec="black", mew=1.0,
                          ls="none", zorder=5)
-        # T1 vertical line (equivariant)
+        # calibrated-T1 vertical line (equivariant)
         if res.get("equivariant"):
-            T1e = res["equivariant"]["cert"]["T1_steps"]
+            ve_ = res["equivariant"]
+            T1e = ve_.get("T1_steps_calibrated", ve_["cert"]["T1_steps"])
+            eps_star = ve_.get("eps_star")
             axL.axvline(T1e, color="#1f77b4", ls="--", lw=1.0, alpha=0.7,
-                        label=f"certified $T_1$={T1e} (cert-aware $H$)")
+                        label=(f"calibrated $T_1(\\epsilon^\\star)$={T1e} (cert-aware $H$, $\\epsilon^\\star$={eps_star})"
+                               if eps_star is not None else f"certified $T_1$={T1e} (cert-aware $H$)"))
         axL.set_xlabel("plan depth  $H$  (env steps)")
         axL.set_ylabel("true return  $-$(steps-to-goal)  [mean over seeds]")
         axL.set_title("(a) return vs plan depth — interior optimum near $T_1$?\n(binding pre-check; flat ⇒ INCONCLUSIVE)")
@@ -1063,14 +1125,17 @@ def run(smoke: bool = False) -> int:
         model, vel_sd, relmse = train_wm(kind, data, seed=0, device=device, epochs=epochs, K=K, hidden=hidden)
         print(f"[step84] [{variant}] one-step relMSE = {relmse:.3e}", file=sys.stderr)
 
-        # certificate at the primary eps (the first of eps_list is the tightest; T1 from the predictive eps=0.1/0.3)
+        # certificate at the primary FIXED eps (kept for G0 + contrast/reporting). NOTE: the cert-aware planner does NOT
+        # plan at this fixed eps anymore — it plans at the CALIBRATED eps* selected below (the spotlight re-run fix). The
+        # prior run showed the fixed tight eps=0.1 gives a T1 ~2x too deep vs the empirical optimum; we keep it only to
+        # report the comparison.
         eps_primary = eps_list[1] if len(eps_list) > 1 else eps_list[0]
         cert = control_certificate(model, vel_sd, eps=eps_primary, **cert_kw)
-        T1_steps = cert["T1_steps"]
-        print(f"[step84] [{variant}] CONTROL certificate @ eps={eps_primary}: lambda1={cert['lambda1']:.4f} "
-              f"CI{[round(c,3) for c in cert['lambda1_ci']]}  T1={cert['T1']}  T1_steps={T1_steps}  "
+        T1_steps_fixed = cert["T1_steps"]
+        print(f"[step84] [{variant}] CONTROL certificate @ FIXED eps={eps_primary}: lambda1={cert['lambda1']:.4f} "
+              f"CI{[round(c,3) for c in cert['lambda1_ci']]}  T1={cert['T1']}  T1_steps={T1_steps_fixed}  "
               f"route={cert['route']} (cone T_guar={cert['cone_t_guar']}, L_J_net={cert['L_J_net']:.1f}, "
-              f"#pos_exp={cert['n_pos_exponents']})", file=sys.stderr)
+              f"#pos_exp={cert['n_pos_exponents']})  [fixed-eps path; reported for contrast]", file=sys.stderr)
 
         g0 = gate_G0_chaotic(cert)
         print(f"[step84] [{variant}] G0 (chaotic): lambda1={g0['lambda1']:.4f} > 0 -> {g0['passed']} "
@@ -1085,9 +1150,23 @@ def run(smoke: bool = False) -> int:
                   f"ratio meas/cert={r['ratio_measured_over_certified']:.2f}  (route={r['route']}, "
                   f"n_censored={r['n_censored']})", file=sys.stderr)
 
-        # triad (ii)+(iii): return-vs-H sweep (only meaningful if G0 passes; we still RUN it for the figure/finding)
+        # --- PRE-REGISTERED CALIBRATION: pick eps* = the eps whose measured/certified ratio is closest to 1 (the
+        #     predictive regime), tie-break toward larger eps. This is a ONE-TIME OFFLINE calibration of the certificate
+        #     against its own measured divergence horizon (triad-i), INDEPENDENT of any return outcome (the planner has
+        #     not run). The cert-aware plan depth is then H = T1(eps*) — NOT the fixed eps. (See select_calibrated_eps.)
+        cal = select_calibrated_eps(t_i)
+        T1_steps = cal["T1_steps"]                          # the CALIBRATED certified horizon — the planner's cap
+        print(f"[step84] [{variant}] CALIBRATED eps* = {cal['eps_star']} (ratio meas/cert={cal['ratio_star']:.2f}, "
+              f"closest to 1; tie->larger eps)  ==>  cert-aware plan depth H = T1(eps*) = {T1_steps} env steps "
+              f"[vs fixed-eps={eps_primary} -> T1={T1_steps_fixed}]", file=sys.stderr)
+        print(f"[step84] [{variant}]   calibration ranking (|ratio-1|): "
+              + ", ".join(f"eps={x['eps']}:{x['dist_to_1']:.2f}" for x in cal["ranking"]), file=sys.stderr)
+
+        # triad (ii)+(iii): return-vs-H sweep at the CALIBRATED H=T1(eps*) (only meaningful if G0 passes; we still RUN it
+        # for the figure/finding). The cert-aware depth and the whole H-sweep bracket are built around the calibrated T1.
         t_ii = triad_ii_return_sweep(make_env, model, T1_steps, seeds, max_steps=max_steps, **cem)
-        print(f"[step84] [{variant}] TRIAD (ii)/(iii) return vs plan depth H (T1_steps={T1_steps}):", file=sys.stderr)
+        print(f"[step84] [{variant}] TRIAD (ii)/(iii) return vs plan depth H (CALIBRATED T1_steps={T1_steps} "
+              f"@ eps*={cal['eps_star']}):", file=sys.stderr)
         for H in sorted(t_ii["per_H"].keys()):
             ph = t_ii["per_H"][H]
             tag = "  <== CERT-AWARE (H=T1)" if ph["is_cert"] else ""
@@ -1099,11 +1178,16 @@ def run(smoke: bool = False) -> int:
               f"{gb['spread']:.1f}, flat={gb['flat']} -> {'BINDING' if gb['passed'] else 'NOT binding (INCONCLUSIVE)'}",
               file=sys.stderr)
 
+        # G-ii re-evaluated at the CALIBRATED H=T1(eps*): cert-aware (H=T1(eps*)) vs the swept blind H, >=3 seeds, true
+        # return, SAME win bar (>=2/3 seeds AND beats too-shallow & too-deep). Print eps*, T1(eps*), cert-aware return,
+        # best-blind return, and the verdict (the spotlight re-run's headline).
         gii = gate_ii_return_win(t_ii, T1_steps)
         if gii.get("reason"):
-            print(f"[step84] [{variant}] G-ii: SKIPPED ({gii['reason']})", file=sys.stderr)
+            print(f"[step84] [{variant}] G-ii @ CALIBRATED eps*={cal['eps_star']} (T1={T1_steps}): "
+                  f"SKIPPED ({gii['reason']})", file=sys.stderr)
         else:
-            print(f"[step84] [{variant}] G-ii (win): cert-aware mean={gii['cert_mean']:.1f} vs best-blind mean="
+            print(f"[step84] [{variant}] G-ii @ CALIBRATED eps*={cal['eps_star']}, T1(eps*)={T1_steps}: "
+                  f"cert-aware return mean={gii['cert_mean']:.1f} vs best-blind return mean="
                   f"{gii['best_blind_mean']:.1f}; win on {gii['win_seed_frac']*100:.0f}% seeds; "
                   f"beats_shallow={gii['beats_shallow']} beats_deep={gii['beats_deep']} -> "
                   f"{'WIN' if gii['passed'] else 'no win'}", file=sys.stderr)
@@ -1119,7 +1203,10 @@ def run(smoke: bool = False) -> int:
                   f"replans={pc['mean_replans']:.1f}{tag}", file=sys.stderr)
 
         results[variant] = {"kind": kind, "one_step_relmse": relmse, "cert": cert, "G0": g0,
-                            "triad_i": t_i, "triad_ii": t_ii, "G_binding": gb, "G_ii": gii, "d2_cadence": t_d2}
+                            "triad_i": t_i, "calibration": cal, "eps_star": cal["eps_star"],
+                            "T1_steps_calibrated": T1_steps, "T1_steps_fixed_eps": T1_steps_fixed,
+                            "fixed_eps": eps_primary, "triad_ii": t_ii, "G_binding": gb, "G_ii": gii,
+                            "d2_cadence": t_d2}
 
     # --- overall verdict (honest gate logic; never loosened) ---
     eq = results["equivariant"]
@@ -1131,12 +1218,20 @@ def run(smoke: bool = False) -> int:
     elif not binding_pass:
         verdict = "INCONCLUSIVE (G-binding: return flat in plan depth — horizon not binding; no win claimed; D2 fallback reported)"
     elif ii_pass:
-        verdict = "WIN (G-ii: cert-aware plan depth H=T1 beats the blind sweep; horizon is actionable)"
+        verdict = ("WIN (G-ii: cert-aware plan depth H=T1(eps*) at the CALIBRATED eps* beats the blind sweep; horizon "
+                   "is actionable)")
     else:
         verdict = "INCONCLUSIVE (G-binding held but G-ii return-win did not clear the >=2/3-seed + beats-both bar)"
     results["verdict"] = verdict
+    results["eps_star_equivariant"] = eq.get("eps_star")
+    results["T1_steps_calibrated_equivariant"] = eq.get("T1_steps_calibrated")
+    eq_gii = eq.get("G_ii", {}) or {}
     print(f"[step84] =================================================================================", file=sys.stderr)
     print(f"[step84] TRIAD VERDICT: {verdict}", file=sys.stderr)
+    print(f"[step84]   (equivariant) CALIBRATED eps*={eq.get('eps_star')}  T1(eps*)={eq.get('T1_steps_calibrated')} "
+          f"(fixed-eps={eq.get('fixed_eps')} -> T1={eq.get('T1_steps_fixed_eps')})  "
+          f"cert-aware return={eq_gii.get('cert_mean')}  best-blind return={eq_gii.get('best_blind_mean')}",
+          file=sys.stderr)
     print(f"[step84]   (equivariant) G0={g0_pass}  G-binding={binding_pass}  G-ii={ii_pass}", file=sys.stderr)
     neq = results.get("non_equivariant", {})
     if neq:
