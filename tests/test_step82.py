@@ -86,3 +86,144 @@ def test_run_true_henon_smoke_is_sound_and_non_vacuous():
     assert out["t_guar"] >= 1
     # certified exponent brackets the textbook Henon exponent from ABOVE (sound: log Lambda_cert >= lambda_1)
     assert math.log(out["lambda_cert"]) >= 0.419 - 0.05
+
+
+# =============================================================================================================== #
+# Phase A' — the TIGHT certificate on the uniformly-hyperbolic cat map. Tests stay fast and training-free.
+# =============================================================================================================== #
+
+# --- A'-1: linear cat map -------------------------------------------------------------------------------------- #
+def test_cat_jacobian_is_constant_A():
+    # The cat-map Jacobian is the constant matrix A = [[2,1],[1,1]] at every torus point (the mod-1 wrap is a
+    # translation and contributes nothing to Dphi).
+    A = np.array([[2.0, 1.0], [1.0, 1.0]])
+    rng = np.random.default_rng(0)
+    for _ in range(10):
+        s = rng.uniform(0.0, 1.0, size=2)
+        assert np.max(np.abs(s82.cat_jac(s) - A)) < 1e-14
+
+
+def test_cat_jacobian_matches_finite_difference_interior():
+    # Finite-diff at interior points (away from the mod-1 seam) recovers A.
+    rng = np.random.default_rng(1)
+    for _ in range(10):
+        s = rng.uniform(0.2, 0.8, size=2)          # interior: no wrap within +-1e-6
+        fd = np.zeros((2, 2))
+        h = 1e-6
+        for j in range(2):
+            sp = s.copy(); sp[j] += h
+            sm = s.copy(); sm[j] -= h
+            fd[:, j] = (s82.cat_map(sp) - s82.cat_map(sm)) / (2 * h)
+        assert np.max(np.abs(s82.cat_jac(s) - fd)) < 1e-7
+
+
+def test_cat_lambda1_is_analytic_log_golden():
+    # lambda_1 = log((3+sqrt5)/2) exactly.
+    assert abs(s82.CAT_LAMBDA1 - math.log((3.0 + math.sqrt(5.0)) / 2.0)) < 1e-15
+
+
+def test_cat_lambda1_matches_benettin_estimate():
+    # A hand-rolled Benettin power-iteration estimate of lambda_1 matches the analytic value to ~1e-6
+    # (constant Jacobian => the running log-stretch converges to log rho(A) with no fluctuation).
+    est = s82.benettin_lambda1(lambda z: s82.cat_jac(z), s82.cat_map, s0=np.array([0.3, 0.7]),
+                               n_steps=3000, warmup=100, seed=0)
+    assert abs(est - s82.CAT_LAMBDA1) < 1e-5
+
+
+# --- A'-2: perturbed cat map + cone margin --------------------------------------------------------------------- #
+def test_perturbed_cat_jacobian_matches_finite_difference():
+    delta = 0.1
+    rng = np.random.default_rng(2)
+    for _ in range(15):
+        s = rng.uniform(0.15, 0.85, size=2)        # interior to dodge the seam
+        J = s82.perturbed_cat_jac(s, delta)
+        fd = np.zeros((2, 2))
+        h = 1e-7
+        for j in range(2):
+            sp = s.copy(); sp[j] += h
+            sm = s.copy(); sm[j] -= h
+            fd[:, j] = (s82.perturbed_cat_map(sp, delta) - s82.perturbed_cat_map(sm, delta)) / (2 * h)
+        assert np.max(np.abs(J - fd)) < 1e-7
+
+
+def test_perturbed_cat_is_area_preserving():
+    # det Dphi == 1 for every x and any delta (the perturbation only shears).
+    rng = np.random.default_rng(3)
+    for delta in (0.05, 0.1, 0.3):
+        for _ in range(8):
+            s = rng.uniform(0.0, 1.0, size=2)
+            assert abs(np.linalg.det(s82.perturbed_cat_jac(s, delta)) - 1.0) < 1e-12
+
+
+def test_perturbed_cat_jac_lipschitz_is_analytic_and_dominates_local_slopes():
+    delta = 0.1
+    L = s82.perturbed_cat_jac_lipschitz(delta)
+    assert abs(L - 2.0 * math.sqrt(2.0) * math.pi * delta) < 1e-12     # analytic value
+    # The bound must dominate every empirical finite-difference slope ||Dphi(z)-Dphi(z')|| / ||z-z'|| on a grid.
+    xs = np.linspace(0.0, 1.0, 200, endpoint=False)
+    worst = 0.0
+    for i in range(len(xs) - 1):
+        za = np.array([xs[i], 0.3]); zb = np.array([xs[i + 1], 0.3])
+        slope = np.linalg.norm(s82.perturbed_cat_jac(za, delta) - s82.perturbed_cat_jac(zb, delta), 2) \
+            / np.linalg.norm(za - zb)
+        worst = max(worst, slope)
+    assert worst <= L + 1e-9                       # sound: the analytic L_J upper-bounds all sampled slopes
+
+
+def test_cone_margin_positive_on_catmap_negative_on_nonhyperbolic():
+    # Cat map: a single golden-direction cone is forward-invariant and uniformly expanding => margin > 0.
+    rng = np.random.default_rng(4)
+    cat_jacs = np.stack([s82.cat_jac(rng.uniform(0, 1, size=2)) for _ in range(50)])
+    assert s82.cone_margin(cat_jacs) > 0.0
+    # Perturbed cat (delta=0.1): still Anosov => margin > 0.
+    pert_jacs = np.stack([s82.perturbed_cat_jac(rng.uniform(0, 1, size=2), 0.1) for _ in range(50)])
+    assert s82.cone_margin(pert_jacs) > 0.0
+    # A rotation by 90 degrees has NO invariant cone (it rotates every direction) and is not expanding => margin <= 0.
+    R = np.array([[0.0, -1.0], [1.0, 0.0]])
+    assert s82.cone_margin(np.stack([R, R, R])) <= 0.0
+    # An identity set is non-expanding (margin <= 0): no uniform-hyperbolic expansion.
+    assert s82.cone_margin(np.stack([np.eye(2)] * 3)) <= 0.0
+
+
+# --- A'-3: torus horizon + the tight runs ---------------------------------------------------------------------- #
+def test_true_horizon_torus_uses_mod1_distance():
+    # Two points 0.02 apart on the circle but 0.98 apart in raw coords must register as CLOSE (toroidal), so a
+    # stationary identity map never "crosses" eps_res=0.4.
+    out = s82.true_horizon_torus(lambda z: z % 1.0, eps=0.01, eps_res=0.4, n_starts=50, seed=0, max_t=20)
+    assert out == 20.0                              # identity: never separates => pinned at the budget
+
+
+def test_run_true_catmap_is_TIGHT_and_sound():
+    # THE tight anchor. Linear cat map: P=I, kappa=1, L_J=0 => certified exponent == lambda_1 to machine precision.
+    out = s82.run_true_catmap(n_samples=1500, seed=0, eps=0.01, eps_res=0.4)
+    # Tightness gate (the point of A'): ratio <= 1.02 (analytic, essentially exact).
+    assert out["tightness_ratio"] <= 1.02
+    assert abs(out["log_lambda_cert"] - s82.CAT_LAMBDA1) < 1e-6      # exact to machine precision
+    # Symmetric A => optimal P = I => kappa = 1. The Nelder-Mead solve converges to P=I within xatol=1e-8, so kappa is
+    # 1 to ~5 decimals (a tiny optimizer residual, NOT a real ill-conditioning); the certified exponent above is exact
+    # regardless because it is the honest op-norm of the returned P. A 1e-4 tolerance asserts "P = I".
+    assert abs(out["kappa"] - 1.0) < 1e-4
+    # Soundness: certified exponent is an UPPER bound on lambda_1; T_guar <= T_true on the torus.
+    assert out["sound_exponent"] is True
+    assert out["t_guar"] <= out["t_true"]
+    # Uniform hyperbolicity verified from the geometry.
+    assert out["anosov"] is True
+
+
+def test_run_true_perturbed_catmap_is_anosov_and_near_tight():
+    # The nonlinear upgrade: still Anosov, tightness ratio <= 1.3 (small analytic L_J slack).
+    out = s82.run_true_perturbed_catmap(delta=0.1, n_samples=1500, seed=0, eps=0.01, eps_res=0.4)
+    assert out["anosov"] is True
+    assert out["cone_margin"] > 0.0
+    assert out["tightness_ratio"] <= 1.3
+    assert out["sound_exponent"] is True            # log Lambda_cert >= its own lambda_1
+    assert out["t_guar"] <= out["t_true"]
+
+
+def test_tightness_comparison_cat_tight_henon_loose():
+    cmp = s82.tightness_comparison(n_samples=2000, seed=0, eps=0.01)
+    cat = cmp["CatMap(linear)"]
+    hen = cmp["Henon(true)"]
+    assert cat["tightness_ratio"] <= 1.02           # cat map is tight
+    assert hen["tightness_ratio"] >= 2.0            # Henon is the loose (sound-but-conservative) companion
+    assert cat["anosov"] is True and hen["anosov"] is False

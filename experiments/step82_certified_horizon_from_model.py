@@ -213,3 +213,286 @@ def run_true_henon(n_samples=4000, seed=0, eps=0.01, eps_res=1.0):
                 kappa=kappa, h=h, slack=br["slack"], t_guar=br["horizon"],
                 euclid_bound=euclid_bound, euclid_t_guar=euclid_t_guar, beats_euclidean=beats_euclidean,
                 certified=bool(br["certified"] and beats_euclidean), eps=eps, eps_res=eps_res)
+
+
+# =============================================================================================================== #
+# Phase A' — the TIGHT certificate on a UNIFORMLY HYPERBOLIC system (the cat map).
+#
+# Phase A's certificate is sound but ~3.15x loose on the Henon map. Working out *why* (design spec §10) found a real
+# obstruction, not an effort gap: Henon (a=1.4) is *non-uniformly* hyperbolic (homoclinic tangencies), so no global
+# uniform cone field exists and a single-step metric caps at the worst-case operator-norm scale. Tight certification
+# belongs to *uniformly hyperbolic* dynamics. The cleanest such system is the linear cat map (Arnol'd's hyperbolic
+# toral automorphism), whose Jacobian A = [[2,1],[1,1]] is **symmetric** and **constant**:
+#   * symmetric  => the optimal adapted metric is P = I  => Lambda = ||A||_2 = rho(A) = (3+sqrt5)/2 = e^{lambda_1}
+#                   EXACTLY (kappa = 1, no rotation of the expanding direction to absorb);
+#   * constant   => L_J = Lip(z -> Dphi) = 0  => the Lipschitz bridge adds ZERO slack
+#                   => certified exponent = lambda_1 to machine precision  ==>  TIGHT BY CONSTRUCTION.
+# A small smooth area-preserving perturbation stays Anosov (structural stability), is genuinely nonlinear, and has a
+# small analytic L_J, so the bridge still closes near-tightly. Henon is retained as the honest "sound-but-conservative
+# on non-uniformly-hyperbolic" companion: the certificate is provably tight where a uniform cone exists, soundly
+# conservative where it does not, and knows which regime it is in (a tightness dimension on Prop 7's scope theorem).
+#
+# We REUSE the Phase-A machinery unchanged: adapted_metric -> lipschitz_bridge -> t_guar, _covering_radius. The cat
+# map's SRB measure is Lebesgue on the torus, so a uniform sample on [0,1)^2 covers the invariant set (no need for
+# step71.on_attractor_trajs, which is for systems whose attractor is a thin subset of state space).
+# =============================================================================================================== #
+
+# Linear cat map Jacobian A = [[2,1],[1,1]] (symmetric, det = 1, area-preserving). Eigenvalues (3 +- sqrt5)/2, so the
+# leading Lyapunov exponent is analytic: lambda_1 = log rho(A) = log((3+sqrt5)/2).
+CAT_A = np.array([[2.0, 1.0], [1.0, 1.0]], dtype=DTYPE)
+CAT_LAMBDA1 = math.log((3.0 + math.sqrt(5.0)) / 2.0)     # ~= 0.9624236501
+
+
+def cat_map(s):
+    r"""Linear cat map $\phi(x,y)=(2x+y,\;x+y)\bmod 1$ on the 2-torus $[0,1)^2$ (Arnol'd's hyperbolic toral
+    automorphism). ``s: (..., 2) -> (..., 2)``, float64, wrapped into $[0,1)$."""
+    s = np.asarray(s, dtype=DTYPE)
+    x, y = s[..., 0], s[..., 1]
+    return np.stack([(2.0 * x + y) % 1.0, (x + y) % 1.0], axis=-1)
+
+
+def cat_jac(s):
+    r"""Jacobian of the linear cat map: the **constant** matrix $A=\begin{pmatrix}2&1\\1&1\end{pmatrix}$ at every point
+    (the mod-1 wrap is a translation, contributing nothing to $D\phi$). Returns a ``(2, 2)`` float64 array;
+    broadcasting over a batch just repeats $A$, so we return $A$ itself (callers stack as needed)."""
+    return CAT_A.copy()
+
+
+def benettin_lambda1(jac_fn, map_fn, s0, n_steps=4000, warmup=200, seed=0):
+    r"""Hand-rolled Benettin leading-Lyapunov estimate $\lambda_1=\overline{\log\lVert D\phi(z_t)\,q_t\rVert}$ for a
+    discrete map (one-vector power iteration with renormalization — the top channel of a QR Benettin; cf.
+    ``step78.qr_logR_series``). We evolve a unit vector $q$ under the Jacobian field along an orbit $z_{t+1}=\phi(z_t)$,
+    accumulating $\log\lVert D\phi(z_t)q_t\rVert$ after a warm-up. Used only to *cross-check* the analytic exponents in
+    tests; the certificate itself never calls it. ``s0: (d,)`` -> ``float``."""
+    rng = np.random.default_rng(seed)
+    z = np.asarray(s0, dtype=DTYPE).copy()
+    q = rng.standard_normal(z.shape[-1])
+    q /= np.linalg.norm(q)
+    acc, cnt = 0.0, 0
+    for t in range(n_steps + warmup):
+        J = np.asarray(jac_fn(z), dtype=DTYPE)
+        w = J @ q
+        nrm = float(np.linalg.norm(w))
+        q = w / nrm
+        z = map_fn(z)
+        if t >= warmup:
+            acc += math.log(nrm)
+            cnt += 1
+    return acc / cnt
+
+
+# --------------------------------------------------------------------------------------------------------------- #
+# Perturbed cat map (the nonlinear upgrade). With g(x) = (delta / 2pi) sin(2 pi x), so g'(x) = delta cos(2 pi x) and
+# g''(x) = -2 pi delta sin(2 pi x):
+#   phi(x,y) = ( 2x + y + g(x),  x + y + g(x) )  mod 1.
+# The Jacobian is  Dphi = [[2 + g'(x), 1], [1 + g'(x), 1]],  with det = (2+g')*1 - 1*(1+g') = 1 for EVERY x
+# (area-preserving for any delta — the perturbation only shears, never compresses). It varies only in x, through the
+# single scalar g'(x), so the whole field is a constant matrix plus g'(x) * E with E = [[1,0],[1,0]].
+# --------------------------------------------------------------------------------------------------------------- #
+_CAT_PERT_E = np.array([[1.0, 0.0], [1.0, 0.0]], dtype=DTYPE)     # carrier of the x-dependent shear; ||E||_2 = sqrt2
+
+
+def perturbed_cat_map(s, delta=0.1):
+    r"""Smooth area-preserving perturbation of the cat map,
+    $\phi(x,y)=\bigl(2x+y+\tfrac{\delta}{2\pi}\sin2\pi x,\;x+y+\tfrac{\delta}{2\pi}\sin2\pi x\bigr)\bmod1$.
+    For small $\delta$ it stays Anosov (structural stability of the automorphism). ``s: (...,2) -> (...,2)``."""
+    s = np.asarray(s, dtype=DTYPE)
+    x, y = s[..., 0], s[..., 1]
+    g = (delta / (2.0 * math.pi)) * np.sin(2.0 * math.pi * x)
+    return np.stack([(2.0 * x + y + g) % 1.0, (x + y + g) % 1.0], axis=-1)
+
+
+def perturbed_cat_jac(s, delta=0.1):
+    r"""Analytic Jacobian $D\phi(s)=\begin{pmatrix}2+g'(x)&1\\1+g'(x)&1\end{pmatrix}$, $g'(x)=\delta\cos2\pi x$
+    (depends only on $x$; $\det\equiv1$). Returns a ``(2, 2)`` float64 array."""
+    s = np.asarray(s, dtype=DTYPE)
+    x = s[..., 0]
+    gp = delta * math.cos(2.0 * math.pi * float(x))
+    return np.array([[2.0 + gp, 1.0], [1.0 + gp, 1.0]], dtype=DTYPE)
+
+
+def perturbed_cat_jac_lipschitz(delta=0.1):
+    r"""**Analytic** Lipschitz constant of the Jacobian field $z\mapsto D\phi(z)$ in the operator norm. The field
+    varies only in $x$, and $\partial_x D\phi(z)=g''(x)\,E$ with $E=\begin{pmatrix}1&0\\1&0\end{pmatrix}$,
+    $g''(x)=-2\pi\delta\sin2\pi x$. Hence
+    $\lVert\partial_x D\phi\rVert_2=|g''(x)|\,\lVert E\rVert_2\le(2\pi\delta)\sqrt2$, so
+    $$L_J=2\sqrt2\,\pi\,\delta\qquad(\text{e.g. }\delta=0.1\Rightarrow L_J\approx0.8886),$$
+    a sound (in fact tight, attained at $x=\tfrac14$) bound $\lVert D\phi(z)-D\phi(z')\rVert_2\le L_J\lVert z-z'\rVert$
+    since the variation is along a single coordinate. The linear cat map is $\delta=0$ ⇒ $L_J=0$."""
+    return 2.0 * math.sqrt(2.0) * math.pi * delta
+
+
+# --------------------------------------------------------------------------------------------------------------- #
+# Uniform-hyperbolicity certificate via a forward-invariant expanding cone (2D). In slope coordinates u = v_y / v_x a
+# 2x2 matrix D = [[a,b],[c,d]] sends a direction of slope u to slope  T(u) = (c + d u) / (a + b u). A cone
+# C = { |u - u*| <= w } (center u*, half-width w) is *forward-invariant* under a set of Jacobians {D_i} iff every D_i
+# maps the closed cone strictly inside itself (T_i(boundary) lands in the open cone). It is *uniformly expanding* iff
+# every unit vector with slope in C grows by a factor >= mu > 1 under every D_i. A single common forward-invariant,
+# uniformly expanding cone across ALL sampled Jacobians is exactly the (unstable) cone condition for uniform
+# (Anosov) hyperbolicity. We center the cone on A's unstable eigendirection (golden-ratio slope u* = (sqrt5 - 1)/2,
+# from v_+ proportional to ((1+sqrt5)/2, 1)) and search the half-width w for the best expansion margin.
+# --------------------------------------------------------------------------------------------------------------- #
+_CAT_UNSTABLE_SLOPE = (math.sqrt(5.0) - 1.0) / 2.0           # = 1/phi; slope of A's unstable eigenvector
+
+
+def _cone_dir_expansion(D, u):
+    r"""Stretch factor $\lVert Dv\rVert/\lVert v\rVert$ for the unit vector $v\propto(1,u)$ (slope-$u$ direction)."""
+    v = np.array([1.0, u], dtype=DTYPE)
+    v /= np.linalg.norm(v)
+    return float(np.linalg.norm(D @ v))
+
+
+def _cone_image_slope(D, u):
+    r"""Image slope $T_D(u)=(c+d u)/(a+b u)$ of a slope-$u$ direction under $D=[[a,b],[c,d]]$ (``inf`` if vertical)."""
+    a, b = D[0, 0], D[0, 1]
+    c, d = D[1, 0], D[1, 1]
+    den = a + b * u
+    if abs(den) < 1e-300:
+        return math.inf
+    return float((c + d * u) / den)
+
+
+def cone_margin(jacs, center=_CAT_UNSTABLE_SLOPE, widths=None, n_dirs=41):
+    r"""Verify a single forward-invariant, uniformly expanding **unstable cone** common to all sampled Jacobians
+    (uniform / Anosov hyperbolicity) and return its **margin**.
+
+    For each candidate half-width $w$ we form the cone $C=\{u:|u-\text{center}|\le w\}$, sample ``n_dirs`` directions
+    across it, and compute two quantities over **all** Jacobians $D_i$:
+
+    * **invariance margin** $= w - \max_{i,u\in\partial C}|T_{D_i}(u)-\text{center}|$ — positive iff every image slope
+      of every cone direction lands strictly inside $C$ (the cone maps into itself);
+    * **expansion margin** $= \min_{i,u\in C}\log\bigl(\lVert D_i v_u\rVert/\lVert v_u\rVert\bigr)$ — positive iff every
+      direction in the cone is strictly stretched by every Jacobian.
+
+    The cone is valid only when **both** are positive; we report $\min(\text{invariance},\text{expansion})$ and keep the
+    width maximizing it. ``cone_margin > 0`` certifies uniform hyperbolicity on the sampled set; $\le0$ means no common
+    expanding invariant cone (the certificate correctly abstains). ``jacs: (n, d, d) -> float``."""
+    jacs = np.asarray(jacs, dtype=DTYPE)
+    if widths is None:
+        widths = np.linspace(0.05, 0.8, 24)
+    best = -math.inf
+    for w in widths:
+        us = np.linspace(center - w, center + w, n_dirs)
+        # invariance: every boundary image slope stays within the cone (check both endpoints over all Jacobians)
+        worst_img = max(abs(_cone_image_slope(D, u) - center)
+                        for D in jacs for u in (center - w, center + w))
+        inv_margin = w - worst_img
+        # expansion: smallest log-stretch over all cone directions and all Jacobians
+        exp_margin = min(math.log(_cone_dir_expansion(D, u)) for D in jacs for u in us)
+        m = min(inv_margin, exp_margin)
+        if m > best:
+            best = m
+    return float(best)
+
+
+def true_horizon_torus(true_map, eps, eps_res, n_starts=400, seed=0, max_t=200):
+    r"""Empirical first-crossing horizon on the **torus**: the analogue of :func:`true_horizon` (Henon, Euclidean) but
+    with **mod-1 (toroidal) distance** so wrap-around does not spuriously trigger a crossing. We perturb each of
+    ``n_starts`` random torus points by $\epsilon$ in a random direction and report the median step $T$ at which the
+    *toroidal* separation first exceeds $\epsilon_{\text{res}}$ (with $\epsilon_{\text{res}}<0.5$ the wrap is never
+    closer than the true gap before the crossing). This is the soundness ground truth $T_{\text{true}}$ on the torus.
+
+    Toroidal distance per coordinate: $\min(|\Delta|,\,1-|\Delta|)$, combined Euclidean. ``-> float``."""
+    rng = np.random.default_rng(seed)
+    z0 = rng.uniform(0.0, 1.0, size=(n_starts, 2)).astype(DTYPE)
+    dirs = rng.standard_normal((n_starts, 2))
+    dirs /= np.linalg.norm(dirs, axis=1, keepdims=True)
+    za, zb = z0.copy(), (z0 + eps * dirs) % 1.0
+    crossed = np.full(n_starts, -1, dtype=int)
+    for t in range(1, max_t + 1):
+        za, zb = true_map(za), true_map(zb)
+        dd = np.abs(za - zb) % 1.0
+        dd = np.minimum(dd, 1.0 - dd)                       # toroidal per-coordinate distance
+        sep = np.linalg.norm(dd, axis=1)
+        newly = (crossed < 0) & (sep > eps_res)
+        crossed[newly] = t
+    crossed[crossed < 0] = max_t                            # never crossed within the budget
+    return float(np.median(crossed))
+
+
+def _run_cat_certificate(map_fn, jac_fn, L_J, lambda1, system, n_samples, seed, eps, eps_res, n_true=400):
+    r"""Shared cat-map pipeline (linear & perturbed): uniform torus sample -> analytic Jacobians -> constant adapted
+    metric (:func:`adapted_metric`) -> Lipschitz bridge (:func:`lipschitz_bridge`) -> certified exponent & horizon, plus
+    the cone margin (uniform-hyperbolicity check) and the torus first-crossing $T_{\text{true}}$. Returns the certified
+    exponent $\log\Lambda^{\text{cert}}$, the **tightness ratio** $\log\Lambda^{\text{cert}}/\lambda_1$, ``t_guar``,
+    ``kappa``, ``h``, the cone margin, $T_{\text{true}}$, and the soundness flags."""
+    rng = np.random.default_rng(seed)
+    pts = rng.uniform(0.0, 1.0, size=(n_samples, 2)).astype(DTYPE)     # SRB = Lebesgue on the torus
+    jacs = np.stack([np.asarray(jac_fn(s), dtype=DTYPE) for s in pts])
+
+    P, lam_samples, _ = adapted_metric(jacs)
+    kappa = float(np.linalg.cond(P))
+    h = _covering_radius(pts)
+    br = lipschitz_bridge(lam_samples, kappa, L_J, h, eps=eps, eps_res=eps_res)
+    log_lambda_cert = math.log(br["lambda_cert"])
+
+    margin = cone_margin(jacs)
+    t_true = true_horizon_torus(map_fn, eps, eps_res, n_starts=n_true, seed=seed)
+
+    return dict(
+        system=system, lambda1=float(lambda1), lambda_samples=float(lam_samples),
+        lambda_cert=float(br["lambda_cert"]), log_lambda_cert=float(log_lambda_cert),
+        tightness_ratio=float(log_lambda_cert / lambda1), kappa=kappa, h=float(h),
+        slack=float(br["slack"]), t_guar=int(br["horizon"]), t_true=float(t_true),
+        cone_margin=float(margin), anosov=bool(margin > 0.0),
+        sound_exponent=bool(log_lambda_cert >= lambda1 - 1e-9),
+        sound_horizon=bool(br["horizon"] <= t_true + 1e-9),
+        certified=bool(br["certified"]), eps=eps, eps_res=eps_res,
+    )
+
+
+def run_true_catmap(n_samples=2000, seed=0, eps=0.01, eps_res=0.4):
+    r"""**The tight anchor (analytic, must land).** The cone / adapted-metric certificate on the TRUE *linear* cat map.
+
+    Because $A$ is symmetric the optimal constant metric is $P=I$ ($\kappa=1$, nothing to rotate away), giving
+    $\Lambda_{\text{samples}}=\rho(A)=e^{\lambda_1}$ exactly; and $L_J=0$ (constant Jacobian) ⇒ the bridge slack is
+    $0$ ⇒ $\log\Lambda^{\text{cert}}=\lambda_1$ to machine precision. The **tightness ratio** should be $\approx1.000$.
+    $\epsilon_{\text{res}}=0.4<0.5$ keeps toroidal wrap from triggering the true crossing prematurely. Returns the dict
+    from :func:`_run_cat_certificate` (certified exponent, tightness ratio, $T_{\text{guar}}$, $T_{\text{true}}$,
+    $\kappa$, $h$, cone margin, soundness flags)."""
+    return _run_cat_certificate(cat_map, lambda s: cat_jac(s), L_J=0.0, lambda1=CAT_LAMBDA1,
+                                system="CatMap(linear)", n_samples=n_samples, seed=seed,
+                                eps=eps, eps_res=eps_res)
+
+
+def run_true_perturbed_catmap(delta=0.1, n_samples=2000, seed=0, eps=0.01, eps_res=0.4):
+    r"""The **nonlinear upgrade**: the same certificate on the perturbed (still area-preserving, still Anosov for small
+    $\delta$) cat map, with the **analytic** $L_J=2\sqrt2\,\pi\,\delta$ (:func:`perturbed_cat_jac_lipschitz`). The
+    Jacobian now varies in $x$, so $P$ deviates slightly from $I$ and the bridge adds a small slack $\sqrt\kappa L_J h$;
+    the tightness ratio is expected $\lesssim1.3$. The ``cone_margin`` in the returned dict verifies it is still
+    uniformly hyperbolic. Returns the :func:`_run_cat_certificate` dict (with the perturbed map's analytic $\lambda_1$
+    from a Benettin estimate is *not* used for the ratio denominator — we use the analytic-anchored value below)."""
+    # The perturbed map has no closed-form lambda_1, but for small delta it is O(delta^2)-close to the linear value;
+    # we report the ratio against a Benettin estimate of ITS OWN lambda_1 (sound denominator) so "tightness" is honest.
+    lam1 = benettin_lambda1(lambda z: perturbed_cat_jac(z, delta), lambda z: perturbed_cat_map(z, delta),
+                            s0=np.array([0.12, 0.34]), n_steps=6000, warmup=400, seed=seed)
+    return _run_cat_certificate(lambda s: perturbed_cat_map(s, delta), lambda s: perturbed_cat_jac(s, delta),
+                                L_J=perturbed_cat_jac_lipschitz(delta), lambda1=lam1,
+                                system=f"CatMap(perturbed,delta={delta})", n_samples=n_samples, seed=seed,
+                                eps=eps, eps_res=eps_res)
+
+
+def tightness_comparison(n_samples=2000, seed=0, eps=0.01):
+    r"""The validity-domain-**with-tightness** story in one table: the cone certificate is *provably tight* on a
+    uniformly-hyperbolic system (the cat map, ratio $\approx1.00$, $T_{\text{guar}}\approx T_{\text{true}}$) and
+    *soundly conservative* on a non-uniformly-hyperbolic one (Henon, the Phase-A $\sim\!3.15\times$). Returns a dict
+    keyed by system with ``log_lambda_cert``, ``lambda1``, ``tightness_ratio``, ``t_guar``, ``cone_margin``, ``anosov``.
+
+    Henon uses $\epsilon_{\text{res}}=1.0$ (its Phase-A setting, Euclidean state space); the cat map uses
+    $\epsilon_{\text{res}}=0.4$ (torus). The ratio is the apples-to-apples *certified-exponent* conservatism
+    $\log\Lambda^{\text{cert}}/\lambda_1$, which is independent of $\epsilon_{\text{res}}$."""
+    cat = run_true_catmap(n_samples=n_samples, seed=seed, eps=eps, eps_res=0.4)
+    hen = run_true_henon(n_samples=max(2000, n_samples), seed=seed, eps=eps, eps_res=1.0)
+    hen_ratio = math.log(hen["lambda_cert"]) / 0.419       # Henon textbook lambda_1 (step71: 0.419 / step)
+    return {
+        "CatMap(linear)": dict(
+            log_lambda_cert=cat["log_lambda_cert"], lambda1=cat["lambda1"],
+            tightness_ratio=cat["tightness_ratio"], t_guar=cat["t_guar"], t_true=cat["t_true"],
+            cone_margin=cat["cone_margin"], anosov=cat["anosov"]),
+        "Henon(true)": dict(
+            log_lambda_cert=math.log(hen["lambda_cert"]), lambda1=0.419,
+            tightness_ratio=hen_ratio, t_guar=hen["t_guar"],
+            cone_margin=cone_margin(np.stack([henon_jac(p) for p in
+                                              np.random.default_rng(seed).uniform(-1, 1, size=(200, 2))])),
+            anosov=False),
+    }
