@@ -730,3 +730,20 @@ coverage/renewal (covered windows under $\epsilon$; open-loop tail violates afte
 
 **Status:** ③-A now has generality (step88) + a-priori scoping (step85c) + a provability law (Prop 9) — the three
 highest-value reviewer levers, all landed. C (② MBRL, ~0.4 gamble) remains the open choice.
+
+## [2026-06-09] step87 (C / ② Stage A) — cert-gating mechanism is the Lyapunov amplification (near-tautological)
+
+Built ②'s **Stage-B-ready scaffold** (`experiments/step87_cert_gated_mbrl.py`: Actor, Critic, pathwise `actor_objective`
+with backprop-depth $H_g$ = the cert-gate + critic tail-bootstrap) and ran the **Stage-A diagnostic**. Finding: the
+pathwise actor-gradient amplifies at $\sim$ the cocycle rate $e^{\lambda_1 H_g\Delta t}$ — the cert-gating "mechanism"
+(gradients explode past $T_1$) is **the Lyapunov amplification restated** ($=\lambda_1>0$, which the certificate already
+establishes). So Stage A **confirms cert-gating is principled** (gate where the cocycle is untrustworthy) but is **NOT
+an independent go/no-go** — it doesn't de-risk the actual ② question.
+
+- **②'s genuine test = Stage B** (online actor-critic loop; does cert-gating the imagination horizon buy *sample
+  efficiency*?) — the ~0.4 gamble (heaviest; seed warns it's near §5.19's plan-depth failure mode); hours of from-scratch
+  RL that may land another honest negative.
+- **Decision point (gated on B):** ③-A is now strongly hardened (generality step88 + a-priori step85c + Prop 9). So ②
+  is *optional second-result upside*. Either run the Stage-B gamble, or **consolidate** ③ (it's solid). `step87`, commit
+  pending. (Note: the cert-gating *design* — gate the imagination at the certified horizon — is principled and recorded
+  even if Stage B is not run.)
