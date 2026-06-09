@@ -325,6 +325,65 @@ def run_phase1(seeds, N: int, eps: float, L: int) -> dict:
     return {"verdict": verdict, "per_seed": {str(k): v for k, v in per_seed.items()}}
 
 
+def make_figure() -> None:
+    r"""Headline figure (3 panels) from the committed Phase-0 + Phase-1 JSONs (no recompute): (a) certificate calibration
+    — certified vs empirical horizon, conv on the diagonal, MLP far above (its inflated $\lambda_1$ under-claims the
+    horizon); (b) the cert-isolated budget frontier (same conv forecaster) — conv-cert vs MLP-cert vs cert-free adaptive,
+    mean $\pm$ min-max over seeds; (c) the package E-vs-N, overlaying the MLP cert-isolated curve to show package $\approx$
+    cert-isolated (the win is the certificate, not the forecaster)."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    figdir = Path(__file__).resolve().parent.parent / "papers" / "figures"
+    cal = json.loads((figdir / "step85_phase0_calibration.json").read_text())
+    fr = json.loads((figdir / "step85_phase1_frontier.json").read_text())
+    seeds = sorted(cal["per_seed"].keys(), key=int)
+    fig, (axA, axB, axC) = plt.subplots(1, 3, figsize=(15.5, 4.5))
+
+    # (a) calibration: certified vs empirical forecast horizon.
+    cT = [cal["per_seed"][s]["conv"]["T1_steps"] for s in seeds]
+    cE = [cal["per_seed"][s]["conv"]["H_emp_median"] for s in seeds]
+    mT = [cal["per_seed"][s]["mlp"]["T1_steps"] for s in seeds]
+    mE = [cal["per_seed"][s]["mlp"]["H_emp_median"] for s in seeds]
+    lim = max(cT + cE + mT + mE) * 1.12
+    axA.plot([0, lim], [0, lim], "k--", lw=1, label="calibrated ($y{=}x$)")
+    axA.scatter(cT, cE, s=70, color="#1f77b4", zorder=3, label="$\\mathbb{Z}_N$-equivariant (conv)")
+    axA.scatter(mT, mE, s=70, color="#d62728", marker="x", zorder=3, label="dense MLP")
+    axA.annotate("MLP cert under-claims\n($\\lambda_1$ inflated $\\sim$3$\\times$)", xy=(mT[0], mE[0]),
+                 xytext=(lim * 0.42, lim * 0.24), fontsize=8, color="#d62728",
+                 arrowprops=dict(arrowstyle="->", color="#d62728", lw=1))
+    axA.set_xlim(0, lim); axA.set_ylim(0, lim)
+    axA.set_xlabel("certified horizon $T_1(\\epsilon)$ [steps]")
+    axA.set_ylabel("empirical forecast horizon [steps]")
+    axA.set_title("(a) Certificate calibration ($N{=}40$, $\\epsilon{=}0.2$)"); axA.legend(fontsize=8)
+
+    # (b)+(c) frontiers: interpolate each seed onto a shared budget grid; plot mean +/- min-max band.
+    grid = np.linspace(2, min(max(fr["per_seed"][s]["frontier"]["budgets"]) for s in seeds), 40)
+
+    def band(key, ax, color, label, ls="-"):
+        ys = np.stack([np.interp(grid, fr["per_seed"][s]["frontier"]["budgets"],
+                                 fr["per_seed"][s]["frontier"][key]) for s in seeds])
+        ax.plot(grid, ys.mean(0), color=color, ls=ls, lw=1.8, label=label)
+        ax.fill_between(grid, ys.min(0), ys.max(0), color=color, alpha=0.15)
+
+    band("conv_arm", axB, "#1f77b4", "conv cert (calibrated)")
+    band("mlp_iso", axB, "#d62728", "MLP cert (inflated $\\lambda_1$)")
+    band("adaptive", axB, "#7f7f7f", "cert-free adaptive", ls=":")
+    axB.set_xlabel("observation budget $B$"); axB.set_ylabel("aggregate $\\epsilon$-violation rate")
+    axB.set_title("(b) Cert-isolated budget frontier (same conv forecaster)"); axB.legend(fontsize=8)
+
+    band("conv_arm", axC, "#1f77b4", "Agent E (equiv WM + its cert)")
+    band("mlp_pkg", axC, "#d62728", "Agent N (MLP WM + its cert)")
+    band("mlp_iso", axC, "#d62728", "MLP cert-isolated (conv WM)", ls="--")
+    axC.set_xlabel("observation budget $B$"); axC.set_ylabel("aggregate $\\epsilon$-violation rate")
+    axC.set_title("(c) Package E vs N (pkg $\\approx$ cert-isolated)"); axC.legend(fontsize=8)
+
+    fig.tight_layout()
+    out = figdir / "step85_headline.png"
+    fig.savefig(out, dpi=130, bbox_inches="tight")
+    print(f"[step85.fig] wrote {out}", file=sys.stderr)
+
+
 def _save(res: dict, name: str) -> None:
     figdir = Path(__file__).resolve().parent.parent / "papers" / "figures"
     figdir.mkdir(parents=True, exist_ok=True)
@@ -343,6 +402,9 @@ if __name__ == "__main__":
         res = run_phase0(seeds, N, eps)
         _save(res, "phase0_calibration")
         raise SystemExit(0 if res["verdict"]["G0_pass"] else 1)
+    if phase == "fig":
+        make_figure()
+        raise SystemExit(0)
     L = int(os.environ.get("STEP85_L", "300" if SMOKE else "1500"))
     print(f"[step85.P1] Phase 1+2: N={N}, eps={eps}, L={L}, seeds={seeds}, smoke={SMOKE}", file=sys.stderr)
     res = run_phase1(seeds, N, eps, L)
