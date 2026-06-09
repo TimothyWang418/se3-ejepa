@@ -675,3 +675,21 @@ $\tau{=}T_1$, blind $\tau\gg T_1$. Full run N=24, $\epsilon{=}0.3$, 3 seeds, RTX
 **Three-directions-to-8 scorecard:** ③-A (cert-isolated budget re-observation) **LANDED** (Exp 22, G1 3/3, in paper2
 §5.20 + ICLR E12); ③-C (full-spectrum allocation) and ① (safety) are **honest NEGATIVES**; ② (cert-gated MBRL) is
 **build-ready-spec'd** (pathwise cert-gating), not run (~0.4 gamble, do last). `step86`, commit pending.
+
+## [2026-06-09] step88 (B-generality) — ③-A GENERALIZES to a 2nd system (coupled-pendulum ring): G1 PASS 2/3
+
+Hardening ③-A against the reviewers' #1 blocker (single system). Replicated ③-A's **cert-isolated budget frontier** on
+the driven–damped coupled-pendulum **ring** (step80; $\mathbb{Z}_N$, $N{=}24\to 49$-dim; physically different from
+Lorenz-96), reusing step80's RingConv/RingMLP + certificate + a **budgeted variant of step80.reobserve_run** (step80
+unmodified). `experiments/step88_ring_generality.py`; `papers/figures/step88_ring_{precheck,frontier}.json`.
+
+- **Precheck (go/no-go) GO:** at $N{=}24$ the ring is chaotic (true $\lambda_1{=}0.317$), the dense RingMLP's $\lambda_1$
+  is **inflated $2.05\times$** (vs RingConv faithful, calibration ratio $0.89$), both relMSE $\sim0$ (matched fidelity) —
+  ③-A's precondition holds. (It is a HIGH-$N$ effect, like Lorenz-96: step80's own $N{=}10$ runs would not show it.)
+- **Full N=24, 3 seeds — G1 PASS (2/3):** conv-cert beats MLP-cert at the knee budget on $2/3$ seeds, margins
+  $+0.242/+0.035/+0.329$ (knee violation conv $0.013/0.000/0.034$ vs MLP $0.255/0.035/0.363$). Conv $<$ MLP on **all 3**;
+  seed 1's margin ($0.035$) is below the $0.05$ bar because that seed's inflation was only $\sim1.15\times$.
+- **Honest scope:** the ring effect is **smaller and more seed-dependent** than Lorenz-96 (ring spectral inflation
+  $\sim1.15$–$2\times$ vs L96's $3.0$–$3.9\times$). But the **mechanism transfers** — ③-A is a class property across two
+  symmetry groups and two physical systems, not a Lorenz-96 idiosyncrasy. Folded into §5.20 (the generality sentence).
+  `step88`, commit pending.
