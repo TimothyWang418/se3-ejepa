@@ -792,3 +792,16 @@ $H{\ge}164$ success $0$; **non-equivariant $H^\star{=}78$ vs $T_1{=}156$** (the 
 G-binding TRUE; G-ii honest no-win; verdict string = the in-paper INCONCLUSIVE. smoke=false, 3 seeds.
 §5.19's "(figure pending sync)" replaced with the real figure embed. The prose needed **zero** corrections — the
 original run was faithful; only its artifact had been lost.
+
+## [2026-06-09] Engineering note — WSL2 vs native-Windows CUDA A/B on the 3080 box (claim refuted; CS2 confound caught)
+
+Tested the folk claim "Linux/WSL2 cuts 3080 performance" with `scripts/bench_gpu_ab.py` (same card, same torch
+2.5.1+cu121, three workloads). **First run was INVALID — the control caught it**: big-matmul throughput was absurd
+(2.5 / 0.36 TFLOPS), nvidia-smi showed 100% GPU from a foreign process — **Counter-Strike 2 was running on the box**.
+Lesson: check `nvidia-smi --query-compute-apps` before any 3080 run (a contaminated GPU ran our workload up to ~29x
+slower). Clean re-run with the GPU idle (P8, 29 W): **compute-bound work is identical** (matmul 22.68 vs 22.58 TFLOPS;
+batched rollout 335.9 vs 335.7 steps/s) and **our actual small-kernel training profile is 63% FASTER under WSL2**
+(93.7 vs 57.4 iters/s — Windows WDDM launch overhead; the profile of step74/79/85/88 training and ② Stage B's
+imagination loop). **Decision (pre-registered rule): stay on WSL2** — the established pipeline is not merely fine, it
+is the faster option on this box. Windows-side toolchain (Python 3.11.9 + torch cu121 + `C:\Temp\bench_gpu_ab.py`)
+left in place for future re-checks.
