@@ -196,3 +196,45 @@ to run full seeds × budget grid × bootstrap for publication error bars (`docs/
 - **No new chaotic system** beyond $N{=}40$ Lorenz-96 (reuse `step74`); **no control / planning loop** (D2 is
   observation-only — actionable control is `step5`/`step79`'s concern); **no spectrum field beyond $\lambda_1$** here (the
   re-observation interval reads only the leading exponent; the full-spectrum story is `step85b`'s).
+
+## 11. Revision 2026-06-09a — after G0 (Phase 0 ran: 3/3 PASS, with three refinements)
+
+Phase 0 ran on $N{=}40$ Lorenz-96, $\epsilon=0.2$, 3 seeds, full training + Benettin-QR
+(`experiments/step85_trustworthy_cert_downstream.py`, result `papers/figures/step85_phase0_calibration.json`).
+**G0 PASSED** — the conv certificate is calibrated on 3/3 seeds (self-ratio $H_{\rm emp}/T_1^{\rm steps}=1.17,0.63,0.82$,
+all in $[\tfrac12,2]$); the MLP $\lambda_1$ is inflated $3.19\times,3.50\times,3.46\times$ (matching the cached step74
+spectra), so its certified horizon is $24\!-\!28$ steps. Direction ③ is alive — proceed to Phase 1. Three data-driven
+refinements (they *strengthen* the thesis but **flip how the win must be framed** — load-bearing):
+
+1. **The forecasters are empirically MATCHED — so the confound is absent for free.** Conv empirical horizon
+   $62\!-\!104$ steps; MLP empirical horizon $64\!-\!73$ steps (seed 1 the MLP even forecasts *slightly longer*); both
+   one-step relMSE $\sim10^{-5}$. The dense MLP **forecasts values as well as the conv** at $N{=}40$ — it fails ONLY on
+   the certificate (the Jacobian/spectrum). So the package contrast (D) is **de-confounded by the data itself** (equal
+   forecasters ⇒ any gap is the certificate); the cert-isolated Phase 1 (A) remains the *rigorous* control, now
+   corroborated rather than load-bearing-alone. Memorable framing: *the non-equivariant model forecasts fine but
+   **cannot certify its own competence** — its broken Jacobian makes it needlessly distrust its own good forecasts.*
+
+2. **The MLP certificate is PESSIMISTIC, not optimistic (the sign is settled) — so the budget framing is NECESSARY,
+   not merely nice.** Inflated $\lambda_1$ ⇒ certified horizon $\sim3\times$ too **short** ⇒ the MLP-cert agent
+   *over*-observes (its self-ratio $\approx2.5$ means it re-observes when the forecast is actually good for $\sim3\times$
+   longer). **Without a budget this looks "safe"** — the over-observing MLP schedule would have *lower* naive violation
+   than the (slightly optimistic) conv schedule, i.e. the naive metric would *favour the wrong model*. The win exists
+   ONLY under the fixed-budget/fixed-$\epsilon$ framing of §2/§4 (over-observation → starvation → open-loop tail). G0
+   thus **empirically vindicates** the §2 resolution and proves a free $\epsilon$/interval sweep would be an anti-result.
+   Phase 1 must hold $\epsilon$ fixed and sweep the **budget**, exactly as specified.
+
+3. **The conv certificate leans slightly OPTIMISTIC (mean self-ratio $0.87$; seed 1 $0.63$).** At its point-$T_1$ the
+   conv schedule has modest in-window violation (it under-observes a touch). Two consequences for Phase 1: (a) use the
+   **conservative end of the certificate CI** ($T_1^{\rm lo}$ from $\lambda_1^{\rm hi}$) for the conv schedule — this is
+   the *sound* side of the bound, not tuning; (b) report the **full budget sweep** (the conv schedule's mild in-window
+   violation is a small constant; the MLP schedule's starvation is the dominant effect, so conv dominates across the
+   sweep regardless). Be honest in the writeup that the conv cert is calibrated-to-$\sim1.5\times$, not exact.
+
+**Added Phase-1 control (preempts the top red-team attack).** D2 *gives error feedback at each re-observation*, so a
+certificate-FREE **adaptive** agent (AIMD on the interval: lengthen if the last window stayed under $\epsilon$, shorten
+if it crossed) can *learn* the right cadence and would beat both fixed schedules given enough observations. Include it as
+a baseline and **scope the certificate's win to the tight-budget / few-shot / one-shot regime** — where the adaptive
+agent cannot afford the exploration and the a-priori certificate's correct-from-step-1 cadence is what pays. (The
+certificate's *necessity*, as opposed to warm-start value, lives in the no-feedback safety setting — direction ①.)
+This is the honest ceiling of ③: a clean **mechanism + efficiency-under-budget** result that makes E2's $R^2$
+consequential, not a safety/necessity claim.
