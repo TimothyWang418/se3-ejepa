@@ -40,12 +40,18 @@ the online MBRL outer loop. (Grep confirmed: **no existing actor/critic/Dreamer 
 - `Critic(N) -> value`: MLP (2 hidden, 128) → scalar value baseline (variance reduction).
 - `imagine(model, actor, z0, H, mu, sd)`: roll the WM under the policy for $H$ steps; return latent traj, rewards,
   log-probs, entropies. (Equivariant WM ⇒ reparameterized gradients preserve $\mathbb{Z}_N$-equivariance.)
-- `policy_loss(..., grad_horizon H_g, eval_horizon H_e)`: the cert-gating lever. Roll $H_e$ steps for the return
-  estimate, but **only backprop through the first $H_g$** (detach rewards/log-probs/values beyond $H_g$). Actor loss =
-  $-\sum_{t<H_g}\log\pi(a_t|z_t)\,A_t - \beta\,\mathcal H$; critic loss = $\sum_{t<H_g}(R_t-V_t)^2$; $A_t=R_t-V_t$.
+- `actor_objective(model, actor, critic, z0, mu, sd, H_g)`: **PATHWISE (Dreamer-style)** — the cert-gating lever is the
+  backprop depth $H_g$. Roll the *differentiable* WM under the reparameterized policy (`rsample`) for $H_g$ steps,
+  accumulate the discounted reward through the rollout, and **bootstrap the tail with the critic**:
+  $J=\sum_{t<H_g}\gamma^t r_t + \gamma^{H_g} V(z_{H_g})$ — the gradient flows *through the model dynamics* for $H_g$
+  steps, then the learned value carries the rest (no model gradient past $H_g$). Actor maximizes $J$; critic is a
+  $\lambda$-return / TD baseline. **This is the cert-gate: pathwise gradients through a chaotic rollout amplify as
+  $e^{\lambda_1 H_g}$ (the very $\lambda_1$ the certificate reads), so past $T_1$ they EXPLODE and are noise; gating at
+  $H_g=T_1$ keeps them well-conditioned.** (REINFORCE/score-function gradients, where the advantage is detached, do NOT
+  exhibit this — the model-rollout gradient is the whole point, so the loss must be *pathwise*.)
   - **cert-gated:** $H_g=T_1^{\rm steps}$ (per-iteration, from the current WM's certificate).
   - **fixed-H:** $H_g\in\{T_1/2, T_1, 2T_1\}$ (the ablation ladder).
-  - **ungated:** $H_g=H_e$ (full, long).
+  - **ungated:** $H_g$ large (the gradient should be visibly noisier / exploding).
 
 ## 4. Online MBRL loop (the sample-efficiency setting)
 
@@ -69,9 +75,10 @@ Everything else identical across arms (same WM updates, buffer, actor/critic ini
 
 ## 6. Build staging (so INCONCLUSIVE is cheap)
 
-- **Stage A (CPU smoke, make-or-break wiring):** components + `imagine` + `policy_loss` with the detach-gate; assert the
-  gated loss's gradient is zero beyond $H_g$ (the cert-gating *mechanism* test) and the loop runs end-to-end on a tiny
-  config. Cheap.
+- **Stage A (CPU smoke, make-or-break wiring):** components + `imagine` + the pathwise `actor_objective`; **mechanism
+  test** — the pathwise actor-gradient norm $\lVert\nabla_\theta J\rVert$ grows $\sim e^{\lambda_1 H_g}$ with the backprop
+  depth and **explodes past $T_1$**, while gating at $H_g=T_1$ keeps it bounded (this is the cert-gate's reason for
+  being); plus an equivariance check (imagination is $\mathbb{Z}_N$-equivariant) and an end-to-end tiny-config run. Cheap.
 - **Stage B (3080 full):** the online loop, 3 seeds, cert-gated vs fixed ladder vs ungated; the return-vs-env-steps figure.
 - **Decision point:** if Stage A shows cert-gating doesn't change learning at all, or Stage B shows no gain → INCONCLUSIVE,
   reported like step85b's honest C-negative.
