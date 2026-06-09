@@ -20,8 +20,10 @@ guarantees are its $T{=}1$ slice. Empirically the spectral law lifts to learned 
 Lorenz, Hénon, Rössler, and a $40$-dimensional Lorenz-96 model where a $\mathbb{Z}_N$-equivariant network recovers the
 full Lyapunov spectrum ($R^2{=}0.98$) while a dense *and* a same-trained recurrent model fail. Finally, a cone/adapted-metric
 certificate (Theorem B′) makes "certified" **literal** — a sound, a-priori-guaranteed horizon read from the learned
-model, provably tight on uniformly-hyperbolic dynamics and self-abstaining where it cannot. A scope theorem
-(Proposition 7) says when the law is informative; §6 states the $1$–$2$-GPU scope.
+model, provably tight on uniformly-hyperbolic dynamics and self-abstaining where it cannot. The certificate is also
+*actionable*: its faithfulness lets an agent meet a fixed sensing budget on a $40$-D chaotic forecast where a
+$\sim3\times$-inflated non-equivariant certificate over-observes and starves it ($8$–$16\%$ vs $61$–$65\%$ violation, E12).
+A scope theorem (Proposition 7) says when the law is informative; §6 states the $1$–$2$-GPU scope.
 
 ---
 
@@ -79,8 +81,11 @@ than an initial-condition error — making the horizon two-sided and approximate
 (ii) the scope and continuity bounds (Propositions 7–8) lifting the law to *learned* chaotic models, where shadowing
 cannot transfer the exponent; (iii) the **structure-vs-recurrence separation** (E2) — among Markov models only the equivariant one
 recovers a $40$-D spectrum, while an unstructured *recurrent* model provably cannot, by the conditional-Lyapunov
-condition; and (iv) **Theorem B′** turns the certificate from *measured* into *literal* — a sound, a-priori horizon read
-from the learned model, tight on uniformly-hyperbolic dynamics and self-abstaining elsewhere. These assemble
+condition; (iv) **Theorem B′** turns the certificate from *measured* into *literal* — a sound, a-priori horizon read
+from the learned model, tight on uniformly-hyperbolic dynamics and self-abstaining elsewhere; and (v) the certificate's
+faithfulness is **actionable** (E12) — holding the forecaster fixed, it meets a fixed sensing budget a $\sim3\times$-inflated
+non-equivariant certificate cannot, delivering the opening promise that an acting agent needs to know not just the
+average error but *whether, and for how long, to trust the model*. These assemble
 (Algorithm 1) into one certificate *exclusive to structure* (Lemma 2) whose unbounded-horizon
 subspace is the conserved/invariant one (the Noether hinge). We credit the classical pillars we build on — the
 Lyapunov/NWP horizon law, invariant decision theory, and the $e^{\lambda T}$ growth — explicitly in §3 and §5.
@@ -440,6 +445,10 @@ non-equivariant certified Koopman forecasts [@conradie2026trustkoopman] and equi
   shadowing, yet we verify $C^1$-closeness only via one-step $L^2$ error — in high $N$ a real gap (a dense MLP, and a
   recurrent GRU, is one-step-accurate yet mis-estimates the $40$-D spectrum; $\mathbb{Z}_N$-structure closes it); and
   the real-dynamics evidence is chaotic ODEs/maps, not a contact simulator.
+- **Demonstrated downstream value is budgeted efficiency, not safety.** E12's win is a within-method, fixed-budget
+  re-observation contrast isolating the certificate's *faithfulness*. A separate test of the certified horizon as a
+  *catastrophe-avoidance* cadence was **inconclusive** at our scale (escape rate was re-observation-interval-invariant —
+  control-quality-limited, not estimate-staleness-limited); the certificate's *necessity* for safety is open.
 - **Scale and modality.** All experiments are $1$–$2$-GPU. The certificate's exact flatness transfers across modalities
   (state, $\mathrm{SO}(3)$ point clouds, pixels), but absolute multi-step accuracy on raw pixels is poor for *every*
   architecture at this scale (the anti-collapse JEPA latent, not equivariance); a strong few-step pixel predictor is an
@@ -453,7 +462,9 @@ An equivariant world model can certify, a priori and without retraining, which s
 many steps** — and the horizon is tight. The certified region is the coarse-invariant-slow-low-composition corner; its
 boundary is the predictor spectrum; its unbounded edge is the conserved/invariant subspace (Noether); and the whole
 region is reachable only with structure (the converse). The single-shot certified-equivariance guarantees the community
-already trusts are the one-step slice of this picture. *Scale buys interpolation; structure buys a certified horizon.*
+already trusts are the one-step slice of this picture. And because the horizon is *faithful* it is *actionable* — it
+lets an agent budget its sensing on a high-dimensional chaotic forecast where an inflated certificate cannot (E12).
+*Scale buys interpolation; structure buys a certified horizon.*
 
 ---
 

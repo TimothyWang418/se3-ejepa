@@ -21,7 +21,12 @@ planted exponent to $0.4\%$; and on a **$40$-dimensional** learned model a $\mat
 the *full* Lyapunov spectrum ($R^2{=}0.98$–$0.99$) where a dense **and a same-trained recurrent** model of equal data
 fail ($R^2{<}0$) — structure, not scale or recurrence, recovers a high-dimensional horizon. Finally we make
 *"Certified"* literal: a cone/adapted-metric certificate (Theorem B′) reads a **sound, a-priori** certified horizon off
-the *learned model's own* Jacobian — tight exactly on uniformly-hyperbolic dynamics and self-abstaining elsewhere. The
+the *learned model's own* Jacobian — tight exactly on uniformly-hyperbolic dynamics and self-abstaining elsewhere.
+Because the certificate is faithful it is also *actionable*: holding the forecaster fixed on the $40$-D system, timing
+sparse re-observations by the equivariant model's certified horizon meets a **fixed sensing budget** where the
+non-equivariant model's inflated certificate over-observes and starves it ($8$–$16\%$ vs $61$–$65\%$ forecast-violation,
+$3/3$ seeds) — structure buys a certificate you can *trust enough to act on* (a full-spectrum allocation variant,
+reported honestly, does **not** win). The
 result is a single **runnable** criterion (Algorithm 1) for *what* an equivariant world model can certifiably predict,
 and a structural reading of *why* celestial mechanics is forecastable for millennia while weather is not.
 
@@ -102,7 +107,13 @@ Our contributions are:
    when an open-loop forecast expires and drives an **active re-observation** schedule that sits on the efficient
    accuracy-vs-observation-cost frontier *untuned* (the decision the certificate earns; short-horizon control, honestly,
    it does not). The pattern lifts seed-for-seed to a $\mathbb{Z}_N$ pendulum ring and a $\mathbb{Z}_2$ double pendulum —
-   a **class property** across two symmetry groups and high/low dimension.
+   a **class property** across two symmetry groups and high/low dimension. Finally, **Experiment 22** turns that
+   high-dimensional spectrum recovery into a *downstream consequence*: under a **fixed sensing budget** on $40$-D
+   Lorenz-96, an agent that times re-observation by the equivariant model's certificate meets the budget ($8$–$16\%$
+   forecast-violation) while the *same forecaster* timed by the non-equivariant model's inflated certificate
+   over-observes and starves it ($61$–$65\%$; $3/3$ seeds, margins $+0.45/{+}0.50/{+}0.57$) — a *within-method* contrast
+   isolating the certificate's **faithfulness** as the load-bearing property, with an honest negative on full-spectrum
+   *allocation*.
 
 We are explicit about scope (§7): this is a mechanism-and-theory paper with $1$–$2$-GPU proof-of-principle, not a
 scaled benchmark, and the hinge's lift to *approximate* symmetry is open.
@@ -1314,6 +1325,13 @@ recovery, remain ours.
   CEM disagreement penalty, step75) **also** stays at the give-away floor — so a real task win needs more than the
   obvious robust-MBRL patch: more compute, or a learned policy / offline RL rather than CEM-MPC. We do not claim a task
   win we did not measure.
+- **The certificate's demonstrated downstream value is efficiency-under-budget, not safety.** Experiment 22's win is a
+  *within-method, fixed-budget* re-observation efficiency contrast (the certificate's faithfulness, not the forecaster,
+  is load-bearing). We separately tested whether the certified horizon binds as a **catastrophe-avoidance** cadence
+  (re-observe before an open-loop estimate drifts into an unsafe region) and report it **INCONCLUSIVE**: at our scale the
+  escape rate was re-observation-interval-invariant — the failures were control-quality-limited (a modest gradient-MPC
+  planner), not estimate-staleness-limited — so the certificate's *necessity* for safety is not established here. The
+  certificate buys *cheaper* trustworthy action under budget; whether it buys *safer* action awaits a stronger controller.
 - **Pixels (Experiment 13, §5.11): structure is free; absolute accuracy is the open part.** The certificate transfers
   *exactly* to rendered pixels, and — via frame averaging — at **no accuracy cost** relative to an unconstrained CNN
   (matches-or-beats it on collapse-robust FVU, with a healthier latent and a horizon-stable rollout; §5.11). The honest
@@ -1385,7 +1403,9 @@ the certified region as the coarse-invariant-slow-low-composition corner, proved
 direction that unifies the symmetry and time axes (Proposition 5: conserved $\Rightarrow$ slow) and measured its
 defect, and showed — empirically and via the quantitative separation of §3.3 — that an
 $88\times$-scaled non-equivariant model buys interpolation but never the certificate, an architectural
-impossibility rather than an unfinished sweep.
+impossibility rather than an unfinished sweep. And because the certificate is faithful it is *actionable*: on the
+$40$-D chaotic system it sets a re-observation schedule that meets a fixed sensing budget an inflated non-equivariant
+certificate cannot (Experiment 22) — the certificate is not merely a description but something an agent can budget against.
 *Scale buys interpolation; structure buys a certificate.* The same criterion that tells you which compositions a
 robot policy will handle zero-shot also tells you why eclipses are forecastable for millennia while weather is not —
 one structural law, read across domains.
