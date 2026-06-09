@@ -1,0 +1,18 @@
+{
+  "precondition_holds": true,
+  "chaotic": true,
+  "true_l1": 0.31746789788072105,
+  "conv_l1": 0.37651868853458226,
+  "mlp_l1": 0.7733112402638115,
+  "inflation": 2.05384556945514,
+  "conv_T1_steps": 214,
+  "conv_H_emp": 190.0,
+  "conv_ratio": 0.8878504672897196,
+  "conv_calibrated": true,
+  "relmse_conv": 1.5939079117396845e-06,
+  "relmse_mlp": 1.2276130342522434e-05,
+  "N": 24,
+  "eps": 0.2,
+  "seed": 0,
+  "smoke": false
+}
