@@ -779,3 +779,16 @@ discipline: verify before implementing. The reviewer's *valid* adjacent point (s
 §5.20 baseline) is now explicit in §5.20 + E12: both models identically trained (same data, same $K$-step rollout
 loss). Remaining true item from that review: the **step84 JSON in-repo is a degenerate smoke run** — the real 3080
 re-run is queued (`run_step84.sh`, one command) but the **box is offline**; fire on wake.
+
+## [2026-06-09] step84 re-run on the RTX 3080 — the lost "real run" reproduced EXACTLY; §5.19's artifact gap closed
+
+The reviewer-flagged desk-reject hook ("§5.19 cites numbers whose JSON is not in the repo — the shipped JSON was a
+degenerate smoke run") is closed: `run_step84.sh` re-ran end-to-end on the 3080 (box commit/push failed as the script
+itself anticipates — deprecated auth; artifacts pulled and committed from the controller). **Every load-bearing number
+in §5.19/E11 reproduced exactly**: true swing-up $\lambda_1{=}0.0939$ (prose $0.094$); equivariant relMSE
+$4.77{\times}10^{-5}$ (prose $4.8{\times}10^{-5}$); ratio chain $0.42\to0.47\to0.93$; calibrated
+$\epsilon^\*{=}0.3$, $T_1{=}82$; $H^\star{=}41$ (return $-264.3$, success $0.67$) vs cert-aware $H{=}82$ ($-282.0$);
+$H{\ge}164$ success $0$; **non-equivariant $H^\star{=}78$ vs $T_1{=}156$** (the "same $2\times$ gap");
+G-binding TRUE; G-ii honest no-win; verdict string = the in-paper INCONCLUSIVE. smoke=false, 3 seeds.
+§5.19's "(figure pending sync)" replaced with the real figure embed. The prose needed **zero** corrections — the
+original run was faithful; only its artifact had been lost.
