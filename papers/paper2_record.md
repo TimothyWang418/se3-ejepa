@@ -594,3 +594,60 @@ where that certificate is *tight*. Plan → subagent-driven TDD (`step82` + `tes
 - **Triad (ii) no-tuning return-win = INCONCLUSIVE ×2 (honest).** Two pre-registered rules both fail to beat best-tuned blind: cap at $T_1$ of a *fixed* $\epsilon$; cap at $T_1$ of the *calibrated* $\epsilon$ (where certified $\approx$ measured). Both land at ~$2\times$ return-optimal depth. NO return-win claimed.
 - **Honest verdict.** Certificate is accurate (i) and binds for planning (iii) on a recognized chaotic control benchmark, and gives a sound no-tuning planning depth **within a constant factor (~$2\times$) of optimal** that provably bounds where planning helps — but it is not the return-optimum, so the clean return-win does **not** land.
 - **Folded:** paper2 **§5.19 (Experiment 21)** as honest corrected result (no figure embed — `step84_certified_control_benchmark` pending GPU-box sync); ICLR **(E11)** compact figure-free paragraph after E10. `step84`, `tests/test_step84.py`.
+
+## [2026-06-09] Experiment 22 — structure → trustworthy certificate → downstream win (step85, direction ③; A wins, B calibrates, C honest-negative)
+
+Closes the paper's own loop: E2/Step 83 *measures* that the $\mathbb{Z}_N$-conv recovers the $N{=}40$ spectrum
+($R^2{=}0.98$) where the dense MLP's is garbage ($R^2{<}0$, $\lambda_1$ inflated $\sim3$–$4\times$). Exp 22 gives that
+faithfulness a **downstream consequence** on the D2 active-re-observation task (Lorenz-96 $N{=}40$, $u\equiv0$, 3 seeds),
+reusing `step74` conv/MLP + `step79`'s D2 machinery. Brainstorm → spec → CPU G0/G1 → 3080 for C; design
+`docs/specs/2026-06-08-step85-...md` (+ revisions 2026-06-09a/b), `tests/test_step85.py` & `test_step85b.py` (10 green).
+
+- **B (premise, G0 PASS 3/3).** The conv certificate is **calibrated** at $N{=}40$ D2: measured/certified horizon
+  ratio $1.17,0.63,0.82$ (all in $[\tfrac12,2]$). The MLP $\lambda_1$ is inflated $3.19,3.50,3.46\times$ (certified
+  horizon $24$–$28$ steps) but its **empirical** horizon is $64$–$73$ — so its cert is **pessimistic** ($\rho_{\rm
+  self}\approx2.5$), not optimistic. **Forecasters are MATCHED** (conv empirical horizon $62$–$104$, MLP $64$–$73$;
+  both one-step relMSE $\sim10^{-5}$): the MLP forecasts *values* as well as the conv and fails **only on the
+  certificate** (the Jacobian/spectrum) — the confound (forecaster vs certificate) is **absent in the data**.
+- **A (headline, G1 PASS 3/3).** *Cert-isolated, fixed-budget frontier* — hold the forecaster fixed (the conv) and feed
+  it the conv-cert interval ($T_1^{\rm lo}$, $72$–$84$ steps) vs the MLP-cert interval ($24$–$28$); sweep the observation
+  budget. The inflated-$\lambda_1$ MLP cert **over-observes $\sim3\times$ → starves the budget → episode tail runs
+  open-loop → higher aggregate violation.** At the knee budget $B^\star{\approx}18$–$21$: conv-cert violation
+  $0.08$–$0.16$ vs MLP-cert $0.61$–$0.65$, **margins $+0.45,+0.50,+0.57$ (3/3).** Same forecaster ⇒ the gap **is** the
+  $\lambda_1$ ratio. The fixed budget is **load-bearing**: without it the MLP's over-observation reads as "safe" and a
+  naive violation comparison would favour the wrong model (Exp-22 empirically validates the spec §2 resolution).
+- **Adaptive foil (honest scope).** A cert-FREE AIMD agent (learns the cadence from observed error) loses badly at the
+  knee ($0.83$ vs conv's $0.16$ — it burns scarce budget exploring) and **only overtakes the certificate at $\sim3\times$
+  budget.** So the certificate's value is precisely the **a-priori / tight-budget / few-shot warm-start**; its
+  *necessity* (no-feedback safety) is direction ① territory.
+- **Global-cert ceiling (→ motivated C).** The conv-cert arm plateaus at $0.08$–$0.16$, not $0$, even at large budget:
+  a *global* interval (global $\lambda_1$) is too long for locally-hard orbit stretches (FTLE variation; $p25$ empirical
+  horizon $69.5 <$ iv_conv $77$).
+- **C (step85b, INCONCLUSIVE — honest negative, RTX 3080).** Full-spectrum allocation across a forcing-$F$ ensemble
+  ($F\in\{6,8,10,13\}$, $L{=}1500$, 3 seeds, CUDA): split a fixed total budget by each spectrum's $\lambda_1(F)$,
+  forecast each regime with its conv (cert-isolated). **conv-allocation does NOT beat MLP-allocation** — best margins
+  $[-0.011,-0.003,+0.024]$, **0/3** (the 2F/$L{=}300$ smoke's $+0.085$ was a small-scale false positive). Two
+  mechanisms: (1) the learned conv $\lambda_1$ is **under-biased at low $F$** ($F{=}6$: $0.68$ vs true $1.03$) → it
+  under-allocates to the weakly-chaotic regime, which still needs a *coverage floor*, so it **starves** it, while the
+  MLP's range-compressed (flat) weights accidentally don't; (2) $\propto\lambda_1$ allocation is itself not optimal
+  (even the oracle doesn't strictly dominate the flat split). The precheck's weight-distance distortion ($0.219$ vs
+  conv $0.081$) did **not** transfer to a downstream win. **No gate loosening** — recorded as the honest negative sample.
+- **Honest verdict.** ③ lands on **A** (a clean cert-isolated *efficiency-under-budget* win that makes E2's $R^2$
+  consequential — within-method, so Exp-21's $\sim2\times$ conservatism cancels) **+ B** (calibration) **+ an honest
+  C-negative**. Ceiling = *mechanism + efficiency*, not a safety/necessity claim. Realistic per the seed ("landing one
+  cleanly takes the paper to ~8"); A is that one.
+- **Proposed paper paragraph (paper2 §5.20 / ICLR E12 — DRAFT, not yet placed; awaiting review before editing the
+  canonical draft):** *"Does a faithful spectrum's certificate change what an agent should do? On $40$-D Lorenz-96 an
+  agent must schedule sparse re-observations of a chaotic forecast under a fixed sensing budget. Timing re-observation
+  by the $\mathbb{Z}_N$-equivariant model's certified horizon yields $8$–$16\%$ aggregate forecast-violation at the knee
+  budget; timing it by the non-equivariant model's certificate — whose leading exponent is inflated $\sim3\times$ —
+  over-samples, exhausts the budget, and leaves the episode open-loop, at $61$–$65\%$ violation (3/3 seeds). The two
+  models forecast equally well (matched empirical horizon, relMSE $\sim10^{-5}$); the gap is attributable solely to the
+  certificate, which the equivariant model's spectral faithfulness makes calibrated. The advantage is an a-priori
+  warm-start: a feedback-driven adaptive scheduler matches it only given $\sim3\times$ the budget. (A budget allocation
+  across a chaoticity ensemble did not yield a further win — the learned spectrum is not accurate enough at low forcing
+  to beat a flat allocation; reported honestly.)"*
+- **Status / not yet folded:** figure `papers/figures/step85_headline.png` ready (3-panel: calibration | cert-isolated
+  budget frontier | package E-vs-N). Canonical paper2/ICLR sections **drafted above, not yet placed** (autonomous
+  paper-rewrite left for user review). `step85`, `step85b`; commits `b3723d4` (G0) `a19a7ba` (Phase1+tests) `b3a5383`
+  (G1) `117a6f9` (figure) `ffc470f` (C-negative).
