@@ -767,3 +767,15 @@ one-parameter recalibration closes the gap. Fixed, zero compute:
 - Cross-session note: Prop 9 (`99ede0b`) and ② Stage A (`3cd9bbc`, honest finding: the gradient-explosion diagnostic is
   the Lyapunov amplification restated — Stage B remains the real ~0.4 gamble) landed from a parallel session; this
   entry completes the P0 their work left open. PDF rebuild still pending (Rosetta).
+
+## [2026-06-09] Review-claim verification — §5.17's "2/3 frontier" stands (reviewer false-positive); recipe-parity clause added
+
+Verified reviewer B's flag "step81 double-pendulum frontier is 0/3 vs the prose's 2/3" against the JSON before editing:
+**false positive** — `step81_double_pendulum.json` has `frontier_wins_pred = 2` at the double pendulum's own calibrated
+$\epsilon{=}0.7$ (seeds 0/1 on-frontier), exactly what §5.17 claims ("knee at $\epsilon{=}0.7$ … the same $2/3$
+frontier"); the reviewer read only the tight/mid/hi fields (0/0/0) and missed the predictive regime. step80 ring
+likewise supported (`frontier_wins_predictive = 2` at $\epsilon{=}0.3$). **No edit to §5.17** — receiving-review
+discipline: verify before implementing. The reviewer's *valid* adjacent point (state training-recipe parity for the
+§5.20 baseline) is now explicit in §5.20 + E12: both models identically trained (same data, same $K$-step rollout
+loss). Remaining true item from that review: the **step84 JSON in-repo is a degenerate smoke run** — the real 3080
+re-run is queued (`run_step84.sh`, one command) but the **box is offline**; fire on wake.
