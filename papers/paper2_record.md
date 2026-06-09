@@ -747,3 +747,23 @@ an independent go/no-go** — it doesn't de-risk the actual ② question.
   is *optional second-result upside*. Either run the Stage-B gamble, or **consolidate** ③ (it's solid). `step87`, commit
   pending. (Note: the cert-gating *design* — gate the imagination at the certified horizon — is principled and recorded
   even if Stage B is not run.)
+
+## [2026-06-09] P0 sync & rewrite (Fable-5 review) — §5.20 single-arc rewrite + ICLR brought up to date
+
+Fable-5's fresh review of the post-B state found one real inconsistency *we introduced ourselves*: paper2 §5.20 had
+been amended three times (horizon-wording fix → ring generality → recalibration reframe) into a patchwork whose claims
+ICLR never received — E12 still made the *unscoped* actionability claim while the repo's own `step85c` JSON shows a
+one-parameter recalibration closes the gap. Fixed, zero compute:
+
+- **paper2 §5.20 rewritten as ONE arc** around the final claim — *structure makes the certificate trustworthy before
+  any data is spent* — with the budget law (Prop 9), the two scoping controls (adaptive $3\times$ budget; recalibration
+  spends a calibration set), and the ring replication integrated rather than appended. Title now carries "a-priori,
+  with zero calibration data."
+- **paper2 abstract / contribution-3 / conclusion** updated to the scoped claim (+ Prop 9, + ring, + zero-rollout-data).
+- **ICLR synced**: abstract + intro item (v) now scoped (*actionable, a priori*; recalibration caveat; ring); **E12
+  rewritten** to match §5.20 (Prop 9 law, catch-up budget $2.7$–$3.5\times$, recal control, ring replication,
+  `step85c`/`step88` artifacts); **Proposition 9 added to the ICLR proofs appendix** (statement + proof + remark,
+  numbering consistent with its Props 4–8).
+- Cross-session note: Prop 9 (`99ede0b`) and ② Stage A (`3cd9bbc`, honest finding: the gradient-explosion diagnostic is
+  the Lyapunov amplification restated — Stage B remains the real ~0.4 gamble) landed from a parallel session; this
+  entry completes the P0 their work left open. PDF rebuild still pending (Rosetta).

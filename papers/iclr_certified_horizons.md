@@ -21,8 +21,10 @@ Lorenz, Hénon, Rössler, and a $40$-dimensional Lorenz-96 model where a $\mathb
 full Lyapunov spectrum ($R^2{=}0.98$) while a dense *and* a same-trained recurrent model fail. Finally, a cone/adapted-metric
 certificate (Theorem B′) makes "certified" **literal** — a sound, a-priori-guaranteed horizon read from the learned
 model, provably tight on uniformly-hyperbolic dynamics and self-abstaining where it cannot. The certificate is also
-*actionable*: its faithfulness lets an agent meet a fixed sensing budget on a $40$-D chaotic forecast where a
-$\sim3\times$-inflated non-equivariant certificate over-observes and starves it ($8$–$16\%$ vs $61$–$65\%$ violation, E12).
+*actionable — a priori*: its faithfulness lets an agent meet a fixed sensing budget on a $40$-D chaotic forecast where a
+$\sim3\times$-inflated non-equivariant certificate over-observes and starves it ($8$–$16\%$ vs $61$–$65\%$ violation,
+replicated on a second $\mathbb{Z}_N$ system; a $c\times$-inflated certificate provably needs $c\times$ the budget,
+Proposition 9; a dense certificate closes the gap only by spending a calibration set — E12).
 A scope theorem (Proposition 7) says when the law is informative; §6 states the $1$–$2$-GPU scope.
 
 ---
@@ -83,9 +85,10 @@ cannot transfer the exponent; (iii) the **structure-vs-recurrence separation** (
 recovers a $40$-D spectrum, while an unstructured *recurrent* model provably cannot, by the conditional-Lyapunov
 condition; (iv) **Theorem B′** turns the certificate from *measured* into *literal* — a sound, a-priori horizon read
 from the learned model, tight on uniformly-hyperbolic dynamics and self-abstaining elsewhere; and (v) the certificate's
-faithfulness is **actionable** (E12) — holding the forecaster fixed, it meets a fixed sensing budget a $\sim3\times$-inflated
-non-equivariant certificate cannot, delivering the opening promise that an acting agent needs to know not just the
-average error but *whether, and for how long, to trust the model*. These assemble
+faithfulness is **actionable, a priori** (E12; Proposition 9) — holding the forecaster fixed, it meets a fixed sensing
+budget a $\sim3\times$-inflated non-equivariant certificate cannot, with **zero calibration data** (a dense certificate
+matches only after recalibration on measured rollouts), delivering the opening promise that an acting agent needs to
+know not just the average error but *whether, and for how long, to trust the model*. These assemble
 (Algorithm 1) into one certificate *exclusive to structure* (Lemma 2) whose unbounded-horizon
 subspace is the conserved/invariant one (the Noether hinge). We credit the classical pillars we build on — the
 Lyapunov/NWP horizon law, invariant decision theory, and the $e^{\lambda T}$ growth — explicitly in §3 and §5.
@@ -376,7 +379,7 @@ the certificate **self-diagnoses** which regime it is in (`step82`).
 
 **(E11) On a recognized chaotic control benchmark.** On Gymnasium Acrobot-v1 (underactuated swing-up, $\lambda_1{=}0.094$) a learned Z$_2$-equivariant world model's certified horizon *tracks* its measured rollout-divergence horizon (two-regime: ratio $0.42{\to}0.47{\to}0.93$ as $\epsilon$ coarsens) and *binds for planning* — task return has a sharp interior optimum in plan depth $H$, and planning past the predictability horizon (deeper than $\sim\!T_1$) fails. Capping plan depth at the certified $T_1$ *solves* the task (swing-up $67$–$100\%$) and bounds where planning helps, but the return-optimal depth is $\sim\!T_1/2$, so two pre-registered no-tuning rules (cap at $T_1$ of a fixed, and of a calibrated, $\epsilon$) are **INCONCLUSIVE** against the best-tuned blind horizon: the certificate gives a sound planning depth *within a constant factor of optimal*, not the optimum. (`step84`.)
 
-**(E12) The certificate's trustworthiness changes a budgeted decision.** On $40$-D Lorenz-96 an agent schedules sparse re-observations of a chaotic forecast under a fixed sensing budget. Holding the forecaster fixed (the $\mathbb{Z}_N$-equivariant model) and varying *only* the certificate that times re-observation: the equivariant certificate yields $8$–$16\%$ aggregate forecast-violation at the knee budget vs. $61$–$65\%$ for the non-equivariant certificate, whose $\lambda_1$ is inflated $\sim3\times$ and which therefore over-observes and starves the budget (margins $+0.45/+0.50/+0.57$, $3/3$). The two models have comparable one-step fidelity (relMSE $\sim10^{-5}$) and empirical horizons of the same order; the gap is the certificate, which the equivariant model's spectral faithfulness (E2) makes calibrated. The value is an *a-priori* warm-start — a feedback-driven adaptive scheduler matches it only at $\sim3\times$ the budget; the contrast is within-method, so E11's $\sim2\times$ conservatism cancels. (A budget *allocation* across a chaoticity ensemble did *not* win — the learned spectrum is too inaccurate at low forcing to beat a flat allocation; reported honestly.) (`step85`, `step85b`.)
+**(E12) The certificate's trustworthiness changes a budgeted decision — a priori.** On $40$-D Lorenz-96 an agent schedules sparse re-observations of a chaotic forecast under a fixed sensing budget. Holding the forecaster fixed (the $\mathbb{Z}_N$-equivariant model; the two models forecast comparably — one-step relMSE $\sim10^{-5}$, empirical horizons of the same order) and varying *only* the certificate that times re-observation: the equivariant certificate yields $8$–$16\%$ aggregate violation at the knee budget vs. $61$–$65\%$ for the non-equivariant certificate, whose $\lambda_1$ is inflated $\sim3.4\times$ and which therefore over-observes and starves the budget (margins $+0.45/+0.50/+0.57$, $3/3$; **Proposition 9** makes the cost a law — a $c\times$-inflated certificate needs $c\times$ the budget, and the measured catch-up is $2.7$–$3.5\times$). Two controls scope the claim: a certificate-free adaptive scheduler matches only at $\sim3\times$ the budget (the certificate is an *a-priori* warm-start), and a *recalibrated* dense certificate closes the gap ($3/3$) but only by **spending a calibration set** — the equivariant certificate is correct from the Jacobian with **zero rollout data**. The contrast **replicates on the driven–damped pendulum ring** ($\mathbb{Z}_N$, $N{=}24$: dense $\lambda_1$ inflated $\sim2\times$; equivariant certificate wins under budget on $2/3$ seeds) — two symmetry groups, two physical systems, one mechanism; the within-method framing cancels E11's $\sim2\times$ conservatism. (A budget *allocation* across a chaoticity ensemble did *not* win — the learned spectrum is too inaccurate at low forcing to beat a flat allocation; reported honestly.) (`step85`, `step85b`, `step85c`, `step88`.)
 
 ---
 

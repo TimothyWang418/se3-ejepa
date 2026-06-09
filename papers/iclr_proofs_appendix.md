@@ -197,6 +197,34 @@ and the high-dimensional experiment shows this proxy degrades with dimension: a 
 an inaccurate Jacobian and hence a wrong spectrum; structure (a $\mathbb{Z}_N$-equivariant, banded-Jacobian model)
 restores it. The dominated-splitting hypothesis is assumed, not certified, for the learned models.
 
+### Proposition 9 (budgeted re-observation — a mis-estimated horizon costs a proportional budget)
+
+*Statement.* Consider an agent that forecasts the map open-loop from a re-observation, the leading-mode error growing
+as $\delta_t\approx\delta_0 e^{\lambda_1\Delta t\,t}$ over map steps $t$ (step $\Delta t$, $\lambda_1>0$), so the
+trustworthy horizon at resolution $\epsilon$ is $H(\epsilon)=\lfloor\log(\epsilon/\delta_0)/(\lambda_1\Delta t)\rfloor$
+(the certified horizon of §3.2, in map steps). The agent re-observes (resets the error to $\delta_0$) at a fixed
+cadence and may re-observe at most $B$ times over an episode of $L$ map steps (a **sensing budget**); a step is a
+*violation* if its forecast error exceeds $\epsilon$. A certificate reporting $\hat\lambda_1=c\,\lambda_1$ ($c>0$)
+prescribes cadence $\hat H=H/c$. Then **(i)** for $c\ge1$ in the budget-binding regime $BH/c<L$, the aggregate
+violation rate is
+$$V(c)=\max\!\big(0,\;L-BH/c-H\big)/L,$$
+which is **non-decreasing in $c$** (strictly increasing while $BH/c+H<L$); and **(ii)** the budget needed to drive $V$
+to zero is $B^\star(c)=\lceil c\,(L-H)/H\rceil$ — **linear in $c$**: a certificate inflated $c\times$ demands $c\times$
+the observations to certify the same episode.
+
+*Proof.* With cadence $\hat H=H/c\le H$, every window before the last re-observation (at step $B\hat H=BH/c$) stays
+under $\epsilon$ — the error reaches $\epsilon$ only after $H\ge\hat H$ steps — so the covered $BH/c$ steps are
+violation-free; after the last re-observation the open-loop forecast exceeds $\epsilon$ only after a further $H$ steps,
+leaving $\max(0,\,L-BH/c-H)$ violating steps, which is $V(c)$. As $BH/c$ is non-increasing in $c$, $V$ is
+non-decreasing, strictly so while the numerator is positive; $V=0$ requires $BH/c\ge L-H$, i.e. $B\ge c(L-H)/H$.
+$\square$
+
+*Remark.* $V(c)$ is computable a priori from the inflation $c$ and the budget $B$, so it *predicts* the violation gap;
+the calibrated certificate ($c{=}1$) is the budget-minimal violation-free cadence, and only structure delivers $c{=}1$
+a priori (E2 / Proposition 8). E12 instantiates the law: a non-equivariant certificate with $c\approx3.4$ on Lorenz-96
+(resp. $c\approx2$ on the pendulum ring) needs $\approx3\times$ (resp. $\approx2\times$) the budget to match the
+equivariant certificate, and the gap closes exactly when recalibration restores $c\to1$.
+
 ### Proposition 4 (isotypic placement)
 
 *Statement.* A conserved charge $Q:\mathcal Z\to W$ that is $G$-equivariant (intertwines $\rho$ with a representation
