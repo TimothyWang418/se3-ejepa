@@ -712,3 +712,21 @@ $-0.06/+0.08/+0.04$ — **gap closed on 3/3 seeds**.
 **B COMPLETE.** B-generality (step88, ring G1 PASS 2/3) + B-calibration (step85c, reframe to a-priori). Both fold into
 §5.20 and harden ③-A toward 8/oral: a second system answers "single-system narrowness," and the a-priori scoping
 answers "just recalibrate." `step85c`, commit pending. Next: **C (② cert-gated MBRL)**, gated on these B results.
+
+## [2026-06-09] Proposition 9 — ③-A's decision-relevance made PROVABLE (reviewer A's #2; theory, no compute)
+
+Reviewer A's #2 lever: turn ③-A from an empirical observation into a theorem (the paper's brand is "provable"). Added
+**Proposition 9 (budgeted re-observation — a mis-estimated horizon costs a proportional budget)** to §3.2 after Prop 8.
+A renewal/coverage argument: with sensing budget $B$ over an episode of $L$ steps and trustworthy horizon $H=T_1/\Delta t$,
+a certificate inflated $c\times$ (cadence $H/c$) gives aggregate violation $V(c)=\max(0,L-BH/c-H)/L$ — **non-decreasing
+in $c$** — and needs $B^\star(c)=\lceil c(L-H)/H\rceil$ observations to reach zero violation — **linear in $c$**. Proof:
+coverage/renewal (covered windows under $\epsilon$; open-loop tail violates after $H$). 
+
+- **Why it matters:** (i) makes the decision-relevance a *law*, removing the "dressed-up calibration" critique (reviewer
+  A's sharpest); (ii) it's *predictive* — $V(c)$ computable a priori; (iii) it explains the experiments *quantitatively*:
+  Lorenz-96 $c\approx3.4\Rightarrow\approx3\times$ budget, ring $c\approx2\Rightarrow\approx2\times$, recalibration $c\to1$
+  closes the gap (step85c) — all forced by Prop 9; (iv) ties §5.20 to §3 (only structure delivers $c=1$ a priori, Prop 8).
+- Referenced from §5.20. `paper2_certified_world_models.md` §3.2 + §5.20. commit pending.
+
+**Status:** ③-A now has generality (step88) + a-priori scoping (step85c) + a provability law (Prop 9) — the three
+highest-value reviewer levers, all landed. C (② MBRL, ~0.4 gamble) remains the open choice.
