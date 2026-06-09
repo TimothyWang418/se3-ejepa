@@ -693,3 +693,22 @@ unmodified). `experiments/step88_ring_generality.py`; `papers/figures/step88_rin
   $\sim1.15$–$2\times$ vs L96's $3.0$–$3.9\times$). But the **mechanism transfers** — ③-A is a class property across two
   symmetry groups and two physical systems, not a Lorenz-96 idiosyncrasy. Folded into §5.20 (the generality sentence).
   `step88`, commit pending.
+
+## [2026-06-09] step85c (B-calibration baseline) — the do-or-die ablation → REFRAME (③-A is a-priori, not exclusive)
+
+The reviewers' make-or-break ablation: the MLP $\lambda_1$ inflation is near-constant ($3.19/3.50/3.46$) — can a
+one-parameter recalibration close the gap? **Yes, 3/3.** Adding a recalibrated-MLP-cert arm (MLP cert set to its
+**measured** empirical horizon) to the cert-isolated frontier (`experiments/step85c_calibration_baseline.py`,
+`papers/figures/step85c_calibration_baseline.json`, N=40, 3 seeds): the raw-MLP gap $+0.45/+0.50/+0.57$ shrinks to
+$-0.06/+0.08/+0.04$ — **gap closed on 3/3 seeds**.
+
+- **Honest consequence = REFRAME, not refutation.** ③-A is NOT "only equivariance can act." It is: the equivariant
+  model's certificate is correct **a-priori** (from the Jacobian, **zero rollout/calibration data**), whereas a dense
+  model matches it **only after measuring its horizon on a calibration set** — exactly the $\sim3\times$ warm-start cost
+  the cert-free adaptive baseline already pays. The precise claim is **"structure buys a trustworthy certificate without
+  calibration data."** This is cleaner and more defensible than the original framing, and pre-empts the obvious reviewer
+  attack ("just recalibrate the dense cert"). Folded into §5.20.
+
+**B COMPLETE.** B-generality (step88, ring G1 PASS 2/3) + B-calibration (step85c, reframe to a-priori). Both fold into
+§5.20 and harden ③-A toward 8/oral: a second system answers "single-system narrowness," and the a-priori scoping
+answers "just recalibrate." `step85c`, commit pending. Next: **C (② cert-gated MBRL)**, gated on these B results.
