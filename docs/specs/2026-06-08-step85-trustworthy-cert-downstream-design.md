@@ -238,3 +238,35 @@ agent cannot afford the exploration and the a-priori certificate's correct-from-
 certificate's *necessity*, as opposed to warm-start value, lives in the no-feedback safety setting — direction ①.)
 This is the honest ceiling of ③: a clean **mechanism + efficiency-under-budget** result that makes E2's $R^2$
 consequential, not a safety/necessity claim.
+
+## 12. Revision 2026-06-09b — after Phase 1+2 (G1 PASS 3/3, with the adaptive foil & a global-cert ceiling)
+
+Phase 1+2 ran at $N{=}40$, $\epsilon=0.2$, $L{=}1500$, 3 seeds, full training + Benettin-QR
+(`run_phase1`; result `papers/figures/step85_phase1_frontier.json`; tests `tests/test_step85.py`, 6 green). **G1
+PASSED 3/3.** At the knee budget $B^\*={\rm ceil}(L/{\rm iv\_conv})\approx18\!-\!21$, the conv-cert arm aggregate
+violation is $0.077\!-\!0.165$ vs the MLP-cert arm $0.615\!-\!0.645$ (**margins $+0.45,+0.50,+0.57$**), with the
+forecaster held fixed (intervals iv_conv $72\!-\!84$ vs iv_mlp $24\!-\!28$, ratio $\approx3$ = the $\lambda_1$
+inflation). Three results that finalize the framing:
+
+1. **Package $\approx$ cert-isolated.** The MLP-forecaster arm (`mlp_pkg`, Agent N) tracks the cert-isolated MLP arm
+   (`mlp_iso`) to within $\sim0.01$ (e.g. seed 0: $0.605$ vs $0.615$ at the knee). G0's "matched forecasters" is borne
+   out end-to-end: the package result is the certificate result; the forecaster is not the lever.
+
+2. **The adaptive foil behaves exactly as scoped.** The cert-free AIMD agent is *worse* than the certificate under a
+   tight budget — at the knee it sits at $0.83\!-\!0.84$ violation (it burns scarce budget exploring up from the timid
+   init) vs the conv-cert's $0.08\!-\!0.16$ — and only **overtakes** the certificate at $\sim3\times$ the knee budget
+   (e.g. seed 0: at $B{=}61$ adaptive $0.004$ vs conv-cert's plateau $0.165$). So the certificate's value is precisely
+   the **a-priori / tight-budget / few-shot warm-start**, and the writeup says so. The foil makes the claim credible
+   rather than overstated.
+
+3. **A global-certificate ceiling (new, motivates `step85b`).** The conv-cert arm does NOT go to $0$ even at large
+   budget — it plateaus at $0.077\!-\!0.165$ — because a *single global* interval (from the global $\lambda_1$) is too
+   long for the locally-hard stretches of the orbit (finite-time Lyapunov variation; cf. G0's $p25$ empirical horizon
+   $69.5 <$ iv_conv $77$). This is the honest limit of a scalar-$\lambda_1$ certificate and is *exactly* the opening for
+   **step85b (C)**: a *full-spectrum / per-regime* allocation that reads local difficulty should close this gap where a
+   global interval cannot.
+
+**Status & what the 3080 adds.** This is full-$N{=}40$, 3 seeds, but a *single* trajectory launch per seed and
+smoke-grade bootstrap. For publication the 3080 run adds: multiple launches/seed with **frontier error bars**, a finer
+budget grid, and the **headline figure** (calibration; cert-isolated budget frontier conv-cert vs MLP-cert vs adaptive;
+package E-vs-N). The scientific signal is already unambiguous (margins $\approx0.5$, 3/3). Direction ③ has **landed**.
