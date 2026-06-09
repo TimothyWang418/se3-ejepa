@@ -58,3 +58,19 @@ Reuse `step74` (per-$F$ conv/MLP + spectra), `step78` (CI), `step79` (certificat
   and the only one giving genuine matched-budget frontier dominance, but the heaviest (per-$F$ retraining, 3080) and the
   least de-risked (the ranking-scramble precheck can kill it cheaply — which is exactly why that precheck runs first).
 - Same discipline as `step85` and the step79–84 cadence: brainstorm → spec → CPU/precheck → 3080, folded only if G passes.
+
+## Precheck result (2026-06-09) — C ALIVE but MODERATE; mechanism is range-compression, not rank-scramble
+
+Ran `experiments/step85b_spectrum_allocation.py` (N=40, seed 0, $F\in\{6,8,10,13\}$; result
+`papers/figures/step85b_allocation_precheck.json`). **C_alive = True**: allocation-L1 mlp-vs-true $=0.219$ vs
+conv-vs-true $=0.081$ (MLP $\sim2.7\times$ worse). **But both rank-correlations are $1.00$** — the MLP gets the regime
+*ranking* right (its $\lambda_1$ does rise with $F$: $6.10\to6.67\to7.94\to9.54$). The de-risk precheck's worst case
+(ranking preserved $\Rightarrow$ C dead) did **not** occur, but the misallocation is **range compression**, not
+rank-scramble: the MLP's inflation is largest at low chaos ($8.98\times$ @F6) and shrinks at high ($3.27\times$ @F13),
+flattening its weights — $[0.20,0.22,0.26,0.32]$ vs true $[0.11,0.20,0.29,0.39]$ — so it **over-weights easy regimes,
+under-weights hard ones.** True $\lambda_1(F{=}8){=}1.773$ matches the cached step74 spectrum (correctness anchor).
+
+**Implication.** Full C is worth building as a **supporting** result (a faithful spectrum allocates a fixed budget
+better across a chaoticity ensemble), but expect a **modest** margin (a $\sim0.14$ L1 weight shift), not the dramatic
+effect of A. The 3080 buys the $F$-sweep $\times$ seeds **training** (CUDA). Confidence unchanged $\sim0.4$, now with
+the failure mode pinned: it lands a *moderate* allocation win, contingent on the compression surviving at scale/seeds.
