@@ -1,0 +1,699 @@
+{
+  "smoke": true,
+  "device": "cpu",
+  "env": "Acrobot-v1",
+  "group": "Z_2 reflection (theta,omega -> -theta,-omega; a -> 2-a)",
+  "env_equivariance": {
+    "max_err": 8.881784197001252e-16,
+    "commutes": true
+  },
+  "rk4_matches_gym": {
+    "max_err": 2.8530534823545395e-08,
+    "matches": true
+  },
+  "true_dynamics": {
+    "lambda1": 0.07967183988972244,
+    "lambda1_ci": [
+      0.05768319302210247,
+      0.10003161395359095
+    ],
+    "spectrum": [
+      0.07967183988972244,
+      0.05246025928381948,
+      -0.057344362466630945,
+      -0.10096018973348399
+    ]
+  },
+  "eps_list": [
+    0.1,
+    0.3
+  ],
+  "seeds": [
+    0
+  ],
+  "equivariant": {
+    "kind": "equi",
+    "one_step_relmse": 0.08713418990373611,
+    "cert": {
+      "lambda1": 0.0019887209223461862,
+      "lambda1_ci": [
+        0.0007826228199989703,
+        0.008743639483039979
+      ],
+      "T1": 605.4005822524126,
+      "T1_ci": [
+        137.69698609615367,
+        1538.3819300432874
+      ],
+      "T1_steps": 605,
+      "route": "bootstrap",
+      "cone_t_guar": 0,
+      "cone_lambda_cert": 1.5149858570622743,
+      "L_J_net": 1.0362189454704842,
+      "kappa": 9.981702385133355,
+      "h": 0.1533006770616359,
+      "beats_euclidean": false,
+      "eps": 0.3,
+      "n_pos_exponents": 3,
+      "spectrum": [
+        0.0019887209223461862,
+        0.00037652583988977785,
+        0.0002846802057672673,
+        -0.003952489329153087,
+        -0.00930013320438036,
+        -0.018077035915860202
+      ]
+    },
+    "G0": {
+      "passed": true,
+      "lambda1": 0.0019887209223461862,
+      "lambda1_ci": [
+        0.0007826228199989703,
+        0.008743639483039979
+      ],
+      "strong": true
+    },
+    "triad_i": {
+      "rows": [
+        {
+          "eps": 0.1,
+          "T1_steps": 1158,
+          "T1": 1157.8221293501451,
+          "T1_ci": [
+            263.34401109061804,
+            2942.1389642038234
+          ],
+          "lambda1": 0.0019887209223461862,
+          "lambda1_ci": [
+            0.0007826228199989703,
+            0.008743639483039979
+          ],
+          "measured_median": 60.0,
+          "measured_p25": 60.0,
+          "measured_p75": 60.0,
+          "n_censored": 8,
+          "ratio_measured_over_certified": 0.05181347150259067,
+          "route": "bootstrap",
+          "cone_t_guar": 2,
+          "L_J_net": 1.0362189454704842
+        },
+        {
+          "eps": 0.3,
+          "T1_steps": 605,
+          "T1": 605.4005822524126,
+          "T1_ci": [
+            137.69698609615367,
+            1538.3819300432874
+          ],
+          "lambda1": 0.0019887209223461862,
+          "lambda1_ci": [
+            0.0007826228199989703,
+            0.008743639483039979
+          ],
+          "measured_median": 60.0,
+          "measured_p25": 60.0,
+          "measured_p75": 60.0,
+          "n_censored": 8,
+          "ratio_measured_over_certified": 0.09917355371900827,
+          "route": "bootstrap",
+          "cone_t_guar": 0,
+          "L_J_net": 1.0362189454704842
+        }
+      ],
+      "lambda1": 0.0019887209223461862,
+      "route": "bootstrap"
+    },
+    "calibration": {
+      "eps_star": 0.3,
+      "ratio_star": 0.09917355371900827,
+      "T1_steps": 605,
+      "T1": 605.4005822524126,
+      "row": {
+        "eps": 0.3,
+        "T1_steps": 605,
+        "T1": 605.4005822524126,
+        "T1_ci": [
+          137.69698609615367,
+          1538.3819300432874
+        ],
+        "lambda1": 0.0019887209223461862,
+        "lambda1_ci": [
+          0.0007826228199989703,
+          0.008743639483039979
+        ],
+        "measured_median": 60.0,
+        "measured_p25": 60.0,
+        "measured_p75": 60.0,
+        "n_censored": 8,
+        "ratio_measured_over_certified": 0.09917355371900827,
+        "route": "bootstrap",
+        "cone_t_guar": 0,
+        "L_J_net": 1.0362189454704842
+      },
+      "ranking": [
+        {
+          "eps": 0.3,
+          "ratio": 0.09917355371900827,
+          "dist_to_1": 0.9008264462809917
+        },
+        {
+          "eps": 0.1,
+          "ratio": 0.05181347150259067,
+          "dist_to_1": 0.9481865284974094
+        }
+      ],
+      "fallback_no_finite_ratio": false
+    },
+    "eps_star": 0.3,
+    "T1_steps_calibrated": 605,
+    "T1_steps_fixed_eps": 605,
+    "fixed_eps": 0.3,
+    "triad_ii": {
+      "T1_steps": 605,
+      "H_sweep": [
+        1,
+        302,
+        605,
+        1210,
+        2420
+      ],
+      "per_H": {
+        "1": {
+          "H": 1,
+          "is_cert": false,
+          "returns": [
+            -200.0
+          ],
+          "mean_return": -200.0,
+          "median_return": -200.0,
+          "success_rate": 0.0,
+          "seeds": [
+            0
+          ]
+        },
+        "302": {
+          "H": 302,
+          "is_cert": false,
+          "returns": [
+            -200.0
+          ],
+          "mean_return": -200.0,
+          "median_return": -200.0,
+          "success_rate": 0.0,
+          "seeds": [
+            0
+          ]
+        },
+        "605": {
+          "H": 605,
+          "is_cert": true,
+          "returns": [
+            -200.0
+          ],
+          "mean_return": -200.0,
+          "median_return": -200.0,
+          "success_rate": 0.0,
+          "seeds": [
+            0
+          ]
+        },
+        "1210": {
+          "H": 1210,
+          "is_cert": false,
+          "returns": [
+            -200.0
+          ],
+          "mean_return": -200.0,
+          "median_return": -200.0,
+          "success_rate": 0.0,
+          "seeds": [
+            0
+          ]
+        },
+        "2420": {
+          "H": 2420,
+          "is_cert": false,
+          "returns": [
+            -200.0
+          ],
+          "mean_return": -200.0,
+          "median_return": -200.0,
+          "success_rate": 0.0,
+          "seeds": [
+            0
+          ]
+        }
+      },
+      "seeds": [
+        0
+      ]
+    },
+    "G_binding": {
+      "passed": false,
+      "H_star": 1,
+      "best_return": -200.0,
+      "worst_return": -200.0,
+      "spread": 0.0,
+      "interior": false,
+      "flat": true,
+      "H_sweep": [
+        1,
+        302,
+        605,
+        1210,
+        2420
+      ],
+      "mean_returns": {
+        "1": -200.0,
+        "302": -200.0,
+        "605": -200.0,
+        "1210": -200.0,
+        "2420": -200.0
+      }
+    },
+    "G_ii": {
+      "passed": false,
+      "win_seed_frac": 1.0,
+      "n_seeds": 1,
+      "beats_shallow": false,
+      "beats_deep": false,
+      "cert_mean": -200.0,
+      "best_blind_mean": -200.0,
+      "shallow_mean": -200.0,
+      "deep_mean": -200.0,
+      "have_shallow": true,
+      "have_deep": true
+    },
+    "d2_cadence": {
+      "T1_steps": 605,
+      "H_fixed": 1210,
+      "replan_cost": 1.0,
+      "cadence_sweep": [
+        1,
+        302,
+        605,
+        1210,
+        2420
+      ],
+      "per_cadence": {
+        "1": {
+          "cadence": 1,
+          "is_cert": false,
+          "net_returns": [
+            -400.0
+          ],
+          "mean_net_return": -400.0,
+          "mean_replans": 200.0,
+          "seeds": [
+            0
+          ]
+        },
+        "302": {
+          "cadence": 302,
+          "is_cert": false,
+          "net_returns": [
+            -201.0
+          ],
+          "mean_net_return": -201.0,
+          "mean_replans": 1.0,
+          "seeds": [
+            0
+          ]
+        },
+        "605": {
+          "cadence": 605,
+          "is_cert": true,
+          "net_returns": [
+            -201.0
+          ],
+          "mean_net_return": -201.0,
+          "mean_replans": 1.0,
+          "seeds": [
+            0
+          ]
+        },
+        "1210": {
+          "cadence": 1210,
+          "is_cert": false,
+          "net_returns": [
+            -201.0
+          ],
+          "mean_net_return": -201.0,
+          "mean_replans": 1.0,
+          "seeds": [
+            0
+          ]
+        },
+        "2420": {
+          "cadence": 2420,
+          "is_cert": false,
+          "net_returns": [
+            -201.0
+          ],
+          "mean_net_return": -201.0,
+          "mean_replans": 1.0,
+          "seeds": [
+            0
+          ]
+        }
+      },
+      "seeds": [
+        0
+      ]
+    }
+  },
+  "non_equivariant": {
+    "kind": "base",
+    "one_step_relmse": 0.10515619069337845,
+    "cert": {
+      "lambda1": 0.004178714020296179,
+      "lambda1_ci": [
+        0.00322942864587318,
+        0.006594112720963211
+      ],
+      "T1": 288.1204118009016,
+      "T1_ci": [
+        182.5829880794137,
+        372.8129450590178
+      ],
+      "T1_steps": 288,
+      "route": "bootstrap",
+      "cone_t_guar": 0,
+      "cone_lambda_cert": 2.260128222966798,
+      "L_J_net": 1.0230503781673077,
+      "kappa": 6.873689194897402,
+      "h": 0.4643566800375474,
+      "beats_euclidean": false,
+      "eps": 0.3,
+      "n_pos_exponents": 2,
+      "spectrum": [
+        0.004178714020296179,
+        0.001861924470087033,
+        -0.0017602375460535201,
+        -0.004330334303812983,
+        -0.011900547287025142,
+        -0.021099157077857908
+      ]
+    },
+    "G0": {
+      "passed": true,
+      "lambda1": 0.004178714020296179,
+      "lambda1_ci": [
+        0.00322942864587318,
+        0.006594112720963211
+      ],
+      "strong": true
+    },
+    "triad_i": {
+      "rows": [
+        {
+          "eps": 0.1,
+          "T1_steps": 551,
+          "T1": 551.027201624782,
+          "T1_ci": [
+            349.1880091272847,
+            713.0007643725065
+          ],
+          "lambda1": 0.004178714020296179,
+          "lambda1_ci": [
+            0.00322942864587318,
+            0.006594112720963211
+          ],
+          "measured_median": 60.0,
+          "measured_p25": 60.0,
+          "measured_p75": 60.0,
+          "n_censored": 8,
+          "ratio_measured_over_certified": 0.1088929219600726,
+          "route": "bootstrap",
+          "cone_t_guar": 1,
+          "L_J_net": 1.0230503781673077
+        },
+        {
+          "eps": 0.3,
+          "T1_steps": 288,
+          "T1": 288.1204118009016,
+          "T1_ci": [
+            182.5829880794137,
+            372.8129450590178
+          ],
+          "lambda1": 0.004178714020296179,
+          "lambda1_ci": [
+            0.00322942864587318,
+            0.006594112720963211
+          ],
+          "measured_median": 60.0,
+          "measured_p25": 60.0,
+          "measured_p75": 60.0,
+          "n_censored": 8,
+          "ratio_measured_over_certified": 0.20833333333333334,
+          "route": "bootstrap",
+          "cone_t_guar": 0,
+          "L_J_net": 1.0230503781673077
+        }
+      ],
+      "lambda1": 0.004178714020296179,
+      "route": "bootstrap"
+    },
+    "calibration": {
+      "eps_star": 0.3,
+      "ratio_star": 0.20833333333333334,
+      "T1_steps": 288,
+      "T1": 288.1204118009016,
+      "row": {
+        "eps": 0.3,
+        "T1_steps": 288,
+        "T1": 288.1204118009016,
+        "T1_ci": [
+          182.5829880794137,
+          372.8129450590178
+        ],
+        "lambda1": 0.004178714020296179,
+        "lambda1_ci": [
+          0.00322942864587318,
+          0.006594112720963211
+        ],
+        "measured_median": 60.0,
+        "measured_p25": 60.0,
+        "measured_p75": 60.0,
+        "n_censored": 8,
+        "ratio_measured_over_certified": 0.20833333333333334,
+        "route": "bootstrap",
+        "cone_t_guar": 0,
+        "L_J_net": 1.0230503781673077
+      },
+      "ranking": [
+        {
+          "eps": 0.3,
+          "ratio": 0.20833333333333334,
+          "dist_to_1": 0.7916666666666666
+        },
+        {
+          "eps": 0.1,
+          "ratio": 0.1088929219600726,
+          "dist_to_1": 0.8911070780399274
+        }
+      ],
+      "fallback_no_finite_ratio": false
+    },
+    "eps_star": 0.3,
+    "T1_steps_calibrated": 288,
+    "T1_steps_fixed_eps": 288,
+    "fixed_eps": 0.3,
+    "triad_ii": {
+      "T1_steps": 288,
+      "H_sweep": [
+        1,
+        144,
+        288,
+        576,
+        1152
+      ],
+      "per_H": {
+        "1": {
+          "H": 1,
+          "is_cert": false,
+          "returns": [
+            -200.0
+          ],
+          "mean_return": -200.0,
+          "median_return": -200.0,
+          "success_rate": 0.0,
+          "seeds": [
+            0
+          ]
+        },
+        "144": {
+          "H": 144,
+          "is_cert": false,
+          "returns": [
+            -200.0
+          ],
+          "mean_return": -200.0,
+          "median_return": -200.0,
+          "success_rate": 0.0,
+          "seeds": [
+            0
+          ]
+        },
+        "288": {
+          "H": 288,
+          "is_cert": true,
+          "returns": [
+            -200.0
+          ],
+          "mean_return": -200.0,
+          "median_return": -200.0,
+          "success_rate": 0.0,
+          "seeds": [
+            0
+          ]
+        },
+        "576": {
+          "H": 576,
+          "is_cert": false,
+          "returns": [
+            -200.0
+          ],
+          "mean_return": -200.0,
+          "median_return": -200.0,
+          "success_rate": 0.0,
+          "seeds": [
+            0
+          ]
+        },
+        "1152": {
+          "H": 1152,
+          "is_cert": false,
+          "returns": [
+            -200.0
+          ],
+          "mean_return": -200.0,
+          "median_return": -200.0,
+          "success_rate": 0.0,
+          "seeds": [
+            0
+          ]
+        }
+      },
+      "seeds": [
+        0
+      ]
+    },
+    "G_binding": {
+      "passed": false,
+      "H_star": 1,
+      "best_return": -200.0,
+      "worst_return": -200.0,
+      "spread": 0.0,
+      "interior": false,
+      "flat": true,
+      "H_sweep": [
+        1,
+        144,
+        288,
+        576,
+        1152
+      ],
+      "mean_returns": {
+        "1": -200.0,
+        "144": -200.0,
+        "288": -200.0,
+        "576": -200.0,
+        "1152": -200.0
+      }
+    },
+    "G_ii": {
+      "passed": false,
+      "win_seed_frac": 1.0,
+      "n_seeds": 1,
+      "beats_shallow": false,
+      "beats_deep": false,
+      "cert_mean": -200.0,
+      "best_blind_mean": -200.0,
+      "shallow_mean": -200.0,
+      "deep_mean": -200.0,
+      "have_shallow": true,
+      "have_deep": true
+    },
+    "d2_cadence": {
+      "T1_steps": 288,
+      "H_fixed": 576,
+      "replan_cost": 1.0,
+      "cadence_sweep": [
+        1,
+        144,
+        288,
+        576,
+        1152
+      ],
+      "per_cadence": {
+        "1": {
+          "cadence": 1,
+          "is_cert": false,
+          "net_returns": [
+            -400.0
+          ],
+          "mean_net_return": -400.0,
+          "mean_replans": 200.0,
+          "seeds": [
+            0
+          ]
+        },
+        "144": {
+          "cadence": 144,
+          "is_cert": false,
+          "net_returns": [
+            -202.0
+          ],
+          "mean_net_return": -202.0,
+          "mean_replans": 2.0,
+          "seeds": [
+            0
+          ]
+        },
+        "288": {
+          "cadence": 288,
+          "is_cert": true,
+          "net_returns": [
+            -201.0
+          ],
+          "mean_net_return": -201.0,
+          "mean_replans": 1.0,
+          "seeds": [
+            0
+          ]
+        },
+        "576": {
+          "cadence": 576,
+          "is_cert": false,
+          "net_returns": [
+            -201.0
+          ],
+          "mean_net_return": -201.0,
+          "mean_replans": 1.0,
+          "seeds": [
+            0
+          ]
+        },
+        "1152": {
+          "cadence": 1152,
+          "is_cert": false,
+          "net_returns": [
+            -201.0
+          ],
+          "mean_net_return": -201.0,
+          "mean_replans": 1.0,
+          "seeds": [
+            0
+          ]
+        }
+      },
+      "seeds": [
+        0
+      ]
+    }
+  },
+  "verdict": "INCONCLUSIVE (G-binding: return flat in plan depth \u2014 horizon not binding; no win claimed; D2 fallback reported)",
+  "eps_star_equivariant": 0.3,
+  "T1_steps_calibrated_equivariant": 605
+}
