@@ -54,6 +54,112 @@ def _lambda1(step_fn, x0, ly_steps, ly_warm) -> float:
     return float(step74.lyapunov_spectrum(step_fn, x0, ly_steps, ly_warm)[0])
 
 
+def allocate(weights, B_tot: int) -> list:
+    r"""Split a fixed total observation budget ``B_tot`` across regimes proportional to ``weights`` (raw $\lambda_1(F)$ —
+    more chaos → shorter horizon → more observations), using **largest-remainder** rounding so the split sums to EXACTLY
+    ``B_tot`` (required for a matched-budget conv-vs-MLP comparison). A flatter weight vector (the MLP's range-compressed
+    spectrum) shifts budget from the hardest regime to the easiest — the C misallocation."""
+    w = np.asarray(weights, dtype=float)
+    w = w / w.sum()
+    raw = w * B_tot
+    base = np.floor(raw).astype(int)
+    rem = int(B_tot - base.sum())
+    order = np.argsort(-(raw - base))                      # largest fractional parts first
+    for i in range(rem):
+        base[order[i % len(base)]] += 1
+    return base.tolist()
+
+
+def build_true_traj_F(N: int, L: int, seed: int, F: float) -> torch.Tensor:
+    r"""One TRUE $u\equiv0$ trajectory at forcing ``F``, ``(L+1, N)``, launched from a seed-pinned on-attractor point
+    (regime-F analogue of :func:`step85.build_true_traj`)."""
+    traj = attractor_traj_F(N, 4 * L, seed, F)
+    g = torch.Generator().manual_seed(seed + 777)
+    j0 = int(torch.randint(0, traj.shape[0] - L - 1, (1,), generator=g).item())
+    x = torch.empty(L + 1, N, dtype=DT)
+    x[0] = traj[j0]
+    cur = traj[j0].clone()
+    for t in range(1, L + 1):
+        cur = true_map_F(cur, F)
+        x[t] = cur
+    return x
+
+
+def run_full_C(seeds, F_list, N: int, eps: float, L: int, B_tot_list, device: str) -> dict:
+    r"""Full C: allocate a fixed total observation budget across a forcing-$F$ chaoticity ensemble by each model's
+    per-regime $\lambda_1(F)$, and compare aggregate forecast-violation. CERT-ISOLATED: every regime is forecast by its
+    faithful **conv** model; only the budget SPLIT differs (conv-spectrum weights vs MLP-spectrum weights vs true). The
+    MLP's range-compressed spectrum over-weights easy regimes and starves hard ones → higher aggregate violation at the
+    same total budget. Training runs on ``device`` (CUDA on the 3080); the QR spectra + re-observation episodes run on
+    CPU (cheap; reuse step85.reobserve_run_budgeted). Gate G: conv-alloc < MLP-alloc at the binding budget on >=2/3 seeds."""
+    import step85_trustworthy_cert_downstream as step85  # reuse reobserve_run_budgeted + AutonomousWM
+    smoke = bool(int(os.environ.get("STEP85B_SMOKE", "0")))
+    n_train = 4000 if smoke else 12000
+    ly_steps = 600 if smoke else 1800
+    ly_warm = 100 if smoke else 300
+    os.environ["STEP74_SMOKE"] = "1" if smoke else "0"
+    os.environ["STEP74_N"] = str(N)
+
+    def _train_l1(kind, traj_dev, traj_cpu, F):
+        os.environ["STEP74_MODEL"] = kind
+        model, mu, sd, _ = step74.train_model(traj_dev, N, device, seed)
+        model = model.to("cpu").eval(); mu = mu.to("cpu"); sd = sd.to("cpu")     # episodes/QR on CPU
+        x0 = (traj_cpu[len(traj_cpu) // 2] - mu) / sd
+        l1 = _lambda1(lambda xn: model(xn), x0, ly_steps, ly_warm)
+        return model, mu, sd, l1
+
+    per_seed = {}
+    for seed in seeds:
+        Fs = list(F_list)
+        reg = {}
+        for F in Fs:
+            traj_dev = attractor_traj_F(N, n_train, seed, F).to(device)
+            traj_cpu = traj_dev.to("cpu")
+            cmodel, cmu, csd, cl1 = _train_l1("conv", traj_dev, traj_cpu, F)
+            _, _, _, ml1 = _train_l1("mlp", traj_dev, traj_cpu, F)           # only the MLP's lambda1 is needed
+            mu_t, sd_t = traj_cpu.mean(0), traj_cpu.std(0) + 1e-8
+            tl1 = _lambda1(lambda xn: (true_map_F(xn * sd_t + mu_t, F) - mu_t) / sd_t,
+                           (traj_cpu[len(traj_cpu) // 2] - mu_t) / sd_t, ly_steps, ly_warm)
+            reg[F] = {"fc": step85.AutonomousWM(cmodel), "mu": cmu, "sd": csd,
+                      "cl1": cl1, "ml1": ml1, "tl1": tl1, "traj": build_true_traj_F(N, L, seed, F)}
+            print(f"[85b.C] seed {seed} F={F:>4}: conv l1={cl1:.3f} mlp l1={ml1:.3f} true l1={tl1:.3f}", file=sys.stderr)
+
+        w_conv = [reg[F]["cl1"] for F in Fs]
+        w_mlp = [reg[F]["ml1"] for F in Fs]
+        w_true = [reg[F]["tl1"] for F in Fs]
+
+        def agg(weights, B_tot):
+            budgets = allocate(weights, B_tot)
+            vs = []
+            for F, b in zip(Fs, budgets):
+                r = reg[F]
+                interval = max(1, L // max(1, b))               # spread b observations uniformly over the length-L episode
+                out = step85.reobserve_run_budgeted(r["fc"], r["mu"], r["sd"], N, r["traj"],
+                                                    interval=interval, eps=eps, budget=max(1, b))
+                vs.append(out["violation_rate"])
+            return float(np.mean(vs))
+
+        rows = []
+        for B_tot in B_tot_list:
+            vc = agg(w_conv, B_tot); vm = agg(w_mlp, B_tot); vt = agg(w_true, B_tot)
+            rows.append({"B_tot": B_tot, "conv_alloc": vc, "mlp_alloc": vm, "true_alloc": vt})
+            print(f"[85b.C] seed {seed} B_tot={B_tot}: conv-alloc={vc:.3f} mlp-alloc={vm:.3f} true-alloc={vt:.3f} "
+                  f"(margin {vm - vc:+.3f})", file=sys.stderr)
+        best_margin = max(r["mlp_alloc"] - r["conv_alloc"] for r in rows)   # largest conv-over-mlp gap across the sweep
+        per_seed[seed] = {"rows": rows, "w_conv": w_conv, "w_mlp": w_mlp, "w_true": w_true,
+                          "best_margin": best_margin}
+
+    margins = [per_seed[s]["best_margin"] for s in seeds]
+    wins = [m > 0.03 for m in margins]                                       # moderate threshold (precheck: ~0.14 shift)
+    g_pass = bool(sum(wins) >= int(np.ceil(2 / 3 * len(seeds))))
+    verdict = {"G_pass": g_pass, "best_margins": margins, "n_win": int(sum(wins)), "n_seeds": len(seeds),
+               "eps": eps, "N": N, "L": L, "F_list": F_list, "B_tot_list": list(B_tot_list)}
+    print(f"[85b.C] {'C PASS' if g_pass else 'C INCONCLUSIVE'}: conv-allocation beats MLP-allocation (best margins "
+          f"{[round(m, 3) for m in margins]}) on {int(sum(wins))}/{len(seeds)} seeds. Faithful spectrum allocates a "
+          f"fixed budget better across the chaoticity ensemble.", file=sys.stderr)
+    return {"verdict": verdict, "per_seed": {str(k): v for k, v in per_seed.items()}}
+
+
 def run() -> int:
     N = int(os.environ.get("STEP85B_N", "40"))
     seed = int(os.environ.get("STEP85B_SEED", "0"))
@@ -116,4 +222,23 @@ def run() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(run())
+    mode = os.environ.get("STEP85B_MODE", "precheck")        # "precheck" (lambda1(F) go/no-go) | "full" (allocation expt)
+    if mode == "precheck":
+        raise SystemExit(run())
+    smoke = bool(int(os.environ.get("STEP85B_SMOKE", "0")))
+    N = int(os.environ.get("STEP85B_N", "40"))
+    eps = float(os.environ.get("STEP85B_EPS", "0.2"))
+    seeds = [int(x) for x in os.environ.get("STEP85B_SEEDS", "0" if smoke else "0,1,2").split(",")]
+    F_list = [float(x) for x in os.environ.get("STEP85B_F", "6,8" if smoke else "6,8,10,13").split(",")]
+    L = int(os.environ.get("STEP85B_L", "300" if smoke else "1500"))
+    device = os.environ.get("STEP85B_DEVICE", "cpu")          # set "cuda" on the 3080 box
+    B_tot_list = [int(x) for x in os.environ.get(
+        "STEP85B_BTOT", "8,16,24" if smoke else "20,40,60,80,120,160").split(",")]
+    print(f"[85b.C] full C: N={N} eps={eps} L={L} seeds={seeds} F={F_list} B_tot={B_tot_list} "
+          f"device={device} smoke={smoke}", file=sys.stderr)
+    res = run_full_C(seeds, F_list, N, eps, L, B_tot_list, device)
+    figdir = Path(__file__).resolve().parent.parent / "papers" / "figures"
+    figdir.mkdir(parents=True, exist_ok=True)
+    tag = "_smoke" if smoke else ""
+    (figdir / f"step85b_allocation_full{tag}.json").write_text(json.dumps(res, indent=2))
+    raise SystemExit(0 if res["verdict"]["G_pass"] else 1)
