@@ -74,3 +74,28 @@ under-weights hard ones.** True $\lambda_1(F{=}8){=}1.773$ matches the cached st
 better across a chaoticity ensemble), but expect a **modest** margin (a $\sim0.14$ L1 weight shift), not the dramatic
 effect of A. The 3080 buys the $F$-sweep $\times$ seeds **training** (CUDA). Confidence unchanged $\sim0.4$, now with
 the failure mode pinned: it lands a *moderate* allocation win, contingent on the compression surviving at scale/seeds.
+
+## Full-C result (2026-06-09) — C INCONCLUSIVE (the compression did NOT survive at scale)
+
+Ran the full allocation experiment on the **RTX 3080** (`STEP85B_MODE=full STEP85B_DEVICE=cuda`, N=40, L=1500, 3 seeds,
+$F\in\{6,8,10,13\}$, $B_{\rm tot}\in\{20,40,60,80,120,160\}$; result `papers/figures/step85b_allocation_full.json`).
+**C INCONCLUSIVE**: conv-allocation does **not** beat MLP-allocation — best margins per seed $[-0.011,-0.003,+0.024]$,
+win on **0/3** (threshold $0.03$). The precheck's "alive-moderate" was a small-scale false positive (the 2F/L=300 smoke
+gave $+0.085$; the 4F/L=1500 full run reversed the sign).
+
+**Why (two stacked, both honest):**
+1. The learned conv $\lambda_1$ is **under-biased at low $F$** (seed 0, $F{=}6$: conv $0.679$ vs true $1.030$ — the
+   weakly-chaotic near-onset regime is hardest to learn). So conv **under-allocates** to the easy regime — but that
+   regime still needs a coverage *floor* (long-but-finite horizon), so conv **starves** it. The MLP's range-compressed
+   (flatter) weights accidentally give the easy regime enough → no starvation.
+2. The $\propto\lambda_1$ allocation rule is **itself not optimal**: even the oracle (true-$\lambda_1$) allocation does
+   not strictly dominate the flat MLP one at every budget (seed 0, $B{=}120$: mlp $0.022$ < true $0.033$). A flatter
+   allocation is robust to starvation when easy regimes need a floor.
+
+So the precheck's allocation-L1 distortion ($0.219$) did **not** translate into a downstream violation win: it measured
+weight-vector *distance* but missed that (a) conv's OWN weights are distorted (low-$F$ under-bias) and (b) flat
+allocations resist starvation. **Disposition:** C is a **negative result, recorded honestly (no gate loosening); it does
+not add over A.** ③'s landed contribution is **A** (cert-isolated budget frontier, G1 PASS 3/3) + **B** (calibration)
++ this honest **C-negative**. Possible future revival (NOT pursued): better low-$F$ spectrum fidelity + a coverage-floor
+/ marginal-violation-equalizing allocation rule instead of $\propto\lambda_1$ — speculative. This is the honest negative
+sample of the "three directions to 8" batch — exactly the seed's discipline ("INCONCLUSIVE rather than loosen a gate").
