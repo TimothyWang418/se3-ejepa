@@ -651,3 +651,27 @@ reusing `step74` conv/MLP + `step79`'s D2 machinery. Brainstorm → spec → CPU
   budget frontier | package E-vs-N). Canonical paper2/ICLR sections **drafted above, not yet placed** (autonomous
   paper-rewrite left for user review). `step85`, `step85b`; commits `b3723d4` (G0) `a19a7ba` (Phase1+tests) `b3a5383`
   (G1) `117a6f9` (figure) `ffc470f` (C-negative).
+
+## [2026-06-09] step86 (direction ①) — certificate as a SAFETY / catastrophe bound: INCONCLUSIVE (honest negative)
+
+Direction ① (seed): the certified horizon as a re-observation cadence for **catastrophe avoidance** on controlled
+Lorenz-96 (stabilize the unstable fixed point $F$; escape $=$ catastrophe). Lever $=$ re-observation interval $\tau$
+(state estimate drifts via the WM between observations, reset to truth every $\tau$; modest planning depth). cert-aware
+$\tau{=}T_1$, blind $\tau\gg T_1$. Full run N=24, $\epsilon{=}0.3$, 3 seeds, RTX 3080
+(`papers/figures/step86_certified_safety.json`; `experiments/step86`, `tests/test_step86.py` green incl. equivariance).
+
+- **INCONCLUSIVE — not horizon-binding.** Escape (catastrophe) rate is **$\tau$-INVARIANT**: per seed, $\{T_1/2, T_1,
+  2T_1, 4T_1\}$ all give the SAME rate (seed0 $0.25{\times}4$; seed1 $0.19{\times}4$; seed2 $0.25{\times}4$). The
+  re-observation cadence does not determine escape. **Diagnosis:** the $19$–$25\%$ escapes are **control-failures** (the
+  modest reused equivariant GD planner, $H_{\rm plan}{=}6$, cannot stabilize those near-$F$ starts), NOT
+  estimate-staleness failures — so trusting the model past $T_1$ does not cause MORE escapes. The certificate's
+  conservatism is not the binding constraint here; control quality is. Exactly the seed's flagged ① risk.
+- **Caveat (a future angle, not pursued):** a stronger planner might lower the baseline escape rate and possibly expose
+  an estimate-staleness effect (cert-aware safe / blind escapes). As-run with the reused step79 planner, ① does not bind.
+- **Dead-end recorded for honesty:** the first ① design conflated $T_1$ with planning DEPTH → blind $H{=}8T_1{\approx}800$
+  step chaotic-rollout gradient planning (explodes + intractable); fixed via the $\tau$-reobservation reframe before this run.
+- **No gate loosening.** Honest negative, like step85b's C.
+
+**Three-directions-to-8 scorecard:** ③-A (cert-isolated budget re-observation) **LANDED** (Exp 22, G1 3/3, in paper2
+§5.20 + ICLR E12); ③-C (full-spectrum allocation) and ① (safety) are **honest NEGATIVES**; ② (cert-gated MBRL) is
+**build-ready-spec'd** (pathwise cert-gating), not run (~0.4 gamble, do last). `step86`, commit pending.

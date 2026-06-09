@@ -1,0 +1,75 @@
+{
+  "verdict": {
+    "G1_pass": false,
+    "n_cert_safe": 0,
+    "n_horizon_binding": 0,
+    "n_seeds": 3,
+    "eps": 0.3,
+    "N": 24,
+    "sigma": 2.0,
+    "H_plan": 6,
+    "smoke": false
+  },
+  "per_seed": {
+    "0": {
+      "T1": 73,
+      "lambda1": 1.65159122258768,
+      "relmse": 1.4437032220211626e-06,
+      "n_steps": 328,
+      "taus": {
+        "T1/2": 36,
+        "T1": 73,
+        "2T1": 146,
+        "4T1": 292
+      },
+      "escape_rates": {
+        "T1/2": 0.25,
+        "T1": 0.25,
+        "2T1": 0.25,
+        "4T1": 0.25
+      },
+      "cert_safe": false,
+      "horizon_binding": false
+    },
+    "1": {
+      "T1": 66,
+      "lambda1": 1.8181547962303934,
+      "relmse": 2.637389923808342e-06,
+      "n_steps": 297,
+      "taus": {
+        "T1/2": 33,
+        "T1": 66,
+        "2T1": 132,
+        "4T1": 264
+      },
+      "escape_rates": {
+        "T1/2": 0.1875,
+        "T1": 0.1875,
+        "2T1": 0.1875,
+        "4T1": 0.1875
+      },
+      "cert_safe": false,
+      "horizon_binding": false
+    },
+    "2": {
+      "T1": 82,
+      "lambda1": 1.4644094046977885,
+      "relmse": 1.3898754435854499e-06,
+      "n_steps": 360,
+      "taus": {
+        "T1/2": 41,
+        "T1": 82,
+        "2T1": 164,
+        "4T1": 328
+      },
+      "escape_rates": {
+        "T1/2": 0.25,
+        "T1": 0.25,
+        "2T1": 0.25,
+        "4T1": 0.25
+      },
+      "cert_safe": false,
+      "horizon_binding": false
+    }
+  }
+}
