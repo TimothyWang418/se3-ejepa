@@ -63,7 +63,7 @@ Jacobian alone. §4's closing paragraph returns to this division.
 **What is new.** A prior-art sweep finds the corner *empty*: no work combines equivariance with a certified, two-sided spectral horizon; the closest guarantee-bearing neighbours each miss the intersection [@conradie2026trustkoopman; @lillemark2026flowm; @mo2026symmetry] (§5). The new results: **(i)** Proposition 6's matching lower bound — growth seeded by the *equivariance residual* rather than an initial-condition error — making approximate equivariance provably horizon-limited; **(ii)** the scope/continuity pair (Props. 7–8) lifting the law to *learned* chaotic models, where shadowing cannot transfer the exponent; **(iii)** the structure-vs-recurrence separation at $40$-D (E2), with the recurrent failure forced by the conditional-Lyapunov condition; **(iv)** Theorem B′ turning the certificate from *measured* into *literal* — sound a priori, tight on uniform hyperbolicity, self-abstaining elsewhere; **(v)** actionability **a priori, with zero calibration data** (E12; Proposition 9); and **(vi)** a training-free trustworthiness audit of public pretrained world models (E13–E14) that a deployed monitor replicates **cell-by-cell, out-of-sample** (E15), its decision boundary formalized as a regret decomposition (Proposition 11). These assemble (Algorithm 1) into one certificate *exclusive to structure* (Lemma 2) whose unbounded-horizon subspace is the conserved/invariant one (the Noether hinge). We credit the classical pillars we build on — the
 Lyapunov/NWP horizon law, invariant decision theory, and the $e^{\lambda T}$ growth — explicitly in §3 and §5.
 
-![The certificate at a glance. **Left:** an equivariant model certifies the *entire* generated monoid $\langle S\rangle$ from $k$ generator checks (Lemma 1), up to a horizon ceiling set by the predictor spectrum (Theorem B, tight by Proposition 6); a non-equivariant model of any size certifies only an interpolation tube. **Right:** the horizon-resolution law $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$ — conserved/invariant channels ($\lambda\le0$) are certified to all horizons, chaotic ones shrink with demanded resolution.](figures/hero_certified_region.png){width=76%}
+![The certificate at a glance. **Left:** an equivariant model certifies the *entire* generated monoid $\langle S\rangle$ from $k$ generator checks (Lemma 1), up to a horizon ceiling set by the predictor spectrum (Theorem B, tight by Proposition 6); a non-equivariant model of any size certifies only an interpolation tube. **Right:** the horizon-resolution law $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$ — conserved/invariant channels ($\lambda\le0$) are certified to all horizons, chaotic ones shrink with demanded resolution.](figures/hero_certified_region.png){width=72%}
 
 ---
 
@@ -96,10 +96,8 @@ $|w|$ for the length of a word $w\in\langle S\rangle$.
 ### 3.1 The configuration axis, and why only structure has it
 
 **Theorem A (orbit-constant error).** Under (A1)–(A4), for every $w\in\langle S\rangle$, all $x$, and any action
-sequence (transported by $w$), $\mathrm{Err}_T(w\cdot x)=\mathrm{Err}_T(x)$ (Appendix B gives the action-explicit
-statement and proof). *Proof sketch.* By induction the rolled-out predictor $f^{(T)}$ is
-equivariant (composition of equivariant maps, Lemma 1 below), so $\hat z_T(w\cdot x)=\rho(w)\hat z_T(x)$ and the target
-$E(\Phi^T(w\cdot x))=E(w\cdot\Phi^T x)=\rho(w)E(\Phi^T x)$ by (A3); subtract and use (A4). $\square$
+sequence (transported by $w$), $\mathrm{Err}_T(w\cdot x)=\mathrm{Err}_T(x)$ (action-explicit statement and proof in Appendix B). *Proof sketch.* The rolled-out predictor is equivariant
+(Lemma 1), so prediction and target transport by the same $\rho(w)$; subtract and use (A4). $\square$
 
 **Lemma 1 (composition closure).** If (A1)–(A3) hold on each generator $g_i\in S$, they hold on every word
 $w\in\langle S\rangle$ ((A4) is automatic for all $w$). Thus **$k$ generator checks certify an exponentially large
@@ -152,7 +150,7 @@ This is the horizon-domain companion of Lemma 2: scale and data buy *approximate
 augmentation baseline floors at $\epsilon\approx10^{-4}$, never exact), and Proposition 6 amplifies that residual
 $e^{\lambda T}$ — a single-step tie between augmentation and equivariance **must break over horizon**.
 
-![Proposition 6, numerically (the central claim). **Left:** orbit-error-variation of an $\epsilon{=}10^{-3}$-approximately-equivariant model (markers) equals the analytic $\epsilon\,e^{\lambda T}$ (dashed) to relative error $10^{-14}$–$10^{-13}$, $3$ seeds; an *exactly* equivariant model sits at the machine-precision floor; $\lambda\le0$ channels stay bounded (infinite horizon). **Right:** certified horizon linear in $\log(1/\epsilon)$ with slope exactly $1/\lambda$ ($R^2{=}1.000$) — the $\Theta(\log(1/\epsilon)/\lambda)$ law (`step65`).](figures/step65_horizon_tightness.png){width=80%}
+![Proposition 6, numerically (the central claim). **Left:** orbit-error-variation of an $\epsilon{=}10^{-3}$-approximately-equivariant model (markers) equals the analytic $\epsilon\,e^{\lambda T}$ (dashed) to relative error $10^{-14}$–$10^{-13}$, $3$ seeds; an *exactly* equivariant model sits at the machine-precision floor; $\lambda\le0$ channels stay bounded (infinite horizon). **Right:** certified horizon linear in $\log(1/\epsilon)$ with slope exactly $1/\lambda$ ($R^2{=}1.000$) — the $\Theta(\log(1/\epsilon)/\lambda)$ law (`step65`).](figures/step65_horizon_tightness.png){width=75%}
 
 **Proposition 7 (scope — when the local spectrum certifies a *learned* model's horizon).** On a learned model the
 answer splits a rigorous **rate** half from an orbit-error **lift** half. Let $\phi$ have an ergodic invariant measure
