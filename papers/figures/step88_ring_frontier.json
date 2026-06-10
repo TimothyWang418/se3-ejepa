@@ -1,17 +1,18 @@
 {
   "verdict": {
-    "G1_pass": true,
-    "n_win": 2,
-    "n_seeds": 3,
+    "n_seeds": 5,
     "win_margins": [
       0.24200000000000002,
       0.035333333333333335,
-      0.32866666666666666
+      0.32866666666666666,
+      0.0,
+      0.0
     ],
+    "n_win_strict": 2,
+    "note": "5-seed update 2026-06-10: wins occur exactly on the seeds where the dense lambda1 inflates (2/5 at N=24 \u2014 near the ring's own phase-transition edge); on the other 3 the dense cert is incidentally faithful (iv_mlp ~ iv_conv) and the schedules coincide.",
     "eps": 0.2,
     "N": 24,
-    "L": 1500,
-    "smoke": false
+    "L": 1500
   },
   "per_seed": {
     "0": {
@@ -143,6 +144,92 @@
           0.3626666666666667,
           0.25266666666666665,
           0.03266666666666666,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    "3": {
+      "iv_conv": 150,
+      "iv_mlp": 155,
+      "lambda1_conv": 0.44697768138101673,
+      "lambda1_mlp": 0.5183568931461375,
+      "knee_budget": 10,
+      "conv_arm_viol_at_knee": 0.0,
+      "mlp_iso_viol_at_knee": 0.0,
+      "win_margin": 0.0,
+      "pareto_frac": 0.125,
+      "frontier": {
+        "budgets": [
+          2,
+          4,
+          5,
+          7,
+          8,
+          10,
+          11,
+          13
+        ],
+        "conv_arm": [
+          0.7586666666666667,
+          0.532,
+          0.38133333333333336,
+          0.22866666666666666,
+          0.086,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "mlp_iso": [
+          0.752,
+          0.5213333333333333,
+          0.37466666666666665,
+          0.216,
+          0.09666666666666666,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    "4": {
+      "iv_conv": 167,
+      "iv_mlp": 180,
+      "lambda1_conv": 0.4053484018989216,
+      "lambda1_mlp": 0.4469595846263841,
+      "knee_budget": 9,
+      "conv_arm_viol_at_knee": 0.0,
+      "mlp_iso_viol_at_knee": 0.0,
+      "win_margin": 0.0,
+      "pareto_frac": 0.0,
+      "frontier": {
+        "budgets": [
+          2,
+          3,
+          5,
+          6,
+          8,
+          9,
+          11,
+          12
+        ],
+        "conv_arm": [
+          0.7513333333333333,
+          0.5513333333333333,
+          0.4033333333333333,
+          0.224,
+          0.09,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "mlp_iso": [
+          0.7413333333333333,
+          0.542,
+          0.36333333333333334,
+          0.224,
+          0.0,
           0.0,
           0.0,
           0.0
