@@ -75,3 +75,4 @@ papers/arxiv_paper2/*.xdv
 papers/arxiv_paper2/*.otf
 models/tdmpc2/
 dist/
+models/lewm/
