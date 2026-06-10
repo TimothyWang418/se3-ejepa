@@ -825,3 +825,22 @@ a finer eval grid, and a variance-controlled certificate (averaged over refits).
 a-priori-scoped, Prop 9 law, in both papers + rebuilt PDF); ③-C, ①, and now ② — **honest non-results** (allocation
 negative / not horizon-binding / no discrimination). One clean landed direction + three honest negatives, zero
 loosened gates. `step87`, commit pending.
+
+## [2026-06-09] Experiment 23 — the certificate reads OFFICIAL TD-MPC2 checkpoints, training-free (step89; the #1 reviewer gap closed)
+
+The exceptional-ICLR review's #1 gap ("the certificate never touched a model the community recognizes") closed in one
+evening, training-free. Recon (sub-agent, URLs/API verified; **the exact audit absent from the literature** — closest:
+arXiv:2410.10674, true-env Lyapunov under RL policies; Özalp & Magri 2025, latent spectra for scientific-ML AEs) →
+spec with pre-registered readings → line-faithful slice rebuild (SimNorm/NormedLinear/mlp; **strict-load G0 passed on
+the real checkpoint first try**) → full audit, 2 tasks × 3 official seeds, ~3 min CPU.
+
+- **walker-walk ($\lambda_1=0.25/0.25/0.30$, expansive):** the two-regime $\epsilon$ pattern reproduces on a public
+  model — ratio measured/certified $0.08$–$0.20$ @ $\epsilon{=}0.05$ (Prop-8 optimism) → **$0.94/0.95/1.02$ @
+  $\epsilon{=}0.2$ — calibrated ≈1 on 3/3 official seeds.** The certificate read a community model's trustworthy
+  horizon a-priori.
+- **acrobot-swingup ($\lambda_1\approx-0.04$, contracting):** certificate **abstains, correctly per Prop 7** — the
+  measured divergence (median 14–45 steps) is bias-driven, outside a Lyapunov certificate's scope; issuing one would
+  over-claim. Both pre-registered branches of the theory verified on official checkpoints.
+- SimNorm structural band 128–270 strongly-negative directions (≥ the 64 predicted; reported). Scope: policy-prior
+  loop, not MPPI. deps pinned mujoco 3.3.2 + dm-control 1.0.28 (numpy2); checkpoints gitignored, URLs pinned.
+- **Folded:** ICLR **E13** + paper2 **§5.21**. `step89`, `tests/test_step89.py` (4 green; suite 21 green).
