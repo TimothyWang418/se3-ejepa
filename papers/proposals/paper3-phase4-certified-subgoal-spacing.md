@@ -164,9 +164,14 @@ the run.
 Success rate @ $t\in\{25,75,150\}$ on the factorial of §3.1 (FF-JEPA's headline cell for context:
 flat $3.5\%\to$ hierarchical $91.8\%$ @ $t{=}75$). Pre-registered predictions:
 (i) hierarchical $\gg$ flat on our stack (effect replication);
-(ii) certified-$H$ within 5 pp of the *oracle* fixed-$H$ **without running the sweep** (Prop 11
-frames the expectation: spacing is aligned, return is task-mapped — a gap here is the theorem's
-penalty made visible, informative either way);
+(ii) certified-$H$ within 5 pp of the *oracle* fixed-$H$ **without running the sweep**. **The
+resolution is not a free knob (Prop 11(ii) compliance):** the deployed spacing is
+$H^*(\hat\theta^\ast)$ where $\hat\theta^\ast$ is the **planner tolerance elicited by E-P4.3's
+optimizer-limb instrument** — Prop 11(ii) proves $\theta^\ast$ must come from the task side, and
+E-P4.3 *is* that elicitation; no closed-loop return is consulted in choosing $H$. (Prop 11 frames
+the expectation: spacing is aligned, return is task-mapped — a residual gap is the theorem's
+penalty made visible, informative either way.) This closes the open end step93 left: certificate
+supplies $H(\cdot)$, task supplies $\theta^\ast$, deployment is fully a priori;
 (iii) eq $\times$ OOD-orientation $\gg$ plain $\times$ OOD.
 All cells reported; no claim dies for another's miss.
 
@@ -231,7 +236,7 @@ the exact count/source). Three variants: full; fraction sweep $\{1\%,10\%,100\%\
 |---|---|---|
 | **E-P4.1** | C2 | Probe rig: R-eq vs R-plain ladder $\times$ demo fractions; frozen encoders; state-pose + effect probes; per-dim curves; 3 seeds. 3-D version (H1-original) when E-P4.5 bases land. |
 | **E-P4.2** | C1 | `wm_audit` gap mode on all three bases along the demo distribution; zero-calibration (eq) vs calibration-needed (plain). **C1b** wedge-transfer cells on PushT-static (W2–4); **C1a** spectral cells on PushT-dyn($\kappa{>}0$), riding the E-P4.3 $\kappa$ lane (W5–7). |
-| **E-P4.3** | C3 | **The spine.** Per base: train $G$; measure $\mathrm{Err}(H)$ growth; certificate curve + Prop 10 CIs; $H^*(\epsilon)$ vs $H_{\max}(\epsilon)$ over the $\epsilon$ grid **and over $\kappa$**; optimizer-limb isolation w/ ground-truth subgoals (crossover location); wedge transfer eq-vs-plain. |
+| **E-P4.3** | C3 | **The spine.** Per base: train $G$; measure $\mathrm{Err}(H)$ growth; certificate curve + Prop 10 CIs; $H^*(\epsilon)$ vs $H_{\max}(\epsilon)$ over the $\epsilon$ grid **and over $\kappa$**; optimizer-limb isolation w/ ground-truth subgoals (crossover location) — **doubles as the $\hat\theta^\ast$ elicitation consumed by E-P4.4's certified-$H$ cells (Prop 11(ii))**; wedge transfer eq-vs-plain. |
 | **E-P4.4** | C4 | Closed-loop factorial: cells per §3.1 priority $\times$ {in-dist, OOD-orientation} $\times$ demo budget $\{100\%,10\%\}$; success @ $t\in\{25,75,150\}$; 3 seeds $\times$ ~50 episodes/cell. |
 | **E-P4.5** | C2/C3 | 3-D co-anchor per §3.2(3): SE(3) bases, H1-original probes, C3-3D, minimal closed-loop pair. Descope checkpoint 08-05. |
 
@@ -255,7 +260,7 @@ the exact count/source). Three variants: full; fraction sweep $\{1\%,10\%,100\%\
 
 | ID | Statement (sketch) | Cost |
 |---|---|---|
-| **P4.A — selection-rule theorem** (the paper's own main theorem) | Two-sided guarantee for certified spacing: under calibrated $(\hat\delta,\hat\lambda_1)$ with Prop 10 finite-sample CIs, (safety) the gap error at $H^*(\epsilon)$ exceeds $\epsilon$ with probability $\le\delta'$; (efficiency) the implied subgoal density exceeds the oracle's by at most an explicit factor driven by the CI width and the two-sided tightness of the horizon law (Thm B + Prop 6). Prop 9's budget law lifted from the sensing layer to the planning layer; Prop 11 supplies the alignment premise (spacing is an aligned decision $\Rightarrow$ zero extra regret at $c{=}1$ applies). | low (inheritance chain: Thm B + Prop 6 + Prop 9/10/11) |
+| **P4.A — selection-rule theorem** (the paper's own main theorem) | Two-sided guarantee for certified spacing: under calibrated $(\hat\delta,\hat\lambda_1)$ with Prop 10 finite-sample CIs, (safety) the gap error at $H^*(\epsilon)$ exceeds $\epsilon$ with probability $\le\delta'$; (efficiency) the implied subgoal density exceeds the oracle's by at most an explicit factor driven by the CI width and the two-sided tightness of the horizon law (Thm B + Prop 6). Prop 9's budget law lifted from the sensing layer to the planning layer (the mapping is verbatim: subgoal $=$ re-observation, spacing $=$ cadence, subgoal count $=$ budget $B$); Prop 11 supplies the alignment premise (spacing is an aligned decision $\Rightarrow$ zero extra regret at $c{=}1$) and the $\theta^\ast$-elicitation requirement that E-P4.3 discharges. Assumptions inherited from Prop 7/8 (stationarity/mixing along audited orbits; learned-model exponent transfer with its honest $C^1$-proxy caveat) — stated, not certified. Neutral-regime cells use the $\hat\delta$ CI variant (same Bernstein-for-mixing machinery as Prop 10; spelled out in P4.A's writeup). | low (inheritance chain: Thm B intermediate bound + Prop 6 + Prop 9/10/11, scope via Prop 7/8) |
 | **P4.B — orbit-transfer corollary** | For equivariant $E,f,G$ with orthogonal $\rho$: the gap functional is orbit-constant (Thm A applied to $\mathrm{Err}(H)$), hence $\widehat{\mathrm{Err}}(H)$ estimated on a wedge certifies the entire orbit. *The mathematical body of the flag-planting sentence.* | trivial |
 | **P4.C — equivariant $G$ decomposition** (design principle + falsifiable prediction) | An equivariant subgoal flow decomposes into a group component and an invariant-content evolution; prediction: FF-JEPA's failure mode (b) ("subgoal loses the agent") is a symptom of unstructured extrapolation, and the decomposition removes that failure class. | low |
 
