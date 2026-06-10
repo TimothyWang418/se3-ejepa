@@ -127,6 +127,9 @@ scaled benchmark, and the hinge's lift to *approximate* symmetry is open.
 
 ---
 
+
+![**The paper in one figure** — *scale buys interpolation; structure buys a certified horizon.* **(a) Faithful:** on $40$-D Lorenz-96 the $\mathbb{Z}_N$-equivariant model recovers the full Lyapunov spectrum ($R^2{=}0.98$) where an identically-trained dense model's is garbage ($R^2{<}0$, $\lambda_1$ inflated $\sim3.4\times$) — §5.16. **(b) Priced:** under a fixed sensing budget, re-observation timed by the faithful certificate meets the budget while the inflated certificate over-observes and starves it — a $c\times$-inflated certificate provably needs $c\times$ the budget (Proposition 9) and a certificate-free adaptive scheduler pays $\sim3\times$ — §5.20. **(c) Real:** the same training-free read-out audits official TD-MPC2 checkpoints — calibrated (ratio $0.94$–$1.02$) where the latent loop is expansive, correctly abstaining where it contracts (Proposition 7) — §5.21.](figures/hero_certified_world_models.png)
+
 ## 2. Setup
 
 An encoder $E:\mathcal X\to\mathcal Z$ maps states to latents and an action-conditioned predictor
