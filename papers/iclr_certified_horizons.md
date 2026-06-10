@@ -22,12 +22,10 @@ steps.** Scaling lowers the average and widens the interpolation region, but it 
 unseen configuration, and it says nothing about the *horizon* — the number of steps before compounding error makes the
 rollout useless.
 
-Equivariance is known to give *some* per-situation guarantee. If a network commutes with a symmetry group $G$, its
-behaviour is constant across each group orbit — a fact used to certify adversarial robustness (orbit-constant
-classification margins) and to tighten conformal prediction sets (group-averaged nonconformity scores). But every such
-result is **single-shot**: it attaches a guarantee to one input, for one prediction. A world model predicts a
-*trajectory*, and the question that matters for planning — *how far ahead is the guarantee valid?* — has no answer in
-that literature.
+Equivariance gives *some* per-situation guarantee: a network commuting with a group $G$ behaves identically across
+each orbit — used to certify adversarial robustness and tighten conformal sets. But every such result is
+**single-shot**: one input, one prediction. A world model predicts a *trajectory*, and the question that matters for
+planning — *how far ahead is the guarantee valid?* — has no answer in that literature.
 
 This paper answers it. We show that an equivariant latent world model admits a **certificate of its predictable
 horizon**, stratified channel-by-channel by the predictor's spectrum, and we prove the horizon is **tight**. The
@@ -66,12 +64,12 @@ Jacobian alone. §4's closing paragraph returns to this division.
 **What is new.** A prior-art sweep finds the corner *empty*: no work combines equivariance with a certified, two-sided spectral horizon; the closest guarantee-bearing neighbours each miss the intersection [@conradie2026trustkoopman; @lillemark2026flowm; @mo2026symmetry] (§5). The new results: **(i)** Proposition 6's matching lower bound — growth seeded by the *equivariance residual* rather than an initial-condition error — making approximate equivariance provably horizon-limited; **(ii)** the scope/continuity pair (Props. 7–8) lifting the law to *learned* chaotic models, where shadowing cannot transfer the exponent; **(iii)** the structure-vs-recurrence separation at $40$-D (E2), with the recurrent failure forced by the conditional-Lyapunov condition; **(iv)** Theorem B′ turning the certificate from *measured* into *literal* — sound a priori, tight on uniform hyperbolicity, self-abstaining elsewhere; **(v)** actionability **a priori, with zero calibration data** (E12; Proposition 9); and **(vi)** a training-free trustworthiness audit of public pretrained world models (E13–E14) that a deployed monitor replicates **cell-by-cell, out-of-sample** (E15), its decision boundary formalized as a regret decomposition (Proposition 11). These assemble (Algorithm 1) into one certificate *exclusive to structure* (Lemma 2) whose unbounded-horizon subspace is the conserved/invariant one (the Noether hinge). We credit the classical pillars we build on — the
 Lyapunov/NWP horizon law, invariant decision theory, and the $e^{\lambda T}$ growth — explicitly in §3 and §5.
 
-![The certificate at a glance. **Left:** an equivariant model certifies the *entire* generated monoid $\langle S\rangle$ from $k$ generator checks (Lemma 1), up to a horizon ceiling set by the predictor spectrum (Theorem B, tight by Proposition 6); a non-equivariant model of any size certifies only an interpolation tube. **Right:** the horizon-resolution law $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$ — conserved/invariant channels ($\lambda\le0$) are certified to all horizons, chaotic ones shrink with demanded resolution.](figures/hero_certified_region.png){width=88%}
+![The certificate at a glance. **Left:** an equivariant model certifies the *entire* generated monoid $\langle S\rangle$ from $k$ generator checks (Lemma 1), up to a horizon ceiling set by the predictor spectrum (Theorem B, tight by Proposition 6); a non-equivariant model of any size certifies only an interpolation tube. **Right:** the horizon-resolution law $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$ — conserved/invariant channels ($\lambda\le0$) are certified to all horizons, chaotic ones shrink with demanded resolution.](figures/hero_certified_region.png){width=76%}
 
 ---
 
 
-![**The paper in one figure.** **(a) Faithful:** on $40$-D Lorenz-96 the $\mathbb{Z}_N$-equivariant model recovers the full Lyapunov spectrum ($R^2{=}0.98$) where an identically-trained dense model's is garbage ($R^2{<}0$) — E2. **(b) Priced:** under a fixed sensing budget the faithful certificate meets the budget; the inflated one over-observes and starves it (Proposition 9) — E12. **(c) Real:** the same training-free read-out audits official TD-MPC2 checkpoints — calibrated where expansive, abstaining where contracting — E13.](figures/hero_certified_world_models.png){width=88%}
+![**The paper in one figure.** **(a) Faithful:** on $40$-D Lorenz-96 the $\mathbb{Z}_N$-equivariant model recovers the full Lyapunov spectrum ($R^2{=}0.98$) where an identically-trained dense model's is garbage ($R^2{<}0$) — E2. **(b) Priced:** under a fixed sensing budget the faithful certificate meets the budget; the inflated one over-observes and starves it (Proposition 9) — E12. **(c) Real:** the same training-free read-out audits official TD-MPC2 checkpoints — calibrated where expansive, abstaining where contracting — E13.](figures/hero_certified_world_models.png){width=80%}
 
 ## 2. Setup and assumptions
 
@@ -111,15 +109,11 @@ guarantee over all of $\langle S\rangle$.
 
 **Lemma 2 (the certificate characterizes equivariance — the converse).** Let $\rho:G\to O(\mathcal Z)$ act *freely* on
 an open $U\subseteq\mathcal Z$. If a predictor $f$'s error $\lVert f-\Phi\rVert$ is orbit-constant on $U$ for *every*
-equivariant target $\Phi$, then $f$ is equivariant on $U$. *Proof.* Fix $z,g$. For any probe $c$, freeness makes
-$\Phi(\rho(h)z):=\rho(h)c$ a well-defined equivariant target on the orbit; orbit-constancy gives
-$\lVert f(z)-c\rVert=\lVert\rho(g)^{-1}f(\rho(g)z)-c\rVert$ for *all* $c$, and two points equidistant to every $c$
-coincide, so $f(\rho(g)z)=\rho(g)f(z)$. $\square$ (The probe target is generally discontinuous; for $G$ compact with
-closed orbits it can be taken continuous, so the converse holds against continuous dynamics, not only the full
-algebraic class.) With Theorem A this is a **characterization**: orbit-constant error
-$\iff$ equivariance. **Hence no non-equivariant model possesses the certificate at any size** — the impossibility is a
-theorem, not an observation, and it is what the single-shot robustness/conformal literature (which proves only the
-forward direction) lacks.
+equivariant target $\Phi$, then $f$ is equivariant on $U$. *Proof sketch (full proof and the continuity refinement in Appendix B).* Freeness makes $\Phi(\rho(h)z):=\rho(h)c$ a
+well-defined equivariant probe target for any $c$; orbit-constancy then forces $f(z)$ and $\rho(g)^{-1}f(\rho(g)z)$
+equidistant from *every* $c$, hence equal. $\square$ With Theorem A this is a **characterization**: orbit-constant
+error $\iff$ equivariance — **no non-equivariant model possesses the certificate at any size**, the impossibility a
+theorem, not an observation (and what the single-shot literature, forward-only, lacks).
 
 ### 3.2 The horizon axis, and its tightness (the central result)
 
@@ -145,10 +139,9 @@ exact equivariance only by a single defect $E(g\cdot x)=\rho(g)E(x)+\epsilon u$ 
 $$
 \bigl\lvert \mathrm{Err}_T(g\cdot x)-\mathrm{Err}_T(x)\bigr\rvert \;=\; \epsilon\,e^{\lambda T}.
 $$
-*Proof.* $\mathrm{Err}_T(x)=0$ (model exact along $x$). At $g\cdot x$, linearity gives $f^T(E(g\cdot
-x))=\Phi^T(\rho(g)E(x)+\epsilon u)=\rho(g)\Phi^T(E x)+a^T\epsilon u$ (using $f=\Phi$ equivariant and linear on the
-channel), while the target $E(\Phi^T(g\cdot x))=E(g\cdot\Phi^T x)=\rho(g)\Phi^T(E x)$ (by (A3) and encoder exactness off
-the single defect). Subtract and use (A4): $\lVert a^T\epsilon u\rVert=\epsilon e^{\lambda T}$. $\square$
+*Proof sketch (Appendix B).* Along $x$ the model is exact, $\mathrm{Err}_T(x)=0$; at $g\cdot x$ the single defect
+propagates linearly, $f^T(E(g\cdot x))=\rho(g)\Phi^T(Ex)+a^T\epsilon u$, while the target is $\rho(g)\Phi^T(Ex)$;
+subtract and use (A4): $\epsilon e^{\lambda T}$. $\square$
 
 Hence the certified horizon $T(\epsilon_{\mathrm{res}})=\tfrac1\lambda\log\tfrac{\epsilon_{\mathrm{res}}}{\epsilon}=
 \Theta\!\big(\tfrac1\lambda\log\tfrac1\epsilon\big)$, matching Theorem B: **the horizon's form is two-sided, not merely
@@ -163,24 +156,19 @@ This is the horizon-domain companion of Lemma 2: scale and data buy *approximate
 augmentation baseline floors at $\epsilon\approx10^{-4}$, never exact), and Proposition 6 amplifies that residual
 $e^{\lambda T}$ — a single-step tie between augmentation and equivariance **must break over horizon**.
 
-![Proposition 6, numerically (the central claim). **Left:** orbit-error-variation of an $\epsilon{=}10^{-3}$-approximately-equivariant model (markers) equals the analytic $\epsilon\,e^{\lambda T}$ (dashed) to relative error $10^{-14}$–$10^{-13}$, $3$ seeds; an *exactly* equivariant model sits at the machine-precision floor; $\lambda\le0$ channels stay bounded (infinite horizon). **Right:** certified horizon linear in $\log(1/\epsilon)$ with slope exactly $1/\lambda$ ($R^2{=}1.000$) — the $\Theta(\log(1/\epsilon)/\lambda)$ law (`step65`).](figures/step65_horizon_tightness.png){width=92%}
+![Proposition 6, numerically (the central claim). **Left:** orbit-error-variation of an $\epsilon{=}10^{-3}$-approximately-equivariant model (markers) equals the analytic $\epsilon\,e^{\lambda T}$ (dashed) to relative error $10^{-14}$–$10^{-13}$, $3$ seeds; an *exactly* equivariant model sits at the machine-precision floor; $\lambda\le0$ channels stay bounded (infinite horizon). **Right:** certified horizon linear in $\log(1/\epsilon)$ with slope exactly $1/\lambda$ ($R^2{=}1.000$) — the $\Theta(\log(1/\epsilon)/\lambda)$ law (`step65`).](figures/step65_horizon_tightness.png){width=85%}
 
-**Proposition 7 (scope — when the local spectrum certifies a *learned* model's horizon).** Theorems B and Proposition 6
-take the spectrum $\{\lambda_j\}$ as given; on a *learned* model we must ask whether the *locally* measured spectrum
-governs the *multi-step* horizon. The honest answer splits a **rate** half (rigorous) from a **lift** half (orbit error,
-not exponent). Let $\phi$ be the true dynamics with an ergodic invariant measure $\mu$, $\log^+\lVert D\phi\rVert\in
-L^1(\mu)$. By the **Oseledets multiplicative ergodic theorem** [@oseledets1968], $\tfrac1t\log\lVert\delta_t\rVert\to\lambda_1$ $\mu$-a.e.
-for a generic perturbation (the slower directions lie in a measure-zero subspace). *(a) Non-degenerate ($\lambda_1>0$):*
-$T(\epsilon)=\tfrac1{\lambda_1}\log(\epsilon_{\mathrm{res}}/\epsilon)+o(t)$ — Theorem B's law with $\lambda_1$ now the
-*measurable* asymptotic rate. The lift to a learned $\hat\phi$ is an *orbit-error* statement: on uniformly hyperbolic
-$\phi$ the shadowing lemma [@pilyugin1999shadowing] bounds the forecast-horizon *floor* $\sim\tfrac1{\lambda_1}\log(1/\delta)$ for one-step error
-$\delta$, but it controls trajectory closeness, **not** the *asymptotic* Lyapunov exponent (only
-upper-semicontinuous under $C^1$ perturbation). That $\hat\phi$ *reproduces* $\lambda_1$ is therefore not a shadowing
-corollary — but it *is* a finite-horizon continuity statement (Proposition 8 below), confirmed in E2. *(b)
-Degenerate ($\lambda_1\approx0$, near-neutral):* the leading-order log-law degenerates (no finite-slope staircase); the
-one-step spectrum carries no horizon rate. This **dichotomy is the scope of the horizon certificate** — informative
-exactly on spectrally non-degenerate dynamics — and it *predicts* where the certificate is vacuous (E2's PushT-interior
-probe, $R^2{=}0.02$), rather than leaving it as a gap.
+**Proposition 7 (scope — when the local spectrum certifies a *learned* model's horizon).** On a learned model the
+answer splits a rigorous **rate** half from an orbit-error **lift** half. Let $\phi$ have an ergodic invariant measure
+$\mu$ with $\log^+\lVert D\phi\rVert\in L^1(\mu)$. By **Oseledets** [@oseledets1968],
+$\tfrac1t\log\lVert\delta_t\rVert\to\lambda_1$ $\mu$-a.e. for generic perturbations. *(a) Non-degenerate
+($\lambda_1>0$):* $T(\epsilon)=\tfrac1{\lambda_1}\log(\epsilon_{\mathrm{res}}/\epsilon)+o(t)$ — Theorem B's law with
+$\lambda_1$ the *measurable* asymptotic rate. For a learned $\hat\phi$, shadowing [@pilyugin1999shadowing] bounds only
+the forecast-horizon *floor* $\sim\tfrac1{\lambda_1}\log(1/\delta)$ — trajectory closeness, **not** the asymptotic
+exponent — so that $\hat\phi$ *reproduces* $\lambda_1$ is a finite-horizon continuity statement (Proposition 8),
+confirmed in E2. *(b) Degenerate ($\lambda_1\approx0$):* the log-law degenerates; the one-step spectrum carries no
+horizon rate. This **dichotomy is the certificate's scope** — and it *predicts* where the certificate is vacuous
+(E2's PushT-interior probe, $R^2{=}0.02$).
 
 **Proposition 8 (finite-horizon exponent transfer).** The asymptotic exponent is only upper-semicontinuous — why
 *shadowing* cannot transfer it — but the certified horizon is **finite**, and the finite-time exponent
@@ -227,9 +215,9 @@ All experiments are CPU/$1$-GPU, seeded, and honestly gated (a run reports `INCO
 threshold). Proofs: **Appendix B**; reproducibility map (anonymized code, seeds, gates): **Appendix C**; the
 supporting suite (E1, E3–E8) is summarized below and written up in **Appendix D**.
 
-**(E2) The horizon staircase — and where structure becomes necessary.** On a controlled latent with a planted spectrum the certified-horizon slope brackets the predicted $1/\lambda$ (Theorem B above, Proposition 6 below; chaotic exponent recovered to $0.4\%$). The law lifts to learned models of *real* chaotic dynamics: plain one-step models of **Lorenz**, **Hénon**, and **Rössler** give staircases linear in $\log(1/\epsilon)$ ($R^2{=}0.975$–$0.995$, $3$ seeds) whose slopes recover the textbook exponents to $1$–$12\%$ across an order of magnitude in $\lambda_1$ — Proposition 8's finite-horizon continuity at work, not a shadowing corollary — while the near-neutral **PushT interior** is Proposition 7's predicted *degenerate* branch ($R^2{=}0.02$: there the spectrum rightly does not predict the rollout). At high dimension, structure becomes *necessary*: on $40$-D **Lorenz-96** [@lorenz1996predictability] ($F{=}8$; Liouville sum $\sum_j\lambda_j{=}-N$ recovered to $0.0\%$) a $\mathbb{Z}_N$-equivariant cyclic-conv recovers the *full* spectrum ($R^2{=}0.98$–$0.99$, $3$ seeds; Kaplan–Yorke $\sim\!27$) — hence the per-channel certified horizons — while an identically-trained dense MLP **fails** ($R^2{<}0$, $\lambda_1$ inflated $\sim\!3.4\times$) and a GRU-BPTT [@vlachas2020rnn] fails the same way at $N{=}40$ ($R^2{\approx}-0.3$), its joint-state Jacobian carrying hidden modes that break the conditional-Lyapunov condition [@hart2024attractor]. Sweeping $N\in\{12,20,28,40\}$ shows a **phase transition**, not a single-$N$ artifact: all three architectures tie through $N{=}28$; only the equivariant one survives $N{=}40$ (`step83`).
+**(E2) The horizon staircase — and where structure becomes necessary.** On a controlled latent with a planted spectrum the certified-horizon slope brackets the predicted $1/\lambda$ (chaotic exponent recovered to $0.4\%$). The law lifts to learned models of *real* chaotic dynamics: one-step models of **Lorenz**, **Hénon**, **Rössler** give staircases linear in $\log(1/\epsilon)$ ($R^2{=}0.975$–$0.995$, $3$ seeds) whose slopes recover the textbook exponents to $1$–$12\%$ — Proposition 8's continuity at work, not a shadowing corollary — while the near-neutral **PushT interior** is Proposition 7's predicted *degenerate* branch ($R^2{=}0.02$). At high dimension structure becomes *necessary*: on $40$-D **Lorenz-96** [@lorenz1996predictability] (Liouville sum $\sum_j\lambda_j{=}-N$ recovered to $0.0\%$) a $\mathbb{Z}_N$-equivariant cyclic-conv recovers the *full* spectrum ($R^2{=}0.98$–$0.99$, $3$ seeds; Kaplan–Yorke $\sim\!27$) — hence the per-channel certified horizons — while an identically-trained dense MLP **fails** ($R^2{<}0$, $\lambda_1$ inflated $\sim\!3.4\times$) and a GRU-BPTT [@vlachas2020rnn] fails the same way, its joint-state Jacobian breaking the conditional-Lyapunov condition [@hart2024attractor]. Sweeping $N\in\{12,20,28,40\}$ shows a **phase transition**: all three architectures tie through $N{=}28$; only the equivariant one survives $N{=}40$ (`step83`).
 
-![Full-spectrum Lyapunov $R^2$ vs. $N$: the $\mathbb{Z}_N$-conv holds while dense MLP and GRU collapse at $N{=}40$ — a phase transition, not a single-$N$ artifact (`step83`).](figures/step83_rsquared_crossover.png){width=72%}
+![Full-spectrum Lyapunov $R^2$ vs. $N$: the $\mathbb{Z}_N$-conv holds while dense MLP and GRU collapse at $N{=}40$ — a phase transition, not a single-$N$ artifact (`step83`).](figures/step83_rsquared_crossover.png){width=62%}
 
 ![The certified-horizon law across a class of learned chaotic models (E2). The identical learned-model staircase on a 2D map (Hénon), a small-exponent flow (Rössler), and a large-exponent flow (Lorenz) is linear in $\log(1/\epsilon_0)$ and its slope (blue) recovers the textbook exponent (red dashed). The law is a property of chaotic dynamics, not of Lorenz; the residual bias is decomposed by Proposition 8.](figures/step71_multichaos_horizon.png)
 
@@ -263,14 +251,12 @@ $T_{\mathrm{guar}}(\epsilon)$ from the model alone. On **uniformly-hyperbolic** 
 
 ## 5. Related work
 
-**Single-shot certified equivariance is our $T{=}1$ slice.** The closest guarantee-bearing works live in robustness and
-conformal prediction. Equivariant classifiers have *orbit-constant margins* (the decision-boundary gradient norm is
-preserved across the orbit), giving uniform adversarial certificates [@orbitmargin]; invariance-aware randomized
-smoothing builds *orbit-based* certificates [@randsmooth]; and Equivariantized Conformal Prediction (eCP) [@ecp] group-averages the nonconformity score — frame averaging for distribution-free coverage. **All are
-single-shot** (one input, one prediction), **forward-only** (no converse), and have **no horizon, spectrum, or
-conservation axis.** They are exactly the $T{=}1$, $\epsilon$-independent slice of our certificate: our contribution is
-the multi-step stratification (Theorem B, tight by Proposition 6), the converse (Lemma 2), and the Noether bridge to
-unbounded horizon (Proposition 5).
+**Single-shot certified equivariance is our $T{=}1$ slice.** Equivariant classifiers carry *orbit-constant margins*
+giving uniform adversarial certificates [@orbitmargin]; invariance-aware randomized smoothing builds orbit-based
+certificates [@randsmooth]; equivariantized conformal prediction group-averages the nonconformity score [@ecp]. **All
+are single-shot, forward-only, and have no horizon, spectrum, or conservation axis** — exactly the $T{=}1$,
+$\epsilon$-independent slice of our certificate; our contribution is the multi-step stratification (Theorem B, tight
+by Proposition 6), the converse (Lemma 2), and the Noether bridge (Proposition 5).
 
 **Learned conservation laws.** Noether Networks [@noethernet] and Noether's Razor [@noetherrazor] *learn* conserved quantities to improve average prediction; we *certify* — Proposition 5 turns a conserved charge into an a-priori long-horizon guarantee, Proposition 4 forces its isotypic placement. Guarantee versus average accuracy.
 
@@ -278,17 +264,15 @@ unbounded horizon (Proposition 5).
 
 **Equivariant predictors and latent-geometry priors.** Cyclic/unitary predictors (BRo-JEPA, UWM-JEPA) report strong zero-shot transfer; Theorem A explains *why* and Lemma 1 quantifies *how far* (the generated monoid). LeJEPA-style isotropic latent priors target a *distributional* property; ours is a first-order, per-situation guarantee that predicts when a data-discovered anisotropy fails off the orbit.
 
-**Predictability horizons.** The $T(\epsilon)\sim\log(1/\epsilon)/\lambda$ law is classical for dynamical systems
-(Lyapunov; numerical weather prediction); that the *local* spectrum governs the *asymptotic* rate is the Oseledets multiplicative ergodic theorem [@oseledets1968], and on uniformly hyperbolic systems the shadowing lemma [@pilyugin1999shadowing] bounds a perturbed model's
-forecast-horizon floor (it controls orbit error, not the exponent). Our contribution is to (i) prove the law *tight* for
-a *learned* latent world model and **measure it on learned models of a class of genuinely chaotic dynamics** (Lorenz,
-Hénon, Rössler, E2 — matched to $1$–$12\%$), made rigorous by a finite-horizon continuity bound (Proposition 8) where
-shadowing fails; (ii) **characterize when it lifts** (Proposition 7: the non-degenerate/degenerate dichotomy,
-synthesizing Oseledets for the rate with shadowing for the floor); (iii) tie its unbounded-horizon subspace to the
-group-invariant subspace (Noether hinge); and (iv) make the forward direction's converse a theorem (Lemma 2). Recovering a chaotic spectrum from a *learned* model is itself known, *conditionally* on the model's contracting modes
-[@hart2024attractor] — the reason the recurrent baseline (E2) fails at high $N$; the closest concurrent guarantees are
-non-equivariant certified Koopman forecasts [@conradie2026trustkoopman] and equivariant-but-uncertified world models
-[@lillemark2026flowm; @mo2026symmetry], none combining equivariance with a certified two-sided spectral horizon.
+**Predictability horizons.** The $T(\epsilon)\sim\log(1/\epsilon)/\lambda$ law is classical (Lyapunov; NWP); the
+local-to-asymptotic link is Oseledets [@oseledets1968]; shadowing [@pilyugin1999shadowing] bounds a perturbed model's
+horizon *floor*, not its exponent. We (i) prove the law *tight* for a learned latent world model and measure it on a
+class of genuinely chaotic dynamics ($1$–$12\%$, E2), rigorous via Proposition 8 where shadowing fails; (ii)
+characterize *when* it lifts (Proposition 7); (iii) tie the unbounded-horizon subspace to the invariant one (Noether);
+(iv) prove the converse (Lemma 2). Spectrum recovery from a learned model is known *conditionally* on contracting
+modes [@hart2024attractor] — why the recurrent baseline fails at high $N$; the closest concurrent guarantees
+[@conradie2026trustkoopman; @lillemark2026flowm; @mo2026symmetry] each miss the equivariance-certified-horizon
+intersection.
 
 ---
 
