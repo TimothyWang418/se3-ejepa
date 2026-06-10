@@ -875,3 +875,15 @@ merged; registry +cheetah-run/finger-spin/hopper-hop).
 **Appendix D** with a one-paragraph supporting-suite summary in main; E2 merged to two paragraphs (+phase-transition
 and class-staircase figures); E9/E11 tightened; abstract $283\to\sim185$ words. Main text now ≈ page budget; remaining
 craft pass (camera-grade figure polish, final lit sweep, anonymized artifact) is the P2 tail.
+
+## [2026-06-10] Final lit sweep (through 2026-06) — all four novelty claims SAFE; concurrent-work paragraph added to both papers
+
+Sub-agent sweep (~20 queries, WebFetch-verified): **TD-MPC2 audit novelty SAFE** (nobody computed Lyapunov/Jacobian
+quantities of a public pretrained RL WM in-window; nearest = semantic probing arXiv:2603.21546, sample benchmarks
+WorldBench/WorldArena; nearest priors = Özalp & Magri latent-stability of self-trained AEs, 2410.00480, and
+Lyapunov-regularized Dreamer policies, 2410.10674 — both now cited). **Two-sided horizon + converse SAFE** (only new
+equivariance-Lyapunov theory is Mo arXiv:2605.03338 — symmetry-protected NEUTRAL modes, complementary, vacuous for
+discrete Z_N; must-cite + distinguished). **Geng et al. 2512.08991** (conformal WM-rollout verification) preempted as
+the statistical/rollout-hungry counterpoint. @lillemark2026flowm updated to ICML 2026 (+FERNN antecedent). ~10
+SHOULD-CITEs folded into one dense "Concurrent and recent work" paragraph in ICLR §5 + paper2 §6. LeWM (public
+checkpoints, Mar 2026) noted in the research-line snapshot as the next free audit target for step89.
