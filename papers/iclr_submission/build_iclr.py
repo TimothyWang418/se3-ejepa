@@ -73,8 +73,7 @@ def split_source() -> tuple[str, str]:
 # and the Lorenz headline); relocate the rest — including the PushT real-contact-dynamics figure, whose result E5's
 # prose fully carries — to an unlimited appendix so the MAIN TEXT meets ICLR's strict 9-page limit (the E9
 # co-demonstration paragraph needed the room). (Appendix + references do not count toward the 9 pages.)
-MAIN_FIGS = ["hero_certified_region", "hero_certified_world_models", "step65_horizon_tightness",
-             "step83_rsquared_crossover"]
+MAIN_FIGS = ["hero_certified_region", "hero_certified_world_models", "step65_horizon_tightness"]
 
 
 def relocate_figures(body: str) -> tuple[str, str]:

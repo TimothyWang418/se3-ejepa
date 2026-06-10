@@ -175,8 +175,8 @@ must tighten as one-step error drops — confirmed in E2 (Rössler: $44\%\to8\%$
 
 ### 3.3 The Noether hinge: which channels are unbounded
 
-Theorem B leaves the $\lambda_j\le0$ (unbounded-horizon) channels unidentified. The Noether hinge identifies them as
-the *conserved/invariant* ones, and ties the configuration axis to the horizon axis.
+Theorem B leaves the $\lambda_j\le0$ (unbounded-horizon) channels unidentified; the Noether hinge identifies them
+as the *conserved/invariant* ones.
 
 **Proposition 4 (isotypic placement).** A conserved charge of the dynamics must live in a specific isotypic block of
 $\rho$: a scalar invariant (energy) in the trivial ($\ell{=}0$) block; a vector charge (angular momentum) in the
@@ -188,8 +188,8 @@ prediction error satisfies $\lVert Q(\hat z_T)-Q(z_T)\rVert\le T\eta$ — **line
 $e^{\lambda T}$ — and at $\eta{=}0$ the charge value is certified to all horizons. (About the charge value; exact
 under an equivariant symplectic discretization; the converse fails — slow need not be conserved.)
 
-Together: **the certified region is the coarse ($\epsilon$ large), invariant/conserved ($\lambda\le0$), low-composition
-($|w|$ small) corner** — and the converse (Lemma 2) says this corner is reachable only with structure.
+Together: **the certified region is the coarse, invariant/conserved, low-composition corner** — reachable, by the
+converse, only with structure.
 
 ### 3.4 The certificate is a procedure
 
