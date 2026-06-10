@@ -80,7 +80,8 @@ def relocate_figures(body: str) -> tuple[str, str]:
     r"""Move every embedded figure whose basename is NOT in MAIN_FIGS out of the body; leave a one-line pointer where
     it stood. Returns (body_without_those_figures, appendix_markdown). The appendix is injected AFTER the bibliography
     (post-pandoc) so the order is main text -> references -> appendix."""
-    fig_re = re.compile(r"^!\[(?P<cap>.*?)\]\(figures/(?P<name>[\w.-]+)\.(?:png|pdf|jpe?g)\)\s*$", re.MULTILINE)
+    fig_re = re.compile(r"^!\[(?P<cap>.*?)\]\(figures/(?P<name>[\w.-]+)\.(?:png|pdf|jpe?g)\)(?:\{[^}]*\})?\s*$",
+                        re.MULTILINE)
     moved: list[str] = []
 
     def repl(m: re.Match) -> str:
