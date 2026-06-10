@@ -440,6 +440,37 @@ procedure. (ii) The dynamical assumptions (stationarity/mixing along the audited
 Proposition 7's scope and are *assumed, not certified*, for learned models — stated honestly, as everywhere else.
 (iii) $B$ is finite and computable on compact latents (E13's SimNorm product), so the bound is fully effective there.
 
+**Proposition 11 (decision scope — where a horizon certificate carries decision value).** Adopt Proposition 9's
+forecast-error model: $\delta_t\approx\delta_0e^{\lambda_1\Delta t\,t}$ between re-observations,
+$H(\epsilon)=\lfloor\log(\epsilon/\delta_0)/(\lambda_1\Delta t)\rfloor$, budget $B$ over $L$ map steps, certificate
+reporting $\hat\lambda_1=c\,\lambda_1$ ($c\ge1$). **(i) (scope-aligned: decided quantity $=$ certified quantity.)** If
+the decision rule is a function of the certified predicate alone — re-observe/flag so the forecast error stays
+$\le\epsilon$ — the certificate-prescribed cadence incurs violation-rate regret
+$R_{\mathrm{align}}(c)=V(c)-V(1)\le\frac{BH(\epsilon)}{L}\big(1-\frac1c\big)$, **vanishing at $c=1$**: for an aligned
+decision a calibrated certificate is decision-optimal a priori, the entire regret being the calibration factor.
+**(ii) (task-mapped: decided quantity $=h(\text{certified quantity})$.)** If decision quality is the episode average
+of a task loss $\ell(\delta_t)$ with an **implicit task tolerance** $\theta^{\ast}$ ($\ell\equiv0$ on
+$[0,\theta^{\ast}]$, $\ell\le\ell_{\max}$ beyond), then even at $c=1$ the $\epsilon$-certificate incurs
+$R_{\mathrm{task}}(\epsilon)\le\ell_{\max}\max(0,H(\epsilon)-H(\theta^{\ast}))/H(\epsilon)$ (task violations when
+$\epsilon>\theta^{\ast}$ — **invisible to the certificate**, since no step violates $\epsilon$) and wastes
+$\Delta B=B(H(\theta^{\ast})/H(\epsilon)-1)_+$ re-observations when $\epsilon<\theta^{\ast}$; both vanish **iff**
+$H(\epsilon)=H(\theta^{\ast})$, and the mis-resolution penalty in horizon units is
+$|H(\epsilon)-H(\theta^{\ast})|=|\log(\epsilon/\theta^{\ast})|/(\lambda_1\Delta t)$. Since $\theta^{\ast}$ is a
+property of the task map, not of the dynamics, **no dynamics-only certificate can supply it**. *Proof.* (i) From
+Proposition 9, $V(c)=\max(0,L-BH/c-H)/L$; for $c\ge1$, $\max(0,x)-\max(0,y)\le x-y$ with $x=L-BH/c-H\ge y=L-BH-H$
+gives $V(c)-V(1)\le(BH/L)(1-1/c)$. (ii) Within a window the error is monotone in staleness, so the task-violating
+steps are exactly the last $H(\epsilon)-H(\theta^{\ast})$ when $\epsilon>\theta^{\ast}$, each contributing
+$\le\ell_{\max}$; when $\epsilon<\theta^{\ast}$ cadence $H(\theta^{\ast})$ already keeps every step task-valid, so
+cadence $H(\epsilon)$ spends $B(H(\theta^{\ast})/H(\epsilon)-1)$ avoidable reads. $\square$ *Remark (the scope law of
+§5.19/§7, now a theorem).* Clause (i) is Experiment 22 and the deployed monitor of Experiment 26 — the decided
+quantity *is* latent $\theta$-validity, and the published certificate priced the in-situ staleness clock with zero
+new estimation. Clause (ii) is §5.19 and step93: the MPPI planner absorbs staleness up to an implicit tolerance
+(empirically $H(\theta^{\ast})\approx2$ agent-steps vs $H(0.2)\approx6$), so a $0.2$-resolution certificate
+over-prescribes the replan cadence by the predicted mis-resolution factor $\approx3$ and the return gap dilutes
+exactly as the bound allows. The honest limit is built in: re-issuing at $\theta^{\ast}$ would close the gap, but
+$\theta^{\ast}$ must be *elicited from the task* — the theorem states the boundary of a-priori decision value rather
+than promising past it.
+
 
 Propositions 8–9 read consequences off the certified horizon — the chaos rate, and the budget cost of mis-reading it; the next result makes the "Certified" in the
 title literal by reading a **sound, a-priori horizon from the learned model itself** — and characterizes the exact
@@ -1193,6 +1224,36 @@ On **non-uniformly-hyperbolic** dynamics (Hénon, with homoclinic tangencies) a 
 
 ![Scale does not buy a calibrated horizon (Experiment 25). **(a)** $\lambda_1$ of the walker-walk policy-prior loop across the official multitask ladder: sign-flipping, non-monotone (contracting at $1$M and $48$M). **(b)** Calibration at $\epsilon{=}0.2$: scatter across sizes; no multitask scale reaches the single-task $5$M band ($0.94$–$1.02$, green).](figures/step92_scale_sweep.png)
 
+**The published certificate prices a deployed monitor, out-of-sample (Experiment 26, `step94`).** The scope law's
+*positive* instance in deployment form — and the experiment where the audit's numbers are spent rather than admired. A
+**sensor-only monitor** watches cheetah-run executing its nominal policy (the deterministic prior on true observations
+— monitoring cannot perturb the system, designing out the §5.19/step93 control confound); the expensive sensor is read
+every $k$ steps; between reads the monitor forecasts the latent with the certified loop $g(z)=d(z,\tanh\mu_\pi(z))$
+itself — **no action telemetry** — and at a read it flags iff relative latent error exceeds $\theta{=}0.2$, then
+resyncs. The certificate numbers are **loaded from the Experiment 23 artifact** (issued before this experiment
+existed: a-priori in the strongest sense), and the gates were frozen before official seeds 1–2 were ever run — those
+two cells are genuinely out-of-sample. Results, cell-by-cell against the published bench map: in-situ staleness ratio
+$s^{\ast}_{\mathrm{med}}/T_1^{\mathrm{pub}}(0.2)=0.43$ vs bench $0.43$ (seed 1), $0.50$ vs $0.50$ (seed 2) — **two-decimal
+agreement on the out-of-sample optimistic cells, optimism replicated where optimism was published** — and $0.67$ vs
+$0.83$ on the calibrated cell, whose stricter $[2/3,3/2]$ check lands $7{\times}10^{-4}$ below the band edge on an
+integer-valued median (crossings are whole steps; the edge sits at $4.003$): recorded **at-the-edge, not rounded up**.
+A frozen-actuator fault (executes $0$ while the nominal forecast is unchanged) is detected at the certificate-derived
+cadence $k_{\mathrm{op}}=\max(2,\mathrm{round}(T_1^{\mathrm{pub}}/3))$ with recall $1.00$ on all three seeds, median
+delay $\le k_{\mathrm{op}}$ on $2/3$ (the miss is the tightest cell, $k_{\mathrm{op}}{=}2$, delay $3.0$ — the frozen
+channel needs $\sim2$–$3$ steps to push relative latent error past $\theta$). Proposition 11 is the formal frame:
+clause (i) — the decided quantity here *is* the certified quantity, so certificate value transfers with **zero new
+estimation**; clause (ii) prices §5.19/step93's dilution as a resolution mismatch ($H(\theta^{\ast})\approx2$ vs
+$H(0.2)\approx6$ agent-steps). The design trail is disclosed in the script header and is itself taxonomy-obedient:
+the teacher-forced loop variant $z\mapsto d(z,a_t)$ lands weakly expansive ($\lambda_1{=}0.09$–$0.13$) and its
+certificate would be optimistic exactly as the scope map predicts; and the same monitor on walker-walk is
+**regime-bimodal** (the deterministic prior falls on some env seeds; belief-invalidity $0.24\to0.66$ tracks torso
+height $1.05\to0.68$) — a monitor presumes a nominal regime, Proposition 7's scope clause in deployment guise, **and
+the clause is load-bearing**: the walker secondary run's in-situ ratios land $0.32$–$0.47$ against bench
+$0.94$–$1.02$ ($0/3$ replication; fault recall still $0.92$–$1.0$) — regime contamination breaks the clock
+replication while detection survives (`step94_budgeted_monitor_walker-walk.json`).
+`experiments/step94_budgeted_monitor.py`; gates G1a (cell-by-cell replication, $|\Delta r|\le0.25$): **3/3 PASS**;
+G1b (calibrated-cell band): at-the-edge INCONCLUSIVE; G2 (detection): **2/3 PASS** per pre-registration.
+
 
 
 
@@ -1393,7 +1454,11 @@ recovery, remain ours.
   divergence of $1$–$2$ steps matches the return knee) but there the certificate sits in its known tight-$\epsilon$
   optimistic regime (Proposition 8). Together with §5.19's return-INCONCLUSIVE, the honest scope law: the certificate's
   decision value concentrates where the decided quantity IS the certified quantity (the latent's own staleness — §5.20's
-  re-observation win) and dilutes when a task-level map (return, gait quality) sits in between (`step93`).
+  re-observation win, Experiment 26's deployed monitor) and dilutes when a task-level map (return, gait quality) sits
+  in between (`step93`). **Proposition 11 makes the law a theorem**: an aligned decision inherits certificate value up
+  to the calibration factor alone (zero regret at $c{=}1$), while a task-mapped decision carries an irreducible
+  mis-resolution penalty $|\log(\epsilon/\theta^{\ast})|/\lambda_1$ unless the task's implicit tolerance
+  $\theta^{\ast}$ is elicited from the task itself.
 
 - **Pixels (Experiment 13, §5.11): structure is free; absolute accuracy is the open part.** The certificate transfers
   *exactly* to rendered pixels, and — via frame averaging — at **no accuracy cost** relative to an unconstrained CNN

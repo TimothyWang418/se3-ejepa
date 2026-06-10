@@ -254,6 +254,54 @@ procedure. (ii) The dynamical assumptions (stationarity/mixing along the audited
 Proposition 7's scope and are *assumed, not certified*, for learned models — stated honestly, as everywhere else.
 (iii) $B$ is finite and computable on compact latents (E13's SimNorm product), so the bound is fully effective there.
 
+### Proposition 11 (decision scope — where a horizon certificate carries decision value)
+
+*Statement.* Adopt Proposition 9's forecast-error model: between re-observations the leading-mode error grows as
+$\delta_t\approx\delta_0e^{\lambda_1\Delta t\,t}$, the certified horizon at resolution $\epsilon$ is
+$H(\epsilon)=\lfloor\log(\epsilon/\delta_0)/(\lambda_1\Delta t)\rfloor$, the agent re-observes at most $B$ times over
+$L$ map steps, and the certificate reports $\hat\lambda_1=c\,\lambda_1$ ($c\ge1$).
+
+**(i) (scope-aligned decision: decided quantity $=$ certified quantity.)** If the decision rule is a function of the
+certified predicate alone — re-observe/flag so that forecast error stays $\le\epsilon$ — then the certificate-prescribed
+cadence $\hat H=H(\epsilon)/c$ incurs violation-rate regret against the omnisciently calibrated policy of
+$$R_{\mathrm{align}}(c)\;=\;V(c)-V(1)\;\le\;\frac{B\,H(\epsilon)}{L}\Big(1-\frac1c\Big),$$
+which **vanishes at $c=1$**: for an aligned decision, a calibrated certificate is decision-optimal a priori, and the
+entire regret is the calibration factor.
+
+**(ii) (task-mapped decision: decided quantity $=h(\text{certified quantity})$.)** If instead decision quality is the
+episode average of a task loss $\ell(\delta_t)$ with an **implicit task tolerance** $\theta^{\ast}$ — $\ell\equiv0$ on
+$[0,\theta^{\ast}]$ and $\ell\le\ell_{\max}$ beyond — then the $\epsilon$-certificate's prescription, even perfectly
+calibrated ($c=1$), incurs
+$$R_{\mathrm{task}}(\epsilon)\;\le\;\ell_{\max}\,
+\frac{\max\!\big(0,\,H(\epsilon)-H(\theta^{\ast})\big)}{H(\epsilon)}
+\qquad\text{(task violations when }\epsilon>\theta^{\ast}\text{)},$$
+and wastes $\Delta B=B\big(H(\theta^{\ast})/H(\epsilon)-1\big)_+$ re-observations when $\epsilon<\theta^{\ast}$. Both
+terms vanish **iff** $H(\epsilon)=H(\theta^{\ast})$ — iff the certificate is issued at the task's own resolution — and
+the mis-resolution penalty in horizon units is $|H(\epsilon)-H(\theta^{\ast})|=\big|\log(\epsilon/\theta^{\ast})\big|/(\lambda_1\Delta t)$.
+Since $\theta^{\ast}$ is a property of the task map $h$, not of the dynamics, no dynamics-only certificate can supply
+it.
+
+*Proof.* (i) From Proposition 9, $V(c)=\max(0,L-BH/c-H)/L$ with $H=H(\epsilon)$. For $c\ge1$,
+$L-BH/c-H\;\ge\;L-BH-H$, and $\max(0,x)-\max(0,y)\le x-y$ for $x\ge y$, so
+$V(c)-V(1)\le\big[(L-BH/c-H)-(L-BH-H)\big]/L=(BH/L)(1-1/c)$, zero at $c=1$.
+(ii) Within one re-observation window of length $H(\epsilon)$ the error is monotone in staleness, so the task-violating
+steps ($\delta_t>\theta^{\ast}$) are exactly the last $H(\epsilon)-H(\theta^{\ast})$ when $\epsilon>\theta^{\ast}$
+(none are certificate-violating: $\delta_t\le\epsilon$ throughout — the dilution is **invisible to the certificate**);
+each contributes at most $\ell_{\max}$, giving the per-window (hence episode-average) bound. When
+$\epsilon<\theta^{\ast}$ every step is task-valid already at cadence $H(\theta^{\ast})$, so running at $H(\epsilon)$
+spends $B\,(H(\theta^{\ast})/H(\epsilon)-1)$ avoidable reads. Both quantities are zero iff
+$H(\epsilon)=H(\theta^{\ast})$; the horizon-unit gap is the difference of the two logarithms. $\square$
+
+*Remark (the scope law, now a theorem — and its experimental instances).* Clause (i) is E12 and the deployment monitor
+E15/step94: the decided quantity *is* latent $\theta$-validity, and the published certificate priced the in-situ
+staleness clock with no new estimation (in-situ ratio $0.75$ vs bench $0.83$ on the calibrated cell). Clause (ii) is
+E11 and step93: a planner (MPPI) absorbs latent staleness up to an implicit tolerance — empirically
+$H(\theta^{\ast})\approx2$ agent-steps against $H(0.2)\approx6$ — so a $0.2$-resolution certificate over-prescribes
+the replan cadence by the predicted mis-resolution factor $\approx3$, and the return gap dilutes exactly as the bound
+allows. The honest limit is built in: re-issuing the certificate at $\theta^{\ast}$ would close the gap, but
+$\theta^{\ast}$ must be *elicited from the task* (e.g. a one-knob cadence sweep) — the theorem makes the boundary of
+a-priori decision value precise instead of promising past it.
+
 ### Proposition 4 (isotypic placement)
 
 *Statement.* A conserved charge $Q:\mathcal Z\to W$ that is $G$-equivariant (intertwines $\rho$ with a representation

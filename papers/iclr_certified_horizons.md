@@ -8,7 +8,7 @@ venue: "ICLR submission draft (focused extraction of the Certified World Models 
 
 ## Abstract
 
-*Scale buys interpolation; structure buys a certified horizon.* A world model's average error says nothing about whether a *particular* prediction can be trusted, or for how long. For **equivariant** latent world models we give a computable, multi-step **certificate of the predictable horizon**: $T$-step rollout error is provably constant over each symmetry orbit (Theorem A), stratified channel-by-channel by the predictor's Lyapunov spectrum, $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$, and **two-sided** — a matching lower bound makes approximate equivariance provably horizon-limited (Proposition 6). The certificate is *equivalent* to equivariance (Lemma 2): no non-equivariant model has it at any scale. Empirically the law lifts to learned models of real chaotic systems — on $40$-D Lorenz-96 only a $\mathbb{Z}_N$-equivariant network recovers the full spectrum ($R^2{=}0.98$; dense and recurrent baselines fail). A cone certificate (Theorem B′) then makes the horizon **a-priori sound**, tight exactly on uniformly-hyperbolic dynamics. The certificate is *actionable* — **a priori, with zero calibration data**: under a fixed sensing budget a $c\times$-inflated certificate provably needs $c\times$ the budget (Proposition 9), and it **audits public pretrained world models training-free** — calibrated where strongly expansive (ratio $0.94$–$1.02$), optimistic where weakly expansive, correctly abstaining where contracting. Across the official $1$M–$317$M multitask scale ladder, calibration does **not** improve with parameters — scale buys interpolation, not a calibrated horizon. §6 states the $1$–$2$-GPU scope.
+*Scale buys interpolation; structure buys a certified horizon.* A world model's average error says nothing about whether a *particular* prediction can be trusted, or for how long. For **equivariant** latent world models we give a computable, multi-step **certificate of the predictable horizon**: $T$-step rollout error is provably constant over each symmetry orbit (Theorem A), stratified channel-by-channel by the predictor's Lyapunov spectrum, $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$, and **two-sided** — a matching lower bound makes approximate equivariance provably horizon-limited (Proposition 6). The certificate is *equivalent* to equivariance (Lemma 2): no non-equivariant model has it at any scale. Empirically the law lifts to learned models of real chaotic systems — on $40$-D Lorenz-96 only a $\mathbb{Z}_N$-equivariant network recovers the full spectrum ($R^2{=}0.98$; dense and recurrent baselines fail). A cone certificate (Theorem B′) then makes the horizon **a-priori sound**, tight exactly on uniformly-hyperbolic dynamics. The certificate is *actionable* — **a priori, with zero calibration data**: under a fixed sensing budget a $c\times$-inflated certificate provably needs $c\times$ the budget (Proposition 9), and it **audits public pretrained world models training-free** — calibrated where strongly expansive (ratio $0.94$–$1.02$), optimistic where weakly expansive, correctly abstaining where contracting — a scope map that a deployed sensing-budget monitor then **replicates cell-by-cell, out-of-sample, at zero new estimation**. Across the official $1$M–$317$M multitask scale ladder, calibration does **not** improve with parameters — scale buys interpolation, not a calibrated horizon. §6 states the $1$–$2$-GPU scope.
 
 ---
 
@@ -71,7 +71,7 @@ from the learned model, tight on uniformly-hyperbolic dynamics and self-abstaini
 faithfulness is **actionable, a priori** (E12; Proposition 9) — holding the forecaster fixed, it meets a fixed sensing
 budget a $\sim3\times$-inflated non-equivariant certificate cannot, with **zero calibration data** (a dense certificate
 matches only after recalibration on measured rollouts), delivering the opening promise that an acting agent needs to
-know not just the average error but *whether, and for how long, to trust the model*; and **(vi)** a **training-free trustworthiness audit of public pretrained world models** — the same read-out, unchanged, maps official TD-MPC2 checkpoints (including the $1$M–$317$M multitask ladder, where calibration does **not** improve with scale) and an architecturally disjoint JEPA family onto the certificate's own scope taxonomy (E13–E14). These assemble
+know not just the average error but *whether, and for how long, to trust the model*; and **(vi)** a **training-free trustworthiness audit of public pretrained world models** — the same read-out, unchanged, maps official TD-MPC2 checkpoints (including the $1$M–$317$M multitask ladder, where calibration does **not** improve with scale) and an architecturally disjoint JEPA family onto the certificate's own scope taxonomy (E13–E14) — a map a deployed sensing-budget monitor then replicates **cell-by-cell, out-of-sample, at zero new estimation** (E15), with the scope law itself formalized as a regret decomposition (Proposition 11). These assemble
 (Algorithm 1) into one certificate *exclusive to structure* (Lemma 2) whose unbounded-horizon
 subspace is the conserved/invariant one (the Noether hinge). We credit the classical pillars we build on — the
 Lyapunov/NWP horizon law, invariant decision theory, and the $e^{\lambda T}$ growth — explicitly in §3 and §5.
@@ -269,6 +269,25 @@ the certificate **self-diagnoses** which regime it is in (`step82`).
 
 ![Scale does not buy a calibrated horizon (E14). **(a)** $\lambda_1$ of the walker-walk policy-prior loop across the official multitask ladder: sign-flipping, non-monotone (contracting at $1$M and $48$M). **(b)** Calibration at $\epsilon{=}0.2$: scatter across sizes; no multitask scale reaches the single-task $5$M band ($0.94$–$1.02$, green).](figures/step92_scale_sweep.png)
 
+**(E15) The published certificate prices a deployed monitor, out-of-sample (`step94`).** The scope law's *positive*
+instance, in deployment form: a **sensor-only monitor** watches cheetah-run executing its nominal policy, reads the
+expensive sensor every $k$ steps, and between reads forecasts the latent with the certified loop $g$ itself (no action
+telemetry), flagging at a read iff relative error exceeds $\theta{=}0.2$. The certificate numbers are **loaded from
+the E13 artifact** — issued before this experiment existed — and the gates were frozen before seeds 1–2 were ever run.
+The in-situ staleness clock replicates the published scope map **cell-by-cell**: in-situ-vs-bench ratio $0.43$ vs
+$0.43$ and $0.50$ vs $0.50$ on the two out-of-sample cells (two-decimal agreement, optimistic cells *predicted
+optimistic*), $0.67$ vs $0.83$ on the calibrated cell — whose $[2/3,3/2]$ check lands $7{\times}10^{-4}$ below the
+edge on an integer-valued median and is recorded **at-the-edge, not rounded up**. A frozen-actuator fault is then
+detected at the certificate-derived cadence with recall $1.00$ on all three seeds (median delay $\le k_{\mathrm{op}}$
+on $2/3$). Proposition 11 is the formal statement: clause (i) — when the decided quantity *is* the certified quantity,
+certificate value transfers with **zero new estimation**; clause (ii) prices E11/step93's dilution as a resolution
+mismatch ($H(\theta^{\ast})\approx2$ vs $H(0.2)\approx6$ agent-steps). Honest notes: the same monitor on walker is
+regime-bimodal (the deterministic prior falls on some env seeds — a monitor presumes a nominal regime; Proposition 7
+in deployment guise — **and the clause is load-bearing**: the walker run's in-situ ratios land $0.32$–$0.47$ vs bench
+$0.94$–$1.02$, $0/3$ replication, the regime-contamination signature), and the teacher-forced loop variant lands
+weakly expansive ($\lambda_1{=}0.09$–$0.13$), where the taxonomy itself predicts optimism — the experiment's design
+trail obeys the paper's own scope map.
+
 
 
 
@@ -356,7 +375,12 @@ non-equivariant certified Koopman forecasts [@conradie2026trustkoopman] and equi
   divergence of $1$–$2$ steps matches the return knee) but there the certificate sits in its known tight-$\epsilon$
   optimistic regime (Proposition 8). Together with E11's return-INCONCLUSIVE, the honest scope law: the certificate's
   decision value concentrates where the decided quantity IS the certified quantity (the latent's own staleness — E12's
-  re-observation win) and dilutes when a task-level map (return, gait quality) sits in between (`step93`).
+  re-observation win, E15's deployed monitor) and dilutes when a task-level map (return, gait quality) sits in between
+  (`step93`). **Proposition 11 makes the law a theorem**: an aligned decision inherits certificate value up to the
+  calibration factor alone (zero regret at $c{=}1$), while a task-mapped decision carries an irreducible
+  mis-resolution penalty $|\log(\epsilon/\theta^{\ast})|/\lambda_1$ unless the task's implicit tolerance
+  $\theta^{\ast}$ is elicited from the task itself — the boundary of a-priori decision value, stated rather than
+  promised past.
 
 - **Scale and modality.** All experiments are $1$–$2$-GPU. The certificate's exact flatness transfers across modalities
   (state, $\mathrm{SO}(3)$ point clouds, pixels), but absolute multi-step accuracy on raw pixels is poor for *every*

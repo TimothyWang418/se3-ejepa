@@ -154,6 +154,23 @@ The full command list (every step + every guard) is in the **Reproduce** section
 
 ---
 
+## Audit your own world model (`wm-audit`)
+
+The certificate machinery doubles as a standalone, **training-free trustworthiness audit** for pretrained
+world models — it reads the latent loop's leading Lyapunov band and issues a certified horizon per
+resolution, or honestly **abstains** where a Lyapunov certificate has no jurisdiction:
+
+```bash
+.venv/bin/python scripts/wm_audit.py tdmpc2 models/tdmpc2/walker-walk-1.pt --task walker-walk
+# python API for ANY deterministic differentiable latent map:
+#   from scripts.wm_audit import audit_map
+```
+
+Quickstart, checkpoint URLs, the validated scope taxonomy (calibrated / optimistic / abstain), and what the
+certificate does *not* promise: [`docs/wm_audit_quickstart.md`](docs/wm_audit_quickstart.md).
+
+---
+
 ## Honest scope
 
 This is a focused empirical claim, not a scaling result. Deliberately **out of scope**:

@@ -946,3 +946,27 @@ certificate is in its known tight-ε optimistic regime. Third decision-level INC
 → unified into a **scope law** folded into both papers' Limitations: decision value concentrates where the decided
 quantity IS the certified quantity (E12), dilutes through a task-level map (E11, step93). The MPPI-replica anchor is
 itself a reusable methodological asset. `step93`, ~40 min compute. No gate loosened; the ~0.5 gamble priced correctly.
+
+## [2026-06-10] step94 (①, E15/Exp 26) — the published certificate prices a DEPLOYED monitor, out-of-sample; Prop 11 (scope law → theorem); tool-lite
+
+The Phase-3 ①②③ block (user: "来做1 2 3吧"). **① step94**: sensor-only monitor (cheetah-run, nominal prior policy;
+forecasts with the certified loop $g$ itself — no action telemetry; flags at reads iff rel err > 0.2). Certificates
+LOADED from the published step89 JSON (a-priori in the strongest sense); gates frozen before seeds 1–2 ever ran.
+**G1a PASS 3/3 — in-situ vs bench ratio 0.4277 vs 0.43 (seed 1), 0.4976 vs 0.50 (seed 2): TWO-DECIMAL out-of-sample
+replication of the published scope map, optimism replicated where optimism was published**; calibrated cell 0.666 vs
+0.83 (G1b at-the-edge INCONCLUSIVE by 7e-4 on an integer-valued median — NOT rounded up). **G2 PASS 2/3** (fault
+recall 1.00 on 3/3; delay ≤ k_op on 2/3 — miss is the tightest cell k_op=2, delay 3.0). Walker secondary run:
+**0/3 replication (ratios 0.32–0.47 vs bench 0.94–1.02) with recall still 0.92–1.0** — the deterministic prior is
+regime-bimodal (falls on some env seeds; invalid-frac tracks torso height), so Prop 7's nominal-regime clause is
+LOAD-BEARING in deployment, the perfect honest contrast to cheetah's 3/3. Five-version design trail disclosed in the
+script header (v1 vacuous gate → v2 teacher-forced cert lands weakly-expansive, taxonomy predicts its optimism
+(14.8 vs knee ~6) — a within-experiment taxonomy confirmation → v3 walker→cheetah → v4 nominal-autonomous forecast →
+v5 published-JSON certs + cell-by-cell gates). **② Prop 11** (decision scope): (i) aligned decisions inherit
+certificate value up to calibration alone — $V(c)-V(1)\le(BH/L)(1-1/c)$, zero at $c{=}1$; (ii) task-mapped decisions
+carry an irreducible mis-resolution penalty $|\log(\epsilon/\theta^\ast)|/\lambda_1$; no dynamics-only certificate
+can supply $\theta^\ast$. Maps E12+E15→(i), E11+step93→(ii); in appendix + long paper inline + both papers'
+scope-law bullets upgraded ("the law is now a theorem"). **③ tool-lite**: `docs/wm_audit_quickstart.md` (install,
+pinned ckpt URLs, CLI+API, taxonomy table, honest estimator/scope notes) + README "Audit your own world model"
+section. `tests/test_step94.py` 5/5 (pinned-artifact loader, gate re-derivation, Prop 11 numerics vs simulation).
+E15 into ICLR (abstract clause, contribution (vi), E15 paragraph, limitations) + Exp 26 into long paper. ~1.5 h
+compute, all Mac CPU. No gate loosened; one edge-miss recorded as an edge-miss.
