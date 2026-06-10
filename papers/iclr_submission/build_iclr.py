@@ -41,7 +41,9 @@ def ensure_template() -> None:
     print("downloading official ICLR 2026 template ...")
     subprocess.run(["curl", "-sL", "-o", str(zip_path),
                     "https://github.com/ICLR/Master-Template/raw/master/iclr2026.zip"], check=True)
-    subprocess.run(["unzip", "-oq", str(zip_path), "-d", str(HERE)], check=True)
+    import zipfile
+    with zipfile.ZipFile(zip_path) as zf:                       # stdlib: no `unzip` binary needed (box-safe)
+        zf.extractall(HERE)
     assert sty.exists(), "ICLR template download/unzip failed"
 
 
