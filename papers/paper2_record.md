@@ -970,3 +970,18 @@ pinned ckpt URLs, CLI+API, taxonomy table, honest estimator/scope notes) + READM
 section. `tests/test_step94.py` 5/5 (pinned-artifact loader, gate re-derivation, Prop 11 numerics vs simulation).
 E15 into ICLR (abstract clause, contribution (vi), E15 paragraph, limitations) + Exp 26 into long paper. ~1.5 h
 compute, all Mac CPU. No gate loosened; one edge-miss recorded as an edge-miss.
+
+## [2026-06-10] ICLR 提分包装轮 — 9 页官方模板达标 + 摘要减密 + 接缝预答 + rebuttal 预案
+
+用户:"把弱点能解决的解决吧然后按你说的来"。按评审弱点表逐项执行:**#5 摘要减密** — 单段 270 词 10 个粗体
+主张拆成两段(证书段 / 行动段),贡献 (vi) run-on 拆解;**#1 接缝预答** — 引言新增 "One certificate, a
+universal half and an exclusive half" 段,§4 收尾段呼应(审计普适 vs 先验信任独占),双防 "two papers in one";
+**#2 官方模板 + 页数纪律** — 修复既有 build_iclr.py(6→3 主图、Appendix D/E 拆出正文、stdlib zipfile 解压、
+宽度属性容忍的搬移正则、页计数器),六轮密度手术(main-ish 6854→~5250 词:What-is-new 减半、Prop 7/8 与行内
+证明压缩(全文在附录 B)、E2/E9/E10/E11/E12/E13/E14/E15 全部过刀、Related Work 四段收紧、Limitations 合并
+Noether 双条、concurrent 段移附录 E、step71/step83/step92 图移附录 A、caption 减半 + 宽度 72–80%)——
+**正文恰好 9 页,References 从 p10 顶部开始(官方 iclr2026_conference.sty,匿名双盲,行号,tectonic 编译,
+23 页全文)**;视觉抽查 p1 渲染正确。**rebuttal 预案** — papers/REBUTTAL_PREP.md:10 类预判攻击(两篇合一/
+Prop 6 构造/谱不新/无控制赢/E14 单 ckpt/Mo 重叠/Bitter Lesson/G1b 边缘/假设强/复现)各配承认-回击-指针 +
+数字速查表。两个长 PDF 同步重建;210 测试全绿。诚实记录:压缩只动连接组织与重复,所有数字、限定词、
+INCONCLUSIVE 原样保留;唯一語义损失是行内证明降为 sketch(全文仍在附录 B)。

@@ -11,8 +11,7 @@ as an **anonymous double-blind submission** that fits the strict **9-page main-t
 ```
 
 The script: (1) downloads the official ICLR 2026 author kit if absent; (2) splits the markdown into
-title / abstract / body; (3) relocates all but four load-bearing figures into an unlimited Appendix A so the
-main text meets the 9-page limit; (4) runs pandoc (default xelatex template, so its `\tightlist`/`\pandocbounded`
+title / abstract / body; (3) splits the in-source appendices (D, E) out of the main body and relocates all but three load-bearing figures into an unlimited Appendix A so the main text meets the strict 9-page submission limit (verified: References starts at the top of p.10); (4) runs pandoc (default xelatex template, so its `\tightlist`/`\pandocbounded`
 helpers are defined) with a header-include preamble that loads the ICLR `.sty` and supplies a Unicode-safe
 Times clone (TeX Gyre Termes) via `fontspec` — the official `times` package is 8-bit `mathptmx` and chokes on
 `§ í ú – —` under XeTeX/tectonic; (5) compiles with `tectonic`. Output: `main.pdf`.

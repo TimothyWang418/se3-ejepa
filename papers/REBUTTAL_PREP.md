@@ -1,0 +1,84 @@
+# Rebuttal 预案 — ICLR 投稿(预判攻击 → 弹药 → 罐头回复)
+
+> 用法:评审意见到达后,先在这里找最近的攻击模板,弹药指针都是可复核的(JSON/定理/实验)。
+> 语气基线:不防御、先承认对的部分、然后给证据。我们的最大资产是诚实文化——rebuttal 里也要看得见。
+
+---
+
+## A1. "这是两篇论文:等变理论 + 预训练模型审计,后者根本不需要前者"(最可能,危险度最高)
+
+**承认**:审计半边(Theorem B 的谱律)确实适用于任意 $C^1$ 潜空间环——这正是 E13–E15 能审计非等变公开模型的原因。
+
+**回击**:两者是同一读出的两半,缺一即塌:
+- 通用半边给出**数字**;独占半边给出**对数字的先验信任**。E2 是机制证据:一个稠密模型在一步 relMSE $10^{-5}$ 时谱仍可以悄然全错($\lambda_1$ 膨胀 $3.4\times$,$R^2<0$)——所以非等变模型的证书必须用 held-out 散度数据交叉验证(E13 的逐 cell 检查正是这一步),而等变模型从 Jacobian 即正确(E12 的重标定控制:稠密证书闭合差距**要花标定集**,等变零数据)。
+- 排他性不是经验观察而是定理(Lemma 2:轨道常数误差 $\iff$ 等变)。
+- 若审稿人仍要拆:删掉任一半,另一半的主张都失去支撑——审计无信任来源,理论无部署证据。
+
+**指针**:§1 "One certificate, a universal half and an exclusive half";§4 收尾段;E2/step74、E12/step85+88、Lemma 2 证明。
+
+## A2. "Prop 6 的下界是单缺陷的风格化构造"
+
+**承认**:是构造——下界本来就由构造承载。
+
+**回击**:(i) 构造精确匹配 Theorem B 的形式,数值上 $\epsilon e^{\lambda T}$ 到相对误差 $10^{-14}$(step65,3 seeds);(ii) 训练模型版本是 E3:对称破缺线性退化、在 Prop 6 预测的穿越点交叉(相关 0.88–0.98);(iii) "tight in form, not in prefactor" 已在 Limitations 自首——我们没有声称常数紧。
+
+## A3. "学习模型的 Lyapunov 谱不是新东西(Özalp & Magri;Lyapunov 正则化 policies)"
+
+**回击**:已在 Related Work/附录 E 逐一区分:他们分析**自训练**自编码器或**真环境** policies;我们认证**公开 zoo 的学习潜空间映射**、与真环境散度逐 cell 交叉验证、由自己的范围理论分层(校准/乐观/弃权三段全预测中),且配套**双侧紧 + 逆命题**。查新扫到 2026-06(附录 E),最近邻全部列出且距离明确。
+
+## A4. "下游价值呢?step93 自己承认对控制(return)没赢"
+
+**承认**:对——而且我们把它写成了定理而不是藏起来。
+
+**回击**:Prop 11 给出精确边界:对齐决策(被决策量=被认证量)零额外 regret @ $c{=}1$——E12(预算 8–16% vs 61–65%)和 E15(已发表证书 out-of-sample 两位小数复刻部署时钟)是正例;任务映射决策携带不可约错分辨率罚 $|\log(\epsilon/\theta^\ast)|/\lambda_1$——E11/step93 的稀释被定量预测(因子 ≈3)。"证书对什么决策有值"现在是**定理 + 双向实验证据**,不是希望。
+
+## A5. "E14 每个 size 只有一个 checkpoint,不构成统计结论"
+
+**承认**:正确,文中已声明"descriptive scope-map extension, not a seed-averaged law"。
+
+**回击**:官方多任务梯子每个 size 只发布了一个 checkpoint——这是上游事实,不是我们的选择。方向性结论(无一 size 进入单任务校准带;regime 非单调翻转)在 5 个 size 上一致;欢迎任何带 seed 的梯子发布,审计是免训练的,管线现成(`wm_audit.py`)。
+
+## A6. "与 Mo (2605.03338) 重叠"
+
+**回击**:互补且不相交:Mo 约束谱的**核**(沿群轨道 $\ge\dim(G/H)$ 个零指数);我们认证由整个谱分层的**horizon**。对本文的离散 $\mathbb{Z}_N$ 系统 $\dim(G/H)=0$,其下界在我们全部系统上为零——字面上互不触碰。(Mo 可能就是审稿人:语气保持尊重,"complementary" 不是客套而是数学事实。)
+
+## A7. "Bitter Lesson:规模终将碾压归纳偏置"
+
+**承认**:对平均误差也许如此;本文不与之竞争。
+
+**回击**:主张的是**正交轴**:证书的排他性与规模无关(Lemma 2 是 scale-free 的不可能性);E14 直接测量了"规模买不来校准的 horizon"(1M–317M 非单调)。规模买插值、买平均误差——它没买过"对特定预测能信多少步"这个量,这正是行动的 agent 需要的量。
+
+## A8. "E15 的 G1b 你们自己的 gate 都没过"
+
+**承认**:校准 cell 的 $[2/3,3/2]$ 检查差 $7\times10^{-4}$ 在带边之下。
+
+**回击**:中位 crossing 是整数(4 或 5),带边恰落在 4.003——这是格点效应,我们**按规矩记 INCONCLUSIVE 而不是四舍五入**(预注册纪律的展示,不是污点)。承重 gate 是 G1a(逐 cell 复刻,容差 ±0.25):3/3 通过,其中两个 cell 完全 out-of-sample 且两位小数吻合(0.4277 vs 0.43;0.4976 vs 0.50)。
+
+## A9. "假设 A1–A5 太强;实践中群从哪来"
+
+**回击**:范围在 §6 第一条:精确性只在 $G$ 是动力学真对称处;其余地方双侧有界地优雅退化(Thm B + Prop 6 + E3 实测)。且注意:**审计半边完全不需要群**——E13–E15 审计的全是非等变模型;群只在"先验信任"半边出现。
+
+## A10. "工具/复现?"
+
+**回击**:匿名化 artifact 随投稿;`wm_audit.py` 一条命令审计三个家族 + `audit_map()` 任意 $C^1$ 映射 API;每个图的 per-seed JSON 在 `papers/figures/`;210 个测试,含等变性与协议单元测试;quickstart 文档。诚实 gate 纪律:四个 INCONCLUSIVE 原样发表。
+
+---
+
+## 通用句式库
+
+- "We agree that X — and the paper says so explicitly in §Y; the claim we defend is the narrower Z."
+- "This is measured, not asserted: see {JSON/figure}, reproducible by `{script}`."
+- "We report this honestly as INCONCLUSIVE rather than loosening the pre-registered gate; we'd rather under-claim."
+
+## 数字速查(rebuttal 高频)
+
+| 主张 | 数字 | 来源 |
+|---|---|---|
+| 谱忠实 vs 稠密垮塌 | $R^2$ 0.98–0.99 vs $<0$;$\lambda_1$ 膨胀 3.4× | step74/83 |
+| 预算决策 | 8–16% vs 61–65%;catch-up 2.7–3.5× vs 预测 c≈3.4 | step85/88 |
+| E13 校准带 | walker 0.94/0.95/1.02;弃权 6/15 正确 | step89 |
+| 规模梯 | 1M/48M 收缩,5M/19M/317M 膨胀;0.37/1.87/1.16 | step92 |
+| E15 复刻 | 0.4277/0.43,0.4976/0.50(out-of-sample);0.67/0.83 带边 | step94 |
+| 故障检测 | recall 1.00(3/3),delay ≤ k_op(2/3) | step94 |
+| walker 对照 | 0/3 复刻,recall 0.92–1.0(工况双峰) | step94_walker |
+| 紧性 | $\epsilon e^{\lambda T}$ 至 $10^{-14}$;斜率 $1/\lambda$,$R^2=1.000$ | step65 |
