@@ -805,3 +805,23 @@ batched rollout 335.9 vs 335.7 steps/s) and **our actual small-kernel training p
 imagination loop). **Decision (pre-registered rule): stay on WSL2** — the established pipeline is not merely fine, it
 is the faster option on this box. Windows-side toolchain (Python 3.11.9 + torch cu121 + `C:\Temp\bench_gpu_ab.py`)
 left in place for future re-checks.
+
+## [2026-06-09] step87 Stage B (② cert-gated MBRL) ran on the box — raw gate PASSED VACUOUSLY; honest verdict INCONCLUSIVE
+
+The ~0.4 gamble ran end-to-end (N=16, eps=0.5, 3 seeds × 4 arms {cert≈T1, T1/2, 2T1, ungated-96} from identical
+inits, 20 iters × 50 real steps; `step87_stageB_sample_efficiency.json`). **The pre-registered G2 returned "PASS 2/3"
+— and scrutiny shows that pass is an artifact, which we refuse to let stand.** (i) On seeds 0/1 ALL FOUR arms reach
+the within-10%-of-best threshold at the FIRST eval (steps-to-thresh = 50 across the board): the threshold was loose
+enough to saturate immediately, so the cert "wins" are $\le$-ties — vacuous. (ii) The only seed with real separation
+(seed 2) has cert **losing** to fixed-half by one eval notch (650 vs 600). (iii) Final returns differ by ~1–5% across
+arms — within noise. (iv) The re-certified $T_1$ is high-variance across refits (41→96, 40→93, 20→11): the
+per-iteration certificate on a continually-refit WM is itself noisy. **Honest verdict: INCONCLUSIVE — the experiment
+did not discriminate between gating strategies at this scale.** Gate-design flaw disclosed: ties counted as wins +
+threshold too loose; "never loosen a gate" has a dual — never let a vacuous pass stand. A future re-run needs: a
+task hard enough that warmup does not already saturate the threshold, a strictly-positive win margin (no ties),
+a finer eval grid, and a variance-controlled certificate (averaged over refits). Not pursued tonight.
+
+**Three-directions-to-8 FINAL scorecard:** ③-A **LANDED** (Exp 22: cert-isolated budget win, generalized to the ring,
+a-priori-scoped, Prop 9 law, in both papers + rebuilt PDF); ③-C, ①, and now ② — **honest non-results** (allocation
+negative / not horizon-binding / no discrimination). One clean landed direction + three honest negatives, zero
+loosened gates. `step87`, commit pending.
