@@ -1,0 +1,63 @@
+{
+  "model": "lewm-pusht (official ckpt, authors' code, strict load)",
+  "lambda1": 0.0012580160126800413,
+  "lambda1_ci": [
+    -0.0075276984257786235,
+    0.016115396628223356
+  ],
+  "leading_band": [
+    0.0012580160126800413,
+    0.001158434073777223,
+    -0.011521587857264594,
+    -0.027566475856131457,
+    -0.065199950748238,
+    -0.08019352202211102,
+    -0.09742684034102375,
+    -0.11364271415288156,
+    -0.15219631855839302,
+    -0.1721228995864048,
+    -0.17733981550026104,
+    -0.2394086509340263
+  ],
+  "pixel_scale01": true,
+  "one_step_errs": {
+    "true": 0.16450770364158623,
+    "false": 0.28945768707283326
+  },
+  "cert_rows": [
+    {
+      "eps": 0.05,
+      "T1_steps": 2381.314898505917,
+      "measured_median": 1.0,
+      "n_censored": 0,
+      "ratio_measured_over_certified": 0.0004199360616386431
+    },
+    {
+      "eps": 0.1,
+      "T1_steps": 1830.3305123189048,
+      "measured_median": 1.0,
+      "n_censored": 0,
+      "ratio_measured_over_certified": 0.0005463494124528732
+    },
+    {
+      "eps": 0.2,
+      "T1_steps": 1279.3461261318923,
+      "measured_median": 2.0,
+      "n_censored": 0,
+      "ratio_measured_over_certified": 0.0015632985938269944
+    },
+    {
+      "eps": 0.5,
+      "T1_steps": 550.9843861870123,
+      "measured_median": 10.0,
+      "n_censored": 0,
+      "ratio_measured_over_certified": 0.01814933462852403
+    }
+  ],
+  "n_starts": 8,
+  "H_meas": 120,
+  "k": 12,
+  "scope": "fixed-action (a*=0) autonomous loop; LeWM has no policy prior (pre-registered)",
+  "smoke": false,
+  "verdict": "ABSTAIN \u2014 lambda1 CI straddles 0 (neutral-to-contracting free-running loop); measured 1-2-step divergence is bias-driven (one-step latent err 0.165), outside Lyapunov jurisdiction (acrobot sub-case of the E13 taxonomy). Scope caveats pre-registered: no policy prior (fixed a*=0), zero action in-support but off the expert distribution."
+}

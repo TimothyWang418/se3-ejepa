@@ -901,3 +901,18 @@ differentiable in eval (ViT-tiny CLS → 192-d; 6-layer Predictor w/ AdaLN+causa
 loop scope; companion-band artifacts expected; strict-load + one-step sanity pre-registered as G0). Deliberately NOT
 built tonight — transformer-replica fidelity deserves a fresh session, per the recon→spec→build cadence.
 `docs/specs/2026-06-10-step91-lewm-audit-seed.md`.
+
+## [2026-06-10] step91 — LeWM joins the E13 scope map (second family, zero-replica): ABSTAIN cell, correctly
+
+User: "先把1做了吧". ZERO-REPLICA build: official `stable-worldmodel` package + strict-load of the official
+`quentinll/lewm-pusht` checkpoint into the AUTHORS' code (transformers<5 pinned for classic ViT naming). Three real
+integration nails (recorded in-code): float32-hardcast Embedder → constant act-emb cast f64; CPU flash-SDPA lacks
+forward-AD → math-kernel JVP Benettin; pixel scale resolved by the pre-registered one-step sanity ([0,1]: 0.165 vs
+[0,255]: 0.289). **Result (8 starts, k=12 leading-band Benettin on the 576-d delay state): λ1 = 0.0013, CI
+[−0.0075, 0.0161] — straddles zero ⇒ ABSTAIN** (neutral-to-contracting free-running loop; physically sensible: PushT
+is static under the fixed zero action). Measured divergence median 1–2 steps at ε≤0.2 = pure one-step bias (0.165),
+the acrobot sub-case — outside Lyapunov jurisdiction, correctly not certified. Pre-registered caveats stand: no
+policy prior (fixed a*=0 scope); zero action in-support but expert-OOD. **E13 upgraded: two architecturally disjoint
+families (TD-MPC2 MLP/SimNorm state-based; LeWM ViT/transformer JEPA pixel-based), one unchanged read-out, one
+theory-aligned taxonomy — the training-free audit is a method, not a trick.** Folded into E13 + §5.21.
+`experiments/step91_lewm_audit.py`, `step91_lewm_audit.json`; ~30 min wall, zero training, zero GPU.
