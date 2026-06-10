@@ -69,7 +69,7 @@ Lyapunov/NWP horizon law, invariant decision theory, and the $e^{\lambda T}$ gro
 ---
 
 
-![**The paper in one figure.** **(a) Faithful:** on $40$-D Lorenz-96 the $\mathbb{Z}_N$-equivariant model recovers the full Lyapunov spectrum ($R^2{=}0.98$) where an identically-trained dense model's is garbage ($R^2{<}0$) — E2. **(b) Priced:** under a fixed sensing budget the faithful certificate meets the budget; the inflated one over-observes and starves it (Proposition 9) — E12. **(c) Real:** the same training-free read-out audits official TD-MPC2 checkpoints — calibrated where expansive, abstaining where contracting — E13.](figures/hero_certified_world_models.png){width=80%}
+![**The paper in one figure.** **(a) Faithful:** on $40$-D Lorenz-96 the $\mathbb{Z}_N$-equivariant model recovers the full Lyapunov spectrum ($R^2{=}0.98$) where an identically-trained dense model's is garbage ($R^2{<}0$) — E2. **(b) Priced:** under a fixed sensing budget the faithful certificate meets the budget; the inflated one over-observes and starves it (Proposition 9) — E12. **(c) Real:** the same training-free read-out audits official TD-MPC2 checkpoints — calibrated where expansive, abstaining where contracting — E13.](figures/hero_certified_world_models.png){width=76%}
 
 ## 2. Setup and assumptions
 
@@ -102,10 +102,9 @@ statement and proof). *Proof sketch.* By induction the rolled-out predictor $f^{
 equivariant (composition of equivariant maps, Lemma 1 below), so $\hat z_T(w\cdot x)=\rho(w)\hat z_T(x)$ and the target
 $E(\Phi^T(w\cdot x))=E(w\cdot\Phi^T x)=\rho(w)E(\Phi^T x)$ by (A3); subtract and use (A4). $\square$
 
-**Lemma 1 (composition closure).** If the equivariance assumptions (A1)–(A3) hold on each generator $g_i\in S$, they
-hold on every word $w\in\langle S\rangle$ ((A4) is a global property of $\rho$ as a homomorphism into $O(\mathcal Z)$,
-automatic for all $w$). Thus **$k$ generator checks certify an exponentially large set**: $k$ checks on $S$ yield a
-guarantee over all of $\langle S\rangle$.
+**Lemma 1 (composition closure).** If (A1)–(A3) hold on each generator $g_i\in S$, they hold on every word
+$w\in\langle S\rangle$ ((A4) is automatic for all $w$). Thus **$k$ generator checks certify an exponentially large
+set** — all of $\langle S\rangle$.
 
 **Lemma 2 (the certificate characterizes equivariance — the converse).** Let $\rho:G\to O(\mathcal Z)$ act *freely* on
 an open $U\subseteq\mathcal Z$. If a predictor $f$'s error $\lVert f-\Phi\rVert$ is orbit-constant on $U$ for *every*
@@ -117,10 +116,9 @@ theorem, not an observation (and what the single-shot literature, forward-only, 
 
 ### 3.2 The horizon axis, and its tightness (the central result)
 
-Exactness is an idealization; real models are *approximately* equivariant. Let $\epsilon_{\max}=\max_i\sup_x\lVert
+Real models are only *approximately* equivariant. Let $\epsilon_{\max}=\max_i\sup_x\lVert
 E(g_i\cdot x)-\rho(g_i)E(x)\rVert$ be the encoder residual, $\delta$ the per-step predictor error, and let the latent
-map's Jacobian be locally diagonalized on channel $j$ with multiplier $e^{\lambda_j}$ ($\lambda_j$ a Lyapunov
-exponent).
+Jacobian be locally diagonalized on channel $j$ with multiplier $e^{\lambda_j}$.
 
 **Theorem B (spectral degradation — upper bound).** For constants $c_j$ depending on local geometry,
 $$
@@ -147,16 +145,15 @@ Hence the certified horizon $T(\epsilon_{\mathrm{res}})=\tfrac1\lambda\log\tfrac
 \Theta\!\big(\tfrac1\lambda\log\tfrac1\epsilon\big)$, matching Theorem B: **the horizon's form is two-sided, not merely
 an upper estimate.** The conceptual payload is sharp:
 
-> **The certified horizon guaranteeable from $\epsilon$-approximate equivariance alone is finite on every expansive
-> channel: no certificate derived from an $\epsilon>0$ residual can promise predictability beyond
-> $T\sim\tfrac1\lambda\log\tfrac1\epsilon$ (worst case over admissible targets). Only exact equivariance
-> ($\epsilon=0$) or conservation ($\lambda_j\le0$) yields an unbounded certified horizon.**
+> **No certificate derived from an $\epsilon>0$ equivariance residual can promise predictability beyond
+> $T\sim\tfrac1\lambda\log\tfrac1\epsilon$ on an expansive channel (worst case over admissible targets). Only
+> exactness ($\epsilon=0$) or conservation ($\lambda_j\le0$) yields an unbounded horizon.**
 
 This is the horizon-domain companion of Lemma 2: scale and data buy *approximate* equivariance at best (a fair
 augmentation baseline floors at $\epsilon\approx10^{-4}$, never exact), and Proposition 6 amplifies that residual
 $e^{\lambda T}$ — a single-step tie between augmentation and equivariance **must break over horizon**.
 
-![Proposition 6, numerically (the central claim). **Left:** orbit-error-variation of an $\epsilon{=}10^{-3}$-approximately-equivariant model (markers) equals the analytic $\epsilon\,e^{\lambda T}$ (dashed) to relative error $10^{-14}$–$10^{-13}$, $3$ seeds; an *exactly* equivariant model sits at the machine-precision floor; $\lambda\le0$ channels stay bounded (infinite horizon). **Right:** certified horizon linear in $\log(1/\epsilon)$ with slope exactly $1/\lambda$ ($R^2{=}1.000$) — the $\Theta(\log(1/\epsilon)/\lambda)$ law (`step65`).](figures/step65_horizon_tightness.png){width=85%}
+![Proposition 6, numerically (the central claim). **Left:** orbit-error-variation of an $\epsilon{=}10^{-3}$-approximately-equivariant model (markers) equals the analytic $\epsilon\,e^{\lambda T}$ (dashed) to relative error $10^{-14}$–$10^{-13}$, $3$ seeds; an *exactly* equivariant model sits at the machine-precision floor; $\lambda\le0$ channels stay bounded (infinite horizon). **Right:** certified horizon linear in $\log(1/\epsilon)$ with slope exactly $1/\lambda$ ($R^2{=}1.000$) — the $\Theta(\log(1/\epsilon)/\lambda)$ law (`step65`).](figures/step65_horizon_tightness.png){width=80%}
 
 **Proposition 7 (scope — when the local spectrum certifies a *learned* model's horizon).** On a learned model the
 answer splits a rigorous **rate** half from an orbit-error **lift** half. Let $\phi$ have an ergodic invariant measure
@@ -190,10 +187,8 @@ $\ell{=}1$ block, recoverable only through the unique degree-2 cross-product equ
 **Proposition 5 (conservation $\Rightarrow$ unbounded horizon).** Let $Q:\mathcal Z\to W$ be a charge the model
 conserves to one-step defect $\eta$ (i.e. $\lVert Q(f z)-Q(z)\rVert\le\eta$). Then the $T$-step *charge-value*
 prediction error satisfies $\lVert Q(\hat z_T)-Q(z_T)\rVert\le T\eta$ — **linear in $T$**, never the chaotic
-$e^{\lambda T}$. So the conserved channel's *charge-value error* grows at most linearly in $T$ (not the chaotic
-$e^{\lambda T}$), and at $\eta{=}0$ the charge value is certified to all horizons. (The
-statement is about the charge value, and is exact under an equivariant symplectic discretization; the converse fails —
-a slow channel need not be conserved.)
+$e^{\lambda T}$ — and at $\eta{=}0$ the charge value is certified to all horizons. (About the charge value; exact
+under an equivariant symplectic discretization; the converse fails — slow need not be conserved.)
 
 Together: **the certified region is the coarse ($\epsilon$ large), invariant/conserved ($\lambda\le0$), low-composition
 ($|w|$ small) corner** — and the converse (Lemma 2) says this corner is reachable only with structure.
@@ -225,10 +220,9 @@ supporting suite (E1, E3–E8) is summarized below and written up in **Appendix 
 
 **(E9) Both axes on one system; the certificate acts.** On controlled Lorenz-96 (exact $\mathbb{Z}_N$, $\lambda_1{\approx}1.8$) an equivariant planner gives orbit-flat control (residual $8\times10^{-16}$) while the certified $T_1(\epsilon)$ drives an active re-observation schedule sitting on the accuracy-observation frontier *untuned* ($2/3$ seeds, asymptotic-$\epsilon$ regime; tight-$\epsilon$ honestly optimistic per Prop. 8). The pattern lifts to a pendulum ring and a double pendulum (`step79`–`step81`).
 
-**(E10) The certified horizon, made literal — and its exact regime.** E2 *measures* that a learned model's Lyapunov
-exponent matches the truth; Theorem B′ *certifies* it. A computable cone/adapted-metric certificate reads a **sound,
-a-priori** upper bound on the learned model's top exponent off its Jacobian field — a guaranteed horizon
-$T_{\mathrm{guar}}(\epsilon)$ from the model alone. On **uniformly-hyperbolic** dynamics it is *tight*: cat-map certified exponent exact on the true map, $1.17\times$ on a *learned* net ($3$ seeds, sound), $1.06\times$ on a nonlinear Anosov perturbation. On **non-uniformly-hyperbolic** Hénon a single metric is provably limited — sound but $\sim\!3\times$ conservative — and the certificate's own cone-margin diagnostic turns negative: it **abstains** rather than over-claim. A tight a-priori horizon is achievable *exactly* in the uniformly-hyperbolic regime, and the certificate **self-diagnoses** its regime (`step82`).
+**(E10) The certified horizon, made literal — and its exact regime.** E2 *measures* the exponent; Theorem B′
+*certifies* it: a computable cone/adapted-metric certificate reads a **sound, a-priori** bound on the model's top
+exponent off its Jacobian field alone. On **uniformly-hyperbolic** dynamics it is *tight*: cat-map certified exponent exact on the true map, $1.17\times$ on a *learned* net ($3$ seeds, sound), $1.06\times$ on a nonlinear Anosov perturbation. On **non-uniformly-hyperbolic** Hénon a single metric is provably limited — sound but $\sim\!3\times$ conservative — and the certificate's own cone-margin diagnostic turns negative: it **abstains** rather than over-claim. A tight a-priori horizon is achievable *exactly* in the uniformly-hyperbolic regime, and the certificate **self-diagnoses** its regime (`step82`).
 
 **(E11) On a recognized control benchmark — honest INCONCLUSIVE.** On Acrobot-v1 ($\lambda_1{=}0.094$) the certified horizon *tracks* the measured one (ratio $0.42\to0.93$ as $\epsilon$ coarsens) and *binds*: planning past $\sim\!T_1$ fails outright, and capping depth at $T_1$ solves the task ($67$–$100\%$) — but the return-optimum sits at $\sim T_1/2$, so two pre-registered no-tuning rules are **INCONCLUSIVE** against the best-tuned blind depth (`step84`).
 
@@ -240,7 +234,7 @@ $T_{\mathrm{guar}}(\epsilon)$ from the model alone. On **uniformly-hyperbolic** 
 
 ![Scale does not buy a calibrated horizon (E14). **(a)** $\lambda_1$ of the walker-walk policy-prior loop across the official multitask ladder: sign-flipping, non-monotone (contracting at $1$M and $48$M). **(b)** Calibration at $\epsilon{=}0.2$: scatter across sizes; no multitask scale reaches the single-task $5$M band ($0.94$–$1.02$, green).](figures/step92_scale_sweep.png)
 
-**(E15) The published certificate prices a deployed monitor, out-of-sample (`step94`).** The scope law's *positive* instance: a **sensor-only monitor** watches cheetah-run under its nominal policy, reads the expensive sensor every $k$ steps, and between reads forecasts with the certified loop $g$ itself (no action telemetry), flagging at a read iff relative error exceeds $\theta{=}0.2$. Certificate numbers are **loaded from the E13 artifact** — issued before this experiment existed — and the gates were frozen before seeds 1–2 ever ran. The in-situ staleness clock replicates the published map **cell-by-cell**: in-situ-vs-bench ratio $0.43$ vs $0.43$ and $0.50$ vs $0.50$ on the out-of-sample cells (optimism *predicted*), $0.67$ vs $0.83$ on the calibrated cell — its $[2/3,3/2]$ check landing $7{\times}10^{-4}$ below the edge on an integer-valued median, recorded **at-the-edge, not rounded up**. A frozen-actuator fault is then detected at the certificate-derived cadence with recall $1.00$ on $3/3$ seeds (median delay $\le k_{\mathrm{op}}$ on $2/3$). Proposition 11 formalizes both sides: an aligned decision transfers certificate value with **zero new estimation** (clause i); step93's dilution is a resolution mismatch, $H(\theta^{\ast})\approx2$ vs $H(0.2)\approx6$ (clause ii). Honest notes: on walker the deterministic prior is regime-bimodal and clock replication breaks ($0.32$–$0.47$ vs $0.94$–$1.02$, $0/3$; fault recall intact) — a monitor presumes a nominal regime, **Proposition 7's clause load-bearing in deployment**; and the teacher-forced loop variant lands weakly expansive, where the taxonomy itself predicts optimism.
+**(E15) The published certificate prices a deployed monitor, out-of-sample (`step94`).** The scope law's *positive* instance: a **sensor-only monitor** watches cheetah-run under its nominal policy, reads the expensive sensor every $k$ steps, and between reads forecasts with the certified loop $g$ itself (no action telemetry), flagging at a read iff relative error exceeds $\theta{=}0.2$. Certificate numbers are **loaded from the E13 artifact** — issued before this experiment existed — and the gates were frozen before seeds 1–2 ever ran. The in-situ staleness clock replicates the published map **cell-by-cell**: in-situ-vs-bench ratio $0.43$ vs $0.43$ and $0.50$ vs $0.50$ on the out-of-sample cells (optimism *predicted*), $0.67$ vs $0.83$ on the calibrated cell — its $[2/3,3/2]$ check landing $7{\times}10^{-4}$ below the edge on an integer-valued median, recorded **at-the-edge, not rounded up**. A frozen-actuator fault is then detected at the certificate-derived cadence with recall $1.00$ on $3/3$ seeds (median delay $\le k_{\mathrm{op}}$ on $2/3$). Proposition 11 formalizes both sides: an aligned decision transfers certificate value with **zero new estimation** (clause i); step93's dilution is a resolution mismatch, $H(\theta^{\ast})\approx2$ vs $H(0.2)\approx6$ (clause ii). Honest notes: on walker the deterministic prior is regime-bimodal and clock replication breaks ($0.32$–$0.47$ vs $0.94$–$1.02$, $0/3$; fault recall intact) — a monitor presumes a nominal regime, **Proposition 7 load-bearing in deployment**.
 
 
 
@@ -281,11 +275,10 @@ intersection.
 
 ## 6. Limitations
 
-- **Exactness needs a genuine dynamical symmetry (A3).** The certificate is *exact* where $G$ is a symmetry of the
-  dynamics (orbital/conservative systems, free space, idealized manipulation) and *gracefully approximate* elsewhere,
-  with a degradation that is now bounded on both sides (Theorem B and Proposition 6) and measured (E3).
-- **Tight in form, not in prefactor.** Proposition 6 makes the horizon's $\log(1/\epsilon)/\lambda$ *form* tight, but
-  the constants $c_j$ are not estimated and the isotypic refinement is asserted, not separately measured.
+- **Exactness needs a genuine dynamical symmetry (A3).** Exact where $G$ is a symmetry of the dynamics, *gracefully
+  approximate* elsewhere — the degradation two-sidedly bounded (Theorem B, Proposition 6) and measured (E3).
+- **Tight in form, not in prefactor.** The $\log(1/\epsilon)/\lambda$ *form* is tight; the constants $c_j$ are not
+  estimated, and the isotypic refinement is asserted, not separately measured.
 - **The Noether hinge: forward direction proved, hypotheses measured, emergence open.** Proposition 5 assumes a
   $G$-invariant Hamiltonian latent flow (the defect $\eta$ exact only under an equivariant symplectic
   discretization), and the converse fails (slow $\not\Rightarrow$ conserved). The hinge is moreover validated on
