@@ -858,3 +858,20 @@ monitoring false-negatives (sandboxed pgrep flakiness + silent training epochs m
 4-process contention; resolved by per-seed parallel shards + file-based completion detection; one genuinely
 unexplained process death (run 1) remains. Determinism triple-confirmed (seed-0 numbers bit-identical across 3
 independent runs). `step90`, `tests/test_step90.py`; merged artifact `step90_uq_baselines.json` (+ _s0/_s1/_s2 shards).
+
+## [2026-06-10] E13 expansion (step89 ×5 tasks) + ICLR P0 compression — the audit becomes a SCOPE MAP; the draft fits the page budget
+
+**E13/Exp 23 expanded to 5 DMC tasks × 3 official seeds (15 latent loops), ~6 min CPU, zero training.** The result
+upgrades the audit from "two tasks" to a **scope map that tracks the paper's own theory cell-by-cell**: strongly
+expansive loops ($\lambda_1{=}0.25$–$0.30$: walker 3/3, cheetah-3) calibrate at coarse $\epsilon$ (ratio
+$0.83$–$1.02$); weakly expansive loops turn optimistic (cheetah $0.43/0.50$, hopper $0.13/0.38$ at
+$\lambda_1{=}0.05$–$0.09$) — bias outpacing amplification, Prop 7's degeneracy direction; contracting loops (6/15)
+abstain **correctly in both sub-cases** — finger-spin's stable loops genuinely never diverge (15–19/20 censored at
+300 steps), acrobot/hopper-1's divergence is bias-driven, outside Lyapunov jurisdiction. Folded into E13 + §5.21.
+Merged 15-cell artifact `step89_pretrained_audit.json` (script's STEP89_OUT ignored → canonical restored from git and
+merged; registry +cheetah-run/finger-spin/hopper-hop).
+
+**ICLR P0 compression executed:** main text $6660\to5305$ words, figures $13\to5$; E1/E3–E8 moved verbatim to a new
+**Appendix D** with a one-paragraph supporting-suite summary in main; E2 merged to two paragraphs (+phase-transition
+and class-staircase figures); E9/E11 tightened; abstract $283\to\sim185$ words. Main text now ≈ page budget; remaining
+craft pass (camera-grade figure polish, final lit sweep, anonymized artifact) is the P2 tail.
