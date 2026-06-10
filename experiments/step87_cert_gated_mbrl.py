@@ -98,6 +98,215 @@ def actor_grad_norm(wm, actor, critic, z0, mu, sd, H_g: int, u_max: float = 1.0)
     return float(np.sqrt(g2))
 
 
+# --------------------------------------------------------------------------------------------------------------- #
+# STAGE B — the online cert-gated MBRL loop (the ~0.4 gamble). Per iteration: collect real segments under the actor,
+# warm-refit the WM, read the gate H_g (per-arm: certificate / fixed / ungated), improve the policy with M pathwise
+# imagination steps backpropped H_g deep, evaluate on the TRUE env. Sample efficiency = eval return vs cumulative real
+# env steps. All float64 CPU (the WM/certificate live in float64; CUDA fp64 on the 3080 is gimped anyway).
+# --------------------------------------------------------------------------------------------------------------- #
+def collect_segments(actor, mu, sd, N: int, n_traj: int, K: int, seed: int, u_max: float = 1.0,
+                     explore_sd: float = 0.3):
+    r"""Collect ``n_traj`` length-``K`` TRUE-dynamics segments under the CURRENT actor (mean action + exploration
+    noise, clamped to $[-1,1]\cdot u_{\max}$), from on-attractor starts. Returns ``(starts, controls, targets,
+    env_steps)`` with the step79.collect_data tuple contract (starts/targets normalized by the FIXED warmup ``mu, sd``;
+    controls raw) and exact accounting ``env_steps = n_traj K`` (every transition costs one real step)."""
+    g = torch.Generator().manual_seed(seed)
+    traj = step79.step74.attractor_traj(N, max(n_traj * 2, n_traj + 1), seed, "cpu").to(DTYPE)
+    idx = torch.randperm(traj.shape[0], generator=g)[:n_traj]
+    x = traj[idx].clone()
+    starts = (x - mu) / sd
+    controls = torch.empty(n_traj, K, N, dtype=DTYPE)
+    targets = torch.empty(n_traj, K, N, dtype=DTYPE)
+    for k in range(K):
+        with torch.no_grad():
+            a = actor((x - mu) / sd).mean
+        a = (a + explore_sd * torch.randn(a.shape, generator=g, dtype=DTYPE)).clamp(-1.0, 1.0) * u_max
+        x = step79.rk4_controlled(x, a)
+        controls[:, k, :] = a
+        targets[:, k, :] = (x - mu) / sd
+    return starts, controls, targets, n_traj * K
+
+
+def pathwise_returns(wm, actor, critic, z0, mu, sd, H_g: int, gamma: float = 0.99, u_max: float = 1.0,
+                     use_critic: bool = True):
+    r"""Per-sample pathwise returns ``(B,)``: roll the differentiable WM under ``rsample`` actions for ``H_g`` steps,
+    accumulate $\sum_{t<H_g}\gamma^t r_t$ with $r_t=-\lVert z_t-z_{\rm target}\rVert^2/N$, bootstrap the tail with
+    $\gamma^{H_g}V(z_{H_g})$. The cert-gate IS ``H_g`` (the backprop depth through the chaotic cocycle); ``H_g=0`` is a
+    pure critic bootstrap. Differentiable w.r.t. the actor (and critic unless detached by the caller)."""
+    z = z0
+    z_target = ((F_FORCE - mu) / sd).to(DTYPE)
+    J = z0.new_zeros(z0.shape[0])
+    for t in range(H_g):
+        a = actor(z).rsample()
+        z = wm(z, u_max * a)
+        z = torch.nan_to_num(z, nan=0.0, posinf=1e3, neginf=-1e3)
+        r = -((z - z_target) ** 2).mean(-1).clamp(max=1e4)
+        J = J + (gamma ** t) * r
+    if use_critic:
+        J = J + (gamma ** H_g) * critic(z)
+    return J
+
+
+def wm_refit(wm, data3, mu, sd, epochs: int = 2, K: int = 5, lr: float = 1e-3, seed: int = 0):
+    r"""Warm-start refit of the SAME wm instance on actor-collected segments (``data3 = (starts, controls, targets)``),
+    K-step rollout loss (the Jacobian-constraining recipe). Returns the same object, in eval mode."""
+    starts, controls, targets = data3
+    for p in wm.parameters():
+        p.requires_grad_(True)
+    wm.train()
+    opt = torch.optim.Adam(wm.parameters(), lr=lr)
+    n = starts.shape[0]
+    g = torch.Generator().manual_seed(seed)
+    for _ in range(epochs):
+        for i in range(0, n, 256):
+            idx = torch.randperm(n, generator=g)[i:i + 256]
+            z = starts[idx]
+            loss = 0.0
+            for k in range(K):
+                z = wm(z, controls[idx, k, :])
+                loss = loss + ((z - targets[idx, k, :]) ** 2).mean()
+            opt.zero_grad(); (loss / K).backward(); opt.step()
+    wm.eval()
+    return wm
+
+
+def eval_actor(actor, mu, sd, N: int, n_eval: int = 4, T_eval: int = 120, seed: int = 0,
+               u_max: float = 1.0) -> float:
+    r"""Deterministic evaluation on the TRUE dynamics: mean action, ``n_eval`` on-attractor starts, ``T_eval`` steps;
+    returns the per-step mean of $-\lVert x-F\mathbf1\rVert^2/N$ (raw coordinates). Same seed $\Rightarrow$ same value;
+    no gradients touched."""
+    g = torch.Generator().manual_seed(seed + 999)
+    traj = step79.step74.attractor_traj(N, max(n_eval * 2, n_eval + 1), seed + 999, "cpu").to(DTYPE)
+    idx = torch.randperm(traj.shape[0], generator=g)[:n_eval]
+    x = traj[idx].clone()
+    total = 0.0
+    with torch.no_grad():
+        for _ in range(T_eval):
+            a = actor((x - mu) / sd).mean.clamp(-1.0, 1.0) * u_max
+            x = step79.rk4_controlled(x, a)
+            total += float((-((x - F_FORCE) ** 2).mean(-1)).mean())
+    return total / T_eval
+
+
+def run_arm(N: int, mu, sd, seed: int, H_fn, n_iters: int, n_traj: int = 10, K: int = 5, M_policy: int = 8,
+            batch_img: int = 64, n_eval: int = 4, T_eval: int = 120, wm_epochs: int = 2, gamma: float = 0.99,
+            u_max: float = 1.0, lr_a: float = 3e-4, lr_c: float = 1e-3, wm=None, actor=None, critic=None,
+            buf_cap: int = 4096) -> list:
+    r"""ONE arm of the Stage-B loop. ``H_fn(wm, mu, sd, k) -> int`` supplies the gate each iteration (certificate /
+    fixed / ungated — injected, so tests stub it). Per iteration: collect → refit WM (warm) → freeze WM → M pathwise
+    policy steps at depth ``H_g`` + critic regression to the detached imagined return → true-env eval. Returns history
+    rows ``{iter, env_steps, eval_return, H_g}`` with cumulative real-env-step accounting."""
+    torch.manual_seed(seed)
+    wm = wm if wm is not None else step79.make_equivariant_wm(N).double()
+    actor = actor if actor is not None else Actor(N)
+    critic = critic if critic is not None else Critic(N)
+    opt_a = torch.optim.Adam(actor.parameters(), lr=lr_a)
+    opt_c = torch.optim.Adam(critic.parameters(), lr=lr_c)
+    env_steps = 0
+    buf = None
+    hist = []
+    for k in range(n_iters):
+        s, c, t, used = collect_segments(actor, mu, sd, N, n_traj, K, seed * 1000 + k, u_max)
+        env_steps += used
+        buf = (s, c, t) if buf is None else tuple(torch.cat([b, x], 0)[-buf_cap:] for b, x in zip(buf, (s, c, t)))
+        wm_refit(wm, buf, mu, sd, epochs=wm_epochs, K=K, seed=seed * 77 + k)
+        H_g = max(1, int(H_fn(wm, mu, sd, k)))
+        for p in wm.parameters():
+            p.requires_grad_(False)                              # imagination: gradients to the ACTOR only
+        gi = torch.Generator().manual_seed(seed * 31 + k)
+        idx = torch.randperm(buf[0].shape[0], generator=gi)[:batch_img]
+        z0 = buf[0][idx].detach()
+        for _ in range(M_policy):
+            J = pathwise_returns(wm, actor, critic, z0, mu, sd, H_g, gamma, u_max)
+            opt_a.zero_grad(); (-J.mean()).backward()
+            torch.nn.utils.clip_grad_norm_(actor.parameters(), 10.0)
+            opt_a.step()
+            with torch.no_grad():
+                tgt = pathwise_returns(wm, actor, critic, z0, mu, sd, H_g, gamma, u_max)
+            lc = ((critic(z0) - tgt) ** 2).mean()
+            opt_c.zero_grad(); lc.backward(); opt_c.step()
+        hist.append({"iter": k, "env_steps": env_steps, "eval_return": eval_actor(actor, mu, sd, N, n_eval, T_eval, seed),
+                     "H_g": H_g})
+    return hist
+
+
+def run_stageB(seeds, N: int, eps: float) -> dict:
+    r"""Stage B — sample efficiency of cert-gated vs fixed vs ungated imagination depth (the ~0.4 gamble). Per seed:
+    a shared warmup (random-control data fixes ``mu, sd``; a lightly-trained WM + certificate give $T_1^{(0)}$), then
+    FOUR arms from identical initial (wm, actor, critic) copies: **cert** ($H_g{=}T_1$, re-certified every RECERT
+    iters), **fixed-half** ($T_1^{(0)}/2$), **fixed-double** ($2T_1^{(0)}$), **ungated** (deep cap). Gate G2: the cert
+    arm reaches within 10% of the best final return at $\le$ the env-steps of the best fixed arm on $\ge2/3$ seeds,
+    AND not worse than ungated. INCONCLUSIVE otherwise (the §5.19 conservatism risk — flagged in the seed)."""
+    import copy
+    RECERT = 4
+    HCAP = 96
+    n_iters = 4 if SMOKE else 20
+    n0 = 800 if SMOKE else 4000
+    warm_epochs = 6 if SMOKE else 30
+    K = 5
+    cert_kw = dict(n_steps=400 if SMOKE else 1200, warmup=80 if SMOKE else 250,
+                   n_boot=50 if SMOKE else 120, block=25 if SMOKE else 40)
+    per_seed = {}
+    for s in seeds:
+        print(f"[step87.B] seed {s}: warmup WM at N={N} (smoke={SMOKE}) ...", file=sys.stderr)
+        data0 = step79.collect_data(N, n0, K, s)
+        wm0, mu, sd, relmse = step79.train_wm("conv", N, data0, s, epochs=warm_epochs, K=K)
+        cert0 = step79.certificate(wm0, mu, sd, N, eps=eps, seed=s, **cert_kw)
+        T1_0 = max(2, min(HCAP, step79.certified_T1_steps(cert0)))
+        print(f"[step87.B] seed {s}: warmup relMSE={relmse:.5f}  T1_0={T1_0} (lambda1={cert0['lambda1']:.3f})",
+              file=sys.stderr)
+        torch.manual_seed(s)
+        actor0, critic0 = Actor(N), Critic(N)
+
+        def cert_H(wm_, mu_, sd_, k, _cache={}):
+            if k % RECERT == 0 or "T1" not in _cache:
+                c = step79.certificate(wm_, mu_, sd_, N, eps=eps, seed=s + k, **cert_kw)
+                _cache["T1"] = max(2, min(HCAP, step79.certified_T1_steps(c)))
+                print(f"[step87.B]   (re-certify @iter {k}: T1={_cache['T1']})", file=sys.stderr)
+            return _cache["T1"]
+
+        arms = {"cert": cert_H,
+                "fixed_half": lambda wm_, mu_, sd_, k: max(2, T1_0 // 2),
+                "fixed_double": lambda wm_, mu_, sd_, k: min(HCAP, 2 * T1_0),
+                "ungated": lambda wm_, mu_, sd_, k: HCAP}
+        seed_out = {}
+        for name, hfn in arms.items():
+            print(f"[step87.B] seed {s}: arm={name} ...", file=sys.stderr)
+            hist = run_arm(N, mu, sd, s, hfn, n_iters,
+                           wm=copy.deepcopy(wm0), actor=copy.deepcopy(actor0), critic=copy.deepcopy(critic0))
+            seed_out[name] = hist
+            print(f"[step87.B] seed {s}: arm={name} final_return={hist[-1]['eval_return']:.4f} "
+                  f"(env_steps={hist[-1]['env_steps']}, H_g last={hist[-1]['H_g']})", file=sys.stderr)
+        # steps-to-threshold: within 10% of the best final return across arms (returns are negative).
+        finals = {a: seed_out[a][-1]["eval_return"] for a in arms}
+        best = max(finals.values())
+        thresh = best - 0.1 * abs(best)
+        def steps_to(a):
+            for row in seed_out[a]:
+                if row["eval_return"] >= thresh:
+                    return row["env_steps"]
+            return None
+        stt = {a: steps_to(a) for a in arms}
+        big = 10 ** 9
+        cert_wins_fixed = (stt["cert"] or big) <= min(stt["fixed_half"] or big, stt["fixed_double"] or big)
+        cert_ge_ungated = (stt["cert"] or big) <= (stt["ungated"] or big)
+        per_seed[s] = {"T1_0": T1_0, "finals": finals, "steps_to_thresh": stt, "thresh": thresh,
+                       "cert_wins_fixed": bool(cert_wins_fixed), "cert_ge_ungated": bool(cert_ge_ungated),
+                       "history": seed_out}
+        print(f"[step87.B] seed {s}: steps-to-thresh {stt} | cert_wins_fixed={cert_wins_fixed} "
+              f"cert>=ungated={cert_ge_ungated}", file=sys.stderr)
+
+    need = int(np.ceil(2 / 3 * len(seeds)))
+    wins = [per_seed[s]["cert_wins_fixed"] and per_seed[s]["cert_ge_ungated"] for s in seeds]
+    g2 = bool(sum(wins) >= need)
+    verdict = {"G2_pass": g2, "n_win": int(sum(wins)), "n_seeds": len(seeds), "eps": eps, "N": N, "smoke": SMOKE,
+               "note": "G2: cert-gated reaches within-10%-of-best return at <= env-steps of the best fixed arm and "
+                       "not worse than ungated, on >=2/3 seeds. INCONCLUSIVE is the honest, seed-flagged outcome."}
+    print(f"[step87.B] {'G2 PASS' if g2 else 'G2 INCONCLUSIVE'}: cert-gated sample-efficiency win on "
+          f"{int(sum(wins))}/{len(seeds)} seeds.", file=sys.stderr)
+    return {"verdict": verdict, "per_seed": {str(k): v for k, v in per_seed.items()}}
+
+
 def run_stageA(seeds, N: int, eps: float) -> dict:
     r"""Stage A: per seed, train the equivariant controlled WM, read $T_1$ (map steps), and measure the actor pathwise
     gradient norm at backprop depths $H_g\in\{T_1/4,T_1/2,T_1,2T_1,4T_1\}$ (clamped to a modest cap so the chaotic
@@ -151,13 +360,20 @@ def run_stageA(seeds, N: int, eps: float) -> dict:
 
 if __name__ == "__main__":
     torch.manual_seed(0)
+    mode = os.environ.get("STEP87_MODE", "A")                  # "A" = gradient diagnostic; "B" = online sample-efficiency
     N = int(os.environ.get("STEP87_N", "10" if SMOKE else "16"))
-    eps = float(os.environ.get("STEP87_EPS", "0.1"))
     seeds = [int(x) for x in os.environ.get("STEP87_SEEDS", "0" if SMOKE else "0,1,2").split(",")]
-    print(f"[step87.A] cert-gating mechanism test: N={N} eps={eps} seeds={seeds} smoke={SMOKE}", file=sys.stderr)
-    res = run_stageA(seeds, N, eps)
     figdir = Path(__file__).resolve().parent.parent / "papers" / "figures"
     figdir.mkdir(parents=True, exist_ok=True)
     tag = "_smoke" if SMOKE else ""
+    if mode == "B":
+        eps = float(os.environ.get("STEP87_EPS", "0.5"))       # eps=0.5 -> T1 ~ 38 steps at lambda1~1.8: feasible backprop depth
+        print(f"[step87.B] Stage B sample efficiency: N={N} eps={eps} seeds={seeds} smoke={SMOKE}", file=sys.stderr)
+        res = run_stageB(seeds, N, eps)
+        (figdir / f"step87_stageB_sample_efficiency{tag}.json").write_text(json.dumps(res, indent=2))
+        raise SystemExit(0 if res["verdict"]["G2_pass"] else 1)
+    eps = float(os.environ.get("STEP87_EPS", "0.1"))
+    print(f"[step87.A] cert-gating mechanism test: N={N} eps={eps} seeds={seeds} smoke={SMOKE}", file=sys.stderr)
+    res = run_stageA(seeds, N, eps)
     (figdir / f"step87_stageA_gradient_explosion{tag}.json").write_text(json.dumps(res, indent=2))
     raise SystemExit(0)
