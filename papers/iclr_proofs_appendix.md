@@ -73,6 +73,8 @@ of admissible targets is restricted to continuous dynamics, not only the full al
 this gives the characterization *orbit-constant error $\iff$ equivariance*, and hence: **no non-equivariant predictor
 has the certificate, at any parameter count.**
 
+*Remark (the quantifier is necessary — and tight).* The "every equivariant target" quantifier cannot be weakened to a single target: take $f=\Phi+v$ for a fixed vector $v$ with $\rho(g)v\ne v$. Against that one $\Phi$ the error $\lVert f-\Phi\rVert\equiv\lVert v\rVert$ is exactly orbit-constant, yet $f(\rho(g)z)=\rho(g)\Phi(z)+v\ne\rho(g)f(z)$ — not equivariant. Lemma 2's hypothesis is thus the minimal one under which the converse holds; operationally this is why the certificate checks the model-side conditions (A1)–(A4) on generators rather than error-flatness against a single environment.
+
 ### Theorem B (spectral degradation — upper bound)
 
 *Statement.* Let $\epsilon_{\max}=\max_i\sup_x\lVert E(g_i\cdot x)-\rho(g_i)E(x)\rVert$ be the encoder residual,
