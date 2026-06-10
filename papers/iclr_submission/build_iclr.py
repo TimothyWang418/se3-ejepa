@@ -61,10 +61,10 @@ def split_source() -> tuple[str, str]:
     # the source carries its own supporting-experiments appendix; split it out so it does NOT count
     # toward the 9-page main text (it is re-spliced after the bibliography with the other appendices)
     app_d = ""
-    if "\n## Appendix D" in body:
-        body, rest = body.split("\n## Appendix D", 1)
-        app_d = "## Appendix D" + rest
-        print("appendix: split Appendix D out of the main body")
+    if "\n## Appendix" in body:                                  # first in-source appendix (D, then E, ...)
+        i = body.find("\n## Appendix")
+        body, app_d = body[:i], body[i + 1:]
+        print("appendix: split in-source appendices (D, E, ...) out of the main body")
     assert "[[" not in body and "[[" not in abstract, "stale wikilink leaked"
     return abstract, body, app_d
 
@@ -74,7 +74,7 @@ def split_source() -> tuple[str, str]:
 # prose fully carries — to an unlimited appendix so the MAIN TEXT meets ICLR's strict 9-page limit (the E9
 # co-demonstration paragraph needed the room). (Appendix + references do not count toward the 9 pages.)
 MAIN_FIGS = ["hero_certified_region", "hero_certified_world_models", "step65_horizon_tightness",
-             "step83_rsquared_crossover", "step71_multichaos_horizon", "step92_scale_sweep"]
+             "step83_rsquared_crossover"]
 
 
 def relocate_figures(body: str) -> tuple[str, str]:
