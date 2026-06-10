@@ -225,7 +225,7 @@ $\square$
 the calibrated certificate ($c{=}1$) is the budget-minimal violation-free cadence, and only structure delivers $c{=}1$
 a priori (E2 / Proposition 8). E12 instantiates the law: a non-equivariant certificate with $c\approx3.4$ on Lorenz-96
 (resp. $c\approx2$ on the pendulum ring) needs $\approx3\times$ (resp. $\approx2\times$) the budget to match the
-equivariant certificate, and the gap closes exactly when recalibration restores $c\to1$.
+equivariant certificate, and the gap closes exactly when recalibration restores $c\to1$. (Integer-rounding of the cadence $\hat H=H/c$ costs $O(1)$ per window and is absorbed in the measured catch-up factor, $2.7$–$3.5\times$ against the predicted $c\approx3.4$.)
 
 
 ### Proposition 10 (finite-sample certified-horizon interval)
