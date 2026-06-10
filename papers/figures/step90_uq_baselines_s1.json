@@ -1,0 +1,58 @@
+{
+  "summary": {
+    "cert": {
+      "ratios": [
+        1.462686567164179
+      ],
+      "mean_abs_log_ratio": 0.38027485927960586,
+      "models": 1,
+      "truth_rollouts": 0
+    },
+    "ensemble": {
+      "ratios": [
+        1.158273381294964
+      ],
+      "mean_abs_log_ratio": 0.14693043185377117,
+      "models": 4,
+      "truth_rollouts": 0
+    },
+    "conformal": {
+      "ratios": [
+        1.126865671641791
+      ],
+      "mean_abs_log_ratio": 0.11944003686401299,
+      "models": 1,
+      "truth_rollouts": 10
+    }
+  },
+  "per_seed": {
+    "1": {
+      "relmse": 1.1623691477357898e-05,
+      "cert": {
+        "pred": 98,
+        "actual": 67.0,
+        "ratio": 1.462686567164179,
+        "models": 1,
+        "truth_rollouts": 0
+      },
+      "ensemble": {
+        "pred": 80.5,
+        "actual": 69.5,
+        "ratio": 1.158273381294964,
+        "models": 4,
+        "truth_rollouts": 0
+      },
+      "conformal": {
+        "pred": 75.5,
+        "actual": 67.0,
+        "ratio": 1.126865671641791,
+        "models": 1,
+        "truth_rollouts": 10
+      }
+    }
+  },
+  "eps": 0.2,
+  "N": 40,
+  "K": 4,
+  "smoke": false
+}

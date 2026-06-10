@@ -1,0 +1,113 @@
+{
+  "per_seed": {
+    "0": {
+      "relmse": 1.844492852173267e-05,
+      "cert": {
+        "pred": 89,
+        "actual": 65.5,
+        "ratio": 1.3587786259541985,
+        "models": 1,
+        "truth_rollouts": 0
+      },
+      "ensemble": {
+        "pred": 78.5,
+        "actual": 73.5,
+        "ratio": 1.0680272108843538,
+        "models": 4,
+        "truth_rollouts": 0
+      },
+      "conformal": {
+        "pred": 61.5,
+        "actual": 65.5,
+        "ratio": 0.9389312977099237,
+        "models": 1,
+        "truth_rollouts": 10
+      }
+    },
+    "1": {
+      "relmse": 1.1623691477357898e-05,
+      "cert": {
+        "pred": 98,
+        "actual": 67.0,
+        "ratio": 1.462686567164179,
+        "models": 1,
+        "truth_rollouts": 0
+      },
+      "ensemble": {
+        "pred": 80.5,
+        "actual": 69.5,
+        "ratio": 1.158273381294964,
+        "models": 4,
+        "truth_rollouts": 0
+      },
+      "conformal": {
+        "pred": 75.5,
+        "actual": 67.0,
+        "ratio": 1.126865671641791,
+        "models": 1,
+        "truth_rollouts": 10
+      }
+    },
+    "2": {
+      "relmse": 1.2513547656541097e-05,
+      "cert": {
+        "pred": 84,
+        "actual": 94.0,
+        "ratio": 0.8936170212765957,
+        "models": 1,
+        "truth_rollouts": 0
+      },
+      "ensemble": {
+        "pred": 87.5,
+        "actual": 117.5,
+        "ratio": 0.7446808510638298,
+        "models": 4,
+        "truth_rollouts": 0
+      },
+      "conformal": {
+        "pred": 81.5,
+        "actual": 94.0,
+        "ratio": 0.8670212765957447,
+        "models": 1,
+        "truth_rollouts": 10
+      }
+    }
+  },
+  "eps": 0.2,
+  "N": 40,
+  "K": 4,
+  "smoke": false,
+  "provenance": "merged from 3 parallel single-seed shards (_s0/_s1/_s2), 2026-06-10; deterministic seeds (seed-0 numbers reproduced bit-identically across 3 independent runs)",
+  "summary": {
+    "cert": {
+      "ratios": [
+        1.359,
+        1.463,
+        0.894
+      ],
+      "mean_abs_log_ratio": 0.266,
+      "models": 1,
+      "truth_rollouts": 0
+    },
+    "ensemble": {
+      "ratios": [
+        1.068,
+        1.158,
+        0.745
+      ],
+      "mean_abs_log_ratio": 0.169,
+      "models": 4,
+      "truth_rollouts": 0
+    },
+    "conformal": {
+      "ratios": [
+        0.939,
+        1.127,
+        0.867
+      ],
+      "mean_abs_log_ratio": 0.108,
+      "models": 1,
+      "truth_rollouts": 10
+    }
+  }
+}

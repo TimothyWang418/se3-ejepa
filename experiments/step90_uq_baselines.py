@@ -155,5 +155,6 @@ if __name__ == "__main__":
     figdir = Path(__file__).resolve().parent.parent / "papers" / "figures"
     figdir.mkdir(parents=True, exist_ok=True)
     tag = "_smoke" if SMOKE else ""
+    tag += os.environ.get("STEP90_TAG", "")                    # per-shard suffix (parallel single-seed runs)
     (figdir / f"step90_uq_baselines{tag}.json").write_text(json.dumps(res, indent=2))
     raise SystemExit(0)

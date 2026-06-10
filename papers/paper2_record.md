@@ -844,3 +844,17 @@ the real checkpoint first try**) → full audit, 2 tasks × 3 official seeds, ~3
 - SimNorm structural band 128–270 strongly-negative directions (≥ the 64 predicted; reported). Scope: policy-prior
   loop, not MPPI. deps pinned mujoco 3.3.2 + dm-control 1.0.28 (numpy2); checkpoints gitignored, URLs pinned.
 - **Folded:** ICLR **E13** + paper2 **§5.21**. `step89`, `tests/test_step89.py` (4 green; suite 21 green).
+
+## [2026-06-10] Experiment 24 (step90) — UQ head-to-head: no method dominates; the certificate is the only a-priori point on the accuracy–cost Pareto
+
+The strongest methodological flank ("why a Lyapunov certificate instead of standard UQ?") answered on the §5.20 model
+(N=40, eps=0.2, 3 seeds): **certificate** ratios 1.36/1.46/0.89 (mean |log r| 0.266; 1 model, **0 truth rollouts**);
+**ensemble-disagreement** (K=4, same data, different inits) 1.07/1.16/0.75 (0.169; 4× training); **conformal quantile**
+(n_cal=10) 0.94/1.13/0.87 (**0.108**; truth access). Honest verdict: on point calibration conformal > ensemble >
+certificate (certificate within its known ~1.5× band) — but each rival spends exactly what the certificate does not
+(4× compute / 10 ground-truth rollouts), and neither provides CIs, per-channel stratification, or the Prop 9 budget
+law. **Folded into §5.20 + E12 as the third scoping control.** Ops note: two phantom "kills" of this run were
+monitoring false-negatives (sandboxed pgrep flakiness + silent training epochs misread as death) → self-inflicted
+4-process contention; resolved by per-seed parallel shards + file-based completion detection; one genuinely
+unexplained process death (run 1) remains. Determinism triple-confirmed (seed-0 numbers bit-identical across 3
+independent runs). `step90`, `tests/test_step90.py`; merged artifact `step90_uq_baselines.json` (+ _s0/_s1/_s2 shards).
