@@ -34,17 +34,14 @@ horizon**, stratified channel-by-channel by the predictor's spectrum, and we pro
 contributions are:
 
 1. **A tight certified horizon (§3.2).** For an equivariant model the $T$-step rollout error is orbit-constant
-   (Theorem A); relaxing to approximate equivariance, channel $j$ with Lyapunov exponent $\lambda_j$ is certified to
-   horizon $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$ (Theorem B, the *upper* bound). Our central new result is a
-   **matching lower bound** (Proposition 6): an $\epsilon$-approximately-equivariant model — even one with a *perfect*
-   predictor — has orbit-error-variation exactly $\epsilon\,e^{\lambda T}$ on an expansive channel, so its certified
-   horizon is $\Theta(\log(1/\epsilon)/\lambda)$, **no better**. Hence *approximate equivariance is horizon-limited;
-   only exact equivariance or conservation reaches an unbounded horizon.* A **scope theorem** (Proposition 7) then says
-   *when* the locally-measured spectrum governs a *learned* model's horizon — Oseledets gives the rate on spectrally
-   non-degenerate dynamics, the law degenerates on near-neutral dynamics — and a **finite-horizon continuity bound**
-   (Proposition 8) makes the learned-model lift rigorous, not merely empirical. The horizon staircase then **lifts to
-   learned models of a class of genuinely chaotic systems** (E2: Lorenz, Hénon, Rössler — the learned model's Lyapunov
-   exponent matches the true one to $1$–$12\%$), while the near-neutral PushT interior is the predicted degenerate case.
+   (Theorem A); under approximate equivariance, channel $j$ is certified to $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$
+   (Theorem B). The central new result is a **matching lower bound** (Proposition 6): an
+   $\epsilon$-approximately-equivariant model — even with a *perfect* predictor — has orbit-error-variation exactly
+   $\epsilon\,e^{\lambda T}$, so the horizon is $\Theta(\log(1/\epsilon)/\lambda)$, **no better**: *approximate
+   equivariance is horizon-limited; only exactness or conservation reaches an unbounded horizon.* A scope theorem
+   (Proposition 7) says *when* the measured spectrum governs a *learned* model's horizon, a continuity bound
+   (Proposition 8) makes the lift rigorous, and the staircase lifts to learned models of genuinely chaotic systems
+   (E2: exponents matched to $1$–$12\%$), the near-neutral PushT interior being the predicted degenerate case.
 2. **The certificate is exclusive to structure (§3.1).** The converse (Lemma 2): orbit-constant error against every
    equivariant target $\iff$ the model is equivariant. So **no non-equivariant model has the certificate at any size**
    — an architectural impossibility, proved, not asserted.
@@ -60,12 +57,11 @@ We are explicit about scope (§6): this is a mechanism-and-theory contribution a
 benchmark; the certificate is *exact* where the group is a genuine dynamical symmetry and *gracefully approximate*,
 with a measured and now lower-bounded boundary, elsewhere.
 
-**One certificate, a universal half and an exclusive half.** Two threads run through the paper and they are halves of
-the *same* read-out, not two papers: the spectral audit (Theorem B's law) applies to **any** $C^1$ latent loop — that
-is how we audit non-equivariant public models in E13–E15 — while what is **exclusive to structure** is *a-priori
-trust in the audited number itself* (Lemma 2 the impossibility, E2 the mechanism: a dense model's spectrum can be
-silently wrong at one-step relMSE $10^{-5}$). A generic model must buy that trust with held-out divergence data; an
-equivariant model has it from the Jacobian alone. §4's closing paragraph returns to this division explicitly.
+**One certificate, a universal half and an exclusive half.** The spectral audit (Theorem B's law) applies to **any**
+$C^1$ latent loop — that is how E13–E15 audit non-equivariant public models; what is **exclusive to structure** is
+*a-priori trust in the audited number itself* (Lemma 2; E2: a dense spectrum can be silently wrong at one-step relMSE
+$10^{-5}$). A generic model buys that trust with held-out divergence data; an equivariant model has it from the
+Jacobian alone. §4's closing paragraph returns to this division.
 
 **What is new.** A prior-art sweep finds the corner *empty*: no work combines equivariance with a certified, two-sided spectral horizon; the closest guarantee-bearing neighbours each miss the intersection [@conradie2026trustkoopman; @lillemark2026flowm; @mo2026symmetry] (§5). The new results: **(i)** Proposition 6's matching lower bound — growth seeded by the *equivariance residual* rather than an initial-condition error — making approximate equivariance provably horizon-limited; **(ii)** the scope/continuity pair (Props. 7–8) lifting the law to *learned* chaotic models, where shadowing cannot transfer the exponent; **(iii)** the structure-vs-recurrence separation at $40$-D (E2), with the recurrent failure forced by the conditional-Lyapunov condition; **(iv)** Theorem B′ turning the certificate from *measured* into *literal* — sound a priori, tight on uniform hyperbolicity, self-abstaining elsewhere; **(v)** actionability **a priori, with zero calibration data** (E12; Proposition 9); and **(vi)** a training-free trustworthiness audit of public pretrained world models (E13–E14) that a deployed monitor replicates **cell-by-cell, out-of-sample** (E15), its decision boundary formalized as a regret decomposition (Proposition 11). These assemble (Algorithm 1) into one certificate *exclusive to structure* (Lemma 2) whose unbounded-horizon subspace is the conserved/invariant one (the Noether hinge). We credit the classical pillars we build on — the
 Lyapunov/NWP horizon law, invariant decision theory, and the $e^{\lambda T}$ growth — explicitly in §3 and §5.
@@ -163,10 +159,9 @@ an upper estimate.** The conceptual payload is sharp:
 > $T\sim\tfrac1\lambda\log\tfrac1\epsilon$ (worst case over admissible targets). Only exact equivariance
 > ($\epsilon=0$) or conservation ($\lambda_j\le0$) yields an unbounded certified horizon.**
 
-This is the horizon-domain companion of Lemma 2, and it sharpens *scale vs. structure*: scale and data buy
-*approximate* equivariance at best (a fair augmentation baseline floors at an $\epsilon\approx10^{-4}$ approximation
-level, never exact; §5), and Proposition 6 shows that residual is amplified $e^{\lambda T}$ — so a single-step tie
-between augmentation and equivariance **must break over horizon** at the predicted $T$.
+This is the horizon-domain companion of Lemma 2: scale and data buy *approximate* equivariance at best (a fair
+augmentation baseline floors at $\epsilon\approx10^{-4}$, never exact), and Proposition 6 amplifies that residual
+$e^{\lambda T}$ — a single-step tie between augmentation and equivariance **must break over horizon**.
 
 ![Proposition 6, numerically (the central claim). **Left:** orbit-error-variation of an $\epsilon{=}10^{-3}$-approximately-equivariant model (markers) equals the analytic $\epsilon\,e^{\lambda T}$ (dashed) to relative error $10^{-14}$–$10^{-13}$, $3$ seeds; an *exactly* equivariant model sits at the machine-precision floor; $\lambda\le0$ channels stay bounded (infinite horizon). **Right:** certified horizon linear in $\log(1/\epsilon)$ with slope exactly $1/\lambda$ ($R^2{=}1.000$) — the $\Theta(\log(1/\epsilon)/\lambda)$ law (`step65`).](figures/step65_horizon_tightness.png){width=92%}
 
@@ -217,19 +212,20 @@ Together: **the certified region is the coarse ($\epsilon$ large), invariant/con
 
 ### 3.4 The certificate is a procedure
 
-The certificate is *computable a priori*, without testing the unseen situation. Algorithm 1: (i) check (A1)–(A4) on
-the $k$ generators to a residual $\epsilon_{\max}$; (ii) estimate the predictor Jacobian spectrum $\{\lambda_j\}$ at the
-query latent (reported with a block-bootstrap CI, calibrated against the Liouville anchor; `experiments/step78`); (iii) report, for a target situation $w\in\langle S\rangle$, horizon $T$, resolution $\epsilon$, whether
-$(w,T,\epsilon)$ lies in the certified region $\{|\Delta\mathrm{Err}|\le\epsilon\}$ implied by Theorem B / Proposition 6,
-escalating conserved channels to unbounded horizon via Proposition 5. Proposition 10 gives the procedure's finite-sample rate: under Proposition 7's scope assumptions the bootstrap CI is the consistent estimator of a bracket $T_1\in[\log(1/\epsilon)/(\hat\lambda_1\pm\varepsilon_n)]$ with $n\asymp\log(1/\delta)/\varepsilon^2$ — the certificate is cheap in confidence, quadratic in precision.
+The certificate is *computable a priori*. Algorithm 1: (i) check (A1)–(A4) on the $k$ generators to residual
+$\epsilon_{\max}$; (ii) estimate the predictor spectrum at the query latent (block-bootstrap CI, Liouville-anchored;
+`step78`); (iii) report whether $(w,T,\epsilon)$ lies in the certified region of Theorem B/Proposition 6, escalating
+conserved channels via Proposition 5. Proposition 10 gives the finite-sample rate: the bootstrap CI brackets
+$T_1\in[\log(1/\epsilon)/(\hat\lambda_1\pm\varepsilon_n)]$ with $n\asymp\log(1/\delta)/\varepsilon^2$ — cheap in
+confidence, quadratic in precision.
 
 ---
 
 ## 4. Experiments
 
 All experiments are CPU/$1$-GPU, seeded, and honestly gated (a run reports `INCONCLUSIVE` rather than loosen a
-threshold). The main text carries the load-bearing results; the supporting suite (E1, E3–E8) is summarized in one
-paragraph below and written up in full in **Appendix D**.
+threshold). Proofs: **Appendix B**; reproducibility map (anonymized code, seeds, gates): **Appendix C**; the
+supporting suite (E1, E3–E8) is summarized below and written up in **Appendix D**.
 
 **(E2) The horizon staircase — and where structure becomes necessary.** On a controlled latent with a planted spectrum the certified-horizon slope brackets the predicted $1/\lambda$ (Theorem B above, Proposition 6 below; chaotic exponent recovered to $0.4\%$). The law lifts to learned models of *real* chaotic dynamics: plain one-step models of **Lorenz**, **Hénon**, and **Rössler** give staircases linear in $\log(1/\epsilon)$ ($R^2{=}0.975$–$0.995$, $3$ seeds) whose slopes recover the textbook exponents to $1$–$12\%$ across an order of magnitude in $\lambda_1$ — Proposition 8's finite-horizon continuity at work, not a shadowing corollary — while the near-neutral **PushT interior** is Proposition 7's predicted *degenerate* branch ($R^2{=}0.02$: there the spectrum rightly does not predict the rollout). At high dimension, structure becomes *necessary*: on $40$-D **Lorenz-96** [@lorenz1996predictability] ($F{=}8$; Liouville sum $\sum_j\lambda_j{=}-N$ recovered to $0.0\%$) a $\mathbb{Z}_N$-equivariant cyclic-conv recovers the *full* spectrum ($R^2{=}0.98$–$0.99$, $3$ seeds; Kaplan–Yorke $\sim\!27$) — hence the per-channel certified horizons — while an identically-trained dense MLP **fails** ($R^2{<}0$, $\lambda_1$ inflated $\sim\!3.4\times$) and a GRU-BPTT [@vlachas2020rnn] fails the same way at $N{=}40$ ($R^2{\approx}-0.3$), its joint-state Jacobian carrying hidden modes that break the conditional-Lyapunov condition [@hart2024attractor]. Sweeping $N\in\{12,20,28,40\}$ shows a **phase transition**, not a single-$N$ artifact: all three architectures tie through $N{=}28$; only the equivariant one survives $N{=}40$ (`step83`).
 
@@ -237,48 +233,31 @@ paragraph below and written up in full in **Appendix D**.
 
 ![The certified-horizon law across a class of learned chaotic models (E2). The identical learned-model staircase on a 2D map (Hénon), a small-exponent flow (Rössler), and a large-exponent flow (Lorenz) is linear in $\log(1/\epsilon_0)$ and its slope (blue) recovers the textbook exponent (red dashed). The law is a property of chaotic dynamics, not of Lorenz; the residual bias is decomposed by Proposition 8.](figures/step71_multichaos_horizon.png)
 
-**(E1, E3–E8: the supporting suite — full write-ups in Appendix D.)** The configuration axis is exponential: checking $k$ generators certifies all $2^k$ compositions ($\mathbb{Z}_2^6$: error $\sim10^{-33}$ vs. a non-equivariant baseline's $0.59$) (E1). Breaking the world's symmetry degrades the certificate *gracefully and linearly* — exactly Proposition 6's predicted crossing — and a fair augmentation baseline is horizon-limited at its $\sim10^{-4}$ equivariance floor (E3). An $88\times$-scaled non-equivariant model buys in-distribution interpolation but never the orbit-floor (E4); on **PushT contact dynamics** a learned $\mathrm{SO}(2)$-equivariant model is orbit-flat to ratio $1.000$ while no baseline in a $160\times$ parameter sweep reaches its out-of-distribution floor — with the honest control that the per-baseline gap ($2.1$–$3.9\times$) does not grow with scale; the impossibility claim is carried by Lemma 2, not by E5's magnitude (E5). The certificate lifts to non-abelian $\mathrm{SO}(3)$ and — via frame averaging [@puny2022frame], accuracy-neutrally — to raw pixels (E6); run through an equivariant planner it becomes orbit-invariant closed-loop *control* (E7); and, being computable, it is a **noise-immune epistemic drive**: an explorer that maximizes certified-region growth certifies $2^7$ compositions in exactly $7$ observations where prediction-error curiosity is lured by noisy distractors to $1\%$ (E8).
+**(E1, E3–E8: the supporting suite — Appendix D.)** $k$ generator checks certify all $2^k$ compositions ($\mathbb{Z}_2^6$: error $\sim10^{-33}$ vs a baseline's $0.59$) (E1). Symmetry breaking degrades the certificate linearly — Proposition 6's predicted crossing — and a fair augmentation baseline is horizon-limited at its $\sim10^{-4}$ floor (E3). An $88\times$-scaled non-equivariant model buys interpolation, never the orbit-floor (E4); on PushT contact dynamics a learned $\mathrm{SO}(2)$-equivariant model is orbit-flat to ratio $1.000$ with no baseline in a $160\times$ sweep reaching its out-of-distribution floor — the impossibility carried by Lemma 2, not E5's magnitude (E5). The certificate lifts to non-abelian $\mathrm{SO}(3)$ and, via frame averaging, accuracy-neutrally to pixels (E6); becomes orbit-invariant closed-loop control (E7); and drives a noise-immune epistemic explorer — $2^7$ compositions certified in $7$ observations where prediction-error curiosity is lured by distractors to $1\%$ (E8).
 
-**(E9) Both axes on one system; the certificate acts.** On **controlled Lorenz-96** (exact $\mathbb{Z}_N$, genuine chaos $\lambda_1{\approx}1.8$) an equivariant planner gives orbit-flat control (residual $8\times10^{-16}$) while the certified $T_1(\epsilon)$ drives an **active re-observation** schedule that sits on the accuracy-vs-observation frontier *untuned* ($2/3$ seeds, asymptotic-$\epsilon$ regime; tight-$\epsilon$ honestly optimistic per Prop. 8). The pattern lifts to a $\mathbb{Z}_N$ pendulum ring and a $\mathbb{Z}_2$ double pendulum — a class property across two groups (`step79`–`step81`; Appendix D).
+**(E9) Both axes on one system; the certificate acts.** On controlled Lorenz-96 (exact $\mathbb{Z}_N$, $\lambda_1{\approx}1.8$) an equivariant planner gives orbit-flat control (residual $8\times10^{-16}$) while the certified $T_1(\epsilon)$ drives an active re-observation schedule sitting on the accuracy-observation frontier *untuned* ($2/3$ seeds, asymptotic-$\epsilon$ regime; tight-$\epsilon$ honestly optimistic per Prop. 8). The pattern lifts to a pendulum ring and a double pendulum (`step79`–`step81`).
 
 **(E10) The certified horizon, made literal — and its exact regime.** E2 *measures* that a learned model's Lyapunov
 exponent matches the truth; Theorem B′ *certifies* it. A computable cone/adapted-metric certificate reads a **sound,
 a-priori** upper bound on the learned model's top exponent off its Jacobian field — a guaranteed horizon
 $T_{\mathrm{guar}}(\epsilon)$ from the model alone. On **uniformly-hyperbolic** dynamics it is *tight*: cat-map certified exponent exact on the true map, $1.17\times$ on a *learned* net ($3$ seeds, sound), $1.06\times$ on a nonlinear Anosov perturbation. On **non-uniformly-hyperbolic** Hénon a single metric is provably limited — sound but $\sim\!3\times$ conservative — and the certificate's own cone-margin diagnostic turns negative: it **abstains** rather than over-claim. A tight a-priori horizon is achievable *exactly* in the uniformly-hyperbolic regime, and the certificate **self-diagnoses** its regime (`step82`).
 
-**(E11) On a recognized control benchmark — honest INCONCLUSIVE.** On Gymnasium Acrobot-v1 ($\lambda_1{=}0.094$) the certified horizon *tracks* the measured one (ratio $0.42\to0.93$ as $\epsilon$ coarsens) and *binds for planning*: return has a sharp interior optimum and planning past $\sim\!T_1$ fails outright. Capping depth at $T_1$ solves the task ($67$–$100\%$) and bounds useful planning, but the return-optimum sits at $\sim T_1/2$, so two pre-registered no-tuning rules are **INCONCLUSIVE** against the best-tuned blind depth: a sound depth within a constant factor of optimal, not the optimum (`step84`).
+**(E11) On a recognized control benchmark — honest INCONCLUSIVE.** On Acrobot-v1 ($\lambda_1{=}0.094$) the certified horizon *tracks* the measured one (ratio $0.42\to0.93$ as $\epsilon$ coarsens) and *binds*: planning past $\sim\!T_1$ fails outright, and capping depth at $T_1$ solves the task ($67$–$100\%$) — but the return-optimum sits at $\sim T_1/2$, so two pre-registered no-tuning rules are **INCONCLUSIVE** against the best-tuned blind depth (`step84`).
 
 **(E12) The certificate's trustworthiness changes a budgeted decision — a priori.** On $40$-D Lorenz-96 an agent schedules sparse re-observations of a chaotic forecast under a fixed sensing budget. The forecaster is held fixed (the equivariant model; both models are identically trained and forecast comparably, one-step relMSE $\sim10^{-5}$) and *only* the certificate timing re-observation varies: the equivariant certificate yields $8$–$16\%$ aggregate violation at the knee budget vs. $61$–$65\%$ for the dense certificate, whose $\lambda_1$ is inflated $\sim3.4\times$ and which therefore over-observes and starves the budget (margins $+0.45$–$+0.57$, $3/3$; **Proposition 9** makes the cost a law — $c\times$ inflation needs $c\times$ budget; measured catch-up $2.7$–$3.5\times$). Two controls scope the claim: a certificate-free adaptive scheduler matches only after $\sim3\times$ the budget (the certificate is an *a-priori* warm-start), and a *recalibrated* dense certificate closes the gap ($3/3$) but only by **spending a calibration set** — the equivariant certificate is correct from the Jacobian with **zero rollout data**. Standard UQ baselines (a $4$-model ensemble, a $10$-rollout conformal quantile) calibrate tighter by spending training or truth access the certificate does not: **no method dominates the accuracy–cost Pareto; the certificate is its only a-priori point** (`step90`). The contrast replicates **conditionally — and the condition is the mechanism** — on a driven–damped pendulum ring ($N{=}24$, $5$ seeds): the budget gap appears exactly on the seeds whose dense $\lambda_1$ inflates ($2/5$) and vanishes where the dense spectrum is incidentally faithful — faithfulness left to chance vs. structural. (A budget *allocation* across a chaoticity ensemble did *not* win; reported honestly.) (`step85`–`step88`.)
 
-**(E13) The certificate audits a *public pretrained* world model — training-free, and maps onto the paper's own scope theory.** We rebuild the latent-dynamics slices of the official **TD-MPC2** checkpoints (5M single-task DMC models; MIT) and run the *unchanged* certificate machinery on the policy-prior closed loop $g(z)=d(z,\tanh\mu_\pi(z))$ — no training, no environment access on the certified side — across **five tasks $\times$ 3 official seeds (15 latent loops)**. The result is a scope map, not a uniform win, and it tracks the theory cell-by-cell. Where the loop is **strongly expansive** ($\lambda_1{=}0.25$–$0.30$: walker-walk $3/3$, cheetah-run seed 3) the coarse-resolution certificate is **calibrated** — ratio measured/certified $0.83$–$1.02$ (walker $0.94/0.95/1.02$), with the same two-regime $\epsilon$ pattern as every system we trained ourselves (tight-$\epsilon$ optimistic, the Proposition 8 $\delta$-bias). As expansion **weakens** the certificate turns optimistic (cheetah $0.43/0.50$; hopper-hop $0.13/0.38$ at $\lambda_1{=}0.05$–$0.09$): model bias outpaces Lyapunov amplification — the degeneracy direction Proposition 7 flags. Where the loop **contracts** ($6/15$: acrobot $3/3$, finger-spin $2/3$, hopper seed 1) the certificate **abstains, correctly in both sub-cases**: finger-spin's stable loops genuinely do not diverge (nothing to certify; $15$–$19/20$ starts censored), while acrobot's and hopper-1's residual divergence is bias-driven — outside a Lyapunov certificate's jurisdiction. The SimNorm structural zero-directions appear as a strongly-negative spectral band ($128$–$270$ directions), reported, not hidden; the certified scope is the prior loop, not the MPPI planner. A Jacobian certificate of a public zoo's *learned latent map*, cross-validated against true-environment divergence and stratified by the certificate's own scope theory, is new (nearest prior: true-environment Lyapunov under RL policies, arXiv:2410.10674). (`step89`.) A second, architecturally disjoint family lands on the same map: the official **LeWM** checkpoint (pixel-input ViT+transformer JEPA, loaded bit-faithfully into the authors' own code) has $\lambda_1{=}0.001$ with CI straddling zero — the certificate **abstains**, and the observed $1$–$2$-step divergence is pure one-step bias, the same sub-case as acrobot. Two families, one read-out, one taxonomy (`step91`).
+**(E13) The certificate audits a *public pretrained* world model — training-free, and maps onto the paper's own scope theory.** We rebuild the latent slices of the official **TD-MPC2** checkpoints and run the *unchanged* machinery on the policy-prior loop $g(z)=d(z,\tanh\mu_\pi(z))$ — no training, no environment access on the certified side — across **5 tasks $\times$ 3 official seeds (15 loops)**. The result is a scope map, not a uniform win, and it tracks the theory cell-by-cell. Where the loop is **strongly expansive** ($\lambda_1{=}0.25$–$0.30$: walker-walk $3/3$, cheetah-run seed 3) the coarse-resolution certificate is **calibrated** — ratio measured/certified $0.83$–$1.02$ (walker $0.94/0.95/1.02$) (tight-$\epsilon$ optimistic as everywhere; Prop. 8). As expansion **weakens** the certificate turns optimistic (cheetah $0.43/0.50$; hopper-hop $0.13/0.38$ at $\lambda_1{=}0.05$–$0.09$): model bias outpaces Lyapunov amplification — the degeneracy direction Proposition 7 flags. Where the loop **contracts** ($6/15$: acrobot $3/3$, finger-spin $2/3$, hopper seed 1) the certificate **abstains, correctly in both sub-cases**: finger-spin's stable loops genuinely do not diverge (nothing to certify; $15$–$19/20$ starts censored), while acrobot's and hopper-1's residual divergence is bias-driven — outside a Lyapunov certificate's jurisdiction. SimNorm's structural zero-directions appear as a strongly-negative band — reported, not hidden; the certified scope is the prior loop, not the planner. A Jacobian certificate of a public zoo's *learned latent map*, cross-validated against true-environment divergence and stratified by the certificate's own scope theory, is new (nearest prior: true-environment Lyapunov under RL policies, arXiv:2410.10674). (`step89`.) A second, architecturally disjoint family lands on the same map: the official **LeWM** checkpoint (pixel-input ViT+transformer JEPA, loaded bit-faithfully into the authors' own code) has $\lambda_1{=}0.001$ with CI straddling zero — the certificate **abstains**, and the observed $1$–$2$-step divergence is pure one-step bias, the same sub-case as acrobot. Two families, one read-out, one taxonomy (`step91`).
 
-**(E14) Scale does not rescue trustworthiness (`step92`).** Across the official TD-MPC2 *multitask* ladder (mt30, $1$M$\to$$317$M parameters, same walker-walk task, one official checkpoint per size), the policy-prior loop's regime flips **non-monotonically** with scale — contracting at $1$M *and* $48$M, expansive at $5$M/$19$M/$317$M — and calibration scatters (measured/certified $0.37/1.87/1.16$ at $\epsilon{=}0.2$ where expansive; mt80 cells likewise mixed) with **no size matching the single-task $5$M model's $0.94$–$1.02$**. One checkpoint per cell (no official seed variants) — read as a descriptive scope-map extension, not a seed-averaged law; the direction is nonetheless unambiguous: *trust in a rollout is a property of the loop's dynamics, not of parameter count — scale buys interpolation, not a calibrated horizon.*
+**(E14) Scale does not rescue trustworthiness (`step92`).** Across the official TD-MPC2 *multitask* ladder (mt30, $1$M–$317$M, same walker-walk task, one official checkpoint per size) the loop's regime flips **non-monotonically** with scale — contracting at $1$M *and* $48$M, expansive at $5$M/$19$M/$317$M — and calibration scatters ($0.37/1.87/1.16$ at $\epsilon{=}0.2$ where expansive; mt80 likewise mixed), **no size matching the single-task $0.94$–$1.02$**. One checkpoint per cell — a descriptive scope-map extension, unambiguous in direction: *trust in a rollout is a property of the loop's dynamics, not of parameter count — scale buys interpolation, not a calibrated horizon.*
 
 ![Scale does not buy a calibrated horizon (E14). **(a)** $\lambda_1$ of the walker-walk policy-prior loop across the official multitask ladder: sign-flipping, non-monotone (contracting at $1$M and $48$M). **(b)** Calibration at $\epsilon{=}0.2$: scatter across sizes; no multitask scale reaches the single-task $5$M band ($0.94$–$1.02$, green).](figures/step92_scale_sweep.png)
 
-**(E15) The published certificate prices a deployed monitor, out-of-sample (`step94`).** The scope law's *positive*
-instance, in deployment form: a **sensor-only monitor** watches cheetah-run executing its nominal policy, reads the
-expensive sensor every $k$ steps, and between reads forecasts the latent with the certified loop $g$ itself (no action
-telemetry), flagging at a read iff relative error exceeds $\theta{=}0.2$. The certificate numbers are **loaded from
-the E13 artifact** — issued before this experiment existed — and the gates were frozen before seeds 1–2 were ever run.
-The in-situ staleness clock replicates the published scope map **cell-by-cell**: in-situ-vs-bench ratio $0.43$ vs
-$0.43$ and $0.50$ vs $0.50$ on the two out-of-sample cells (two-decimal agreement, optimistic cells *predicted
-optimistic*), $0.67$ vs $0.83$ on the calibrated cell — whose $[2/3,3/2]$ check lands $7{\times}10^{-4}$ below the
-edge on an integer-valued median and is recorded **at-the-edge, not rounded up**. A frozen-actuator fault is then
-detected at the certificate-derived cadence with recall $1.00$ on all three seeds (median delay $\le k_{\mathrm{op}}$
-on $2/3$). Proposition 11 is the formal statement: clause (i) — when the decided quantity *is* the certified quantity,
-certificate value transfers with **zero new estimation**; clause (ii) prices E11/step93's dilution as a resolution
-mismatch ($H(\theta^{\ast})\approx2$ vs $H(0.2)\approx6$ agent-steps). Honest notes: the same monitor on walker is
-regime-bimodal (the deterministic prior falls on some env seeds — a monitor presumes a nominal regime; Proposition 7
-in deployment guise — **and the clause is load-bearing**: the walker run's in-situ ratios land $0.32$–$0.47$ vs bench
-$0.94$–$1.02$, $0/3$ replication, the regime-contamination signature), and the teacher-forced loop variant lands
-weakly expansive ($\lambda_1{=}0.09$–$0.13$), where the taxonomy itself predicts optimism — the experiment's design
-trail obeys the paper's own scope map.
+**(E15) The published certificate prices a deployed monitor, out-of-sample (`step94`).** The scope law's *positive* instance: a **sensor-only monitor** watches cheetah-run under its nominal policy, reads the expensive sensor every $k$ steps, and between reads forecasts with the certified loop $g$ itself (no action telemetry), flagging at a read iff relative error exceeds $\theta{=}0.2$. Certificate numbers are **loaded from the E13 artifact** — issued before this experiment existed — and the gates were frozen before seeds 1–2 ever ran. The in-situ staleness clock replicates the published map **cell-by-cell**: in-situ-vs-bench ratio $0.43$ vs $0.43$ and $0.50$ vs $0.50$ on the out-of-sample cells (optimism *predicted*), $0.67$ vs $0.83$ on the calibrated cell — its $[2/3,3/2]$ check landing $7{\times}10^{-4}$ below the edge on an integer-valued median, recorded **at-the-edge, not rounded up**. A frozen-actuator fault is then detected at the certificate-derived cadence with recall $1.00$ on $3/3$ seeds (median delay $\le k_{\mathrm{op}}$ on $2/3$). Proposition 11 formalizes both sides: an aligned decision transfers certificate value with **zero new estimation** (clause i); step93's dilution is a resolution mismatch, $H(\theta^{\ast})\approx2$ vs $H(0.2)\approx6$ (clause ii). Honest notes: on walker the deterministic prior is regime-bimodal and clock replication breaks ($0.32$–$0.47$ vs $0.94$–$1.02$, $0/3$; fault recall intact) — a monitor presumes a nominal regime, **Proposition 7's clause load-bearing in deployment**; and the teacher-forced loop variant lands weakly expansive, where the taxonomy itself predicts optimism.
 
 
 
 
-**What does structure buy, if the read-out audits any smooth model?** Theorem B's spectral law applies to any $C^1$ latent map — that is what E13 exercises on (non-equivariant) TD-MPC2 and LeWM. What the law cannot supply for a generic model is *trust in the number itself*: a dense model's spectrum can be silently wrong while its predictions stay good (E2: $\lambda_1$ inflated $\sim3.4\times$ at one-step relMSE $10^{-5}$), so a generic certificate must be cross-validated against held-out divergence — exactly the per-model empirical check the E13 scope map performs. Equivariance is what removes that requirement where it holds: structure makes the spectrum *faithful* (E2), hence the certificate *a-priori trustworthy with zero calibration data* (E12 and its recalibration control) — and exclusively so (Lemma 2). The audit is universal; the **a-priori** guarantee is structure's.
+**What does structure buy, if the read-out audits any smooth model?** The law applies to any $C^1$ latent map — hence E13's audits of non-equivariant models. What it cannot supply there is *trust in the number itself*: a dense spectrum can be silently wrong while predictions stay good (E2), so a generic certificate must be cross-validated against held-out divergence — the per-model check E13 performs. Structure removes that requirement where it holds: faithfulness (E2) makes the certificate a-priori trustworthy with zero calibration data (E12) — and exclusively so (Lemma 2). **The audit is universal; the a-priori guarantee is structure's.**
 
 ---
 
@@ -293,23 +272,11 @@ conservation axis.** They are exactly the $T{=}1$, $\epsilon$-independent slice 
 the multi-step stratification (Theorem B, tight by Proposition 6), the converse (Lemma 2), and the Noether bridge to
 unbounded horizon (Proposition 5).
 
-**Learned conservation laws.** Noether Networks [@noethernet] meta-learn conserved quantities
-inside the prediction loop, and Noether's Razor [@noetherrazor] learns symmetries-as-conserved-quantities by
-Bayesian model selection. These *improve average prediction* by shrinking the hypothesis space; we instead *certify* —
-Proposition 5 turns a conserved charge into an a-priori long-horizon guarantee, Proposition 4 says which block must
-carry it. Guarantee versus average accuracy.
+**Learned conservation laws.** Noether Networks [@noethernet] and Noether's Razor [@noetherrazor] *learn* conserved quantities to improve average prediction; we *certify* — Proposition 5 turns a conserved charge into an a-priori long-horizon guarantee, Proposition 4 forces its isotypic placement. Guarantee versus average accuracy.
 
-**Jacobian-regularized world models.** "Towards Unraveling and Improving Generalization in World Models"
-[@jacobianwm] penalizes the latent-transition Jacobian to damp rollout error propagation — a heuristic for
-robustness. Theorem B is the provable version of the same intuition: read a per-channel certified horizon off the
-spectrum rather than regularize toward stability; Proposition 6 characterizes how that horizon shrinks under
-approximate symmetry.
+**Jacobian-regularized world models.** [@jacobianwm] penalizes the latent-transition Jacobian to damp rollout error — a heuristic for robustness. Theorem B is the provable version of the intuition: read a per-channel certified horizon off the spectrum instead of regularizing toward stability; Proposition 6 prices its decay under approximate symmetry.
 
-**Equivariant predictors and latent-geometry priors.** Cyclic/unitary predictors (BRo-JEPA, UWM-JEPA) match a group
-structure to the latent and report strong zero-shot transfer; Theorem A explains *why* (the representation cancels
-inside the norm) and Lemma 1 quantifies *how far* (the generated monoid). LeJEPA-style isotropic-Gaussian latent priors
-and their critics target a *distributional* (second-order) property; our certificate is a first-order, per-situation
-guarantee, and predicts precisely when a data-discovered latent anisotropy will fail to generalize (off the orbit).
+**Equivariant predictors and latent-geometry priors.** Cyclic/unitary predictors (BRo-JEPA, UWM-JEPA) report strong zero-shot transfer; Theorem A explains *why* and Lemma 1 quantifies *how far* (the generated monoid). LeJEPA-style isotropic latent priors target a *distributional* property; ours is a first-order, per-situation guarantee that predicts when a data-discovered anisotropy fails off the orbit.
 
 **Predictability horizons.** The $T(\epsilon)\sim\log(1/\epsilon)/\lambda$ law is classical for dynamical systems
 (Lyapunov; numerical weather prediction); that the *local* spectrum governs the *asymptotic* rate is the Oseledets multiplicative ergodic theorem [@oseledets1968], and on uniformly hyperbolic systems the shadowing lemma [@pilyugin1999shadowing] bounds a perturbed model's
@@ -335,13 +302,11 @@ non-equivariant certified Koopman forecasts [@conradie2026trustkoopman] and equi
   with a degradation that is now bounded on both sides (Theorem B and Proposition 6) and measured (E3).
 - **Tight in form, not in prefactor.** Proposition 6 makes the horizon's $\log(1/\epsilon)/\lambda$ *form* tight, but
   the constants $c_j$ are not estimated and the isotypic refinement is asserted, not separately measured.
-- **The Noether hinge's forward direction is proved; its hypotheses are measured.** Proposition 5 assumes a
-  Hamiltonian latent flow with a $G$-invariant Hamiltonian; the defect $\eta$ is exact only under an equivariant
-  symplectic discretization; the non-converse (slow $\not\Rightarrow$ conserved) is genuine.
-- **The hinge is validated on constructed teachers, not shown to *emerge*.** The Noether experiments (E2 and the
-  containment results) use *constructed* equivariant teachers, so the "slow $=$ invariant" coincidence is partly built
-  in. The real-ish experiments (E5 PushT, E6 $\mathrm{SO}(3)$) validate *flatness*, not the hinge's emergence in a
-  learned model of un-constructed dynamics — that remains open.
+- **The Noether hinge: forward direction proved, hypotheses measured, emergence open.** Proposition 5 assumes a
+  $G$-invariant Hamiltonian latent flow (the defect $\eta$ exact only under an equivariant symplectic
+  discretization), and the converse fails (slow $\not\Rightarrow$ conserved). The hinge is moreover validated on
+  *constructed* equivariant teachers — the real-ish experiments (E5 PushT, E6 $\mathrm{SO}(3)$) validate *flatness*,
+  not the hinge's *emergence* in a learned model of un-constructed dynamics; that remains open.
 - **The horizon law lifts to learned chaotic models and is vacuous on near-neutral dynamics (scope, not a bug).**
   Validated on a synthetic spectrum, a *class* of low-D chaotic systems (exponents to $1$–$12\%$), and a $40$-D
   learned model ($R^2{=}0.98$–$0.99$); informative iff $\lambda_1>0$ — the PushT interior is the predicted degenerate
@@ -374,17 +339,10 @@ non-equivariant certified Koopman forecasts [@conradie2026trustkoopman] and equi
 
 ## 7. Conclusion
 
-An equivariant world model can certify, a priori and without retraining, which situations it will handle and **for how
-many steps** — and the horizon is tight. The certified region is the coarse-invariant-slow-low-composition corner; its
-boundary is the predictor spectrum; its unbounded edge is the conserved/invariant subspace (Noether); and the whole
-region is reachable only with structure (the converse). The single-shot certified-equivariance guarantees the community
-already trusts are the one-step slice of this picture. And because the horizon is *faithful* it is *actionable* — it
-lets an agent budget its sensing on a high-dimensional chaotic forecast where an inflated certificate cannot (E12).
-*Scale buys interpolation; structure buys a certified horizon.*
+An equivariant world model can certify, a priori and without retraining, which situations it will handle and **for how many steps** — and the horizon is tight. The certified region is the coarse-invariant-slow-low-composition corner; its boundary is the predictor spectrum; its unbounded edge is the conserved/invariant subspace; the whole region is reachable only with structure. Because the horizon is *faithful* it is *actionable* — budgeting sensing on a chaotic forecast (E12), auditing public world models (E13–E14), pricing a deployed monitor (E15). *Scale buys interpolation; structure buys a certified horizon.*
 
 ---
 
-*Reproducibility and scope.* Full proofs are in **Appendix B**, a reproducibility appendix (anonymized code, experiment-to-code map, seed/gate discipline) in **Appendix C**. This is a focused extraction of a broader program; the full suite is deferred to an extended version.
 
 
 ---
