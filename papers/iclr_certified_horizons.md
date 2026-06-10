@@ -71,7 +71,7 @@ from the learned model, tight on uniformly-hyperbolic dynamics and self-abstaini
 faithfulness is **actionable, a priori** (E12; Proposition 9) — holding the forecaster fixed, it meets a fixed sensing
 budget a $\sim3\times$-inflated non-equivariant certificate cannot, with **zero calibration data** (a dense certificate
 matches only after recalibration on measured rollouts), delivering the opening promise that an acting agent needs to
-know not just the average error but *whether, and for how long, to trust the model*. These assemble
+know not just the average error but *whether, and for how long, to trust the model*; and **(vi)** a **training-free trustworthiness audit of public pretrained world models** — the same read-out, unchanged, maps official TD-MPC2 checkpoints (including the $1$M–$317$M multitask ladder, where calibration does **not** improve with scale) and an architecturally disjoint JEPA family onto the certificate's own scope taxonomy (E13–E14). These assemble
 (Algorithm 1) into one certificate *exclusive to structure* (Lemma 2) whose unbounded-horizon
 subspace is the conserved/invariant one (the Noether hinge). We credit the classical pillars we build on — the
 Lyapunov/NWP horizon law, invariant decision theory, and the $e^{\lambda T}$ growth — explicitly in §3 and §5.
