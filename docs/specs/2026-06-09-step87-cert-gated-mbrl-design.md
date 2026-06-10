@@ -97,3 +97,16 @@ Everything else identical across arms (same WM updates, buffer, actor/critic ini
   imagination is enough to test the cert-gating hypothesis on 1 GPU.
 - No new env (reuse controlled Lorenz-96); no discrete-action variant (continuous control is the clean PG setting).
 - This is the **last** of the three directions; run only after ① (step86) is settled.
+
+## Revision 2026-06-09b — Stage B ran; raw G2 vacuous-passed; honest verdict INCONCLUSIVE
+
+Stage B ran on the box (N=16, eps=0.5, 3 seeds × 4 arms, 20×50 real steps). The pre-registered G2 returned "PASS 2/3"
+**vacuously**: on 2/3 seeds every arm hit the within-10% threshold at the FIRST eval (≤-ties counted as wins); the only
+separating seed had cert losing to fixed-half by one eval notch. Final returns differ ~1–5% (noise); the re-certified
+$T_1$ is high-variance across refits. **Recorded as INCONCLUSIVE** (record 2026-06-09; never let a vacuous pass stand).
+
+**If ever re-run, the gate must be strict:** (i) threshold within 2% of best final (not 10%), (ii) wins require a
+strictly positive margin — ties are NOT wins, (iii) eval grid ≥4× finer than the collection cadence, (iv) certificate
+variance controlled (T1 averaged over a refit window), (v) a task/config where the warmup policy does NOT already
+saturate the threshold (harder coupling or shorter warmup). Until someone wants that re-run, ② stands as the third
+honest non-result of the three-directions program.
