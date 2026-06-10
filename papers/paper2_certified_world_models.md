@@ -416,6 +416,31 @@ not), and it *explains*, rather than merely reports, why a one-step-accurate lea
 
 **Proposition 9 (budgeted re-observation — a mis-estimated horizon costs a *proportional* budget).** Consider an agent that forecasts the map open-loop from a re-observation, the leading-mode error growing as $\delta_t\approx\delta_0 e^{\lambda_1\Delta t\,t}$ over map steps $t$ (step $\Delta t$, $\lambda_1>0$), so the trustworthy horizon at resolution $\epsilon$ is $H(\epsilon)=\lfloor\log(\epsilon/\delta_0)/(\lambda_1\Delta t)\rfloor=\lfloor T_1(\epsilon)/\Delta t\rfloor$ (the certified horizon of §3.2). The agent re-observes (resets the error to $\delta_0$) at a fixed cadence and may re-observe at most $B$ times over an episode of $L$ map steps (a **sensing budget**); a step is a *violation* if its forecast error exceeds $\epsilon$. A certificate reporting $\hat\lambda_1=c\,\lambda_1$ ($c>0$) prescribes cadence $\hat H=H/c$. Then **(i)** for $c\ge1$ in the budget-binding regime $BH/c<L$, the aggregate violation rate is $V(c)=\max\!\big(0,\;L-BH/c-H\big)/L$, which is **non-decreasing in $c$** (strictly increasing while $BH/c+H<L$); and **(ii)** the budget needed to drive $V$ to zero is $B^\star(c)=\lceil c\,(L-H)/H\rceil$ — **linear in $c$**: a certificate inflated $c\times$ demands $c\times$ the observations to certify the same episode. *Proof.* With cadence $\hat H=H/c\le H$, every window before the last re-observation (at step $B\hat H=BH/c$) stays under $\epsilon$ — error reaches $\epsilon$ only after $H\ge\hat H$ steps — so the covered $BH/c$ steps are violation-free; after the last re-observation the open-loop forecast exceeds $\epsilon$ only after a further $H$ steps, leaving $\max(0,L-BH/c-H)$ violating steps, which is $V(c)$. As $BH/c$ is non-increasing in $c$, $V$ is non-decreasing, strictly so while the numerator is positive; $V=0$ requires $BH/c\ge L-H$, i.e. $B\ge c(L-H)/H$. $\square$ *Remark (predictive, and the decision-relevance is now a law, not an anecdote).* $V(c)$ is computable a priori from the inflation $c$ and budget $B$, so it **predicts** the violation gap; the calibrated certificate ($c=1$) is the budget-minimal violation-free cadence, and **only structure delivers $c=1$ a priori** (Experiment 18 / Proposition 8). Experiment 22 (§5.20) instantiates the law: a non-equivariant certificate with $c\approx3.4$ on Lorenz-96 (resp. $\approx2$ on the ring) needs $\approx3\times$ (resp. $\approx2\times$) the budget to match the equivariant certificate, the gap closing exactly when recalibration restores $c\to1$ — the quantitative behaviour Proposition 9 forces.
 
+**Proposition 10 (finite-sample certified-horizon interval).** Let $g$ be $C^1$ on a compact forward-invariant $\mathcal U$ (e.g. the SimNorm simplex product of E13),
+and let $\ell_t$ be the per-step leading log-stretches produced by the Benettin recursion along an orbit of $g$, so
+$\hat\lambda_1^{(n)}=\frac1n\sum_{t=1}^n\ell_t$ and $|\ell_t|\le B:=\sup_{z\in\mathcal U}\log\lVert Dg(z)\rVert<\infty$
+(compactness). Assume $(\ell_t)$ is stationary and strongly mixing with summable autocovariances, and let
+$\sigma_\infty^2=\sum_{h\in\mathbb Z}\mathrm{cov}(\ell_0,\ell_h)<\infty$ be the long-run variance. Then for every
+$\delta\in(0,1)$ there is $\varepsilon_n(\delta)=\sigma_\infty\sqrt{2\log(2/\delta)/n}\,(1+o(1))$ such that with
+probability $\ge1-\delta$, $\lambda_1\in[\hat\lambda_1^{(n)}-\varepsilon_n,\hat\lambda_1^{(n)}+\varepsilon_n]$, and
+whenever $\hat\lambda_1^{(n)}-\varepsilon_n>0$ the certified horizon is bracketed,
+$$ T_1(\epsilon)\in\Big[\tfrac{\log(1/\epsilon)}{\hat\lambda_1^{(n)}+\varepsilon_n},\;
+\tfrac{\log(1/\epsilon)}{\hat\lambda_1^{(n)}-\varepsilon_n}\Big]; $$
+otherwise the certificate **abstains**. In particular the certificate's sample complexity is
+$n\asymp\sigma_\infty^2\log(1/\delta)/\varepsilon^2$ — logarithmic in confidence, quadratic in precision.
+
+*Proof sketch.* Boundedness gives $\ell_t\in[-B,B]$; stationarity + strong mixing with summable covariances give a
+Bernstein/CLT-type concentration for the empirical mean of a bounded mixing sequence with variance proxy
+$\sigma_\infty^2$ (e.g. Merlevède–Peligrad–Rio); the horizon bracket follows since $\lambda\mapsto\log(1/\epsilon)/\lambda$
+is monotone on $(0,\infty)$. $\square$
+
+*Remarks.* (i) The moving-block bootstrap used throughout the experiments is precisely a consistent estimator of
+$\sigma_\infty^2$ under the same mixing assumptions — Proposition 10 is the rate statement behind those CIs, not a new
+procedure. (ii) The dynamical assumptions (stationarity/mixing along the audited orbit) are inherited from
+Proposition 7's scope and are *assumed, not certified*, for learned models — stated honestly, as everywhere else.
+(iii) $B$ is finite and computable on compact latents (E13's SimNorm product), so the bound is fully effective there.
+
+
 Propositions 8–9 read consequences off the certified horizon — the chaos rate, and the budget cost of mis-reading it; the next result makes the "Certified" in the
 title literal by reading a **sound, a-priori horizon from the learned model itself** — and characterizes the exact
 regime in which that certificate is *tight* rather than merely sound. It is the analytic dual of Theorem B's spectral

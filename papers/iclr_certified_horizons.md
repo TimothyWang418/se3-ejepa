@@ -227,7 +227,7 @@ The certificate is *computable a priori*, without testing the unseen situation. 
 the $k$ generators to a residual $\epsilon_{\max}$; (ii) estimate the predictor Jacobian spectrum $\{\lambda_j\}$ at the
 query latent (reported with a block-bootstrap CI, calibrated against the Liouville anchor; `experiments/step78`); (iii) report, for a target situation $w\in\langle S\rangle$, horizon $T$, resolution $\epsilon$, whether
 $(w,T,\epsilon)$ lies in the certified region $\{|\Delta\mathrm{Err}|\le\epsilon\}$ implied by Theorem B / Proposition 6,
-escalating conserved channels to unbounded horizon via Proposition 5.
+escalating conserved channels to unbounded horizon via Proposition 5. Proposition 10 gives the procedure's finite-sample rate: under Proposition 7's scope assumptions the bootstrap CI is the consistent estimator of a bracket $T_1\in[\log(1/\epsilon)/(\hat\lambda_1\pm\varepsilon_n)]$ with $n\asymp\log(1/\delta)/\varepsilon^2$ — the certificate is cheap in confidence, quadratic in precision.
 
 ---
 

@@ -225,6 +225,33 @@ a priori (E2 / Proposition 8). E12 instantiates the law: a non-equivariant certi
 (resp. $c\approx2$ on the pendulum ring) needs $\approx3\times$ (resp. $\approx2\times$) the budget to match the
 equivariant certificate, and the gap closes exactly when recalibration restores $c\to1$.
 
+
+### Proposition 10 (finite-sample certified-horizon interval)
+
+*Statement.* Let $g$ be $C^1$ on a compact forward-invariant $\mathcal U$ (e.g. the SimNorm simplex product of E13),
+and let $\ell_t$ be the per-step leading log-stretches produced by the Benettin recursion along an orbit of $g$, so
+$\hat\lambda_1^{(n)}=\frac1n\sum_{t=1}^n\ell_t$ and $|\ell_t|\le B:=\sup_{z\in\mathcal U}\log\lVert Dg(z)\rVert<\infty$
+(compactness). Assume $(\ell_t)$ is stationary and strongly mixing with summable autocovariances, and let
+$\sigma_\infty^2=\sum_{h\in\mathbb Z}\mathrm{cov}(\ell_0,\ell_h)<\infty$ be the long-run variance. Then for every
+$\delta\in(0,1)$ there is $\varepsilon_n(\delta)=\sigma_\infty\sqrt{2\log(2/\delta)/n}\,(1+o(1))$ such that with
+probability $\ge1-\delta$, $\lambda_1\in[\hat\lambda_1^{(n)}-\varepsilon_n,\hat\lambda_1^{(n)}+\varepsilon_n]$, and
+whenever $\hat\lambda_1^{(n)}-\varepsilon_n>0$ the certified horizon is bracketed,
+$$ T_1(\epsilon)\in\Big[\tfrac{\log(1/\epsilon)}{\hat\lambda_1^{(n)}+\varepsilon_n},\;
+\tfrac{\log(1/\epsilon)}{\hat\lambda_1^{(n)}-\varepsilon_n}\Big]; $$
+otherwise the certificate **abstains**. In particular the certificate's sample complexity is
+$n\asymp\sigma_\infty^2\log(1/\delta)/\varepsilon^2$ — logarithmic in confidence, quadratic in precision.
+
+*Proof sketch.* Boundedness gives $\ell_t\in[-B,B]$; stationarity + strong mixing with summable covariances give a
+Bernstein/CLT-type concentration for the empirical mean of a bounded mixing sequence with variance proxy
+$\sigma_\infty^2$ (e.g. Merlevède–Peligrad–Rio); the horizon bracket follows since $\lambda\mapsto\log(1/\epsilon)/\lambda$
+is monotone on $(0,\infty)$. $\square$
+
+*Remarks.* (i) The moving-block bootstrap used throughout the experiments is precisely a consistent estimator of
+$\sigma_\infty^2$ under the same mixing assumptions — Proposition 10 is the rate statement behind those CIs, not a new
+procedure. (ii) The dynamical assumptions (stationarity/mixing along the audited orbit) are inherited from
+Proposition 7's scope and are *assumed, not certified*, for learned models — stated honestly, as everywhere else.
+(iii) $B$ is finite and computable on compact latents (E13's SimNorm product), so the bound is fully effective there.
+
 ### Proposition 4 (isotypic placement)
 
 *Statement.* A conserved charge $Q:\mathcal Z\to W$ that is $G$-equivariant (intertwines $\rho$ with a representation
