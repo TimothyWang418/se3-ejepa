@@ -76,6 +76,8 @@ def main() -> int:
         z.writestr("run_step84.sh", scrub((ROOT / "run_step84.sh").read_text()))
         for d, glob in INCLUDE:
             for f in sorted((ROOT / d).glob(glob)):
+                if f.name == "make_anon_artifact.py":
+                    continue
                 rel = f.relative_to(ROOT).as_posix()
                 txt = scrub(f.read_text(errors="replace"))
                 if LEAK.search(txt):
