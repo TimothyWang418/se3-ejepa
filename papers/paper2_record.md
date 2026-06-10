@@ -916,3 +916,18 @@ policy prior (fixed a*=0 scope); zero action in-support but expert-OOD. **E13 up
 families (TD-MPC2 MLP/SimNorm state-based; LeWM ViT/transformer JEPA pixel-based), one unchanged read-out, one
 theory-aligned taxonomy — the training-free audit is a method, not a trick.** Folded into E13 + §5.21.
 `experiments/step91_lewm_audit.py`, `step91_lewm_audit.json`; ~30 min wall, zero training, zero GPU.
+
+## [2026-06-10] E14/Exp 25 (step92) — the scale sweep: SCALE DOES NOT BUY A CALIBRATED HORIZON (the title, measured)
+
+The 9-level play executed overnight: certified horizon vs MODEL SCALE on the official TD-MPC2 **multitask** ladder
+(mt30 1M/5M/19M/48M/317M + mt80 1M/5M; same walker-walk task, task index from each ckpt's own metadata; 2.45 GB of
+official checkpoints; shape-driven loader auto-absorbs the two upstream quirks the recon verified — mt30-19M
+latent=512, task_dim 96-vs-64). **Result: the loop regime is NON-MONOTONE in scale** — contracting at 1M AND 48M(!),
+expansive at 5M/19M/317M — calibration scatters (0.37 / 1.87 / 1.16 at eps=0.2; mt80 mixed; all three taxonomy
+behaviors appear, including the *conservative* direction at 19M), and **no multitask size matches the single-task 5M
+calibration (0.94–1.02)**. One ckpt per cell (no official seeds) — reported as descriptive. Honest reading is
+thesis-CONFIRMING in the strongest available form: had calibration improved with scale, the title would weaken;
+instead, trust is a property of the loop's dynamics, not parameter count. Folded as ICLR **E14** + paper2 **Exp 25**
++ abstract hook ("scale buys interpolation, not a calibrated horizon") + figure. Also tonight: ring extended to 5
+seeds (gap appears exactly where dense lambda1 inflates, 2/5 — §5.20/E12 sharpened to the conditional-causal claim);
+unification paragraph (②) in both papers. `step92`, ~50 min total, zero training, zero GPU.
