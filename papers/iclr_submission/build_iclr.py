@@ -56,15 +56,23 @@ def split_source() -> tuple[str, str]:
     idx = md.find("## 1. Introduction")
     assert idx != -1, "could not find '## 1. Introduction'"
     body = md[idx:]
+    # the source carries its own supporting-experiments appendix; split it out so it does NOT count
+    # toward the 9-page main text (it is re-spliced after the bibliography with the other appendices)
+    app_d = ""
+    if "\n## Appendix D" in body:
+        body, rest = body.split("\n## Appendix D", 1)
+        app_d = "## Appendix D" + rest
+        print("appendix: split Appendix D out of the main body")
     assert "[[" not in body and "[[" not in abstract, "stale wikilink leaked"
-    return abstract, body
+    return abstract, body, app_d
 
 
 # Keep only the load-bearing figures inline (the at-a-glance picture, the tightness proof = "central claim",
 # and the Lorenz headline); relocate the rest — including the PushT real-contact-dynamics figure, whose result E5's
 # prose fully carries — to an unlimited appendix so the MAIN TEXT meets ICLR's strict 9-page limit (the E9
 # co-demonstration paragraph needed the room). (Appendix + references do not count toward the 9 pages.)
-MAIN_FIGS = ["hero_certified_region", "step65_horizon_tightness", "step70_lorenz_horizon"]
+MAIN_FIGS = ["hero_certified_region", "hero_certified_world_models", "step65_horizon_tightness",
+             "step83_rsquared_crossover", "step71_multichaos_horizon", "step92_scale_sweep"]
 
 
 def relocate_figures(body: str) -> tuple[str, str]:
@@ -181,18 +189,23 @@ def compile_pdf() -> None:
         print("  [tectonic FAILED]\n   " + "\n   ".join(tail[-25:]))
         return
     pdf = HERE / "main.pdf"
-    print(f"main.pdf: compiled, {pdf.stat().st_size / 1024:.0f} KiB")
+    raw = pdf.read_bytes()
+    n_pages = raw.count(b"/Type /Page") - raw.count(b"/Type /Pages")
+    print(f"main.pdf: compiled, {pdf.stat().st_size / 1024:.0f} KiB, ~{n_pages} pages (ICLR limit: 9 main + unlimited refs/appendix)")
 
 
 if __name__ == "__main__":
     ensure_template()
-    ab, full_body = split_source()
+    ab, full_body, app_d_md = split_source()
     main_body, appendix_md = relocate_figures(full_body)
-    # Appendix B: full proofs (unlimited — appended after the figures appendix, both after the bibliography).
+    # appendix order after the bibliography: A (relocated figures) -> B+C (proofs + repro) -> D (supporting suite)
     proofs = PAPERS / "iclr_proofs_appendix.md"
     if proofs.exists():
         appendix_md = (appendix_md + "\n\n" if appendix_md.strip() else "") + proofs.read_text(encoding="utf-8")
-        print("appendix: + Appendix B (full proofs)")
+        print("appendix: + Appendix B/C (full proofs + reproducibility)")
+    if app_d_md.strip():
+        appendix_md = appendix_md + "\n\n" + app_d_md
+        print("appendix: + Appendix D (supporting experiments)")
     build_combined(ab, main_body)
     write_preamble()
     run_pandoc()
