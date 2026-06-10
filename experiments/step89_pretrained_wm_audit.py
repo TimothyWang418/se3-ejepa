@@ -34,7 +34,10 @@ CKPT_DIR = ROOT / "models" / "tdmpc2"
 
 # Task registry: dm_control (domain, task), obs_dim (flattened, their wrapper order), action_dim.
 TASKS = {"acrobot-swingup": ("acrobot", "swingup", 6, 1),
-         "walker-walk": ("walker", "walk", 24, 6)}
+         "walker-walk": ("walker", "walk", 24, 6),
+         "cheetah-run": ("cheetah", "run", 17, 6),       # E13 expansion: 3 more official single-task checkpoints
+         "finger-spin": ("finger", "spin", 9, 2),
+         "hopper-hop": ("hopper", "hop", 15, 4)}
 
 
 # ----------------------------- faithful layer replicas (tdmpc2/common/layers.py) ------------------------------- #

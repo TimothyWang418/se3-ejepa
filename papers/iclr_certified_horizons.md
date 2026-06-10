@@ -8,24 +8,7 @@ venue: "ICLR submission draft (focused extraction of the Certified World Models 
 
 ## Abstract
 
-*Scale buys interpolation; structure buys a certified horizon.* Scaling a world model lowers its average error but
-guarantees nothing about a *specific* unseen situation, or *how far* it can be trusted. For **equivariant** latent
-world models we give a computable, multi-step **certificate of the predictable horizon**: the $T$-step rollout error is
-provably *constant over the entire orbit* of group-related situations (Theorem A), and the horizon to which this holds
-is set channel-by-channel by the predictor spectrum, $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$ — two-sided
-(Theorem B and a matching lower bound, Proposition 6), so approximate equivariance is provably horizon-limited while
-conserved or invariant channels reach *unbounded* horizon (the Noether hinge). The certificate is *equivalent* to
-equivariance (Lemma 2): **no non-equivariant model has it at any scale**; existing single-shot certified-equivariance
-guarantees are its $T{=}1$ slice. Empirically the spectral law lifts to learned models of genuinely chaotic dynamics —
-Lorenz, Hénon, Rössler, and a $40$-dimensional Lorenz-96 model where a $\mathbb{Z}_N$-equivariant network recovers the
-full Lyapunov spectrum ($R^2{=}0.98$) while a dense *and* a same-trained recurrent model fail. Finally, a cone/adapted-metric
-certificate (Theorem B′) makes "certified" **literal** — a sound, a-priori-guaranteed horizon read from the learned
-model, provably tight on uniformly-hyperbolic dynamics and self-abstaining where it cannot. The certificate is also
-*actionable — a priori*: its faithfulness lets an agent meet a fixed sensing budget on a $40$-D chaotic forecast where a
-$\sim3\times$-inflated non-equivariant certificate over-observes and starves it ($8$–$16\%$ vs $61$–$65\%$ violation,
-replicated on a second $\mathbb{Z}_N$ system; a $c\times$-inflated certificate provably needs $c\times$ the budget,
-Proposition 9; a dense certificate closes the gap only by spending a calibration set — E12).
-A scope theorem (Proposition 7) says when the law is informative; §6 states the $1$–$2$-GPU scope.
+*Scale buys interpolation; structure buys a certified horizon.* A world model's average error says nothing about whether a *particular* prediction can be trusted, or for how long. For **equivariant** latent world models we give a computable, multi-step **certificate of the predictable horizon**: $T$-step rollout error is provably constant over each symmetry orbit (Theorem A), stratified channel-by-channel by the predictor's Lyapunov spectrum, $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$, and **two-sided** — a matching lower bound makes approximate equivariance provably horizon-limited (Proposition 6). The certificate is *equivalent* to equivariance (Lemma 2): no non-equivariant model has it at any scale. Empirically the law lifts to learned models of real chaotic systems — on $40$-D Lorenz-96 only a $\mathbb{Z}_N$-equivariant network recovers the full spectrum ($R^2{=}0.98$; dense and recurrent baselines fail) — and a cone certificate (Theorem B′) makes the horizon a-priori sound, tight exactly on uniformly-hyperbolic dynamics. The certificate is *actionable*: under a fixed sensing budget a $c\times$-inflated certificate provably needs $c\times$ the budget (Proposition 9), and it **audits public pretrained world models training-free** — calibrated on expansive TD-MPC2 latents (ratio $0.94$–$1.02$), correctly abstaining on contracting ones. §6 states the $1$–$2$-GPU scope.
 
 ---
 
@@ -251,122 +234,18 @@ escalating conserved channels to unbounded horizon via Proposition 5.
 ## 4. Experiments
 
 All experiments are CPU/$1$-GPU, seeded, and honestly gated (a run reports `INCONCLUSIVE` rather than loosen a
-threshold). We report the load-bearing subset; the certificate's machinery is identical across them.
+threshold). The main text carries the load-bearing results; the supporting suite (E1, E3–E8) is summarized in one
+paragraph below and written up in full in **Appendix D**.
 
-**(E1) The configuration axis is exponential.** On a $\mathbb{Z}_2^6$ compositional task (six independent
-$180^\circ$ flips), training the equivariance checks on the **6 generators** certifies the model over all **$2^6=64$**
-compositions to $\sim10^{-33}$ error, while a non-equivariant baseline degrades from $1.6\!\times\!10^{-5}$ on the
-generators to $0.59$ on held-out compositions. Six checks, sixty-four guarantees (Lemma 1).
-
-**(E2) The horizon staircase, on a controlled spectrum and learned models of *real chaotic dynamics*.** On a controlled
-latent with a tunable Lyapunov spectrum the model recovers the chaotic exponent to $0.4\%$ and its certified-horizon
-slope brackets the predicted $1/\lambda$ — matching *both* Theorem B (upper) and Proposition 6 (lower). It then
-**lifts to a learned model of a genuinely chaotic system, not a planted spectrum**: a plain one-step MLP of the
-**Lorenz** $\Delta t$-map (singular-hyperbolic, SRB measure [@tucker2002lorenz]; relMSE $<10^{-4}$) gives a staircase
-linear in $\log(1/\epsilon)$ ($R^2{=}0.975$–$0.995$, 3 seeds) whose slope matches the true $\lambda_1$ to $1$–$8\%$ — a
-one-step-accurate model could drift to a wrong *multi-step* rate; that it does not is Proposition 8's finite-horizon
-continuity, not a shadowing corollary.
-**And the law is not a Lorenz coincidence: the identical learned-model staircase recovers the textbook exponent across
-a class** — the **Hénon** map ($\lambda_1{\approx}0.419$/step; rel-err $8$–$12\%$, $3/3$ seeds), the small-exponent
-**Rössler** flow ($\lambda_1{\approx}0.0714$; $8$–$9\%$, $2/3$ — the small-exponent stress case), and Lorenz: a 2D
-map and two flows spanning an order of magnitude in exponent. A true-map control (no learned model) isolates the
-residual finite-$T$ truncation of Proposition 8 ($\sim\!9$–$10\%$). Conversely, the **PushT interior** is Proposition
-7's *degenerate* branch ($\lambda_1\approx0$): a learned-model probe finds the spectrum does *not* predict the rollout
-($R^2{=}0.02$) — the horizon axis vacuous, predicted not patched.
-
-**The spectral law lifts to a *high-dimensional* learned model — and there structure becomes necessary.** On $40$-D
-**Lorenz-96** [@lorenz1996predictability] ($F{=}8$; Liouville pins $\sum_j\lambda_j{=}-N$, recovered to $0.0\%$), a $\mathbb{Z}_N$-equivariant
-cyclic-conv recovers the *full* $40$-D spectrum ($R^2{=}0.98$–$0.99$, $3$ seeds; Kaplan–Yorke $\sim\!27$; $13$ of
-$\sim\!14$ positive) — hence the per-channel certified horizons — while a dense MLP of equal data **fails**
-($R^2{<}0$, $\lambda_1$ inflated $\sim\!3\times$; both succeed at $N{\le}20$, so the gap is a high-$N$ effect). The
-**configuration axis** (the $\mathbb{Z}_N$ symmetry) thus *helps the horizon axis* — structure recovers a
-high-dimensional spectral horizon an unstructured model cannot — *and not for want of recurrence:* a GRU-BPTT [@vlachas2020rnn] that recovers at
-$N{=}12$ ($R^2{=}0.93$–$0.99$) still fails at $N{=}40$ ($R^2{\approx}-0.3$, $3$ seeds), its joint-state $(x,h)$ Jacobian
-carrying hidden modes that break the conditional-Lyapunov condition [@hart2024attractor] at high $N$ where a Markov
-$N\times N$ Jacobian has none. (Needs a multi-step rollout loss; one-step MSE
-underestimates the Jacobian — Proposition 8's $C^1$ caveat in high $N$.)
-Sweeping $N\in\{12,20,28,40\}$ shows this is a **phase transition**, not a single-$N$ artifact: the $\mathbb{Z}_N$-conv holds $R^2>0.97$ throughout while the dense MLP and GRU are tied with it through $N{=}28$ and collapse at $N{=}40$ ($R^2{=}-1.8$, $-0.27$; $3$ seeds), hallucinating spurious positive exponents where the dimension outruns their unstructured Jacobian (`step83`).
+**(E2) The horizon staircase — and where structure becomes necessary.** On a controlled latent with a planted spectrum the certified-horizon slope brackets the predicted $1/\lambda$ (Theorem B above, Proposition 6 below; chaotic exponent recovered to $0.4\%$). The law lifts to learned models of *real* chaotic dynamics: plain one-step models of **Lorenz**, **Hénon**, and **Rössler** give staircases linear in $\log(1/\epsilon)$ ($R^2{=}0.975$–$0.995$, $3$ seeds) whose slopes recover the textbook exponents to $1$–$12\%$ across an order of magnitude in $\lambda_1$ — Proposition 8's finite-horizon continuity at work, not a shadowing corollary — while the near-neutral **PushT interior** is Proposition 7's predicted *degenerate* branch ($R^2{=}0.02$: there the spectrum rightly does not predict the rollout). At high dimension, structure becomes *necessary*: on $40$-D **Lorenz-96** [@lorenz1996predictability] ($F{=}8$; Liouville sum $\sum_j\lambda_j{=}-N$ recovered to $0.0\%$) a $\mathbb{Z}_N$-equivariant cyclic-conv recovers the *full* spectrum ($R^2{=}0.98$–$0.99$, $3$ seeds; Kaplan–Yorke $\sim\!27$) — hence the per-channel certified horizons — while an identically-trained dense MLP **fails** ($R^2{<}0$, $\lambda_1$ inflated $\sim\!3.4\times$) and a GRU-BPTT [@vlachas2020rnn] fails the same way at $N{=}40$ ($R^2{\approx}-0.3$), its joint-state Jacobian carrying hidden modes that break the conditional-Lyapunov condition [@hart2024attractor]. Sweeping $N\in\{12,20,28,40\}$ shows a **phase transition**, not a single-$N$ artifact: all three architectures tie through $N{=}28$; only the equivariant one survives $N{=}40$ (`step83`).
 
 ![Step 83. Full-spectrum Lyapunov $R^2$ vs. $N$: the $\mathbb{Z}_N$-conv holds across $N$ while the dense MLP and GRU collapse at $N{=}40$ — the single-$N$ separation is a phase transition.](figures/step83_rsquared_crossover.png)
 
-![The horizon staircase on a learned model of real chaotic dynamics (E2, Lorenz). **Left:** the learned one-step model's perturbation growth tracks the true Lorenz integrator over $550$ steps. **Right:** the certified horizon $T(\epsilon_0)$ on the *learned* model is linear in $\log(1/\epsilon_0)$ ($R^2{=}0.995$), and the measured slope sits on the prediction $1/(\lambda_1 dt)$ from the textbook Lorenz exponent — Theorem B's law lifted to a learned model of a genuinely chaotic system (Proposition 7(a)).](figures/step70_lorenz_horizon.png)
-
 ![The certified-horizon law across a class of learned chaotic models (E2). The identical learned-model staircase on a 2D map (Hénon), a small-exponent flow (Rössler), and a large-exponent flow (Lorenz) is linear in $\log(1/\epsilon_0)$ and its slope (blue) recovers the textbook exponent (red dashed). The law is a property of chaotic dynamics, not of Lorenz; the residual bias is decomposed by Proposition 8.](figures/step71_multichaos_horizon.png)
 
-![High-dimensional spectral horizon (E2, $40$-D Lorenz-96). **Left:** recovered vs. true Lyapunov exponent for all $40$ channels — the $\mathbb{Z}_N$-equivariant cyclic-conv (blue) lies on $y=x$ ($R^2{=}0.98$); the dense MLP (red ×) is scattered far off ($R^2{=}-1.1$). **Right:** per-channel certified horizon $\log(1/\epsilon)/\lambda_j$: the equivariant model tracks the truth across the spectrum. Structure recovers the high-dimensional spectral horizon a dense model of equal data cannot.](figures/step74_lorenz96_spectrum.png)
+**(E1, E3–E8: the supporting suite — full write-ups in Appendix D.)** The configuration axis is exponential: checking $k$ generators certifies all $2^k$ compositions ($\mathbb{Z}_2^6$: error $\sim10^{-33}$ vs. a non-equivariant baseline's $0.59$) (E1). Breaking the world's symmetry degrades the certificate *gracefully and linearly* — exactly Proposition 6's predicted crossing — and a fair augmentation baseline is horizon-limited at its $\sim10^{-4}$ equivariance floor (E3). An $88\times$-scaled non-equivariant model buys in-distribution interpolation but never the orbit-floor (E4); on **PushT contact dynamics** a learned $\mathrm{SO}(2)$-equivariant model is orbit-flat to ratio $1.000$ while no baseline in a $160\times$ parameter sweep reaches its out-of-distribution floor — with the honest control that the per-baseline gap ($2.1$–$3.9\times$) does not grow with scale; the impossibility claim is carried by Lemma 2, not by E5's magnitude (E5). The certificate lifts to non-abelian $\mathrm{SO}(3)$ and — via frame averaging [@puny2022frame], accuracy-neutrally — to raw pixels (E6); run through an equivariant planner it becomes orbit-invariant closed-loop *control* (E7); and, being computable, it is a **noise-immune epistemic drive**: an explorer that maximizes certified-region growth certifies $2^7$ compositions in exactly $7$ observations where prediction-error curiosity is lured by noisy distractors to $1\%$ (E8).
 
-![The horizon $\times$ resolution staircase on a controlled spectrum (E2). The measured certified horizon per channel as the demanded resolution $\epsilon$ sharpens, recovering $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$ (slope $1.3$–$1.6$): chaotic channels are certified to a few steps, slow/invariant channels to dozens.](figures/step52_horizon_resolution.png)
-
-**(E3) Approximate symmetry validates Proposition 6.** Breaking the world's symmetry by $\epsilon_{\text{world}}$, the
-certificate degrades *gracefully and linearly* in $\epsilon_{\text{world}}$ (correlation $0.88$–$0.98$ across seeds)
-up to a measured threshold $\epsilon_{\text{world}}\approx0.01$–$0.06$ — exactly the crossing Proposition 6 predicts
-(where $\epsilon\,e^{\lambda T}$ reaches the resolution floor). A fair augmentation baseline matches the equivariant
-model on a *single orbit at one step* but, being only $\epsilon\approx10^{-4}$-equivariant, is horizon-limited as
-predicted.
-
-![Approximate symmetry (E3). **Left:** on a compositional task, exact equivariance certifies machine-exactly while augmentation drives a non-equivariant model only to an $\sim\!10^{-4}$ approximation floor. **Right:** breaking the world's symmetry by $\epsilon_{\rm world}$ degrades the certificate gracefully and *linearly* (the slope Proposition 6 predicts) up to a measured threshold.](figures/step53_approximate_symmetry.png)
-
-**(E4) Structure vs. scale.** The equivariant model is orbit-flat (ratio $1.1$–$1.2$); an $88{\times}$-scaled
-non-equivariant model buys in-distribution interpolation ($31$–$166{\times}$ better in-wedge, *beating* the equivariant
-model there) but its out-of-wedge error stays $10$–$155{\times}$ above the equivariant floor. Scale buys interpolation;
-it never buys the certificate (Lemma 2).
-
-![Structure versus scale (E4). The equivariant model is orbit-flat (a certificate); an $88{\times}$-scaled non-equivariant model buys *in-distribution* interpolation (it beats the equivariant model inside the training wedge) but its error climbs $10$–$155{\times}$ above the equivariant floor *out* of the wedge — scale buys interpolation, not the certificate.](figures/step51_structure_vs_scale.png)
-
-**(E5) The certificate on real contact dynamics.** On PushT — a pymunk physics engine whose square arena makes
-$\mathrm{SO}(2)$ scene rotation an exact dynamical symmetry — a *learned* $\mathrm{SO}(2)$-equivariant world model has
-$10$-step rollout error **exactly flat over the orbit** (ratio $1.00$, equivariance residual $\sim10^{-7}$) and is
-competitive in-distribution ($0.13$–$0.15$ vs. the best baseline $0.14$–$0.19$); **no non-equivariant baseline across a
-$160{\times}$ parameter sweep ($1.7\mathrm{k}\to272\mathrm{k}$) reaches the equivariant floor out of distribution.** We
-are careful about the *size* of that gap: per baseline it is $\sim3.9{\times}$ at the *smallest* model and
-$2.1$–$2.6{\times}$ at the *largest*, i.e. it does **not** grow with scale — the honest control is the strong-baseline
-$\sim2\times$. The *force* of E5 is the exactness of the flatness (ratio $1.000$ vs. the baselines' $2$–$3\times$ drift)
-and the a-priori certificate, not the OOD-error magnitude (which on one $\mathrm{SO}(2)$ task is modest); the "scale
-cannot buy it" claim is carried by Lemma 2 / §3.3, not by E5's gap. The dynamics were not authored by us. (Honest gate
-note: the run's load-bearing *flat* and *floor* sub-gates pass on all 3 seeds; the auxiliary "MLP error climbs with
-horizon faster than equivariant" sub-gate is met on 1/3 seeds and reported `INCONCLUSIVE` on the others.)
-
-![The certificate on real contact dynamics (E5). On PushT (a physics engine we did not author), a *learned* $\mathrm{SO}(2)$-equivariant world model's multi-step rollout error is flat over the orbit of scene orientations to the floating-point floor, while a $160{\times}$ parameter sweep of non-equivariant baselines never reaches the equivariant floor out of distribution.](figures/step59_pusht_certificate.png)
-
-**(E6) The certificate is not $\mathrm{SO}(2)$-specific, and transfers to pixels at no accuracy cost.** It lifts to
-non-abelian $\mathrm{SO}(3)$ on 3D point clouds (learned equivariant rollout exactly flat, ratio $1.000$, with a
-$7.4{\times}$-*smaller* model than the baseline). On raw rendered pixels (PushT, exact $C_4$), **frame averaging** [@puny2022frame] —
-a plain CNN/MLP made exactly $C_4$-equivariant by a Reynolds average over grid rotations — keeps the exact orbit-flat
-certificate (ratio $1.000$) while being **accuracy-neutral**: it matches or beats an unconstrained CNN on a
-collapse-robust metric (fraction-of-variance-unexplained ratio $0.68$–$1.07$, mean $0.84$, 3 seeds), with a healthier
-latent and a horizon-stable rollout where the steerable baseline diverges. The prior costs nothing *relative to* the
-unconstrained CNN — though both remain limited in absolute terms (neither beats predict-the-mean at this scale; §6).
-
-![The certificate on raw pixels at no accuracy cost (E6). On rendered PushT frames (exact $C_4$), frame averaging makes a plain CNN/MLP exactly $C_4$-equivariant: the latent rollout is flat over the orbit (left, the certificate), it matches or beats an unconstrained CNN on a collapse-robust accuracy metric (centre), and its rollout error stays bounded over horizon while the steerable baseline diverges (right, log scale).](figures/step64_frame_averaged_pixel.png)
-
-**(E7) The certificate becomes task competence.** Run through a $G$-equivariant planner (A5), the prediction
-certificate becomes an *orbit-invariant control* certificate: closed-loop pose error is flat over the orbit to the
-floating-point floor (ratio $1.000$, 3 seeds) while a $4.3{\times}$-larger non-equivariant controller degrades out of
-the training wedge. The flatness is exact because (A5) makes the planner $G$-equivariant and the planning cost
-$G$-invariant, so the closed-loop trajectory inherits the encoder's orbit-equivariance — Theorem A under the
-closed-loop clause.
-
-**(E8) The certificate is an epistemic drive: certificate-driven active inference.** Because the certified region is
-*computable* (Algorithm 1), an agent can act to **expand** it — a provable alternative to curiosity's "reduce
-prediction error". On a $\mathbb{Z}_2^7$ compositional world whose action space mixes $7$ true generators with noisy
-high-error distractors, an explorer that maximizes certified-region growth certifies all $2^7{=}128$ compositions in
-exactly $7$ observations (the generator basis — each generator unlocks an exponential swath, Lemma 1), whereas an
-error-curiosity explorer is lured by the irreducible-noise distractors and certifies only $1\%$ at the same budget (3
-seeds; random $\sim2\%$). So "expand your certified region" is a **noise-immune** epistemic drive that beats
-prediction-error curiosity — the classic *noisy-TV* failure mode. *Honest scope:* against *raw-error* curiosity (a
-sophisticated information-gain agent would also avoid aleatoric noise); the certificate supplies that immunity **for
-free and provably**, no noise model — a toy demonstration of the principle, not a benchmark.
-
-![Certificate-driven active inference (E8). On a $\mathbb{Z}_2^7$ compositional world with noisy distractor actions, an explorer that maximizes the *certified region* certifies all $128$ compositions in exactly $7$ observations (the generator basis), while a prediction-error-curiosity explorer is lured by the high-error distractors and certifies almost nothing at the same budget.](figures/step69_certificate_driven_exploration.png)
-
-**(E9) Both axes on one system, and the certificate changes a decision.** E1–E8 carry the two axes on *separate*
-systems and never let the certificate *act*. On **controlled Lorenz-96** (add a control $u_i$; exact $\mathbb{Z}_N$)
-both hold at once: an equivariant planner (A5) gives orbit-flat control on *genuine* chaos ($\lambda_1{\approx}1.8$,
-residual $8\!\times\!10^{-16}$), and the certified $T_1(\epsilon)$ drives an **active re-observation** schedule on the
-efficient accuracy-vs-observation frontier *untuned* ($2/3$ seeds, asymptotic-$\epsilon$ regime; tight-$\epsilon$
-honestly optimistic, Prop. 8) — active perception, honestly **not** short-horizon control (the horizon outruns the
-receding-horizon controller). It lifts to a $\mathbb{Z}_N$ pendulum ring and a frame-averaged $\mathbb{Z}_2$ double
-pendulum — a **class property** across two groups and high/low dimension (`step79`–`step81`).
+**(E9) Both axes on one system; the certificate acts.** On **controlled Lorenz-96** (exact $\mathbb{Z}_N$, genuine chaos $\lambda_1{\approx}1.8$) an equivariant planner gives orbit-flat control (residual $8\times10^{-16}$) while the certified $T_1(\epsilon)$ drives an **active re-observation** schedule that sits on the accuracy-vs-observation frontier *untuned* ($2/3$ seeds, asymptotic-$\epsilon$ regime; tight-$\epsilon$ honestly optimistic per Prop. 8). The pattern lifts to a $\mathbb{Z}_N$ pendulum ring and a $\mathbb{Z}_2$ double pendulum — a class property across two groups (`step79`–`step81`; Appendix D).
 
 **(E10) The certified horizon, made literal — and its exact regime.** E2 *measures* that a learned model's Lyapunov
 exponent matches the truth; Theorem B′ *certifies* it. A computable cone/adapted-metric certificate reads a **sound,
@@ -380,7 +259,7 @@ diagnostic turns negative, and it **abstains** (routing to a statistical bootstr
 tight a-priori certified horizon from a learned model is achievable *exactly* in the uniformly-hyperbolic regime, and
 the certificate **self-diagnoses** which regime it is in (`step82`).
 
-**(E11) On a recognized chaotic control benchmark.** On Gymnasium Acrobot-v1 (underactuated swing-up, $\lambda_1{=}0.094$) a learned Z$_2$-equivariant world model's certified horizon *tracks* its measured rollout-divergence horizon (two-regime: ratio $0.42{\to}0.47{\to}0.93$ as $\epsilon$ coarsens) and *binds for planning* — task return has a sharp interior optimum in plan depth $H$, and planning past the predictability horizon (deeper than $\sim\!T_1$) fails. Capping plan depth at the certified $T_1$ *solves* the task (swing-up $67$–$100\%$) and bounds where planning helps, but the return-optimal depth is $\sim\!T_1/2$, so two pre-registered no-tuning rules (cap at $T_1$ of a fixed, and of a calibrated, $\epsilon$) are **INCONCLUSIVE** against the best-tuned blind horizon: the certificate gives a sound planning depth *within a constant factor of optimal*, not the optimum. (`step84`.)
+**(E11) On a recognized control benchmark — honest INCONCLUSIVE.** On Gymnasium Acrobot-v1 ($\lambda_1{=}0.094$) the certified horizon *tracks* the measured one (ratio $0.42\to0.93$ as $\epsilon$ coarsens) and *binds for planning*: return has a sharp interior optimum and planning past $\sim\!T_1$ fails outright. Capping depth at $T_1$ solves the task ($67$–$100\%$) and bounds useful planning, but the return-optimum sits at $\sim T_1/2$, so two pre-registered no-tuning rules are **INCONCLUSIVE** against the best-tuned blind depth: a sound depth within a constant factor of optimal, not the optimum (`step84`).
 
 **(E12) The certificate's trustworthiness changes a budgeted decision — a priori.** On $40$-D Lorenz-96 an agent schedules sparse re-observations of a chaotic forecast under a fixed sensing budget. Holding the forecaster fixed (the $\mathbb{Z}_N$-equivariant model; the two models are identically trained and forecast comparably — one-step relMSE $\sim10^{-5}$, empirical horizons of the same order) and varying *only* the certificate that times re-observation: the equivariant certificate yields $8$–$16\%$ aggregate violation at the knee budget vs. $61$–$65\%$ for the non-equivariant certificate, whose $\lambda_1$ is inflated $\sim3.4\times$ and which therefore over-observes and starves the budget (margins $+0.45/+0.50/+0.57$, $3/3$; **Proposition 9** makes the cost a law — a $c\times$-inflated certificate needs $c\times$ the budget, and the measured catch-up is $2.7$–$3.5\times$). Two controls scope the claim: a certificate-free adaptive scheduler matches only at $\sim3\times$ the budget (the certificate is an *a-priori* warm-start), and a *recalibrated* dense certificate closes the gap ($3/3$) but only by **spending a calibration set** — the equivariant certificate is correct from the Jacobian with **zero rollout data**. Standard UQ baselines complete the picture: a $4$-model ensemble and a $10$-rollout conformal quantile calibrate tighter ($|\log$ ratio$|$ $0.17/0.11$ vs $0.27$) by spending training or truth access the certificate does not — no method dominates the accuracy–cost Pareto; the certificate is its only a-priori point (`step90`). The contrast **replicates on the driven–damped pendulum ring** ($\mathbb{Z}_N$, $N{=}24$: dense $\lambda_1$ inflated $\sim2\times$; equivariant certificate wins under budget on $2/3$ seeds) — two symmetry groups, two physical systems, one mechanism; the within-method framing cancels E11's $\sim2\times$ conservatism. (A budget *allocation* across a chaoticity ensemble did *not* win — the learned spectrum is too inaccurate at low forcing to beat a flat allocation; reported honestly.) (`step85`, `step85b`, `step85c`, `step88`.)
 
@@ -477,3 +356,84 @@ lets an agent budget its sensing on a high-dimensional chaotic forecast where an
 ---
 
 *Reproducibility and scope.* Full proofs are in **Appendix B**, a reproducibility appendix (anonymized code, experiment-to-code map, seed/gate discipline) in **Appendix C**. This is a focused extraction of a broader program; the full suite is deferred to an extended version.
+
+
+---
+
+## Appendix D — supporting experiments (full write-ups)
+
+**(E1) The configuration axis is exponential.** On a $\mathbb{Z}_2^6$ compositional task (six independent
+$180^\circ$ flips), training the equivariance checks on the **6 generators** certifies the model over all **$2^6=64$**
+compositions to $\sim10^{-33}$ error, while a non-equivariant baseline degrades from $1.6\!\times\!10^{-5}$ on the
+generators to $0.59$ on held-out compositions. Six checks, sixty-four guarantees (Lemma 1).
+
+**(E3) Approximate symmetry validates Proposition 6.** Breaking the world's symmetry by $\epsilon_{\text{world}}$, the
+certificate degrades *gracefully and linearly* in $\epsilon_{\text{world}}$ (correlation $0.88$–$0.98$ across seeds)
+up to a measured threshold $\epsilon_{\text{world}}\approx0.01$–$0.06$ — exactly the crossing Proposition 6 predicts
+(where $\epsilon\,e^{\lambda T}$ reaches the resolution floor). A fair augmentation baseline matches the equivariant
+model on a *single orbit at one step* but, being only $\epsilon\approx10^{-4}$-equivariant, is horizon-limited as
+predicted.
+
+![Approximate symmetry (E3). **Left:** on a compositional task, exact equivariance certifies machine-exactly while augmentation drives a non-equivariant model only to an $\sim\!10^{-4}$ approximation floor. **Right:** breaking the world's symmetry by $\epsilon_{\rm world}$ degrades the certificate gracefully and *linearly* (the slope Proposition 6 predicts) up to a measured threshold.](figures/step53_approximate_symmetry.png)
+
+**(E4) Structure vs. scale.** The equivariant model is orbit-flat (ratio $1.1$–$1.2$); an $88{\times}$-scaled
+non-equivariant model buys in-distribution interpolation ($31$–$166{\times}$ better in-wedge, *beating* the equivariant
+model there) but its out-of-wedge error stays $10$–$155{\times}$ above the equivariant floor. Scale buys interpolation;
+it never buys the certificate (Lemma 2).
+
+![Structure versus scale (E4). The equivariant model is orbit-flat (a certificate); an $88{\times}$-scaled non-equivariant model buys *in-distribution* interpolation (it beats the equivariant model inside the training wedge) but its error climbs $10$–$155{\times}$ above the equivariant floor *out* of the wedge — scale buys interpolation, not the certificate.](figures/step51_structure_vs_scale.png)
+
+**(E5) The certificate on real contact dynamics.** On PushT — a pymunk physics engine whose square arena makes
+$\mathrm{SO}(2)$ scene rotation an exact dynamical symmetry — a *learned* $\mathrm{SO}(2)$-equivariant world model has
+$10$-step rollout error **exactly flat over the orbit** (ratio $1.00$, equivariance residual $\sim10^{-7}$) and is
+competitive in-distribution ($0.13$–$0.15$ vs. the best baseline $0.14$–$0.19$); **no non-equivariant baseline across a
+$160{\times}$ parameter sweep ($1.7\mathrm{k}\to272\mathrm{k}$) reaches the equivariant floor out of distribution.** We
+are careful about the *size* of that gap: per baseline it is $\sim3.9{\times}$ at the *smallest* model and
+$2.1$–$2.6{\times}$ at the *largest*, i.e. it does **not** grow with scale — the honest control is the strong-baseline
+$\sim2\times$. The *force* of E5 is the exactness of the flatness (ratio $1.000$ vs. the baselines' $2$–$3\times$ drift)
+and the a-priori certificate, not the OOD-error magnitude (which on one $\mathrm{SO}(2)$ task is modest); the "scale
+cannot buy it" claim is carried by Lemma 2 / §3.3, not by E5's gap. The dynamics were not authored by us. (Honest gate
+note: the run's load-bearing *flat* and *floor* sub-gates pass on all 3 seeds; the auxiliary "MLP error climbs with
+horizon faster than equivariant" sub-gate is met on 1/3 seeds and reported `INCONCLUSIVE` on the others.)
+
+![The certificate on real contact dynamics (E5). On PushT (a physics engine we did not author), a *learned* $\mathrm{SO}(2)$-equivariant world model's multi-step rollout error is flat over the orbit of scene orientations to the floating-point floor, while a $160{\times}$ parameter sweep of non-equivariant baselines never reaches the equivariant floor out of distribution.](figures/step59_pusht_certificate.png)
+
+**(E6) The certificate is not $\mathrm{SO}(2)$-specific, and transfers to pixels at no accuracy cost.** It lifts to
+non-abelian $\mathrm{SO}(3)$ on 3D point clouds (learned equivariant rollout exactly flat, ratio $1.000$, with a
+$7.4{\times}$-*smaller* model than the baseline). On raw rendered pixels (PushT, exact $C_4$), **frame averaging** [@puny2022frame] —
+a plain CNN/MLP made exactly $C_4$-equivariant by a Reynolds average over grid rotations — keeps the exact orbit-flat
+certificate (ratio $1.000$) while being **accuracy-neutral**: it matches or beats an unconstrained CNN on a
+collapse-robust metric (fraction-of-variance-unexplained ratio $0.68$–$1.07$, mean $0.84$, 3 seeds), with a healthier
+latent and a horizon-stable rollout where the steerable baseline diverges. The prior costs nothing *relative to* the
+unconstrained CNN — though both remain limited in absolute terms (neither beats predict-the-mean at this scale; §6).
+
+![The certificate on raw pixels at no accuracy cost (E6). On rendered PushT frames (exact $C_4$), frame averaging makes a plain CNN/MLP exactly $C_4$-equivariant: the latent rollout is flat over the orbit (left, the certificate), it matches or beats an unconstrained CNN on a collapse-robust accuracy metric (centre), and its rollout error stays bounded over horizon while the steerable baseline diverges (right, log scale).](figures/step64_frame_averaged_pixel.png)
+
+**(E7) The certificate becomes task competence.** Run through a $G$-equivariant planner (A5), the prediction
+certificate becomes an *orbit-invariant control* certificate: closed-loop pose error is flat over the orbit to the
+floating-point floor (ratio $1.000$, 3 seeds) while a $4.3{\times}$-larger non-equivariant controller degrades out of
+the training wedge. The flatness is exact because (A5) makes the planner $G$-equivariant and the planning cost
+$G$-invariant, so the closed-loop trajectory inherits the encoder's orbit-equivariance — Theorem A under the
+closed-loop clause.
+
+**(E8) The certificate is an epistemic drive: certificate-driven active inference.** Because the certified region is
+*computable* (Algorithm 1), an agent can act to **expand** it — a provable alternative to curiosity's "reduce
+prediction error". On a $\mathbb{Z}_2^7$ compositional world whose action space mixes $7$ true generators with noisy
+high-error distractors, an explorer that maximizes certified-region growth certifies all $2^7{=}128$ compositions in
+exactly $7$ observations (the generator basis — each generator unlocks an exponential swath, Lemma 1), whereas an
+error-curiosity explorer is lured by the irreducible-noise distractors and certifies only $1\%$ at the same budget (3
+seeds; random $\sim2\%$). So "expand your certified region" is a **noise-immune** epistemic drive that beats
+prediction-error curiosity — the classic *noisy-TV* failure mode. *Honest scope:* against *raw-error* curiosity (a
+sophisticated information-gain agent would also avoid aleatoric noise); the certificate supplies that immunity **for
+free and provably**, no noise model — a toy demonstration of the principle, not a benchmark.
+
+![Certificate-driven active inference (E8). On a $\mathbb{Z}_2^7$ compositional world with noisy distractor actions, an explorer that maximizes the *certified region* certifies all $128$ compositions in exactly $7$ observations (the generator basis), while a prediction-error-curiosity explorer is lured by the high-error distractors and certifies almost nothing at the same budget.](figures/step69_certificate_driven_exploration.png)
+
+
+**(E2 supplementary figures.)**
+
+![The horizon staircase on a learned model of real chaotic dynamics (E2, Lorenz). **Left:** the learned one-step model's perturbation growth tracks the true Lorenz integrator over $550$ steps. **Right:** the certified horizon $T(\epsilon_0)$ on the *learned* model is linear in $\log(1/\epsilon_0)$ ($R^2{=}0.995$), and the measured slope sits on the prediction $1/(\lambda_1 dt)$ from the textbook Lorenz exponent — Theorem B's law lifted to a learned model of a genuinely chaotic system (Proposition 7(a)).](figures/step70_lorenz_horizon.png)
+
+![High-dimensional spectral horizon (E2, $40$-D Lorenz-96). **Left:** recovered vs. true Lyapunov exponent for all $40$ channels — the $\mathbb{Z}_N$-equivariant cyclic-conv (blue) lies on $y=x$ ($R^2{=}0.98$); the dense MLP (red ×) is scattered far off ($R^2{=}-1.1$). **Right:** per-channel certified horizon $\log(1/\epsilon)/\lambda_j$: the equivariant model tracks the truth across the spectrum. Structure recovers the high-dimensional spectral horizon a dense model of equal data cannot.](figures/step74_lorenz96_spectrum.png)
+
+![The horizon $\times$ resolution staircase on a controlled spectrum (E2). The measured certified horizon per channel as the demanded resolution $\epsilon$ sharpens, recovering $T_j(\epsilon)\sim\log(1/\epsilon)/\lambda_j$ (slope $1.3$–$1.6$): chaotic channels are certified to a few steps, slow/invariant channels to dozens.](figures/step52_horizon_resolution.png)
