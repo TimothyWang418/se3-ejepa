@@ -887,3 +887,17 @@ discrete Z_N; must-cite + distinguished). **Geng et al. 2512.08991** (conformal 
 the statistical/rollout-hungry counterpoint. @lillemark2026flowm updated to ICML 2026 (+FERNN antecedent). ~10
 SHOULD-CITEs folded into one dense "Concurrent and recent work" paragraph in ICLR §5 + paper2 §6. LeWM (public
 checkpoints, Mar 2026) noted in the research-line snapshot as the next free audit target for step89.
+
+## [2026-06-10] Overnight autonomous block — anonymized artifact + vault accounting + final PDF + step91 seed (LeWM recon: GO)
+
+User asleep ("你只管做吧"). Done: **(1) anonymized reproducibility artifact** — `scripts/make_anon_artifact.py`
+(scrub + zero-leak self-check; 333 files, 1.9 MB; ANON_README with the full repro matrix; one self-bite fixed: the
+builder's own scrub regexes tripped the leak check — excluded from the zip). **(2) vault accounting** — wiki Paper2
+source page updated 06-04→06-10 (Exp 22/23/24, compression, lit sweep, artifact). **(3) final PDF** — concurrent-work
+paragraph built in on the box; submission-ready. **(4) step91 seed spec** — LeWM audit recon (sub-agent, verified):
+checkpoints MIT on HF (`quentinll/lewm-*`, 72.3 MB state dicts + Hydra configs), latent loop deterministic+
+differentiable in eval (ViT-tiny CLS → 192-d; 6-layer Predictor w/ AdaLN+causal SDPA; BN-MLPs; 3-frame window ⇒
+576-d delay-embedded QR state), PushT env pip-clean on macOS; **GO-with-caveats** (no policy prior → fixed-action
+loop scope; companion-band artifacts expected; strict-load + one-step sanity pre-registered as G0). Deliberately NOT
+built tonight — transformer-replica fidelity deserves a fresh session, per the recon→spec→build cadence.
+`docs/specs/2026-06-10-step91-lewm-audit-seed.md`.
