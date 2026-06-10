@@ -28,7 +28,7 @@ where the non-equivariant model's $\sim3\times$-inflated certificate over-observ
 $61$–$65\%$ forecast-violation, $3/3$ seeds; replicated on a second $\mathbb{Z}_N$ system; a $c\times$-inflated
 certificate provably needs $c\times$ the budget — Proposition 9). A dense certificate closes the gap only by *spending a
 calibration set* — structure buys the trustworthy certificate with **zero rollout data** (a full-spectrum allocation
-variant, reported honestly, does **not** win). The
+variant, reported honestly, does **not** win). Across the official $1$M–$317$M multitask scale ladder, calibration does **not** improve with parameters — scale buys interpolation, not a calibrated horizon. The
 result is a single **runnable** criterion (Algorithm 1) for *what* an equivariant world model can certifiably predict,
 and a structural reading of *why* celestial mechanics is forecastable for millennia while weather is not.
 
