@@ -53,8 +53,8 @@ timescale: $\hat z_{sg,m+1}=G(z_{sg,\le m})$ — a latent autonomous flow (FF-JE
 audit pipeline reads exactly this kind of loop). Group $g$ acts on observations, $\rho(g)$ orthogonal
 on latents; equivariance $E(g\cdot x)=\rho(g)E(x)$, $f(\rho(g)z,\sigma(g)a)=\rho(g)f(z,a)$.
 
-**Certified spacing.** With measured one-step bias $\hat\delta$ and leading exponent $\hat\lambda_1$
-(both via `wm_audit` gap mode, CIs by Prop 10):
+**Certified spacing.** With measured one-step bias $\hat\delta$, leading exponent $\hat\lambda_1$,
+and equivariance residual $\hat\epsilon_{\max}$ (all three via `wm_audit` gap mode, CIs by Prop 10):
 
 $$
 \widehat{\mathrm{Err}}(H)\;=\;\hat\delta\sum_{t=0}^{H-1}e^{\hat\lambda_1 t},
@@ -66,7 +66,10 @@ Two regimes, both in scope *by design*: **neutral** ($\hat\lambda_1\approx 0$, q
 step91 measured exactly this) where the formula degenerates honestly to the linear budget
 $H\hat\delta$ and the certificate's job is calibrating $\hat\delta$; **expansive**
 ($\hat\lambda_1>0$, the dynamics knob of §3.2) where the paper2 exponential machinery wakes up and
-$H^*(\epsilon)\sim\log(1+\epsilon\hat\lambda_1/\hat\delta)/\hat\lambda_1$ bites.
+$H^*(\epsilon)\sim\log(1+\epsilon\hat\lambda_1/\hat\delta)/\hat\lambda_1$ bites. For
+**group-transported** claims (wedge transfer, P4.B) the certified curve additionally carries Thm B's
+$m\,\hat\epsilon_{\max}$ term — the resampling floor enters the certificate exactly here, and is
+reported, never absorbed.
 
 **Why equivariance is load-bearing and not decoration:** (i) paper2 E12 — equivariant models recover
 the spectrum *zero-data prior-correct*; dense models need a calibration set; (ii) Thm A orbit
@@ -80,11 +83,22 @@ globally valid function."
 
 ### C1 — Certificate prior-correctness on the pixel substrate (E12 lift). *Confidence 0.8.*
 
-On pixel-PushT latents, the equivariant JEPA's spectral certificate calibrates **with zero
-calibration data** while the plain JEPA needs a calibration set.
-**Gate:** eq zero-calibration ratio $\in[0.5,2]$ on $\ge 2/3$ seeds; plain outside the band, or inside
-only after calibration. **Kill condition:** plain also calibrates zero-shot $\Rightarrow$ C1 reported
-as a no-difference cell.
+Posed **per regime** — posing it only on PushT-static would risk the claim dying for regime reasons
+(step91's LeWM audit correctly ABSTAINED there: $\lambda_1\approx0$ makes the spectrum trivial), not
+truth reasons.
+
+- **C1a (expansive regime — the E12 lift proper).** On PushT-dyn($\kappa{>}0$): the equivariant
+  JEPA's spectral certificate calibrates **with zero calibration data**; the plain JEPA needs a
+  calibration set. **Gate:** eq zero-calibration ratio $\in[0.5,2]$ on $\ge2/3$ seeds; plain outside,
+  or inside only after calibration.
+- **C1b (neutral regime — orbit transfer of calibration).** On PushT-static the certificate honestly
+  reduces to the linear $\hat\delta$ budget; the zero-shot content is **where $\hat\delta$ is valid**:
+  eq's in-wedge $\hat\delta$ transfers across the orbit (Thm A), plain's under-covers out-of-wedge.
+  **Gate:** eq out-of-wedge/in-wedge $\hat\delta$ ratio $\in[0.5,2]$ (expected $\approx1$ up to the
+  resampling floor) on $\ge2/3$ seeds; plain outside.
+
+**Kill condition (either sub-claim):** plain matches eq zero-shot $\Rightarrow$ that cell reported as
+no-difference.
 
 ### C2 — Rotation sample-efficiency, H1-PushT (PoR protocol, *adapted*). *Confidence 0.6 headline / 0.95 curve.*
 
@@ -97,13 +111,25 @@ readouts**:
 - **effect probe:** $(z_t,z_{t+1})\to\Delta\theta$ — the faithful PushT translation of PoR's
   "action-relevant rotation structure" (closes the "static pose probing is too easy" hole).
 
-**Registered readout = the full curves** $R^2$ vs demo fraction $\{1\%,10\%,100\%\}$, per dim, both
-probes. **Headline gate (both co-primary probes must pass):**
-$R^2_\theta(\text{eq},1\%)\;\ge\;R^2_\theta(\text{plain},100\%)$ **and** the same inequality for
-$\Delta\theta$. Any curve shape is a result — including "plain learns it but $30\times$ slower," which is the
-sample-efficiency story in raw numbers. PoR-original H1 (7-DoF action rotation dims) runs natively on
-the 3-D co-anchor (E-P4.5). *Citation discipline: label as "adapted: state-pose + effect probe," never
-claim protocol replication.*
+**Fraction semantics (pinned):** fractions are **episode-level** and apply to the **encoder-training
+demo set** $\{1\%,5\%,10\%,30\%,100\%\}\approx\{2,10,20,60,\sim200\}$ episodes — the thesis-relevant
+quantity is representation sample-efficiency. The probe's own training budget is **fixed and
+identical across all cells** (held-out episodes), so probe sample-efficiency is never the thing
+measured.
+
+**Registered readout = the full curves** $R^2$ vs encoder-demo fraction, per dim, both probes.
+**Headline gate, two pre-registered tiers (both co-primary probes must pass within a tier):**
+
+- **H1-strong:** $R^2_\theta(\text{eq},1\%)\ \ge\ R^2_\theta(\text{plain},100\%)$ and same for
+  $\Delta\theta$;
+- **H1-primary:** the same inequalities at $5\%$ ($\approx10$ episodes).
+
+The paper reports whichever tier survives (strong $\Rightarrow$ primary); curves reported regardless.
+Rationale: at $1\%$ ($=2$ episodes) *any* pixel model may degenerate — the strong tier must not be
+the claim's single point of failure. Any curve shape is a result — including "plain learns it but
+$30\times$ slower," which is the sample-efficiency story in raw numbers. PoR-original H1 (7-DoF
+action rotation dims) runs natively on the 3-D co-anchor (E-P4.5). *Citation discipline: label as
+"adapted: state-pose + effect probe," never claim protocol replication.*
 
 ### C3 — Certified subgoal spacing predicts the feasibility boundary (the spearhead). *Confidence 0.75.*
 
@@ -181,6 +207,11 @@ pair.
    **W1 validation gate (before betting the spine on it):** $\hat\lambda_1(\kappa)$ monotone and
    resolvable (CI-separated) across the $\kappa$ grid. **Fallback:** two-point regime contrast
    (static vs one dynamic setting) still stands.
+   **Demo regeneration (the knob's hidden chain-cost):** changing the physics invalidates the static
+   human demos — each $\kappa$ needs its own demonstration set, generated by a **ground-truth-state
+   MPC/scripted controller** (the repo's state-based planner line). W1 recon verifies this per-$\kappa$
+   generation works. **Fairness rule (pre-registered):** all hyperparameters tuned at $\kappa{=}0$
+   only, frozen across the sweep; $\kappa$ grid kept small (3–4 points + static).
 3. **3-D co-anchor** (promoted from stretch; descope rule below): ONE task from
    {ManiSkill, LIBERO-spatial} (W1 recon decides), point-cloud or multi-view observations, small
    SE(3)-equivariant encoder (vector neurons or e3nn-lite; W1 recon decides). Runs PoR-original H1
@@ -199,7 +230,7 @@ the exact count/source). Three variants: full; fraction sweep $\{1\%,10\%,100\%\
 | ID | Feeds | Design (gates in §2) |
 |---|---|---|
 | **E-P4.1** | C2 | Probe rig: R-eq vs R-plain ladder $\times$ demo fractions; frozen encoders; state-pose + effect probes; per-dim curves; 3 seeds. 3-D version (H1-original) when E-P4.5 bases land. |
-| **E-P4.2** | C1 | `wm_audit` gap mode on all three bases along the demo distribution; predicted vs measured divergence horizon; zero-calibration (eq) vs calibration-needed (plain). |
+| **E-P4.2** | C1 | `wm_audit` gap mode on all three bases along the demo distribution; zero-calibration (eq) vs calibration-needed (plain). **C1b** wedge-transfer cells on PushT-static (W2–4); **C1a** spectral cells on PushT-dyn($\kappa{>}0$), riding the E-P4.3 $\kappa$ lane (W5–7). |
 | **E-P4.3** | C3 | **The spine.** Per base: train $G$; measure $\mathrm{Err}(H)$ growth; certificate curve + Prop 10 CIs; $H^*(\epsilon)$ vs $H_{\max}(\epsilon)$ over the $\epsilon$ grid **and over $\kappa$**; optimizer-limb isolation w/ ground-truth subgoals (crossover location); wedge transfer eq-vs-plain. |
 | **E-P4.4** | C4 | Closed-loop factorial: cells per §3.1 priority $\times$ {in-dist, OOD-orientation} $\times$ demo budget $\{100\%,10\%\}$; success @ $t\in\{25,75,150\}$; 3 seeds $\times$ ~50 episodes/cell. |
 | **E-P4.5** | C2/C3 | 3-D co-anchor per §3.2(3): SE(3) bases, H1-original probes, C3-3D, minimal closed-loop pair. Descope checkpoint 08-05. |
@@ -207,7 +238,8 @@ the exact count/source). Three variants: full; fraction sweep $\{1\%,10\%,100\%\
 ### 3.5 Instruments to build (by effort, descending)
 
 1. **`wm_audit` gap mode** (the big one): extend the free-running Benettin audit to
-   action-conditioned, demo-distribution-windowed estimation of $(\hat\delta,\hat\lambda_1)$.
+   action-conditioned, demo-distribution-windowed estimation of
+   $(\hat\delta,\hat\lambda_1,\hat\epsilon_{\max})$.
 2. Pixel-PushT pipeline (render + demo loading; stable-worldmodel base) + PushT-dyn($\kappa$) variant.
 3. Plain-CNN parameter-matched ladder (trainer exists); subgoal predictor $G$ trainer (per base).
 4. Subgoal-conditioned **short-window CEM** (the E-P4.3 instrument — needed W5, before the full
@@ -233,7 +265,7 @@ the exact count/source). Three variants: full; fraction sweep $\{1\%,10\%,100\%\
 
 | Weeks | Milestones |
 |---|---|
-| **W1** (06/10–17) | Proposal freeze. Three-way recon: (a) pixel-PushT pipeline + exact demo set; (b) $\kappa$-knob design + **knob validation gate**; (c) 3-D env + encoder selection. First build spec. |
+| **W1** (06/10–17) | Proposal freeze. Three-way recon: (a) pixel-PushT pipeline + exact demo set; (b) $\kappa$-knob design + **knob validation gate** + per-$\kappa$ GT-state demo generation; (c) 3-D env + encoder selection. First build spec. |
 | **W2–4** (–07/08) | PushT bases trained (eq + plain ladder); probe rig + E-P4.1; `wm_audit` gap mode; E-P4.2. PushT-dyn built. **3-D track starts in parallel** (the GPU lane). |
 | **W5–7** (–07/29) | $G$ training; short-window subgoal-conditioned CEM (E-P4.3 instrument); **E-P4.3 spine incl. $\kappa$ sweep**; P4.A/B written up; 3-D bases + H1-original probes. |
 | **W8–10** (–08/19) | Hierarchical planner; E-P4.4 factorial; 3-D minimal cells; **08/05 = 3-D descope checkpoint**; multi-seed consolidation. |
@@ -246,8 +278,10 @@ the exact count/source). Three variants: full; fraction sweep $\{1\%,10\%,100\%\
 
 1. **3-D infrastructure sinkhole** (the biggest): 08-05 descope rule — automatic, no agonizing, no
    gate-loosening.
-2. **$\kappa$-knob fails to dial a clean spectrum** (contact dynamics are noisy): W1 validation gate
-   *before* the spine bets on it; fallback = two-point regime contrast.
+2. **$\kappa$-knob fails to dial a clean spectrum, or per-$\kappa$ demo generation fails** (contact
+   dynamics are noisy; demos must be regenerated per physics setting): W1 validation gate *before*
+   the spine bets on it — covering both the spectrum dial and GT-state demo generation; fallback =
+   two-point regime contrast.
 3. **Resampling floor** ($C_N$ off-grid $\sim10^{-1}$, documented in-repo): large $N$ ($C_{16}$),
    report the floor honestly; certificates land in Thm B's approximate regime with $\epsilon_{\max}$
    measured (on-thesis, not a bug).
