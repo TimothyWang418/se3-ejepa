@@ -1383,6 +1383,16 @@ recovery, remain ours.
   escape rate was re-observation-interval-invariant — the failures were control-quality-limited (a modest gradient-MPC
   planner), not estimate-staleness-limited — so the certificate's *necessity* for safety is not established here. The
   certificate buys *cheaper* trustworthy action under budget; whether it buys *safer* action awaits a stronger controller.
+
+- **Where the certificate's decision value concentrates — and where it dilutes.** We closed the loop on the real
+  TD-MPC2 agent (faithful MPPI replica; cadence-1 anchor return $994$ vs the official $977$–$983$ band): replanning
+  every $k$ steps with the certified prior loop executed in between, return degrades from $k{=}2$ — well inside
+  $T_1(0.2)\approx5.4$–$6.4$. The control-relevant resolution is finer ($\epsilon\approx0.05$, where the *measured*
+  divergence of $1$–$2$ steps matches the return knee) but there the certificate sits in its known tight-$\epsilon$
+  optimistic regime (Proposition 8). Together with §5.19's return-INCONCLUSIVE, the honest scope law: the certificate's
+  decision value concentrates where the decided quantity IS the certified quantity (the latent's own staleness — §5.20's
+  re-observation win) and dilutes when a task-level map (return, gait quality) sits in between (`step93`).
+
 - **Pixels (Experiment 13, §5.11): structure is free; absolute accuracy is the open part.** The certificate transfers
   *exactly* to rendered pixels, and — via frame averaging — at **no accuracy cost** relative to an unconstrained CNN
   (matches-or-beats it on collapse-robust FVU, with a healthier latent and a horizon-stable rollout; §5.11). The honest

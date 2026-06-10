@@ -346,6 +346,16 @@ non-equivariant certified Koopman forecasts [@conradie2026trustkoopman] and equi
   re-observation contrast isolating the certificate's *faithfulness*. A separate test of the certified horizon as a
   *catastrophe-avoidance* cadence was **inconclusive** at our scale (escape rate was re-observation-interval-invariant —
   control-quality-limited, not estimate-staleness-limited); the certificate's *necessity* for safety is open.
+
+- **Where the certificate's decision value concentrates — and where it dilutes.** We closed the loop on the real
+  TD-MPC2 agent (faithful MPPI replica; cadence-1 anchor return $994$ vs the official $977$–$983$ band): replanning
+  every $k$ steps with the certified prior loop executed in between, return degrades from $k{=}2$ — well inside
+  $T_1(0.2)\approx5.4$–$6.4$. The control-relevant resolution is finer ($\epsilon\approx0.05$, where the *measured*
+  divergence of $1$–$2$ steps matches the return knee) but there the certificate sits in its known tight-$\epsilon$
+  optimistic regime (Proposition 8). Together with E11's return-INCONCLUSIVE, the honest scope law: the certificate's
+  decision value concentrates where the decided quantity IS the certified quantity (the latent's own staleness — E12's
+  re-observation win) and dilutes when a task-level map (return, gait quality) sits in between (`step93`).
+
 - **Scale and modality.** All experiments are $1$–$2$-GPU. The certificate's exact flatness transfers across modalities
   (state, $\mathrm{SO}(3)$ point clouds, pixels), but absolute multi-step accuracy on raw pixels is poor for *every*
   architecture at this scale (the anti-collapse JEPA latent, not equivariance); a strong few-step pixel predictor is an

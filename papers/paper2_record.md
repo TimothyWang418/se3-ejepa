@@ -931,3 +931,18 @@ instead, trust is a property of the loop's dynamics, not parameter count. Folded
 + abstract hook ("scale buys interpolation, not a calibrated horizon") + figure. Also tonight: ring extended to 5
 seeds (gap appears exactly where dense lambda1 inflates, 2/5 — §5.20/E12 sharpened to the conditional-causal claim);
 unification paragraph (②) in both papers. `step92`, ~50 min total, zero training, zero GPU.
+
+## [2026-06-10] step93 (B, the closed-loop gamble) — honest INCONCLUSIVE + the scope law it bought; D (wm-audit tool) + C (Prop 10) landed
+
+User: "你先开始 BCD". **D done**: `scripts/wm_audit.py` — one-command certification of any supported pretrained WM +
+`audit_map()` API; JVP-vs-full-QR cross-check (walker T1@0.2 5.6 vs 5.4–6.4). **C done**: Proposition 10
+(finite-sample certified-horizon interval; Bernstein-for-mixing on bounded log-stretches; $n\asymp\log(1/\delta)/
+\varepsilon^2$; bootstrap = the consistent $\sigma_\infty$ estimator; assumptions inherited from Prop 7, stated).
+**B executed end-to-end**: recon (reward head validated vs real env corr 0.993; Q vmap-blob mapping verified) →
+faithful MPPI replica → **ANCHOR PASSED (cadence-1 = 993.5/993.6/996.3 vs official 977–983)** → cadence sweep
+{1..24}×3 episodes. **Pre-registered prediction FAILED honestly**: return knee at k≈2 (90% of anchor), NOT at
+$T_1(0.2)\approx6$; control is sensitive at ε≈0.05 where the MEASURED horizon (1–2 steps) matches the knee but the
+certificate is in its known tight-ε optimistic regime. Third decision-level INCONCLUSIVE (after step84-ii, step86)
+→ unified into a **scope law** folded into both papers' Limitations: decision value concentrates where the decided
+quantity IS the certified quantity (E12), dilutes through a task-level map (E11, step93). The MPPI-replica anchor is
+itself a reusable methodological asset. `step93`, ~40 min compute. No gate loosened; the ~0.5 gamble priced correctly.
