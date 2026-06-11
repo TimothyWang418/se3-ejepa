@@ -42,6 +42,7 @@ def stage() -> None:
     tex = (HERE / "main.tex").read_text(encoding="utf-8")
     tex = tex.replace(r"\author{Anonymous authors \\ Paper under double-blind review}",
                       "\\iclrfinalcopy\n\\author{" + AUTHOR + "}")
+    tex = tex.replace("pdfauthor={Anonymous authors}", "pdfauthor={Hongbo Wang}")
     assert "Anonymous" not in tex, "anonymous block survived"
     n = tex.count("Anonymized code accompanies the submission")
     tex = tex.replace("Anonymized code accompanies the submission",
