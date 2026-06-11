@@ -89,7 +89,11 @@ def make_loop(pred, s0: torch.Tensor):
 
 def benettin_jvp_gpu(g, z0: torch.Tensor, k: int, n_steps: int, warmup: int, q_seed: int):
     from torch.func import jvp
-    from torch.nn.attention import SDPBackend, sdpa_kernel
+    # forward-AD through SDPA: the sdpa_kernel() context is NOT honored under functorch transforms (torch 2.5),
+    # so force the math backend via the GLOBAL dispatcher flags instead (efficient/flash lack forward-AD kernels).
+    torch.backends.cuda.enable_flash_sdp(False)
+    torch.backends.cuda.enable_mem_efficient_sdp(False)
+    torch.backends.cuda.enable_math_sdp(True)
     d = z0.numel()
     gen = torch.Generator(device="cpu").manual_seed(q_seed)
     Q = torch.linalg.qr(torch.randn(d, k, generator=gen).float())[0].cuda()
@@ -97,11 +101,10 @@ def benettin_jvp_gpu(g, z0: torch.Tensor, k: int, n_steps: int, warmup: int, q_s
     logs = []
     for t in range(n_steps + warmup):
         cols, z_next = [], None
-        with sdpa_kernel(SDPBackend.MATH):
-            for j in range(k):
-                out, jv = jvp(g, (z,), (Q[:, j].contiguous(),))
-                cols.append(jv)
-                z_next = out
+        for j in range(k):
+            out, jv = jvp(g, (z,), (Q[:, j].contiguous(),))
+            cols.append(jv)
+            z_next = out
         Z = torch.stack(cols, 1)
         Q, R = torch.linalg.qr(Z)
         diag = torch.abs(torch.diagonal(R)).clamp_min(1e-30)
@@ -147,7 +150,9 @@ def main() -> int:
         zp = pred(z0.view(1, TOKENS_PER_FRAME, 1408).cuda(), a_true, s0.view(1, 1, 7).cuda())[:, -TOKENS_PER_FRAME:]
         zp = F.layer_norm(zp, (zp.size(-1),)).reshape(-1).cpu()
     one_step = float((zp - z1.cpu()).norm() / z1.norm().clamp_min(1e-12))
-    print(f"[step98] one-step relative error on the real Franka pair: {one_step:.3f}", file=sys.stderr)
+    print(f"[step98] rel err to the npz GOAL frame: {one_step:.3f} (the pair is (current, goal) for the energy "
+          f"demo, NOT consecutive frames — consecutive-frame one-step bias is measured on DROID in step99)",
+          file=sys.stderr)
 
     g = make_loop(pred, s0)
     k = 4 if SMOKE else 6
@@ -173,7 +178,7 @@ def main() -> int:
                "measured side on real DROID frames (step99)")
     out = {"model": "vjepa2-ac-vit-giant (official hub ckpt, authors' code; fp32 predictor loop on CUDA)",
            "d_state": int(z0.numel()), "k": k, "n_steps": n_steps,
-           "one_step_rel_err_franka_pair": one_step,
+           "rel_err_to_goal_frame_NOT_one_step": one_step,
            "runs": {str(s): runs[s] for s in runs}, "q_seed_stable": bool(stable),
            "lambda1": l1, "lambda1_ci_envelope": [lo, hi], "cert_rows": rows, "verdict": verdict,
            "scope": "fixed zero-delta-action AR frame-token loop (authors' energy-landscape rollout); "
