@@ -43,3 +43,17 @@
 - **G3 措辞复核**：实际 diff **恰好 0.0**（强于记录的"<1e-6"）——符合 repo 等式门标准，措辞成立。
 - **产物**：`experiments/wma_step1c_lookback.py`、`papers/figures/wma_step1c_lookback.json`。
 - **更正传播**：快照页 P4-D 小节已同步改写；vault log 追加更正条目（仅追加文化，旧条不改）。
+
+## [2026-06-11] wma-step2 | 烙印跨架构对比：TD-MPC2 全健康行——回声盈余是训练目标的产物
+
+- **仪器升级（TDD，spec v1.1/v1.2 预数据修正案）**：`echo_excess`（$\eta = \tilde D_{T,T} - \tilde D_{P,P}$）、`imprint_ratio`（$\rho$）、`derangement` 升格为 `src/audit/atm.py` 仪器件；三臂判别合成测试钉死读出语义——完美模型 $\eta \approx 0 \wedge \rho \approx 1$（反事实**胜任**非病理）、$B{=}0$ 藏动作世界 + 回声注入 $\eta > 0.5$（凭空盈余）、G1c 捷径 = $\eta$ 空洞但 $L_{\mathrm{sym}}$ 爆。**$\rho$ 单独无判别力；$\eta$ 有管辖权天花板（$\eta \le \tilde D_{T,T}$）**——读出分类学三轴 $(\eta, L_{\mathrm{sym}}, \rho)$ + 体制天花板。13/13 测试绿。
+- **协议**：TD-MPC2 官方 ckpt（walker-walk / cheetah-run / finger-spin × seed-1，step89 faithful loader）× 双行为 lane（$\tanh(\mu_\pi + 0.3\xi)$ / uniform——step1c 分布教训制度化为默认双测）× 5000 转移/格；real 全协议（3 宽 × 3 seed）+ derangement 烙印控制（256 × 3 seed，注册）。
+- **跑前声明 5/5 对账**：$\tilde D_{T,T}$ 区间 ✓ / $\eta$ 空洞预期 ✓ / $L_{\mathrm{sym}} < 1$ ✓ / $\rho$ 区间 ✓ / 一步误差 ✓。
+- **数字（lane-π）**：walker $\tilde D_{T,T}{=}0.251$, $\eta{=}0.042$, $\rho{=}0.75$, $L_{\mathrm{sym}}{=}0.53$；cheetah $0.079 / 0.022$(VACUOUS)$/ 0.94 / 0.98$；finger $0.012 / 0.002$(VACUOUS)$/ 0.99 / 0.57$。一步误差 0.040–0.136。
+- **Gates**：G-s2a-η **PASS-ON-EVALUABLE**（1/1；2/3 任务 VACUOUS-BY-CEILING——v1.2 预案兑现）/ G-s2a-sym **PASS 3/3** / G-s2b sanity PASS 6/6（$\tilde D_{T,T}(a')$ 0.96–1.01）/ G-s2c PASS。
+- **F4（矛尖答案）**：回声盈余是**训练目标的产物**，不是动作条件架构的通病——LeWM（teacher-forced 预测回归）$\eta{=}0.474$、$L_{\mathrm{sym}}{=}6.9$ 病理 vs TD-MPC2（EMA 真 latent 一致性回归）$\eta \le 0.042$、$L_{\mathrm{sym}} \le 0.98$ 全健康。机制读法：一致性损失把 P 域钉在 T 域的码上。
+- **F5（面板正交性双向实证）**：谱 × ATM 在两架构上**反向**不一致——TD-MPC2：谱 EXPANSIVE（$\lambda_1$ 0.099–0.253，step89 crossref）∧ ATM 健康；LeWM：谱 ABSTAIN（$\lambda_1 \approx 0$，step91）∧ ATM 病理。单仪器各漏一半失效面——面板论点的第一对跨架构数据行（工具文核心图素材）。
+- **F2 第二架构复现**：finger-spin/U $L_{\mathrm{sym}}{=}4.13$ 越健康线（同任务 π lane 0.57）——分布外行为把健康模型的 ATM 读数推过病理阈值；报告卡分布钉死再获一证。
+- **披露**：gate 判定代码首跑 `max(2,..)` 地板与 spec 文本矛盾（spec：空洞格不计入分母）——修正为三态 PASS-ON-EVALUABLE 后确定性重跑（cells 逐位复现，266s），干净 JSON 为准；两跑均存档于 git 历史。
+- **产物**：`experiments/wma_step2_tdmpc2_atm.py`、`papers/figures/wma_step2_tdmpc2_atm.json`、`tests/test_wma_step2.py`、spec v1.2、`src/audit/atm.py` 升级。
+- **下一刀**：wma-step3 候选二选一（下次会话决断）：V-JEPA 2-AC × DROID 真机 ATM 列（报告卡重栏目，1B 模型）或 $D_{i,j}(g)$ 等变仪器首发（仪器 III）。

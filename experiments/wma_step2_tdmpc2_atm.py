@@ -149,9 +149,10 @@ def main() -> int:
     p89 = ROOT / "papers/figures/step89_pretrained_audit.json"
     if p89.exists():
         rec = json.loads(p89.read_text())
-        for k, v in rec.items() if isinstance(rec, dict) else []:
-            if isinstance(v, dict) and "certified" in v:
-                spectral[k] = {"lambda1": v["certified"].get("lambda1")}
+        for tk in TASK_KEYS:                                     # flat "{task}-{seed}" schema
+            v = rec.get(f"{tk}-{SEED_CKPT}")
+            if isinstance(v, dict) and "lambda1" in v:
+                spectral[tk] = {"lambda1": v["lambda1"], "lambda1_ci": v.get("lambda1_ci")}
 
     cells = {}
     for task_key in TASK_KEYS:
@@ -169,12 +170,16 @@ def main() -> int:
     eta_pass = [k for k, c in eta_evaluable.items() if c["eta"] < 0.2]
     sym_pass = [k for k, c in pi_cells.items() if c["L_sym"] < 2.0]
     gates = {
+        # Verdict per spec text: vacuous cells leave the denominator ("不计入通过");
+        # tri-state keeps the shrunken-denominator case honest (v1.2; code-bug fix disclosed
+        # in the record — the first run's max(2,..) floor contradicted the registered text).
         "G_s2a_eta": {"evaluable_cells": list(eta_evaluable),
                       "vacuous_cells": [k for k in pi_cells if k not in eta_evaluable],
                       "pass_cells": eta_pass,
                       "verdict": ("VACUOUS-BY-CEILING (all cells)" if not eta_evaluable else
-                                  ("PASS" if len(eta_pass) >= max(2, len(eta_evaluable) * 2 // 3)
-                                   else "FAIL"))},
+                                  (f"PASS-ON-EVALUABLE ({len(eta_pass)}/{len(eta_evaluable)}; "
+                                   f"{len(pi_cells) - len(eta_evaluable)}/{len(pi_cells)} vacuous)"
+                                   if 3 * len(eta_pass) >= 2 * len(eta_evaluable) else "FAIL"))},
         "G_s2a_sym": {"pass_cells": sym_pass,
                       "verdict": "PASS" if len(sym_pass) >= 2 else "FAIL"},
         "G_s2b": {"verdict": "PASS" if all(c["G_s2b_pass"] for c in cells.values()) else "FAIL"},
