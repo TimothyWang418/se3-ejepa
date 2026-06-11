@@ -43,6 +43,22 @@ $\mathrm{SO}(3)$ on 3-vector channels). Built `src/models/cn_regular.py`:
 broken by the square workspace boundary (only $C_4$ exact); wall-contact transitions contribute to
 the *measured* $\hat\epsilon_{\max}$ — on-thesis (Thm B absorbs measured residuals).
 
+## [2026-06-10] P4-step1 part 2 — pipeline + smoke + overnight launch
+
+**Pipeline built, smoke end-to-end (13.9 s, bit-identical across runs), full seed-0 grid LAUNCHED
+overnight.** `experiments/p4_step1_pipeline.py` (G0b collection → G0c oracle-CEM gate → param
+ladder → grid → probes-on-every-cell → JSON). Three smoke nails, fixed honestly and recorded
+in-code: (i) vendored `WeakPolicy` is VecEnv-shaped — verbatim single-env replica of its sampling
+(cited to file:lines); (ii) vendored `ConvEncoder` requires `width % 8 == 0` (GroupNorm); (iii)
+G0c assert demoted to a **recorded verdict** — an infrastructure-gate FAIL must not burn the
+overnight grid it does not feed. Resilience: per-base MPS device-probe with honest CPU fallback
+(e2cnn-on-MPS unverified). Artifact lands at `papers/figures/p4_step1.json`; read-out + G1/G3
+verdicts next session. Spec: `docs/specs/2026-06-10-p4-step1-pipeline-bases-seed.md`.
+*Post-launch review note (same day): the in-flight run does NOT save checkpoints (`del model`) —
+acceptable for the sizing pass (full determinism: same seed ⇒ same model), but the audit steps
+consume trained bases, so checkpoint saving was added to the script for all future runs; the
+in-flight process is unaffected (its code was loaded at commit `b0e58e4`).*
+
 ## [2026-06-10] P4-step2 — κ validation gate: FALLBACK-2PT, honestly — the dial saturates, but TWO regimes are real and resolved
 
 Run concurrently with step1's grid (true-env measurement, no learned model). **Registered
@@ -52,9 +68,13 @@ pymunk handles; **registered debt**: any κ>0 oracle-CEM must adopt the extended
 (step1's κ=0 oracle is safe — damping 0 kills velocities).
 
 **Protocol** (spec, pre-registered): κ grid $\{0,0.5,0.8,0.95,1.0\}$; per κ 10 WeakPolicy
-episodes, 40 (extended-state, 60-action-window) pairs (n=30 survive the fit-window filter —
-reported); twin trajectories, block-angle $\delta_0=10^{-4}$; config-space metric (pos/512,
-angle/$\pi$); G0 determinism self-check ($\delta_0{=}0$ twins coincide exactly) PASS at all κ.
+episodes; capture points $\{10,25,40,55\}$ × 60-action windows — **as-run n=30/κ, not the spec's
+40**: the $t{=}55$ captures never exist ($55+60>100$ = a capture-window arithmetic slip, caught in
+post-run review; the fit filter itself dropped 0 pairs — this entry's first version mis-attributed
+the 30, corrected same-day). Twin trajectories, block-angle $\delta_0=10^{-4}$; config-space
+metric (pos/512, angle/$\pi$); G0 determinism self-check ($\delta_0{=}0$ twins coincide exactly)
+PASS at all κ. n=30 is ample for the endpoint-CI gate; any rerun fixing the capture grid is a
+registered protocol v1.1.
 
 **Result** (`papers/figures/p4_step2_kappa_gate.json`, 3.3 s):
 $\hat\lambda_1$ per control step — κ=0: $+0.006\,[-0.004,+0.017]$ (**exactly neutral**, median
@@ -73,15 +93,3 @@ silent shopping. Honest upside: both regimes the theory needs (neutral linear-bu
 exponential) are now *measured* in the true env, with the neutral anchor independently
 cross-validated.
 
-## [2026-06-10] P4-step1 part 2 — pipeline + smoke + overnight launch
-
-**Pipeline built, smoke end-to-end (13.9 s, bit-identical across runs), full
-seed-0 grid LAUNCHED overnight.** `experiments/p4_step1_pipeline.py` (G0b collection → G0c
-oracle-CEM gate → param ladder → grid → probes-on-every-cell → JSON). Three smoke nails, fixed
-honestly and recorded in-code: (i) vendored `WeakPolicy` is VecEnv-shaped — verbatim single-env
-replica of its sampling (cited to file:lines); (ii) vendored `ConvEncoder` requires
-`width % 8 == 0` (GroupNorm); (iii) G0c assert demoted to a **recorded verdict** — an
-infrastructure-gate FAIL must not burn the overnight grid it does not feed. Resilience: per-base
-MPS device-probe with honest CPU fallback (e2cnn-on-MPS unverified). Artifact lands at
-`papers/figures/p4_step1.json`; read-out + G1/G3 verdicts next session.
-Spec: `docs/specs/2026-06-10-p4-step1-pipeline-bases-seed.md`.

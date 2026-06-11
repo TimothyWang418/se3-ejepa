@@ -372,6 +372,13 @@ def main() -> int:
             print(f"      {key}: pred_loss {cell['pred_loss']:.4f}, latent_std {cell['latent_std']:.3f} [{dev}]")
             cell["probes"] = run_probes(model, probe_tr, probe_ev, device=dev)
             print(f"        probes: {cell['probes']}")
+            # checkpoint for downstream steps (audit/G-training consume trained bases; added in
+            # post-launch review — the original overnight run predates this and relies on
+            # seed-determinism for re-materialization)
+            ck = DATA_DIR / f"ckpt_{name}_f{frac}.pt"
+            ck.parent.mkdir(parents=True, exist_ok=True)
+            torch.save(model.state_dict(), ck)
+            cell["ckpt"] = str(ck.relative_to(ROOT))
             art["grid"][key] = cell
             del model
 

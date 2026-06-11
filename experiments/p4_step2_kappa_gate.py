@@ -27,6 +27,10 @@ SEED = 0
 KAPPAS = [0.0, 1.0] if SMOKE else [0.0, 0.5, 0.8, 0.95, 1.0]
 N_EPISODES = 2 if SMOKE else 10
 EP_LEN = 30 if SMOKE else 100
+# NOTE (post-run review): with WINDOW=60 and EP_LEN=100, the t=55 capture is never collected
+# (55+60>100) — the 2026-06-10 run's as-run n is 30/κ, not 40 (record entry corrected; the fit
+# filter dropped 0). Fixing this grid (e.g. {10,25,40} or EP_LEN=120) = registered protocol v1.1
+# for any rerun; the gate verdict stands on n=30.
 CAPTURE_AT = [10, 20] if SMOKE else [10, 25, 40, 55]
 WINDOW = 15 if SMOKE else 60
 DELTA0 = 1e-4
