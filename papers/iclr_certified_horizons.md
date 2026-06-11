@@ -67,7 +67,7 @@ Lyapunov/NWP horizon law, invariant decision theory, and the $e^{\lambda T}$ gro
 ---
 
 
-![**The paper in one figure.** **(a) Faithful:** on $40$-D Lorenz-96 the $\mathbb{Z}_N$-equivariant model recovers the full Lyapunov spectrum ($R^2{=}0.98$) where an identically-trained dense model's is garbage ($R^2{<}0$) — E2. **(b) Priced:** under a fixed sensing budget the faithful certificate meets the budget; the inflated one over-observes and starves it (Proposition 9) — E12. **(c) Real:** the same training-free read-out audits official TD-MPC2 checkpoints — calibrated where expansive, abstaining where contracting — E13.](figures/hero_certified_world_models.png){width=76%}
+![**The paper in one figure.** **(a) Faithful:** on $40$-D Lorenz-96 the $\mathbb{Z}_N$-equivariant model recovers the full Lyapunov spectrum ($R^2{=}0.98$) where an identically-trained dense model's is garbage ($R^2{<}0$) — E2. **(b) Priced:** under a fixed sensing budget the faithful certificate meets the budget; the inflated one over-observes and starves it (Proposition 9) — E12. **(c) Real:** the same training-free read-out audits official TD-MPC2 checkpoints — calibrated where expansive, abstaining where contracting — E13.](figures/hero_certified_world_models.png){width=72%}
 
 ## 2. Setup and assumptions
 
@@ -152,7 +152,7 @@ controlled obliqueness with the predicted $\log\kappa/\lambda$ horizon haircut; 
 from the audited Jacobian field* and honestly a distribution (median $\kappa_1\approx17$–$21$, near-tangency tail)
 while measured calibration stays $0.83$–$1.02$ (`step65b`, `step95`).
 
-![Proposition 6, numerically (the central claim). **Left:** orbit-error-variation of an $\epsilon{=}10^{-3}$-approximately-equivariant model (markers) equals the analytic $\epsilon\,e^{\lambda T}$ (dashed) to relative error $10^{-14}$–$10^{-13}$, $3$ seeds; an *exactly* equivariant model sits at the machine-precision floor; $\lambda\le0$ channels stay bounded (infinite horizon). **Right:** certified horizon linear in $\log(1/\epsilon)$ with slope exactly $1/\lambda$ ($R^2{=}1.000$) — the $\Theta(\log(1/\epsilon)/\lambda)$ law (`step65`).](figures/step65_horizon_tightness.png){width=75%}
+![Proposition 6, numerically (the central claim). **Left:** orbit-error-variation of an $\epsilon{=}10^{-3}$-approximately-equivariant model (markers) equals the analytic $\epsilon\,e^{\lambda T}$ (dashed) to relative error $10^{-14}$–$10^{-13}$, $3$ seeds; an *exactly* equivariant model sits at the machine-precision floor; $\lambda\le0$ channels stay bounded (infinite horizon). **Right:** certified horizon linear in $\log(1/\epsilon)$ with slope exactly $1/\lambda$ ($R^2{=}1.000$) — the $\Theta(\log(1/\epsilon)/\lambda)$ law (`step65`).](figures/step65_horizon_tightness.png){width=72%}
 
 **Proposition 7 (scope — when the local spectrum certifies a *learned* model's horizon).** On a learned model the
 answer splits a rigorous **rate** half from an orbit-error **lift** half. Let $\phi$ have an ergodic invariant measure
@@ -196,9 +196,8 @@ with structure (the converse).
 The certificate is *computable a priori*. Algorithm 1: (i) check (A1)–(A4) on the $k$ generators to residual
 $\epsilon_{\max}$; (ii) estimate the predictor spectrum at the query latent (block-bootstrap CI, Liouville-anchored;
 `step78`); (iii) report whether $(w,T,\epsilon)$ lies in the certified region of Theorem B/Proposition 6, escalating
-conserved channels via Proposition 5. Proposition 10 gives the finite-sample rate: the bootstrap CI brackets
-$T_1\in[\log(1/\epsilon)/(\hat\lambda_1\pm\varepsilon_n)]$ with $n\asymp\log(1/\delta)/\varepsilon^2$ — cheap in
-confidence, quadratic in precision.
+conserved channels via Proposition 5. Proposition 10 gives the finite-sample rate
+($n\asymp\log(1/\delta)/\varepsilon^2$; the bootstrap CI brackets $T_1$).
 
 ---
 
@@ -232,9 +231,9 @@ exponent off its Jacobian field alone. On **uniformly-hyperbolic** dynamics it i
 
 ![Scale does not buy a calibrated horizon (E14). **(a)** $\lambda_1$ of the walker-walk policy-prior loop across the official multitask ladder: sign-flipping, non-monotone (contracting at $1$M and $48$M). **(b)** Calibration at $\epsilon{=}0.2$: scatter across sizes; no multitask scale reaches the single-task $5$M band ($0.94$–$1.02$, green).](figures/step92_scale_sweep.png)
 
-**(E15) The published certificate prices a deployed monitor, out-of-sample (`step94`).** The scope law's *positive* instance: a **sensor-only monitor** watches cheetah-run under its nominal policy, reads the expensive sensor every $k$ steps, and between reads forecasts with the certified loop $g$ itself (no action telemetry), flagging at a read iff relative error exceeds $\theta{=}0.2$. Certificate numbers are **loaded from the E13 artifact** — issued before this experiment existed — and the gates were frozen before seeds 1–2 ever ran. The in-situ staleness clock replicates the published map **cell-by-cell**: in-situ-vs-bench ratio $0.43$ vs $0.43$ and $0.50$ vs $0.50$ on the out-of-sample cells (optimism *predicted*), $0.67$ vs $0.83$ on the calibrated cell — its $[2/3,3/2]$ check landing $7{\times}10^{-4}$ below the edge on an integer-valued median, recorded **at-the-edge, not rounded up**. A frozen-actuator fault is then detected at the certificate-derived cadence with recall $1.00$ on $3/3$ seeds (median delay $\le k_{\mathrm{op}}$ on $2/3$). Proposition 11 formalizes both sides: an aligned decision transfers certificate value with **zero new estimation** (clause i); step93's dilution is a resolution mismatch, $H(\theta^{\ast})\approx2$ vs $H(0.2)\approx6$ (clause ii). Honest notes: on walker the deterministic prior is regime-bimodal and clock replication breaks ($0.32$–$0.47$ vs $0.94$–$1.02$, $0/3$; fault recall intact) — a monitor presumes a nominal regime, **Proposition 7 load-bearing in deployment**. `step96` completes the map: the published **abstain** cells deploy as predicted — stable cells (finger-spin-2/3, $\lambda_1<0$) give **free monitoring** ($93$–$94\%$ of $k{=}24$ windows never cross; belief-invalid $4.0$–$4.4\%$; recall $1.00$), the bias-driven cell lands inside the $\times1.5$ band of bench ($7.0$ vs $5.5$ — the clock the certificate rightly refused to price), and a further replication cell lands $1.04$ vs $0.95$ (finger-spin-1). The architecturally disjoint **pixel family** closes the ordering: on LeWM/PushT — the published
-bias-abstain cell — the monitor buys **zero sensing savings** (usable cadence $1$; alarm channel flooded at every
-$k\ge2$, flag rate $1.00$; telemetry-fault detection inseparable from drift), all stated before the run (`step97`).
+**(E15) The published certificate prices a deployed monitor, out-of-sample (`step94`).** The scope law's *positive* instance: a **sensor-only monitor** watches cheetah-run under its nominal policy, reads the expensive sensor every $k$ steps, and between reads forecasts with the certified loop $g$ itself (no action telemetry), flagging at a read iff relative error exceeds $\theta{=}0.2$. Certificate numbers are **loaded from the E13 artifact** — issued before this experiment existed — and the gates were frozen before seeds 1–2 ever ran. The in-situ staleness clock replicates the published map **cell-by-cell**: in-situ-vs-bench ratio $0.43$ vs $0.43$ and $0.50$ vs $0.50$ on the out-of-sample cells (optimism *predicted*), $0.67$ vs $0.83$ on the calibrated cell — its $[2/3,3/2]$ check landing $7{\times}10^{-4}$ below the edge on an integer-valued median, recorded **at-the-edge, not rounded up**. A frozen-actuator fault is then detected at the certificate-derived cadence with recall $1.00$ on $3/3$ seeds (median delay $\le k_{\mathrm{op}}$ on $2/3$). Proposition 11 formalizes both sides: an aligned decision transfers certificate value with **zero new estimation** (clause i); step93's dilution is a resolution mismatch, $H(\theta^{\ast})\approx2$ vs $H(0.2)\approx6$ (clause ii). Honest notes: on walker the deterministic prior is regime-bimodal and clock replication breaks ($0/3$, fault recall intact; numbers in Appendix D) — a monitor presumes a nominal regime, **Proposition 7 load-bearing in deployment**. `step96` completes the map: the published **abstain** cells deploy as predicted — stable cells (finger-spin-2/3, $\lambda_1<0$) give **free monitoring** ($93$–$94\%$ of $k{=}24$ windows never cross; belief-invalid $4.0$–$4.4\%$; recall $1.00$), the bias-driven cell lands inside the $\times1.5$ band of bench ($7.0$ vs $5.5$ — the clock the certificate rightly refused to price), and a further replication cell lands $1.04$ vs $0.95$ (finger-spin-1). The architecturally disjoint **pixel family** closes the ordering: on LeWM/PushT (the published
+bias-abstain cell) the monitor buys **zero sensing savings** — usable cadence $1$, alarm channel flooded at every
+$k\ge2$, fault detection inseparable from drift — all stated before the run (`step97`).
 **Every taxonomy cell type now has a deployment instance, predicted a-priori — and the taxonomy *orders* deployment
 value: stable-abstain (free monitoring) $>$ expansive (priced savings) $>$ bias-abstain (do not deploy).**
 
@@ -257,7 +256,7 @@ and the Noether bridge (Proposition 5).
 
 **Learned conservation laws.** Noether Networks [@noethernet] and Noether's Razor [@noetherrazor] *learn* conserved quantities to improve average prediction; we *certify* — Proposition 5 turns a conserved charge into an a-priori long-horizon guarantee, Proposition 4 forces its isotypic placement. Guarantee versus average accuracy.
 
-**Jacobian-regularized world models.** [@jacobianwm] penalizes the latent-transition Jacobian to damp rollout error — a heuristic for robustness. Theorem B is the provable version of the intuition: read a per-channel certified horizon off the spectrum instead of regularizing toward stability; Proposition 6 prices its decay under approximate symmetry.
+**Jacobian-regularized world models.** [@jacobianwm] penalizes the latent-transition Jacobian to damp rollout error — a heuristic. Theorem B is the provable version: read a per-channel certified horizon off the spectrum instead of regularizing toward stability; Proposition 6 prices its decay under approximate symmetry.
 
 **Equivariant predictors and latent-geometry priors.** Cyclic/unitary predictors (BRo-JEPA, UWM-JEPA) report strong zero-shot transfer; Theorem A explains *why* and Lemma 1 quantifies *how far* (the generated monoid). LeJEPA-style isotropic latent priors target a *distributional* property; ours is a first-order, per-situation guarantee that predicts when a data-discovered anisotropy fails off the orbit.
 
@@ -307,10 +306,9 @@ intersection.
   certificate's known tight-$\epsilon$ optimistic regime (`step93`). With E11, the honest scope law: value
   concentrates where the decided quantity IS the certified quantity (E12's re-observation win, E15's deployed
   monitor) and dilutes behind a task-level map (return, gait quality). **Proposition 11 makes the law a theorem**:
-  an aligned decision inherits certificate value at calibration cost alone (zero regret at $c{=}1$); a task-mapped
-  decision pays an irreducible mis-resolution penalty $|\log(\epsilon/\theta^{\ast})|/\lambda_1$, and the tolerance
-  $\theta^{\ast}$ is the task's to give, not the certificate's — the boundary of a-priori decision value, stated
-  rather than promised past.
+  an aligned decision inherits certificate value at calibration cost alone (zero regret at $c{=}1$); a task-mapped decision pays an
+  irreducible mis-resolution penalty $|\log(\epsilon/\theta^{\ast})|/\lambda_1$ — and $\theta^{\ast}$ is the
+  task's to give, not the certificate's.
 
 - **Scale and modality.** All experiments are $1$–$2$-GPU. The certificate's exact flatness transfers across modalities
   (state, $\mathrm{SO}(3)$ point clouds, pixels), but absolute multi-step accuracy on raw pixels is poor for *every*
