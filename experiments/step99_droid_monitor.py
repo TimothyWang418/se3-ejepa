@@ -51,33 +51,42 @@ def read_sub_from_config() -> int:
 
 
 def load_episodes(n_ep: int, T: int, sub: int):
-    r"""Yield (frames_uint8 (T+1,H,W,3), states (T+1,7)) per episode — frames at model-step cadence."""
+    r"""(frames_uint8 (T+1,H,W,3), states (T+1,7)) per episode at model-step cadence. The mp4 is AV1-encoded
+    (cv2's bundled ffmpeg cannot decode it) -> PyAV with its bundled dav1d software decoder, ONE sequential pass
+    over the single concatenated video, picking the needed global frame indices (row order == frame order,
+    verified: 32212 rows == 32212 frames, `index` contiguous)."""
     import pandas as pd
     df = pd.read_parquet(DROID / "data/chunk-000/file-000.parquet",
                          columns=["episode_index", "frame_index", "observation.state", "index"])
-    import cv2
-    cap = cv2.VideoCapture(str(DROID / f"videos/{CAM}/chunk-000/file-000.mp4"))
     need = T * sub + 1
     chosen = []
     for ep, g in df.groupby("episode_index"):
         if len(g) >= need:
-            chosen.append((int(ep), g))
+            chosen.append((int(ep), g.sort_values("frame_index").iloc[:need:sub]))
         if len(chosen) >= n_ep:
             break
     assert len(chosen) == n_ep, f"only {len(chosen)} episodes with >= {need} frames"
+    wanted = {}
+    for ep, rows in chosen:
+        for gi in rows["index"].to_numpy():
+            wanted[int(gi)] = None
+    import av
+    with av.open(str(DROID / f"videos/{CAM}/chunk-000/file-000.mp4")) as container:
+        gi = 0
+        for frame in container.decode(video=0):
+            if gi in wanted:
+                wanted[gi] = frame.to_ndarray(format="rgb24")
+            gi += 1
+            if all(v is not None for v in wanted.values()):
+                break
+    missing = [k for k, v in wanted.items() if v is None]
+    assert not missing, f"{len(missing)} frames undecoded"
     out = []
-    for ep, g in chosen:
-        rows = g.sort_values("frame_index").iloc[:need:sub]
-        idxs = rows["index"].to_numpy()                              # global row index == global video frame index
+    for ep, rows in chosen:
+        idxs = rows["index"].to_numpy()
         states = np.stack(rows["observation.state"].to_numpy())
-        frames = []
-        for gi in idxs:
-            cap.set(cv2.CAP_PROP_POS_FRAMES, int(gi))
-            ok, bgr = cap.read()
-            assert ok, f"frame {gi} unreadable"
-            frames.append(bgr[:, :, ::-1].copy())                    # BGR -> RGB
-        out.append((ep, np.stack(frames), states.astype(np.float32)))
-    cap.release()
+        frames = np.stack([wanted[int(gi)] for gi in idxs])
+        out.append((ep, frames, states.astype(np.float32)))
     return out
 
 
