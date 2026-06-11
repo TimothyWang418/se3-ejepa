@@ -196,6 +196,32 @@ state_dict so strict loads pass against cache-free modules; non-leaf so eval-mod
 crashes; stale after parameter-only EMA). The 40-ep run's in-process 84.8 remains the open
 residual for the matrix experiment.
 
+## [2026-06-12] Night shift (6.2 h, 4 blocks, autonomous) — three old conclusions overturned; the data lever dominates; a stable+contentful champion candidate emerges
+
+(`p4_nightshift_0611.json`. All health-metric tiers; no claim consulted.)
+
+1. **E0.1 data scaling (the night's biggest find):** winner recipe, xy content vs corpus —
+   200: 0.098 → 500: 0.242 → 1000: 0.481 → **2000: 0.613** (monotone, 6×). **θ-darkness and
+   content-weakness were substantially small-data artifacts**; we sat at 200 episodes for two
+   days because v1.1 mirrored lerobot's 206, while collection costs 15 s/200. Stability stays
+   2/3 at all sizes — the collapse lottery is recipe-bound, not data-bound.
+2. **E0.5.1 aux family:** content ceiling rebroken (aux0.3+v0.15: **xy 0.81**; aux0.5+v0.3:
+   0.79); **champion candidate = v0.3 + aux0.3: 3/3 stable AND xy 0.567** — stability and
+   content simultaneously, for the first time. **θ-only anchor BACKFIRES** (xy −0.27…−0.41):
+   a 2-d regression target drags the representation into a small subspace — clean negative,
+   recorded.
+3. **E0.2 long-train (overturns the decay story):** under the v0.2 floor, 200 epochs IMPROVES
+   content 3× (0.098 → 0.315, std 0.863 stable). **The v1.1/v1.2-era "content decays with
+   training" observation was an artifact of the weak-floor recipe**, not a law. aux1.0 × ep200
+   does not stack (0.343) — levers are not additive at high coef; data remains the strongest
+   single lever.
+4. E0.5.2 neighborhood: three 3/3 configs, all weak content (≤ 0.20) — without the anchor, the
+   stability–content trade-off stands.
+
+**Champion confirmation launched** (declared this morning): v0.3+aux0.3 × c2000 × n=10, with
+C3-cal re-evaluation AND **C3-guar's first legal evaluation** (fresh runs, as the anti-HARKing
+registration requires).
+
 ## [2026-06-12] v1.6 Stage-B (n=10, first statistically adequate evaluation) — C3-cal FAILS both bases; the failure is PERFECTLY ONE-SIDED; C3-guar registered for fresh-run evaluation
 
 (`p4_v16_stageB.json`, 52 min. Recipes selected on health only — the gate had no hand in recipe
