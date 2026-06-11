@@ -138,6 +138,27 @@ dynamics drown both bases (normalized δ̂: eq's 6.3× κ=0 advantage inverts to
    (per-dim latent_std × $\sqrt D$), raw values alongside; the normalizer choice is reportable.
 3. Recipe-stability check at κ>0 (latent_std floor) reported per base before any moat statement.
 
+## Protocol v1.5 (registered 2026-06-11 post-v1.4: the stability pass — now the binding constraint for BOTH lanes)
+
+Four collapse observations (content decay with steps; @2-fraction collapse; eq@κ0.8 std 0.562;
+eq/6-ch std 0.307) converge on the recipe's variance–predictability tension, with a directional
+pattern: **eq always collapses before plain.** Two registered hypotheses, ordered:
+
+- **H-v1.5a (isotropy conflict — the sharper one, from the 06-11 review):** the variance floor
+  `relu(1 − std)` enforces per-dim std = 1 — an ISOTROPY prior. The eq latent is a $C_{16}$
+  regular representation whose content is naturally anisotropic across isotypic components;
+  forcing isotropy pushes noise into structurally-empty dimensions and fights the equivariant
+  structure — plain has no structure to fight, hence survives. **Principled fix candidate: an
+  isotypic-aware variance floor** (per-field norm floor, or per-isotypic-component variance) —
+  connects directly to paper2's Prop 4 (isotypic placement).
+- **H-v1.5b:** `predictability_gated_var=True` (the repo's own Step-64 lever for exactly this
+  tension), and/or var_coef adjustment.
+
+Protocol: small sweep {floor-type × gating} on eq/6-ch@κ0 (the worst collapse cell), **gate:
+latent_std ≥ 0.7 (or per-field equivalent) on ALL cells** before the moat question, the
+in-jurisdiction cell, or any C2 probe is re-asked. Equivariance unit tests re-run for any new
+floor (a per-field norm floor is manifestly equivariant; assert anyway).
+
 ## Open items carried (not step1's)
 
 - "Dynamic Push-T" query (one targeted search at step2, cite-and-differentiate if physics-dialing).
