@@ -196,6 +196,34 @@ state_dict so strict loads pass against cache-free modules; non-leaf so eval-mod
 crashes; stale after parameter-only EMA). The 40-ep run's in-process 84.8 remains the open
 residual for the matrix experiment.
 
+## [2026-06-12] v1.6 Stage-B (n=10, first statistically adequate evaluation) — C3-cal FAILS both bases; the failure is PERFECTLY ONE-SIDED; C3-guar registered for fresh-run evaluation
+
+(`p4_v16_stageB.json`, 52 min. Recipes selected on health only — the gate had no hand in recipe
+choice; the system worked as designed.)
+
+| | eq (var0.2 winner) | plain (ep40 winner) |
+|---|---|---|
+| true stability rate | **7/10** (the sweep's 3/3 was partly lottery) | 10/10 |
+| C3-cal (two-sided band) | **FAIL 0/7** | **FAIL 2/10** |
+| ratio pattern | [None, 0.50, 0.38, 0.88] — nearly identical across runs | similar, conservative |
+
+1. **Verdict stands: C3-cal as registered FAILS at n=10.** The two-sided calibration claim is
+   dead under current recipes at fine-to-mid ε.
+2. **The failure structure is the finding**: all 68 qualifying ratios ≤ 1.0 — **the certificate
+   never over-promised once** across 17 runs × 4 ε. Conservative by ~2–2.7× at mid-ε, exact at
+   coarse. The ratio pattern is nearly run-invariant (a stable property of the recipe-data pair,
+   not noise). Consistent with every prior signal (rate conservatism, planner ≥ model): **this
+   object is a GUARANTEE, not an estimate.**
+3. **C3-guar registered NOW (anti-HARKing discipline): the one-sided claim** — certified
+   boundary ≤ measured boundary at every ε, every qualifying run — is motivated by this data and
+   therefore must be **evaluated on fresh runs only** (next n=10 batch). Its band: ratio ≤ 1 at
+   ALL cells, ≥ 90% of qualifying runs.
+4. ε=2δ̂ None cells: grid-anchoring artifact (ε anchored on δ̂_mean, boundaries on q90 curves —
+   heavy-tailed one-step errors make the finest cell vacuous). A q90-anchored grid is registered
+   as the v2 analysis for FUTURE evaluations; the current FAIL is not retroactively touched.
+5. eq's 70% stability + Tier-0.5 refinement loop owns the gap; night shift (neighborhood, data
+   scale, aux family, long-train) is running as this is written.
+
 ## [2026-06-11] 5-RUN VERDICT — INCONCLUSIVE-BY-STABILITY: the eq recipe collapses 3/5 runs; recipe stabilization IS the critical path
 
 (`experiments/p4_5run_extension.py`, 7.8 min, +4 cells; aggregation rule declared pre-run.
