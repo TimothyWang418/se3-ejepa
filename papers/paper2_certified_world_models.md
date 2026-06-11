@@ -1303,6 +1303,20 @@ lands at $1.04$ (G5 PASS). With Experiment 26's cells, **every cell type of the 
 optimistic, stable-abstain, bias-abstain, plus the walker regime caveat — now has a deployment instance predicted
 from the published artifact**. `experiments/step96_taxonomy_monitor.py`.
 
+**The pixel family closes the deployment ordering (Experiment 29, `step97`).** The same sensor-only monitor on the
+architecturally disjoint **LeWM/PushT** cell — the published **bias-abstain** verdict ($\lambda_1{=}0.0013$, CI
+straddling $0$; one-step relative bias $0.17$; bench crossing $2$ model steps) — with gates frozen a-priori:
+**G6 PASS** (no usable cadence: belief-invalid fraction $0.50/0.75/0.87$ at $k{=}2/4/8$ — exactly $(k{-}1)/k$, the
+staleness-$2$ crossing firing in every window) and **G7 PASS** (flooded alarm channel: per-read flag rate $1.00$ at
+every $k\ge2$; the telemetry-corruption arm is inseparable from drift, pre/post flag rate $1.00/1.00$ — exactly as
+stated before the run). At $k{=}1$ the monitor is clean ($0.00$) — but $k{=}1$ means reading every frame: the
+forecaster buys **zero sensing savings**, and a smoke-caught v1$\to$v2 gate correction (disclosed in the script
+header) records why $k{=}1$ tests the published one-step bias, not monitor usability. A moving-scene control
+(random-walk actions, telemetry true) reproduces the verdict ($0.76$ at $k{=}4$). **The taxonomy now *orders*
+deployment value a-priori: stable-abstain $=$ free monitoring (Experiment 28) $>$ calibrated/optimistic $=$ priced
+savings (Experiments 26/28) $>$ bias-abstain $=$ do not deploy (here)** — three verdicts, three architectures, one
+training-free read-out. `experiments/step97_lewm_monitor.py`.
+
 **What does structure buy, if the read-out audits any smooth model?** Theorem B's spectral law applies to any $C^1$ latent map — that is what §5.21 (Experiment 23) exercises on (non-equivariant) TD-MPC2 and LeWM. What the law cannot supply for a generic model is *trust in the number itself*: a dense model's spectrum can be silently wrong while its predictions stay good (§5.16: $\lambda_1$ inflated $\sim3.4\times$ at one-step relMSE $10^{-5}$), so a generic certificate must be cross-validated against held-out divergence — exactly the per-model empirical check the §5.21 (Experiment 23) scope map performs. Equivariance is what removes that requirement where it holds: structure makes the spectrum *faithful* (§5.16), hence the certificate *a-priori trustworthy with zero calibration data* (§5.20 and its recalibration control) — and exclusively so (Lemma 2). The audit is universal; the **a-priori** guarantee is structure's.
 
 ---

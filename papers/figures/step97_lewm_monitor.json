@@ -1,0 +1,50 @@
+{
+  "theta": 0.2,
+  "k_list": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "n_ep": 10,
+  "T": 60,
+  "published": {
+    "lambda1": 0.0013,
+    "verdict": "ABSTAIN (bias-driven)",
+    "bench_median_at_0.2": 2.0
+  },
+  "arms": {
+    "zero_action": {
+      "invalid_by_k": {
+        "1": 0.0,
+        "2": 0.5,
+        "4": 0.75,
+        "8": 0.8666666666666668
+      },
+      "flag_rate_by_k": {
+        "1": 0.0,
+        "2": 1.0,
+        "4": 1.0,
+        "8": 1.0
+      },
+      "telemetry_fault_pre_post": [
+        1.0,
+        1.0
+      ],
+      "G6_no_usable_cadence": true,
+      "G7_flooded_channel": true
+    },
+    "moving_scene": {
+      "invalid_by_k": {
+        "1": 0.01,
+        "4": 0.7566666666666666
+      },
+      "note": "descriptive control; telemetry=truth; action-history embedding approximated by chunk-constant tiling (disclosed)"
+    }
+  },
+  "determinism_note": "zero-action arm is near-deterministic (static scene): invalid fraction is exactly (k-1)/k and flag rate 1.0 at k>=2 \u2014 crossing at staleness 2, every window; episode variation carried by the moving-scene arm",
+  "verdict": {
+    "G6": true,
+    "G7": true
+  }
+}
