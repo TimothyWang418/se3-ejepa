@@ -40,7 +40,7 @@ from experiments.p4_spine_stage1a import boundary_from_curve, fit_growth, measur
 from experiments.p4_spine_stage2_kappa08 import Pair  # noqa: E402
 from experiments.p4_step1_pipeline import (  # noqa: E402
     CHUNK, DATA_DIR, RES, build_eq, build_plain, circ_mask, collect_weakpolicy, pick_ladder,
-    to_transitions,
+    to_transitions_lean,
 )
 from experiments.p4_v16_stageA_sweep import run_one, state_targets  # noqa: E402
 from src.audit.gap_mode import audit_gap  # noqa: E402
@@ -69,7 +69,7 @@ def main() -> int:
     print("[setup] c2000 corpus + held-out ...")
     z = np.load(DATA_DIR / "corpus_c2000.npz")
     big = {k: z[k] for k in ("frames", "states", "actions")}
-    obs, act, nxt = to_transitions(big, big["frames"].shape[0])
+    obs, act, nxt = to_transitions_lean(big, big["frames"].shape[0])
     aux_t = state_targets(big)
     ho = collect_weakpolicy(60, seed=1)
     f = torch.from_numpy(ho["frames"]).float().div_(255.0).permute(0, 1, 4, 2, 3)

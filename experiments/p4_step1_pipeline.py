@@ -215,6 +215,23 @@ def to_transitions(data: dict, n_episodes: int) -> tuple[torch.Tensor, torch.Ten
     return obs, act, nxt
 
 
+def to_transitions_lean(data: dict, n_episodes: int, batch_eps: int = 100):
+    r"""Numerically IDENTICAL to :func:`to_transitions`, processed in episode batches.
+
+    Why: the eager path floats the whole corpus at once — c2000 peaks ~31 GB (22.3 GB for the
+    full float frame tensor + 8.8 GB obs/nxt copies), which OOM-kills 23 GB boxes (measured:
+    WSL box, 2026-06-11). Per-episode-batch processing is element-wise identical (circ_mask and
+    /255 are per-frame ops; chunk slicing is per-episode), peak ~13 GB. Additive helper — the
+    frozen v1.2 function is untouched.
+    """
+    obs_l, act_l, nxt_l = [], [], []
+    for i in range(0, n_episodes, batch_eps):
+        sub = {k: data[k][i : i + batch_eps] for k in ("frames", "actions")}
+        o, a, n = to_transitions(sub, sub["frames"].shape[0])
+        obs_l.append(o); act_l.append(a); nxt_l.append(n)
+    return torch.cat(obs_l), torch.cat(act_l), torch.cat(nxt_l)
+
+
 def rotate_images(x: torch.Tensor, theta) -> torch.Tensor:
     r"""CCW rotation about the image centre; ``theta`` is a float or a per-sample tensor (B,)."""
     if not torch.is_tensor(theta):
