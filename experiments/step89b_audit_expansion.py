@@ -40,10 +40,13 @@ def _maybe_translate_old_format(sd: dict) -> dict:
         items = {}
         for k, v in sd.items():
             if k.startswith(prefix):
-                # flat exports nest dynamics one level deeper (`_dynamics.0.{i}.weight`): strip the optional wrapper
-                m = re.match(r"(?:0\.)?(\d+)\.(weight|bias)$", k[len(prefix):])
+                # flat exports nest unevenly (`_dynamics.0.{i}.*` inner wrapper + `_dynamics.1.*` trailing top-level
+                # LayerNorm): key by the FULL integer path tuple — lexicographic order is the true layer order,
+                # and tuples cannot collide the way single stripped indices do.
+                m = re.match(r"((?:\d+\.)*\d+)\.(weight|bias)$", k[len(prefix):])
                 if m:
-                    items.setdefault(int(m.group(1)), {})[m.group(2)] = v
+                    path = tuple(int(x) for x in m.group(1).split("."))
+                    items.setdefault(path, {})[m.group(2)] = v
         if not items:
             continue
         for k in [k for k in out if k.startswith(prefix)]:
