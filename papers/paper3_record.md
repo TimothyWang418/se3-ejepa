@@ -1,10 +1,31 @@
 # paper3 experiment record — Certified Subgoal Spacing for Equivariant World Models
 
 > Honest-verdict ledger, paper2_record format. Registered claims + gates:
-> `papers/proposals/paper3-phase4-certified-subgoal-spacing.md` (protocol v1.1).
+> `papers/proposals/paper3-phase4-certified-subgoal-spacing.md` (protocol v1.1 + amendments).
 > Novelty sweep: `papers/proposals/paper3-novelty-sweep-2026-06-10.md` (4/4 SAFE).
 > W1 recon: `docs/specs/2026-06-10-p4-w1-recon.md`. No gate is loosened, ever; INCONCLUSIVE is
-> reported as such.
+> reported as such. Entries below are newest-first.
+
+## STATUS DIGEST (updated 2026-06-11, post-v1.5)
+
+- **Protocol:** v1.2 in force (stride-5 chunks, circular mask, per-sample aug); v1.3 (equal-step
+  budget + probe-vs-step curves) registered NOT yet run; v1.4 (frame-pair) and v1.5 (variance
+  floors) RAN and CLOSED the 6-ch direction — **the banked configuration is single-frame κ=0**
+  (stable: std 0.985/0.823).
+- **Instruments (all certified):** C_N predictor (exact, chunked); κ-gate (two regimes measured);
+  gap mode (G-I/II/III + known biases −0.007@W40 / −0.029@W16); pairing-equality gates (#9 fix,
+  E-I/II/III); eq-G (exact); planner stack (CEM ~10 ms/window). Failure taxonomy so far:
+  stable-but-empty (aug v1.1) vs collapsed-but-contentful (per-field v1.5).
+- **Claims:** C3 healthiest (seed-0 shapes: shape-confirmed linear, conservative-in-band coarse-ε,
+  planner ≥ model ⇒ certificate-as-guarantee; **needs 3-seed on the banked config**). Moat: 6.3×
+  normalized at κ=0 (stable recipes both sides, seed-0); κ=0.8 + temporal observability =
+  documented open frontier (G-pre refuses jurisdiction there — correctly). C2 blocked on
+  θ-readability (TC-WM proprio-arm registered as candidate, see proposal amendment). C1a awaits a
+  stable expansive base; C1b/wedge unbuilt. C4 untouched (θ̂* protocol v2 registered).
+- **Next blades (order):** 3-seed banked spine → wedge lane (C1b/C3-wedge) → v1.3 grid (C2
+  diagnostics + TC-WM arm) → C4.
+
+---
 
 ## [2026-06-10] P4-step1 (part 1) — the missing equivariant predictor lands EXACT; G0a confirms the κ lane's load-bearing assumption
 

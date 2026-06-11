@@ -359,6 +359,41 @@ the protocol is **uniform across $\kappa$**:
   (arXiv:2110.12214) and kin; full must-cite map in
   `papers/proposals/paper3-novelty-sweep-2026-06-10.md`.
 
+## 7.5 Registered amendments — 2026-06-11 (strategic re-scope + wiki reinforcements)
+
+**Re-scope (after Stage-2κ / v1.4 / v1.5, all ledgered):** the spine's bankable lane is
+**single-frame κ=0** (stable recipes both sides; 6.3× normalized δ̂ moat; certificate shape
+confirmed; planner ≥ model ⇒ certificate-as-guarantee). The **momentum regime (κ=0.8) + temporal
+observability** moves from core claim to **documented open frontier**: frame-pairs destabilize
+the eq recipe (collapse attractor is predictability-driven — v1.5 refuted the isotropy-conflict
+fix), never delivered velocity at 96 px/0.1 s, and the G-pre diagnostic *correctly refuses
+jurisdiction* there — which the paper reports as the instrument knowing its own edges (pairs with
+paper2 E16: over-promise at 1B scale, under-promise in non-Markov regimes — a two-sided
+jurisdiction map). The signature figure's surviving form: static-regime calibration + the κ-gate's
+environment-side two-regime measurement + the jurisdiction map.
+
+**Wiki reinforcements (user-curated, 2026-06-11), registered uses:**
+
+1. **TC-WM (arXiv block-decomposition + affine identifiability)** → two registered candidates:
+   (a) **proprio-aligned auxiliary arm for the C2 θ-blocker** — a $z^s$ block InfoNCE-aligned to
+   proprioception (free in sim; TC-WM provides precedent AND identifiability math; run as a
+   SEPARATE arm so the self-supervised claim stays clean); (b) **block-structured latent**
+   ($z = [z^{\text{eq}}, z^{\text{inv}}]$) as the v1.6 stability direction — three sources
+   converge on dual-stream (TC-WM, MC-RFM, our Direction-1), and per-block variance treatment is
+   the principled successor to the refuted uniform floors.
+2. **框架陷阱 red-team checklist** → adopted as the pre-submission §self-check: equivariance
+   claims require *post-training* unit tests (we run them); sample-efficiency claims require
+   fitted curves not single points (C2's registered curve readout); the FEP-Diff test transposed:
+   *"what does the certificate unlock that a fixed-H sweep doesn't?"* — answer on file (a priori,
+   sweep-free, orbit-transferable; Prop 9/11).
+3. **注入路径 map** → related-work ammunition adopted: cross-group precedents (BRo-JEPA
+   $\mathbb{Z}/10$, UWM-JEPA $U(d)$ — ours the non-abelian embodied instance); UR-JEPA boundary
+   sentence (anisotropy *source* decides OOD: prescribed-by-$\rho$ vs data-emergent — directly
+   relevant after v1.5's floor findings); Diaconis–Freedman plug for any latent-regularization
+   statement; LDA as action-side independent confirmation of "don't flatten geometry"; PoR as the
+   shared measurement layer. The B1 "one $\rho$, three roles" framing is noted as paper3's §1
+   positioning spine.
+
 ## 8. Bookkeeping
 
 - Experiment ledger: `papers/paper3_record.md` (to be created at W1 first build, paper2_record
