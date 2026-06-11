@@ -260,7 +260,7 @@ and the Noether bridge (Proposition 5).
 
 **Jacobian-regularized world models.** [@jacobianwm] penalizes the latent-transition Jacobian to damp rollout error — a heuristic. Theorem B is the provable version: read a per-channel certified horizon off the spectrum instead of regularizing toward stability; Proposition 6 prices its decay under approximate symmetry.
 
-**Equivariant predictors and latent-geometry priors.** Cyclic/unitary predictors (BRo-JEPA, UWM-JEPA) report strong zero-shot transfer; Theorem A explains *why* and Lemma 1 quantifies *how far* (the generated monoid). LeJEPA-style isotropic latent priors target a *distributional* property; ours is a first-order, per-situation guarantee that predicts when a data-discovered anisotropy fails off the orbit.
+**Equivariant predictors and latent-geometry priors.** Cyclic/unitary predictors (BRo-JEPA, arXiv:2606.01372; UWM-JEPA, arXiv:2605.25313) report strong zero-shot transfer; Theorem A explains *why* and Lemma 1 quantifies *how far* (the generated monoid). LeJEPA-style isotropic latent priors target a *distributional* property; ours is a first-order, per-situation guarantee that predicts when a data-discovered anisotropy fails off the orbit.
 
 **Predictability horizons.** The $T(\epsilon)\sim\log(1/\epsilon)/\lambda$ law is classical (Lyapunov; NWP); the
 local-to-asymptotic link is Oseledets [@oseledets1968]; shadowing [@pilyugin1999shadowing] bounds a perturbed model's
@@ -321,9 +321,7 @@ intersection.
 
 ## 7. Conclusion
 
-An equivariant world model can certify, a priori and without retraining, which situations it will handle and **for how many steps** — and the horizon is tight. The certified region is the coarse-invariant-slow-low-composition corner — boundary set by the spectrum, unbounded edge anchored by the conserved subspace, reachable only with structure. Because the horizon is *faithful* it is *actionable* — budgeting sensing (E12), auditing public world models (E13–E14), pricing a deployed monitor (E15). *Scale buys interpolation; structure buys a certified horizon.*
-
----
+An equivariant world model can certify, a priori and without retraining, which situations it will handle and **for how many steps** — and the horizon is tight. The certified region is the coarse-invariant-slow-low-composition corner — boundary set by the spectrum, unbounded edge anchored by the conserved subspace, reachable only with structure. Because the horizon is *faithful* it is *actionable* — budgeting sensing (E12), auditing public world models (E13–E16), pricing a deployed monitor (E15). *Scale buys interpolation; structure buys a certified horizon.*
 
 ---
 
