@@ -124,6 +124,20 @@ chiefly in step count.** Amendments:
 4. G3 unchanged (θ still unreadable in v1.2 — the stride-5 bet alone was insufficient; the
    probe-vs-step curves will show whether θ ever peaks early before deciding on corpus surgery).
 
+## Protocol v1.4 amendment (registered 2026-06-11 post-Stage-2κ, before any run)
+
+The κ=0.8 lane showed block velocity is unobservable in single frames ⇒ non-Markov latent
+dynamics drown both bases (normalized δ̂: eq's 6.3× κ=0 advantage inverts to 1.6× WORSE at
+κ=0.8, confounded with partial variance collapse, latent_std 0.562).
+
+1. **Frame-pair encoder input** for κ>0 bases: channel-stack $(o_{t-1}, o_t)$ (6-ch input; both
+   frames rotate together ⇒ steerable equivariance trivially preserved; ConvEncoder likewise).
+   Restores Markovianity; the v1.4 run answers: *with velocity observable, which side of 1× does
+   the normalized δ̂ ratio land on, per regime?*
+2. **Registered cross-base normalizer**: δ̂ comparisons across bases are quoted normalized by
+   (per-dim latent_std × $\sqrt D$), raw values alongside; the normalizer choice is reportable.
+3. Recipe-stability check at κ>0 (latent_std floor) reported per base before any moat statement.
+
 ## Open items carried (not step1's)
 
 - "Dynamic Push-T" query (one targeted search at step2, cite-and-differentiate if physics-dialing).

@@ -216,6 +216,17 @@ hyperparameters frozen per the fairness rule.)
 response paths opened (frame-pair v1.4; jurisdiction-both-edges as paper material), zero gates
 loosened.
 
+*Same-day review correction (the "parity" claim was metric-naive):* raw cross-base δ̂ live in
+different latent metrics — the very tension flagged at Stage-1b, not applied to my own headline.
+Under the now-REGISTERED normalizer (per-dim latent_std × √D ≈ typical latent norm):
+κ=0 → eq 0.132 vs plain 0.824 (**6.3×, the moat survives normalization**); κ=0.8 → eq 0.653 vs
+plain **0.406 — not parity but INVERSION (eq 1.6× worse)**. Two confounds stated: (i) eq's κ=0.8
+latent_std = 0.562 — the training recipe itself partially collapsed there, so the inversion mixes
+"equivariance × momentum" with recipe instability; (ii) the normalizer choice is itself a
+registered, reportable decision. The v1.4 frame-pair experiment now answers a sharper question:
+*with velocity observable and the recipe stable, which side of 1× does the normalized ratio land
+on, in each regime?*
+
 ## [2026-06-11] #10 (half 2) — Stage-1b planner side: feedback planning BEATS the open-loop boundary; θ̂* protocol v1 caught vacuous at κ=0
 
 (`experiments/p4_spine_stage1b.py`, 11 s; artifact `p4_spine_stage1b.json`. Fixed-goal windows
