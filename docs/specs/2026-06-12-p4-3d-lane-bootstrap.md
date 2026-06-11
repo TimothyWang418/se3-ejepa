@@ -24,6 +24,22 @@ pre-amend duplicate of `eb1d7aa` which IS in main; untracked box-side artifact
    line wins (prior tenant); the 3D lane falls back to the Mac.
 4. **Namespaces:** all 3D-lane files use the `p4_3d_` prefix.
 
+## Fleet map (2026-06-11, after the backup MacBook joined)
+
+| Machine | Tailscale | Hardware | Lanes | Env ownership |
+|---|---|---|---|---|
+| Mac M5 Max (main) | 100.117.175.77 | 40-core GPU (MPS), many-core CPU | paper2 + paper3, all MPS/CPU work | `.venv` shared in-house |
+| WSL box `admin-1` | 100.71.116.12 | RTX 3080 10GB, 24 cores | paper2 CUDA steps + paper3 3D lane | `.venv` = paper2, `.venv3d` = 3D lane |
+| Backup MacBook | 100.119.233.53 (`hongbowang@`) | Intel i9-9880H, 16 cores, 16 GB, **no MPS** | papers 2+3 **small CPU experiments** | `.venv` = paper2-provisioned (clone `~/Workspace/se3-ejepa`) |
+
+Backup-MacBook rules (mirror of the box rules, CPU flavor):
+- paper3 may RUN through paper2's `.venv` but never `pip install` into it — extra deps ⇒ own venv.
+- Before long jobs: check `ps aux | grep python` + `~/Workspace/se3-ejepa/LANE.lock`
+  (same owner/pid/ETA format); paper2 priority while it is provisioning/using the machine.
+- Pull-only git leaf, same as the box. 16 GB RAM ⇒ corpora ≤ c2000 tensorized; no 3D here.
+- Good paper3 fits: weak-policy/wedge corpus collection (CPU env stepping), f64 audit passes
+  on existing ckpts, plain-baseline CPU cells. Bad fits: e2cnn training, anything MPS-tuned.
+
 ## WSL2 rendering boundary (measured 2026-06-11)
 
 SAPIEN `RenderSystem` fails with `Failed to find a supported physical device "cuda:0"`: WSL
