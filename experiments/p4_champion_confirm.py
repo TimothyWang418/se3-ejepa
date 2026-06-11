@@ -7,6 +7,16 @@ content 0.613 at winner recipe), n = 10 runs. Gates evaluated on these FRESH run
 - **C3-guar (first legal evaluation; registered 2026-06-12 pre-dawn):** certified q90 boundary ≤
   measured q90 boundary (ratio ≤ 1) at ALL ε cells, in ≥ 90% of qualifying runs.
 - **C3-cal (two-sided, standing registration):** ratio ∈ [0.5, 2] all cells, ≥ 2/3 of qualifying.
+
+AMENDMENT (registered 2026-06-11 between r1 and r2, before further data): the ratio-based code
+was an unfaithful approximation of the registered text. At tight ε cells the measured q90 curve
+can exceed ε at h=1 (heavy tail: q90/mean > 2), giving boundary 0 and ratio None — under the old
+code a run could NEVER qualify, making C3-guar mechanically unpassable regardless of certificate
+quality. Faithful mechanics: store BOTH boundaries; C3-guar compares them directly (0 ≤ 0 PASSES
+— the certificate refuses a horizon the world also refuses; cert > 0 = meas FAILS — that IS
+anticonservative); C3-cal uses ratios only where both boundaries > 0 (a 0/0 cell carries no
+calibration information). r0/r1 were observed pre-amendment (honest flag); they are re-evaluated
+from their saved ckpts under the new mechanics, not re-trained.
 - Stability rate with exact binomial CI; xy content mean.
 - plain control: ep40 winner × c2000 × n=10 (same gates; the moat needs both sides on equal data).
 
@@ -27,6 +37,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from experiments.p4_spine_stage1a import boundary_from_curve, fit_growth, measured_err  # noqa: E402
+from experiments.p4_spine_stage2_kappa08 import Pair  # noqa: E402
 from experiments.p4_step1_pipeline import (  # noqa: E402
     CHUNK, DATA_DIR, RES, build_eq, build_plain, circ_mask, collect_weakpolicy, pick_ladder,
     to_transitions,
@@ -71,41 +82,72 @@ def main() -> int:
     builders = {"champ": build_eq, "plainc": (lambda: build_plain(w_match))}
     cfgs = {"champ": CHAMP, "plainc": PLAIN}
 
+    def audit_cell(cell: dict, pr) -> None:
+        r"""Audit + dual-boundary C3 cells (amendment mechanics: store h_cert AND h_meas)."""
+        rep = audit_gap(pr, fb_d, ach_d, window=16, k=3, burn_in=4, h_max=8)
+        meas = measured_err(pr, fb_d, ach_d, 8)
+        dm = rep["delta"]["mean"]
+        cell["delta_norm"] = dm / (max(cell["std"], 1e-6) * (128 ** 0.5))
+        cell["c3cal"] = []
+        for em in EPS_MULT:
+            hm = boundary_from_curve(meas["q90"], em * dm) or 0
+            hc = boundary_from_curve(rep["certified_curve"]["err_q90"], em * dm) or 0
+            cell["c3cal"].append({"em": em, "h_meas": int(hm), "h_cert": int(hc),
+                                  "ratio": (hc / hm) if hm and hc else None})
+        cell["growth"] = fit_growth(meas["median"])
+
+    existing = json.loads(OUT.read_text()).get("cells", {}) if OUT.exists() else {}
+    art["resumed_cells"] = [k for k, v in existing.items() if "c3cal" in v
+                            and v["c3cal"] and "h_meas" in v["c3cal"][0]]
+
     for name in ("champ", "plainc"):
         print(f"[{name}] n=10 on c2000 ...")
         for r in range(10):
+            key = f"{name}_r{r}"
+            prev = existing.get(key)
+            ckp = DATA_DIR / f"ckpt8_{name}_r{r}.pt"
             try:
-                cell, pr, m, tgt = run_one(builders[name], cfgs[name], r, obs, act, nxt,
-                                           fb_d, ach_d, fb_small, ho, aux_t)
-                if cell["stable"]:
-                    rep = audit_gap(pr, fb_d, ach_d, window=16, k=3, burn_in=4, h_max=8)
-                    meas = measured_err(pr, fb_d, ach_d, 8)
-                    dm = rep["delta"]["mean"]
-                    cell["delta_norm"] = dm / (max(cell["std"], 1e-6) * (128 ** 0.5))
-                    cell["c3cal"] = [{"em": em,
-                                      "ratio": (boundary_from_curve(rep["certified_curve"]["err_q90"], em * dm)
-                                                / boundary_from_curve(meas["q90"], em * dm))
-                                      if boundary_from_curve(meas["q90"], em * dm) else None}
-                                     for em in EPS_MULT]
-                    cell["growth"] = fit_growth(meas["median"])
-                    torch.save({"model": m.state_dict(), "target_encoder": tgt.state_dict()},
-                               DATA_DIR / f"ckpt8_{name}_r{r}.pt")
+                if prev and prev.get("c3cal") and "h_meas" in prev["c3cal"][0]:
+                    cell = prev                                   # new-schema cell: keep
+                elif prev and prev.get("stable") and ckp.exists():
+                    cell = {k: v for k, v in prev.items()         # audit-refresh from ckpt
+                            if k not in ("c3cal", "delta_norm", "growth")}
+                    m = builders[name]()
+                    ck = torch.load(ckp, map_location="cpu", weights_only=True)
+                    m.load_state_dict(ck["model"])
+                    m.encoder.load_state_dict(ck["target_encoder"])
+                    audit_cell(cell, Pair(m.encoder.eval(), m.predictor))
+                    cell["audit_refreshed"] = True
+                else:
+                    cell, pr, m, tgt = run_one(builders[name], cfgs[name], r, obs, act, nxt,
+                                               fb_d, ach_d, fb_small, ho, aux_t)
+                    if cell["stable"]:
+                        audit_cell(cell, pr)
+                        torch.save({"model": m.state_dict(), "target_encoder": tgt.state_dict()},
+                                   DATA_DIR / f"ckpt8_{name}_r{r}.pt")
             except Exception as exc:  # noqa: BLE001
                 cell = {"error": str(exc)[:200], "stable": False}
-            art["cells"][f"{name}_r{r}"] = cell
+            art["cells"][key] = cell
             save()
             print(f"  {name} r{r}: std {cell.get('std', float('nan')):.3f} xy {cell.get('xy')} "
-                  f"cal {[x['ratio'] for x in cell.get('c3cal', [])]}")
+                  f"cells {[(x.get('h_cert'), x.get('h_meas')) for x in cell.get('c3cal', [])]}")
 
     verd = {}
     for name in ("champ", "plainc"):
         cs = [art["cells"].get(f"{name}_r{r}", {}) for r in range(10)]
         qual = [c for c in cs if c.get("stable")]
-        def ratios_ok(c, pred):
-            return "c3cal" in c and all(x["ratio"] is not None and pred(x["ratio"])
-                                        for x in c["c3cal"])
-        guar = [c for c in qual if ratios_ok(c, lambda x: x <= 1.0 + 1e-9)]
-        cal = [c for c in qual if ratios_ok(c, lambda x: BAND[0] <= x <= BAND[1])]
+
+        def cell_guar(c):
+            r"""Registered text, faithfully: h_cert <= h_meas at ALL eps cells (0<=0 passes)."""
+            return "c3cal" in c and all(x["h_cert"] <= x["h_meas"] for x in c["c3cal"])
+
+        def cell_cal(c):
+            r"""Band on cells where both boundaries > 0 (0/0 carries no calibration info)."""
+            rs = [x["ratio"] for x in c.get("c3cal", []) if x["ratio"] is not None]
+            return bool(rs) and all(BAND[0] <= x <= BAND[1] for x in rs)
+
+        guar = [c for c in qual if cell_guar(c)]
+        cal = [c for c in qual if cell_cal(c)]
         verd[name] = {
             "stable": f"{len(qual)}/10",
             "C3_guar": ("INCONCLUSIVE-BY-STABILITY" if len(qual) < 5
