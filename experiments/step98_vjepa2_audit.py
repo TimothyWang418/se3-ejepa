@@ -53,6 +53,16 @@ def load_model():
     except Exception as e:
         print(f"[step98] backbones premonkeypatch skipped ({e})", file=sys.stderr)
     enc, pred = torch.hub.load("facebookresearch/vjepa2", "vjepa2_ac_vit_giant", skip_validation=True)
+    # forward-AD path: the authors wrap SDPA in a bare (deprecated) `torch.backends.cuda.sdp_kernel()` context that
+    # re-enables efficient attention regardless of global flags; their module ALSO ships an explicit
+    # softmax-attention branch gated on `use_sdpa` — flip it off on the predictor (authors' own math path,
+    # forward-AD-safe by construction; encoder stays on fast SDPA, it runs under no_grad only).
+    n_flip = 0
+    for m in pred.modules():
+        if hasattr(m, "use_sdpa"):
+            m.use_sdpa = False
+            n_flip += 1
+    print(f"[step98] use_sdpa=False on {n_flip} predictor attention modules", file=sys.stderr)
     return enc.cuda().eval().half(), pred.cuda().eval().float()
 
 
