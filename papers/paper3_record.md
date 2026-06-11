@@ -196,6 +196,41 @@ state_dict so strict loads pass against cache-free modules; non-leaf so eval-mod
 crashes; stale after parameter-only EMA). The 40-ep run's in-process 84.8 remains the open
 residual for the matrix experiment.
 
+## [2026-06-11] 5-RUN VERDICT — INCONCLUSIVE-BY-STABILITY: the eq recipe collapses 3/5 runs; recipe stabilization IS the critical path
+
+(`experiments/p4_5run_extension.py`, 7.8 min, +4 cells; aggregation rule declared pre-run.
+Artifact `p4_5run_spine.json`.)
+
+| | eq | plain |
+|---|---|---|
+| collapse rate (std < 0.7) | **3/5** (runs 2,3,4: std 0.27/0.60/0.46) | 0/5 |
+| C3-cal-static | **INCONCLUSIVE-BY-STABILITY** (2 qualifying < 3) | FAIL (1/5 in band) |
+| G-pre shape | INCONCLUSIVE | FAIL (0/5; conservative direction throughout) |
+| moat (conditioned) | n=2: mean 2.45, range [1.10, 3.79] — unbankable | — |
+
+**The honest read:** the provisional pass did not survive — not because the calibration is wrong
+(the qualifying runs look fine; plain's failures are conservative-direction) but because **the
+training recipe cannot produce 3 stable eq runs out of 5**. The collapse lottery (60% on the
+banked lane) is now unambiguously the project's critical path: no claim of any kind banks until
+the recipe is stabilized. The instrument stack did its job — it refused to certify on a rotten
+foundation.
+
+**Registered response path (freeze lifts into it, candidates ordered):**
+
+1. **Hyperparameter honesty first**: the "frozen" hyperparameters were never actually tuned —
+   they are v1.1 defaults (ema_decay 0.99, var_coef 0.04, lr defaults). A small stability sweep
+   (ema_decay × var_coef × lr, eq base, ~12 cells, success = stable-run fraction over 3 runs/
+   config) is legitimate pre-claim infrastructure, not gate-shopping — gates are about claims;
+   this is about having a training procedure at all.
+2. **TC-WM block + proprio anchor (§7.5 amendment)** — upgraded from "C2 candidate" to
+   **co-primary stability candidate**: the collapse attractor is predictability-driven, and an
+   InfoNCE anchor to proprioception makes content non-collapsible by construction (free in sim,
+   identifiability math on file). Run as a separate arm.
+3. CPU-deterministic training as the fallback variance-elimination tool (slow but kills the run
+   lottery for final claims).
+
+Everything downstream (wedge, C4, 3-seed re-conversion, 3D) queues behind a stable recipe.
+
 ## [2026-06-11] 3-SEED CONVERSION — first gate PASS on record (C3-cal-static eq, 2/3) WITH AN ASTERISK; seed variance becomes the story
 
 (`experiments/p4_3seed_spine.py`, 11.3 min, 6 cells, protocol freeze honored — only registered
