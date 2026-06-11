@@ -175,6 +175,47 @@ state_dict so strict loads pass against cache-free modules; non-leaf so eval-mod
 crashes; stale after parameter-only EMA). The 40-ep run's in-process 84.8 remains the open
 residual for the matrix experiment.
 
+## [2026-06-11] Stage-2κ — the κ=0.8 lane: J≡I dies, the moat collapses to parity, and G-pre fires in the OPPOSITE direction from step99
+
+(`experiments/p4_spine_stage2_kappa08.py`, 3.5 min total — collection is actually ~15 s for 200
+eps; the "collection 13 min" figure in the part-3 entry was the ORACLE gate's 815 s, corrected
+here. Artifact `p4_spine_stage2_kappa08.json`; bases `ckpt3_*_k08.pt`, #9 fix on, κ=0
+hyperparameters frozen per the fairness rule.)
+
+**Registered expectations vs reality (declared in the script docstring before the run):**
+
+1. **J≡I is DEAD — both predictors learned z-sensitivity** (zsens: eq ‖∂Δ/∂z v‖ mean 1.38, plain
+   0.49). My 0.6-confidence prediction that action-blindness persists was WRONG: the momentum
+   regime forced state-dependence. C3-zsens label: *z-sensitive* both bases.
+2. **The moat quantity COLLAPSED to parity at κ=0.8**: δ̂_eq = 4.15 vs δ̂_plain = 4.45 (was 1.47
+   vs 7.68 = 5.2× at κ=0); pred_loss near-equal (0.177/0.183) and 38× worse than eq's κ=0 value.
+   Mechanism (the registered single-frame suspicion): **block velocity is unobservable in one
+   frame ⇒ the latent dynamics are non-Markov at κ>0** — unpredictable drift dominates BOTH
+   bases equally. Honest finding shape: *the equivariance predictability advantage lives where
+   geometry determines dynamics; momentum hides state from single frames and blinds both.*
+   Registered response: **v1.4 candidate = frame-pair encoder input** (2-frame channel stack;
+   both frames rotate together ⇒ equivariance trivially preserved) — restores Markovianity and
+   TESTS whether the eq advantage returns with velocity observable. The highest-value next
+   experiment.
+3. **G-pre fires, opposite direction from step99**: r = λ̂_meas/λ̂_tangent = **7.2 (eq), 2.5
+   (plain)** — both outside [0.5,2] ⇒ FAILED-BY-SCOPE at κ=0.8/single-frame. Where step99's 1B
+   model's tangent OVER-promised (0.178 vs measured 0.033), ours UNDER-promises: with correlated,
+   state-dependent bias (the model systematically lags moving blocks), measured error compounds
+   faster than the Jacobian channel predicts. **The jurisdiction map now has edges on BOTH
+   sides** — tangent certificates can over- or under-promise depending on which premise breaks
+   (linearization neighborhood vs weakly-correlated residuals). Cross-paper material with E16.
+4. **Measured curves SATURATE** (3.59→7.59, decelerating increments; r²_lin 0.90 vs r²_exp 0.83 —
+   neither clean shape): at κ=0.8/single-frame the error process is fast correlated early growth
+   → ceiling, not the exponential regime the theory wants. The fitted λ̂_meas is window-dependent
+   — the G-pre r above is therefore directionally robust but numerically fragile; stated.
+5. **C3-regime δ̂-channel ordering holds** (certified horizons shrink static→0.8: eq δ̂ 1.47→4.15
+   ✓), shape channel INCONCLUSIVE (saturation). C3-cal (quantile-matched) mixed: in-band at the
+   ε extremes, conservative at mid-ε — seed-0 descriptive.
+
+**Net:** the lane did exactly what it was built to do — every prior got updated, two registered
+response paths opened (frame-pair v1.4; jurisdiction-both-edges as paper material), zero gates
+loosened.
+
 ## [2026-06-11] #10 (half 2) — Stage-1b planner side: feedback planning BEATS the open-loop boundary; θ̂* protocol v1 caught vacuous at κ=0
 
 (`experiments/p4_spine_stage1b.py`, 11 s; artifact `p4_spine_stage1b.json`. Fixed-goal windows
