@@ -60,7 +60,7 @@
 
 ## A10. "工具/复现?"
 
-**回击**:匿名化 artifact 随投稿;`wm_audit.py` 一条命令审计三个家族 + `audit_map()` 任意 $C^1$ 映射 API;每个图的 per-seed JSON 在 `papers/figures/`;210 个测试,含等变性与协议单元测试;quickstart 文档。诚实 gate 纪律:四个 INCONCLUSIVE 原样发表。
+**回击**:匿名化 artifact 随投稿;`wm_audit.py` 一条命令审计三个家族 + `audit_map()` 任意 $C^1$ 映射 API;每个图的 per-seed JSON 在 `papers/figures/`;216 个测试,含等变性/协议/投影范数恒等式单元测试;quickstart 文档。诚实 gate 纪律:四个 INCONCLUSIVE 原样发表。
 
 ---
 
