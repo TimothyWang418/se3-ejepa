@@ -250,8 +250,70 @@
       0.75
      ]
     }
+   },
+   "+": {
+    "eq_r0": {
+     "delta": 4.141,
+     "guar_onesided": true,
+     "ratios": [
+      null,
+      0.5,
+      0.38,
+      0.88
+     ]
+    },
+    "eq_r1": {
+     "delta": 4.107,
+     "guar_onesided": true,
+     "ratios": [
+      1.0,
+      0.67,
+      0.5,
+      1.0
+     ]
+    },
+    "eq_r3": {
+     "delta": 4.57,
+     "guar_onesided": true,
+     "ratios": [
+      null,
+      0.5,
+      0.38,
+      0.75
+     ]
+    },
+    "plain_r0": {
+     "delta": 8.224,
+     "guar_onesided": true,
+     "ratios": [
+      0.33,
+      0.25,
+      0.38,
+      0.75
+     ]
+    },
+    "plain_r1": {
+     "delta": 4.486,
+     "guar_onesided": true,
+     "ratios": [
+      1.0,
+      0.5,
+      0.5,
+      0.88
+     ]
+    },
+    "plain_r2": {
+     "delta": 8.987,
+     "guar_onesided": true,
+     "ratios": [
+      0.25,
+      0.25,
+      0.5,
+      0.88
+     ]
+    }
    }
   }
  },
- "elapsed_min": 4.7
+ "elapsed_min": 6.0
 }

@@ -112,3 +112,22 @@ def test_excluded_by_rule_listed_and_disjoint(cells):
     meta = json.loads((ROOT / "papers/figures/step89b_audit_expansion.json").read_text())["_meta"]
     assert len(meta["excluded_by_rule"]) == 11
     assert set(meta["excluded_by_rule"]).isdisjoint({k.rsplit("-", 1)[0] for k in cells})
+
+
+# ---------- step89c: measured-column thickening (100 starts/cell) ----------
+
+def test_step89c_n100_regime_stats(cells):
+    import numpy as np
+    f = ROOT / "papers/figures/step89c_measured_n100.json"
+    if not f.exists():
+        pytest.skip("step89c artifact not present")
+    c = json.loads(f.read_text())
+    ok = {k: v for k, v in c.items() if "error" not in v}
+    assert len(ok) == 84 and len(ok) == len(c)
+    exp = [(c[k]["measured_n100"]["0.2"]["median"], c[k]["ratio_n100"]["0.2"])
+           for k, v in cells.items() if v["lambda1"] > 0 and v["lambda1_ci"][0] > 0]
+    assert sum(1 for m, _ in exp if m <= 3) == 25                  # bias-dominated
+    g5 = [r for m, r in exp if m >= 5]
+    assert len(g5) == 15
+    assert abs(float(np.median(g5)) - 0.943) < 0.005               # growth-side calibration
+    assert sum(1 for r in g5 if 2 / 3 <= r <= 1.5) == 8

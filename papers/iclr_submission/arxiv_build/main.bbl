@@ -1,0 +1,99 @@
+\begin{thebibliography}{16}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[ran(2022)]{randsmooth}
+Invariance-aware randomized smoothing certificates, 2022.
+
+\bibitem[noe(2024)]{noetherrazor}
+Noether's razor: learning conserved quantities, 2024.
+
+\bibitem[jac(2025)]{jacobianwm}
+Towards unraveling and improving generalization in world models, 2025.
+
+\bibitem[orb(2025)]{orbitmargin}
+Orbit-constant margins for equivariant networks, 2025.
+
+\bibitem[Alet et~al.(2021)Alet, Doblar, Zhou, Tenenbaum, Kawaguchi, and
+  Finn]{noethernet}
+Ferran Alet, Dylan Doblar, Allan Zhou, Joshua Tenenbaum, Kenji Kawaguchi, and
+  Chelsea Finn.
+\newblock Noether networks: meta-learning useful conserved quantities, 2021.
+
+\bibitem[Bochi \& Viana(2005)Bochi and Viana]{bochi2005lyapunov}
+Jairo Bochi and Marcelo Viana.
+\newblock The {Lyapunov} exponents of generic volume-preserving and symplectic
+  maps.
+\newblock \emph{Annals of Mathematics}, 161\penalty0 (3):\penalty0 1423--1485,
+  2005.
+
+\bibitem[Bousias et~al.(2026)Bousias, Lindemann, and Pappas]{ecp}
+Nikolaos Bousias, Lars Lindemann, and George~J. Pappas.
+\newblock {eCP}: Informative uncertainty quantification via equivariantized
+  conformal prediction with pre-trained models, 2026.
+
+\bibitem[Conradie et~al.(2026)Conradie, Boull{\'e}, Loiseau, Brunton, and
+  Colbrook]{conradie2026trustkoopman}
+Gustav Conradie, Nicolas Boull{\'e}, Jean-Christophe Loiseau, Steven~L.
+  Brunton, and Matthew~J. Colbrook.
+\newblock Trustworthy {Koopman} operator learning: Invariance diagnostics and
+  error bounds, 2026.
+
+\bibitem[Goodman \& Wallach(2009)Goodman and Wallach]{goodman2009symmetry}
+Roe Goodman and Nolan~R. Wallach.
+\newblock \emph{Symmetry, Representations, and Invariants}.
+\newblock Springer, 2009.
+
+\bibitem[Hart(2024)]{hart2024attractor}
+Joseph~D. Hart.
+\newblock Attractor reconstruction with reservoir computers: The effect of the
+  reservoir's conditional {Lyapunov} exponents on faithful attractor
+  reconstruction.
+\newblock \emph{Chaos}, 34\penalty0 (4):\penalty0 043123, 2024.
+\newblock arXiv:2401.00885.
+
+\bibitem[Lillemark et~al.(2026)Lillemark, Huang, Zhan, Du, and
+  Keller]{lillemark2026flowm}
+Hansen~Jin Lillemark, Benhao Huang, Fangneng Zhan, Yilun Du, and T.~Anderson
+  Keller.
+\newblock Flow equivariant world models: Memory for partially observed dynamic
+  environments, 2026.
+\newblock ICML 2026.
+
+\bibitem[Lorenz(1996)]{lorenz1996predictability}
+Edward~N. Lorenz.
+\newblock Predictability: A problem partly solved.
+\newblock In \emph{Proceedings of the Seminar on Predictability}, volume~1,
+  pp.\  1--18. ECMWF, Reading, UK, 1996.
+
+\bibitem[Mo(2026)]{mo2026symmetry}
+Hanson~Hanxuan Mo.
+\newblock Symmetry-protected {Lyapunov} neutral modes in equivariant recurrent
+  networks, 2026.
+
+\bibitem[Oseledets(1968)]{oseledets1968}
+Valery~I. Oseledets.
+\newblock A multiplicative ergodic theorem. characteristic {Lyapunov} exponents
+  of dynamical systems.
+\newblock \emph{Transactions of the Moscow Mathematical Society}, 19:\penalty0
+  197--231, 1968.
+
+\bibitem[Pilyugin(1999)]{pilyugin1999shadowing}
+Sergei~Yu. Pilyugin.
+\newblock \emph{Shadowing in Dynamical Systems}, volume 1706 of \emph{Lecture
+  Notes in Mathematics}.
+\newblock Springer, 1999.
+
+\bibitem[Vlachas et~al.(2020)Vlachas, Pathak, Hunt, Sapsis, Girvan, Ott, and
+  Koumoutsakos]{vlachas2020rnn}
+Pantelis~R. Vlachas, Jaideep Pathak, Brian~R. Hunt, Themistoklis~P. Sapsis,
+  Michelle Girvan, Edward Ott, and Petros Koumoutsakos.
+\newblock Backpropagation algorithms and reservoir computing in recurrent
+  neural networks for the forecasting of complex spatiotemporal dynamics.
+\newblock \emph{Neural Networks}, 126:\penalty0 191--217, 2020.
+\newblock arXiv:1910.05266.
+
+\end{thebibliography}

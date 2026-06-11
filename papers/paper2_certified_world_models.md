@@ -1265,17 +1265,20 @@ median censored $\ge10/20$ starts; bias $29$), $42$ expansive with measured/cert
 $\lambda_1\ge0.25$ and $0.33$ below it, in-band $[2/3,3/2]$ only $11/42$. **The seed map's "calibrated where
 strongly expansive" is overturned**: in-band cells span $\lambda_1{=}0.01$–$0.39$ — expansion strength does not
 predict calibration. What predicts it is *which quantity sets the measured horizon*. Where the model's native
-one-step residual already sits at the threshold (measured median $\le3$ steps at $\epsilon{=}0.2$: $24$ of $42$
+one-step residual already sits at the threshold (measured median $\le3$ steps at $\epsilon{=}0.2$: $25$ of $42$
 expansive cells — the entire dog/humanoid/quadruped block), the certificate prices a growth the rollout never
 exhibits: the **same mechanism E16 found on V-JEPA 2-AC**, now measured in bulk — Proposition 7's degeneracy
 direction as the zoo's *default regime*. Where the horizon is long enough to be growth-set (median $\ge5$:
-$15$ cells), the certificate is **calibrated**: ratio median $0.95$, $10/15$ in $[2/3,3/2]$, across five domains
-including two with no seed-map relative (cup-catch $0.68/1.15/1.44$, cartpole-balance-sparse $1.14$); walker-run-2
-lands at $0.95$ in the *proven-flattening* domain, so the low ratios elsewhere are not a pipeline artifact (its
+$15$ cells), the certificate is **calibrated**: ratio median $0.94$, $8/15$ in $[2/3,3/2]$, across five domains
+including two with no seed-map relative (cup-catch $0.68/1.36/1.68$, cartpole-balance-sparse $1.13$); walker-run-2
+lands at $0.90$ in the *proven-flattening* domain, so the low ratios elsewhere are not a pipeline artifact (its
 own seeds 1/3 land $0.06/0.35$ — certificate quality varies per (task, seed) world model, not per domain). The
-re-stratification is descriptive, not pre-registered; cut sensitivity is disclosed (growth-side median
-$0.49/0.65/0.89$ at cuts $\le1/\le2/\le3$) and the frozen quantities — protocol, fractions, $\lambda$-split
-medians — are reported above unchanged. The corrected reading is uniform from toy to zoo to $1$B: **the spectrum
+re-stratification is descriptive, not pre-registered; cut sensitivity is disclosed (growth-side median $0.53/0.68/0.90$ at cuts
+$\le1/\le2/\le3$) and the frozen quantities — protocol, fractions, $\lambda$-split medians — are reported above
+unchanged. All measured statistics are at $100$ rollout starts per cell (`step89c`, a $5\times$ thickening of the
+published $20$; spec frozen first): the regime map is start-count-stable — bias $24\to25$, growth set $15\to15$
+(one boundary swap), in-band $10/15\to8/15$ with cup-catch-2 exiting *above* the band ($1.68$, the conservative
+side) — and the growth-side median moves $0.95\to0.94$. The corrected reading is uniform from toy to zoo to $1$B: **the spectrum
 prices error *growth*; the measured column tests error *level*; the audit is their conjunction.**
 `experiments/step89b`, `tests/test_step89b.py`; spec `docs/specs/2026-06-11-step89b-audit-expansion-seed.md`.
 
