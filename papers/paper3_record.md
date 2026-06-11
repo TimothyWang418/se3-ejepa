@@ -175,6 +175,46 @@ state_dict so strict loads pass against cache-free modules; non-leaf so eval-mod
 crashes; stale after parameter-only EMA). The 40-ep run's in-process 84.8 remains the open
 residual for the matrix experiment.
 
+## [2026-06-11] v1.4 frame-pair — INCONCLUSIVE-BY-RECIPE-INSTABILITY on the moat; velocity-observability hypothesis itself takes damage; first in-jurisdiction certificate cell appears
+
+(`experiments/p4_v14_framepair.py`, 7.9 min, 4 cells; artifact `p4_v14_framepair.json`.)
+
+| cell | pred | latent_std | δ̂_norm | λ̂_t /chunk | G-pre r |
+|---|---|---|---|---|---|
+| eq@κ0 | 0.018 | **0.307 ⚠** | 0.464 | **+0.404** | **0.64 — IN BAND** |
+| plain@κ0 | 0.513 | 0.945 | 0.936 | +0.0002 | (degenerate) |
+| eq@κ0.8 | 0.219 | 0.664 ⚠ | 0.667 | +0.015 | 6.6 |
+| plain@κ0.8 | 0.271 | 1.041 | 0.435 | +0.0006 | (degenerate) |
+
+Normalized moat: κ=0 → 2.02× (eq better, **down from single-frame 6.3×**); κ=0.8 → 0.65×
+(inversion persists). **Verdicts, honestly:**
+
+1. **The moat question is BLOCKED, not answered**: the v1.4 spec's own stability check fires —
+   eq's recipe partially collapsed with 6-ch inputs (std 0.307 at κ=0!, 0.664 at κ=0.8) while
+   plain stayed healthy. Neither the 2.02× nor the 0.65× is bankable; the registered next lever
+   is a **v1.5 stability pass for the eq/6-ch combination** — `predictability_gated_var` (the
+   repo's own Step-64 tool, built for exactly this variance↔predictability tension) is the
+   first candidate, var_coef the second; gate: std ≥ 0.7 before the moat is re-asked.
+2. **The velocity-observability hypothesis itself took damage**: raw δ̂ did NOT drop at κ=0.8
+   (eq 4.15→5.01, plain 4.45→5.12 — both *worse* than single-frame). Frame pairs ≠ velocity
+   extraction: at 96 px/0.1 s the block displacement is ~1–5 px and nothing in either encoder
+   biases toward temporal differencing in 20 epochs. The non-Markov diagnosis stands; the cheap
+   fix didn't bite. (Alternatives if pursued: explicit difference channel, longer training, or
+   accepting the regime-scoped moat statement.)
+3. **First in-jurisdiction certificate cell**: eq@κ0 frame-pair posts λ̂_t = +0.404/chunk with
+   G-pre r = 0.64 — the first tangent certificate inside its band. **Flagged, not celebrated**:
+   it coincides with the collapsed-variance space (std 0.307), where amplified low-variance
+   directions can manufacture expansive-looking, self-consistent dynamics. Re-examine only
+   after v1.5 stability.
+4. Analysis-guard note: G-pre r for near-zero tangents (plain: λ̂≈2e-4 ⇒ r≈208/152) is junk —
+   the |λ|>1e-6 guard is too low; r is meaningful only when λ̂_t's CI excludes 0 (fix queued
+   with the next analysis edit).
+
+**Net:** zero gates loosened; the moat narrative is now explicitly hostage to recipe stability —
+which is itself the C2 lane's content-decay/collapse axis. The two lanes have CONVERGED on one
+underlying phenomenon: **this JEPA recipe's variance–predictability tension is the project's
+current binding constraint.** v1.5 (stability) is therefore the next blade for BOTH lanes.
+
 ## [2026-06-11] Stage-2κ — the κ=0.8 lane: J≡I dies, the moat collapses to parity, and G-pre fires in the OPPOSITE direction from step99
 
 (`experiments/p4_spine_stage2_kappa08.py`, 3.5 min total — collection is actually ~15 s for 200
