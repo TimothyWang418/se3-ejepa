@@ -24,3 +24,8 @@
 - hero 图 60/62%(p3 浮动页双稳态,阈值在 62/64 之间——别手痒调大)
 - "real-robot data, offline monitoring" 措辞红线
 - 四个 INCONCLUSIVE + G1b/G8-E 的 as-registered 失败照登
+
+## 事故核验(2026-06-11 增,e2cnn stale-cache 事故的 paper2 侧)
+- [ ] 已核:paper2 全部 e2cnn 步骤(step18/21/34/35/44/46/72)进程内训练+测量、无 save/reload 边界,
+      `refresh_target_cache` 默认 False 逐位保留旧语义 ⇒ 发表数字不受影响(2026-06-11 复盘判定,置信 0.85)。
+      投稿周若有任何 e2cnn ckpt 进入 artifact:跑 #9 等式测试(进程内==重载)再打包。
