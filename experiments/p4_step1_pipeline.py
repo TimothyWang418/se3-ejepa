@@ -51,8 +51,10 @@ from src.models.eqjepa import ConvEncoder, EqJEPA, SteerableEncoder  # noqa: E40
 from src.training.jepa import train_jepa  # noqa: E402
 
 SMOKE = bool(int(os.environ.get("P4_SMOKE", "0")))
+SKIP_ORACLE = bool(int(os.environ.get("P4_SKIP_ORACLE", "0")))  # G0c verdict stands; solver fix queued
 SEED = 0
 RES = 96
+CHUNK = 5  # protocol v1.2: transitions are 5-env-step action chunks (1 f-chunk = 5 env steps)
 EP_LEN = 8 if SMOKE else 100
 N_COLLECT = 4 if SMOKE else 260  # 200 corpus + 40 probe-train + 20 probe-eval
 FRACTIONS = [2, 3] if SMOKE else [2, 10, 20, 60, 200]
@@ -63,7 +65,8 @@ ORACLE_ATTEMPTS = 2 if SMOKE else 20  # G0c gate sample (full demo generation is
 ORACLE_MAX_STEPS = 30 if SMOKE else 200
 DEVICE = "mps" if torch.backends.mps.is_available() and not SMOKE else "cpu"
 DATA_DIR = ROOT / "data" / "p4_step1"
-OUT_JSON = ROOT / "papers" / "figures" / ("p4_step1_smoke.json" if SMOKE else "p4_step1.json")
+OUT_JSON = ROOT / "papers" / "figures" / ("p4_step1_smoke.json" if SMOKE else "p4_step1_v12.json")
+# (v1.1's artifact p4_step1.json is committed history — never overwritten)
 
 
 # ----------------------------------------------------------------------------- env + collection
@@ -168,35 +171,63 @@ def gate_g0c(seed: int, kappa: float | None = None) -> dict:
 
 
 # ----------------------------------------------------------------------------- transitions + aug
+_CIRC = None
+
+
+def circ_mask(x: torch.Tensor) -> torch.Tensor:
+    r"""Fixed circular mask applied to ALL frames everywhere (v1.2: kills the rotation
+    corner-wedge cue at the source; applied uniformly to augmented and unaugmented data, train
+    and probe — metric fairness)."""
+    global _CIRC
+    if _CIRC is None or _CIRC.shape[-1] != x.shape[-1]:
+        r = x.shape[-1] / 2.0
+        yy, xx = torch.meshgrid(torch.arange(x.shape[-2]), torch.arange(x.shape[-1]), indexing="ij")
+        _CIRC = (((yy - r + 0.5) ** 2 + (xx - r + 0.5) ** 2) <= r**2).to(torch.float32)[None, None]
+    return x * _CIRC.to(x.dtype)
+
+
 def to_transitions(data: dict, n_episodes: int) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    r"""v1.2: 5-step action-chunk transitions on chunk-boundary frames, circular-masked."""
     f = torch.from_numpy(data["frames"][:n_episodes]).float().div_(255.0).permute(0, 1, 4, 2, 3)
-    a = torch.from_numpy(data["actions"][:n_episodes])
-    obs = f[:, :-1].reshape(-1, 3, RES, RES)
-    nxt = f[:, 1:].reshape(-1, 3, RES, RES)
-    act = a.reshape(-1, 2)
+    f = circ_mask(f.reshape(-1, 3, RES, RES)).reshape(f.shape)
+    a = torch.from_numpy(data["actions"][:n_episodes])  # (E, T, 2)
+    T = a.shape[1]
+    n_ch = T // CHUNK
+    obs = f[:, 0 : n_ch * CHUNK : CHUNK].reshape(-1, 3, RES, RES)
+    nxt = f[:, CHUNK : n_ch * CHUNK + 1 : CHUNK].reshape(-1, 3, RES, RES)
+    act = a[:, : n_ch * CHUNK].reshape(a.shape[0], n_ch, CHUNK * 2).reshape(-1, CHUNK * 2)
     return obs, act, nxt
 
 
-def rotate_images(x: torch.Tensor, theta: float) -> torch.Tensor:
-    r"""CCW rotation about the image centre (bilinear grid_sample; inverse map in the grid)."""
-    c, s = math.cos(theta), math.sin(theta)
-    # grid_sample samples input at grid locations: use the INVERSE rotation in the affine matrix.
-    mat = torch.tensor([[c, s, 0.0], [-s, c, 0.0]], dtype=x.dtype).expand(x.shape[0], 2, 3)
+def rotate_images(x: torch.Tensor, theta) -> torch.Tensor:
+    r"""CCW rotation about the image centre; ``theta`` is a float or a per-sample tensor (B,)."""
+    if not torch.is_tensor(theta):
+        theta = torch.full((x.shape[0],), float(theta), dtype=x.dtype)
+    c, s = torch.cos(theta), torch.sin(theta)
+    zero = torch.zeros_like(c)
+    # grid_sample samples input at grid locations: the affine matrix is the INVERSE rotation.
+    mat = torch.stack([torch.stack([c, s, zero], -1), torch.stack([-s, c, zero], -1)], 1)  # (B,2,3)
     grid = F.affine_grid(mat, x.shape, align_corners=False)
     return F.grid_sample(x, grid, align_corners=False, padding_mode="zeros")
 
 
 def augment_x4(obs, act, nxt, seed: int):
-    r"""Identity + 3 uniform CCW angles; displacement actions rotate by the same $R(+\theta)$."""
+    r"""v1.2: identity + 3 copies with PER-SAMPLE uniform angles (the per-copy drawing of v1.1
+    produced a 4-discrete-angle dataset and a corner-cue cluster collapse — step1b/c, confirmed);
+    every chunked sub-action rotates by the sample's own $R(+\theta)$ (sign pinned by the
+    calibration test). Combined with the universal circular mask, the corner cue is gone."""
     g = torch.Generator().manual_seed(seed)
+    B = obs.shape[0]
+    n_sub = act.shape[1] // 2
     outs_o, outs_a, outs_n = [obs], [act], [nxt]
     for _ in range(3):
-        th = float(torch.rand((), generator=g) * 2 * math.pi)
-        c, s = math.cos(th), math.sin(th)
-        R = torch.tensor([[c, -s], [s, c]], dtype=act.dtype)
-        outs_o.append(rotate_images(obs, th))
-        outs_n.append(rotate_images(nxt, th))
-        outs_a.append(act @ R.T)
+        th = torch.rand(B, generator=g) * 2 * math.pi
+        c, s = torch.cos(th), torch.sin(th)
+        R = torch.stack([torch.stack([c, -s], -1), torch.stack([s, c], -1)], 1)  # (B,2,2)
+        outs_o.append(circ_mask(rotate_images(obs, th)))
+        outs_n.append(circ_mask(rotate_images(nxt, th)))
+        a_rot = torch.einsum("bij,bcj->bci", R.to(act.dtype), act.view(B, n_sub, 2))
+        outs_a.append(a_rot.reshape(B, n_sub * 2))
     return torch.cat(outs_o), torch.cat(outs_a), torch.cat(outs_n)
 
 
@@ -208,12 +239,13 @@ def count_params(m: torch.nn.Module) -> int:
 def build_eq() -> EqJEPA:
     n_rot, width = (4, 4) if SMOKE else (16, 8)
     enc = SteerableEncoder(in_channels=3, latent_dim=128, n_rot=n_rot, width=width)
-    pred = CNRegularPredictor(latent_dim=128, action_dim=2, n_rot=n_rot, hidden_fields=8 if SMOKE else 32)
-    return EqJEPA(latent_dim=128, action_dim=2, encoder=enc, predictor=pred)
+    pred = CNRegularPredictor(latent_dim=128, action_dim=2 * CHUNK, n_rot=n_rot,
+                              hidden_fields=8 if SMOKE else 32)
+    return EqJEPA(latent_dim=128, action_dim=2 * CHUNK, encoder=enc, predictor=pred)
 
 
 def build_plain(width: int) -> EqJEPA:
-    return EqJEPA(latent_dim=128, action_dim=2, encoder=ConvEncoder(3, 128, width=width))
+    return EqJEPA(latent_dim=128, action_dim=2 * CHUNK, encoder=ConvEncoder(3, 128, width=width))
 
 
 def pick_ladder(target: int) -> dict[str, int]:
@@ -275,7 +307,8 @@ def probe_targets(states: np.ndarray):
 def encode_all(model: EqJEPA, frames: np.ndarray, device: str) -> torch.Tensor:
     f = torch.from_numpy(frames).float().div_(255.0).permute(0, 1, 4, 2, 3)
     E, T = f.shape[0], f.shape[1]
-    z = model.encode(f.reshape(-1, 3, RES, RES).to(device)).cpu()
+    flat = circ_mask(f.reshape(-1, 3, RES, RES))
+    z = model.encode(flat.to(device)).cpu()
     return z.reshape(E, T, -1)
 
 
@@ -300,6 +333,9 @@ def base_device(name: str, art: dict) -> str:
 
 
 def run_probes(model: EqJEPA, probe_tr: dict, probe_ev: dict, device: str = "cpu") -> dict:
+    r"""v1.2: probes live on chunk boundaries (Δθ becomes per-chunk, ~3.5° median motion)."""
+    probe_tr = {k: v[:, ::CHUNK] for k, v in probe_tr.items() if k in ("frames", "states")}
+    probe_ev = {k: v[:, ::CHUNK] for k, v in probe_ev.items() if k in ("frames", "states")}
     model.eval().to(device)
     z_tr, z_ev = encode_all(model, probe_tr["frames"], device), encode_all(model, probe_ev["frames"], device)
     out = {}
@@ -319,7 +355,9 @@ def main() -> int:
     torch.manual_seed(SEED)
     t0 = time.time()
     art: dict = {"smoke": SMOKE, "seed": SEED, "res": RES, "ep_len": EP_LEN, "device": DEVICE,
-                 "fractions": FRACTIONS, "epochs": EPOCHS}
+                 "fractions": FRACTIONS, "epochs": EPOCHS,
+                 "protocol": "v1.2 (stride-5 chunks, circular mask, per-sample aug angles)",
+                 "chunk": CHUNK}
 
     print(f"[1/5] G0b collection: {N_COLLECT} WeakPolicy episodes ...")
     data = collect_weakpolicy(N_COLLECT, seed=SEED)
@@ -331,11 +369,15 @@ def main() -> int:
                   "frames_shape": list(data["frames"].shape)}
     print(f"      corpus {corpus_n} eps, probe {N_PROBE_TRAIN}+{N_PROBE_EVAL} eps  ({time.time()-t0:.0f}s)")
 
-    print(f"[2/5] G0c oracle-CEM gate: {ORACLE_ATTEMPTS} attempts ...")
-    art["g0c"] = gate_g0c(SEED)
-    art["g0c"]["verdict"] = "PASS" if art["g0c"]["rate"] >= 0.8 else "FAIL"
-    print(f"      success {art['g0c']['successes']}/{art['g0c']['attempts']} -> {art['g0c']['verdict']} "
-          f"({art['g0c']['sec']}s)")
+    if SKIP_ORACLE:
+        art["g0c"] = {"skipped": True, "note": "verdict FAIL of 2026-06-10 stands; solver fix queued"}
+        print("[2/5] G0c oracle gate SKIPPED (P4_SKIP_ORACLE=1; standing verdict unchanged)")
+    else:
+        print(f"[2/5] G0c oracle-CEM gate: {ORACLE_ATTEMPTS} attempts ...")
+        art["g0c"] = gate_g0c(SEED)
+        art["g0c"]["verdict"] = "PASS" if art["g0c"]["rate"] >= 0.8 else "FAIL"
+        print(f"      success {art['g0c']['successes']}/{art['g0c']['attempts']} -> {art['g0c']['verdict']} "
+              f"({art['g0c']['sec']}s)")
     # NOTE: a G0c FAIL is recorded honestly but does NOT abort the run — the training grid does not
     # consume the oracle demos (they feed G in a later step); the gate verdict stands in the record.
 

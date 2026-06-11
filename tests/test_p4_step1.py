@@ -57,6 +57,21 @@ def test_predictor_fiber_equivariance() -> float:
             right = torch.roll(base.view(B, -1, N_ROT), shifts=g, dims=-1).reshape(B, LATENT)
             worst = max(worst, (left - right).abs().max().item())
     assert worst < TOL_EXACT, f"predictor fiber equivariance broken: max err {worst:.3e}"
+
+    # v1.2 chunked actions (action_dim=10, C=5 sub-actions): all sub-actions rotate together
+    pred_c = CNRegularPredictor(latent_dim=LATENT, action_dim=10, n_rot=N_ROT, hidden_fields=32)
+    pred_c.eval()
+    ac = torch.empty(B, 10).uniform_(-1, 1)
+    with torch.no_grad():
+        base_c = pred_c(z, ac)
+        for g in range(N_ROT):
+            theta = 2.0 * torch.pi * g / N_ROT
+            zg = torch.roll(z.view(B, -1, N_ROT), shifts=g, dims=-1).reshape(B, LATENT)
+            acg = (ac.view(B, 5, 2) @ rot(theta).T).reshape(B, 10)
+            left = pred_c(zg, acg)
+            right = torch.roll(base_c.view(B, -1, N_ROT), shifts=g, dims=-1).reshape(B, LATENT)
+            worst = max(worst, (left - right).abs().max().item())
+    assert worst < TOL_EXACT, f"chunked predictor equivariance broken: max err {worst:.3e}"
     return worst
 
 

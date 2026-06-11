@@ -77,7 +77,10 @@ class CNRegularPredictor(nn.Module):
 
     Args:
         latent_dim: $F \cdot N$ (must be divisible by ``n_rot``).
-        action_dim: must be 2 (planar position action; frequency-1 lift).
+        action_dim: $2C$ for $C$ planar sub-actions (protocol v1.2 uses 5-step action chunks,
+            $C{=}5$, ``action_dim=10``). Each sub-action gets its own frequency-1 lift and
+            invariant-norm channel; under a scene rotation ALL sub-actions rotate by the same
+            $R(\theta_g)$, so equivariance holds chunk-wise by the same intertwining identity.
         n_rot: $N$, the cyclic order (must match the encoder's ``n_rot``).
         hidden_fields: $H$, number of hidden regular fields.
         action_center: subtracted before the lift. The swm PushT env default is
@@ -100,13 +103,14 @@ class CNRegularPredictor(nn.Module):
         action_scale: float = 1.0,
     ):
         super().__init__()
-        if action_dim != 2:
-            raise ValueError("CNRegularPredictor's frequency-1 action lift requires action_dim=2.")
+        if action_dim % 2 != 0:
+            raise ValueError("CNRegularPredictor lifts planar sub-actions: action_dim must be even.")
         if latent_dim % n_rot != 0:
             raise ValueError(f"latent_dim ({latent_dim}) must be divisible by n_rot ({n_rot}).")
         self.latent_dim = latent_dim
         self.n_rot = n_rot
         self.n_fields = latent_dim // n_rot
+        self.n_sub = action_dim // 2
         self.register_buffer("a_center", torch.tensor(action_center, dtype=torch.float32))
         self.a_scale = float(action_scale)
         # phases of the group elements: 2*pi*n/N, n = 0..N-1
@@ -114,7 +118,7 @@ class CNRegularPredictor(nn.Module):
         self.register_buffer("cos_n", torch.cos(phase))
         self.register_buffer("sin_n", torch.sin(phase))
 
-        f_in = self.n_fields + 2  # latent fields + [freq-1 action lift, invariant |a|]
+        f_in = self.n_fields + 2 * self.n_sub  # latent fields + per-sub-action [freq-1, |a|]
         self.net = nn.Sequential(
             GroupConv1x1(f_in, hidden_fields, n_rot),
             nn.ReLU(inplace=True),
@@ -124,15 +128,17 @@ class CNRegularPredictor(nn.Module):
         )
 
     def lift_action(self, a: torch.Tensor) -> torch.Tensor:
-        r"""Frequency-1 lift + invariant norm channel: ``(B, 2) -> (B, 2, N)``.
+        r"""Per-sub-action frequency-1 lift + invariant norm channel: ``(B, 2C) -> (B, 2C, N)``.
 
-        $A_a[n] = \tilde a_x \cos(2\pi n/N) + \tilde a_y \sin(2\pi n/N)$ with
-        $\tilde a = (a - c)/s$; second channel $= \lVert\tilde a\rVert$ (constant over $n$).
+        For each sub-action $a^{(j)}$: $A^{(j)}[n] = \tilde a^{(j)}_x \cos(2\pi n/N) +
+        \tilde a^{(j)}_y \sin(2\pi n/N)$ with $\tilde a = (a - c)/s$, plus the invariant
+        $\lVert\tilde a^{(j)}\rVert$ (constant over $n$).
         """
-        at = (a - self.a_center) / self.a_scale  # (B, 2), centred + scaled
-        freq1 = at[:, :1] * self.cos_n + at[:, 1:2] * self.sin_n  # (B, N)
-        inv = at.norm(dim=1, keepdim=True).expand(-1, self.n_rot)  # (B, N)
-        return torch.stack([freq1, inv], dim=1)  # (B, 2, N)
+        B = a.shape[0]
+        at = (a.view(B, self.n_sub, 2) - self.a_center) / self.a_scale  # (B, C, 2)
+        freq1 = at[..., :1] * self.cos_n + at[..., 1:2] * self.sin_n  # (B, C, N)
+        inv = at.norm(dim=-1, keepdim=True).expand(-1, -1, self.n_rot)  # (B, C, N)
+        return torch.cat([freq1, inv], dim=1)  # (B, 2C, N)
 
     def forward(self, z: torch.Tensor, a: torch.Tensor) -> torch.Tensor:
         B = z.shape[0]
