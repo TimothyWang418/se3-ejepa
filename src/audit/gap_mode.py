@@ -103,7 +103,12 @@ def loop_exponents(model, frames: torch.Tensor, actions: torch.Tensor, *, window
     """
     dt = _model_dtype(model)
     pred = model.predictor
-    pred64 = copy.deepcopy(pred).double() if isinstance(pred, torch.nn.Module) else pred
+    if isinstance(pred, torch.nn.Module):
+        pred64 = copy.deepcopy(pred).double()
+        for p in pred64.parameters():  # inference-only: kills graph buildup through QR steps
+            p.requires_grad_(False)
+    else:
+        pred64 = pred
 
     E, T = actions.shape[0], actions.shape[1]
     out = []
@@ -132,21 +137,27 @@ def equivariance_residual(model, frames: torch.Tensor, n_sample: int = 32) -> di
     x = frames.reshape(-1, *frames.shape[2:])[:n_sample].float()
     gx = enn.GeometricTensor(x, enc.in_type)
     base = enc.encode_geometric(x)
-    per_g = {}
+    per_g_mean, per_g_max = {}, {}
     for g in enc.r2.testing_elements:
         gi = int(g)
         if gi == 0:
             continue
         left = enc.encode_geometric(gx.transform(g).tensor)
         right = base.transform(g)
-        per_g[gi] = float((left.tensor - right.tensor).norm(dim=1).mean())
-    n = len(per_g) + 1
-    grid = [gi for gi in per_g if (gi * 4) % n == 0]  # C_4 subgroup (pixel-exact angles)
+        norms = (left.tensor - right.tensor).norm(dim=1)
+        per_g_mean[gi] = float(norms.mean())
+        per_g_max[gi] = float(norms.max())
+    n = len(per_g_mean) + 1
+    grid = [gi for gi in per_g_mean if (gi * 4) % n == 0]  # C_4 subgroup (pixel-exact angles)
     return {
-        "per_generator_mean": per_g,
-        "max": max(per_g.values()),
-        "grid_subgroup_max": max((per_g[g] for g in grid), default=None),
-        "offgrid_max": max((v for g, v in per_g.items() if g not in grid), default=None),
+        # Thm B's eps_max is a SUP — "max" here is the empirical sup over samples & generators;
+        # the mean is reported for context, never substituted into the m*eps_max term.
+        "per_generator_mean": per_g_mean,
+        "per_generator_max": per_g_max,
+        "max": max(per_g_max.values()),
+        "mean_over_generators": float(np.mean(list(per_g_mean.values()))),
+        "grid_subgroup_max": max((per_g_max[g] for g in grid), default=None),
+        "offgrid_max": max((v for g, v in per_g_max.items() if g not in grid), default=None),
     }
 
 
@@ -187,14 +198,21 @@ def audit_gap(model, frames: torch.Tensor, actions: torch.Tensor, *, window: int
     eps = equivariance_residual(model, frames)
 
     h = np.arange(1, h_max + 1)
-    lam_m = lam1["mean"]
-    curve = delta["mean"] * (np.exp(lam_m * h) - 1) / (np.exp(lam_m) - 1) if abs(lam_m) > 1e-9 \
-        else delta["mean"] * h.astype(float)
-    lo_c = delta["ci_lo"] * (np.exp(l_lo * h) - 1) / (np.exp(l_lo) - 1) if abs(l_lo) > 1e-9 else delta["ci_lo"] * h
-    hi_c = delta["ci_hi"] * (np.exp(l_hi * h) - 1) / (np.exp(l_hi) - 1) if abs(l_hi) > 1e-9 else delta["ci_hi"] * h
 
+    def geo(d: float, lam: float) -> np.ndarray:
+        return d * (np.exp(lam * h) - 1) / (np.exp(lam) - 1) if abs(lam) > 1e-9 else d * h.astype(float)
+
+    lam_m = lam1["mean"]
     return {
         "delta": delta, "lambda1": lam1, "eps_max": eps,
-        "certified_curve": {"H": h.tolist(), "err": curve.tolist(),
-                            "err_ci_lo": np.asarray(lo_c).tolist(), "err_ci_hi": np.asarray(hi_c).tolist()},
+        # Two registered curves: mean-delta = typical-case predictor; q90-delta = the
+        # certificate-flavoured bound (Thm B's delta is a sup; q90 is its honest empirical proxy —
+        # which one a downstream gate consumes is frozen in that gate's spec, not here).
+        "certified_curve": {
+            "H": h.tolist(),
+            "err_mean": geo(delta["mean"], lam_m).tolist(),
+            "err_q90": geo(delta["q90"], lam_m).tolist(),
+            "err_ci_lo": geo(delta["ci_lo"], l_lo).tolist(),
+            "err_ci_hi": geo(delta["ci_hi"], l_hi).tolist(),
+        },
     }
