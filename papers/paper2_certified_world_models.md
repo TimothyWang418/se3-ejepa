@@ -249,9 +249,9 @@ $$
 \;\le\; \sum_{\text{channels }j} c_j\,(m\,\epsilon_{\max}+T\,\delta)\,e^{\lambda_j T},\qquad m=|w|.
 $$
 
-We claim this as a **bound on the form**, not a tight inequality *on the prefactor*: the constants $c_j$ are not
-estimated. The horizon's *form*, however, is tight — Proposition 6 below supplies a matching lower bound, so the
-$\log(1/\epsilon)/\lambda_j$ scaling is two-sided, not merely an upper estimate. We **measure the consequence** — that
+The horizon's *form* is tight — Proposition 6 below supplies a matching lower bound — and the *prefactor* is no
+longer a hedge: Proposition 6′ identifies $c_j$ with the splitting conditioning $1/\sin\theta_j$ (exactly $1$ on
+orthogonal/isotypic splittings, measured; computable on learned loops). We **measure the consequence** — that
 channel $j$ is certified only to horizon
 
 $$
@@ -312,6 +312,37 @@ the *true* horizon, not just an attainable one. A direct numerical instantiation
 orbit-error-variation equals $\epsilon\,e^{\lambda_j T}$ to a relative error of $10^{-14}$–$10^{-13}$ across seeds, an
 exactly equivariant model has orbit-variation *exactly $0$* (to machine precision) at all horizons, and the certified
 horizon is linear in $\log(1/\epsilon)$ with slope $1/\lambda_j$ ($R^2{=}1.000$, all seeds).
+
+**Proposition 6′ (the prefactor is the splitting conditioning — and when it is exactly $1$).** Theorem B's "bound on
+the form" hedge can now be removed: with channel decomposition $\mathcal Z=\bigoplus_j V_j$ invariant for the
+(linearized) predictor and simple leading multipliers, the channel-$j$ constant can be taken
+$$c_j\;=\;\lVert\Pi_j\rVert\;=\;\frac{1}{\sin\theta_j},$$
+$\Pi_j$ the spectral projector onto $V_j$ along $\bigoplus_{i\ne j}V_i$ and $\theta_j$ the minimal principal angle to
+that complement. Hence **(i)** on an *orthogonal* invariant splitting — distinct isotypic blocks of the orthogonal
+$\rho$ under a **linear** equivariant predictor (Schur forces invariance; orthogonality of isotypic components forces
+$\theta=\pi/2$), or any normal Jacobian — $c_j=1$ and the upper bound matches Proposition 6's lower bound
+**including the constant**; **(ii)** obliqueness, hence any prefactor $>1$, can live only *inside* an isotypic
+block; **(iii)** the prefactor's entire effect on the certified horizon is an additive haircut
+$\log\kappa_j/\lambda_j$ map steps ($\kappa_j:=1/\sin\theta_j$). *Proof.* A defect propagates as
+$\Phi^T\epsilon u=\epsilon\sum_j e^{\lambda_j T}(1+o(1))\Pi_j u$; $\sup_{\lVert u\rVert=1}\lVert\Pi_j u\rVert=
+\lVert\Pi_j\rVert$, attained at the left-vector direction, and $\lVert\Pi_j\rVert=1/\sin\theta_j$ is classical;
+orthogonal projectors have norm $1$, meeting Proposition 6's coefficient; Schur kills cross-isotypic blocks; the
+haircut is the shift of the crossing $\epsilon\kappa_je^{\lambda_jT}=\epsilon_{\mathrm{res}}$. $\square$
+*Honest caveat:* for a **nonlinear** equivariant $f$, $Df(\rho(g)z)=\rho(g)Df(z)\rho(g)^{-1}$ — the Jacobian *field*
+is equivariant but $Df(z)$ at generic $z$ need not commute with $\rho$, so the forced-orthogonality clause is for the
+linear/commutant case; on learned loops $\kappa_j$ is the *measured* object, readable from the same Jacobian field
+the certificate already uses. **Measured (Experiment 27: `step65b`, `step95`).** Placement and leakage: a
+group-averaged random matrix has off-isotypic-block mass $<1.5\times10^{-16}$ ($100$ draws), and a defect confined
+to one isotypic block grows at exactly its block's $e^{\lambda_BT}$ (rel.\ err $<10^{-14}$) with cross-block leakage
+numerically $0$ ($\mathbb{Z}_4$: trivial $\oplus$ sign $\oplus$ rotation). The prefactor law is *attained*: under
+controlled shears the measured worst-case coefficient equals the analytic $\lVert\Pi\rVert$ to four digits across
+$\kappa\in\{1,1.1,2.2,5.1,10\}$ (orthogonal case exactly $1$), and the measured horizon shift equals
+$\log\kappa/\lambda$. On real loops the per-orbit-point $\kappa_1$ is honestly a *distribution* with a
+near-tangency tail — true Lorenz-96 median $17.5$ (IQR $6.8$–$24.4$, max $90$; the estimator's own convergence
+check fails there, disclosed), pretrained TD-MPC2 walker-1 median $20.9$ (IQR $12.9$–$35.2$, max $193$), cheetah-3
+median $20.8$ (IQR $6.2$–$183$, max $789$) — while the measured E13 calibration ($0.83$–$1.02$) shows typical bias
+directions do not align adversarially; an adversarially-aligned defect could spend the $\log\kappa_1/\lambda_1$
+haircut, stated rather than hidden.
 
 **Proposition 7 (scope — when the local spectrum certifies the horizon of a *learned* model).** Theorem B and
 Proposition 6 take the latent Jacobian spectrum $\{\lambda_j\}$ as *given*. On a *learned* world model the operative
@@ -1257,6 +1288,21 @@ G1b (calibrated-cell band): at-the-edge INCONCLUSIVE; G2 (detection): **2/3 PASS
 
 
 
+**The abstain cells deploy as predicted — the taxonomy completes in deployment (Experiment 28, `step96`).** The
+published scope map's remaining cell types, run through the same sensor-only monitor with gates frozen a-priori:
+**stable-abstain** (finger-spin-2/3, $\lambda_1<0$, bench $15$–$19/20$ starts censored — the certificate issued no
+horizon because nothing diverges) deploys as **free monitoring**: $93$–$94\%$ of $k{=}24$ windows never cross
+$\theta$, belief-invalid fraction $4.0$/$4.4\%$ (vs $\sim50\%$ at HALF that cadence on cheetah), frozen-actuator
+recall $1.00$ with median delay $4.5$–$5$ at $k_{\mathrm{op}}{=}8$ — zero-false-alarm monitoring at arbitrary
+cadence with detection intact (pre-registered G3: $2/2$ PASS). **Bias-abstain** (hopper-hop-1, $\lambda_1=-0.105$
+yet bench median crossing $5.5$ with zero censoring — divergence is bias, not amplification) deploys with the same
+fast clock the certificate *refused to price*: in-situ median $7.0$ (q25–q75 $4$–$10$), inside the pre-registered
+$\times1.5$ band of bench (G4 PASS); any Lyapunov price here would be $\infty$ — the abstain is the correct
+verdict, now confirmed where it costs something. A further replication cell (finger-spin-1, bench ratio $0.95$)
+lands at $1.04$ (G5 PASS). With Experiment 26's cells, **every cell type of the published taxonomy — calibrated,
+optimistic, stable-abstain, bias-abstain, plus the walker regime caveat — now has a deployment instance predicted
+from the published artifact**. `experiments/step96_taxonomy_monitor.py`.
+
 **What does structure buy, if the read-out audits any smooth model?** Theorem B's spectral law applies to any $C^1$ latent map — that is what §5.21 (Experiment 23) exercises on (non-equivariant) TD-MPC2 and LeWM. What the law cannot supply for a generic model is *trust in the number itself*: a dense model's spectrum can be silently wrong while its predictions stay good (§5.16: $\lambda_1$ inflated $\sim3.4\times$ at one-step relMSE $10^{-5}$), so a generic certificate must be cross-validated against held-out divergence — exactly the per-model empirical check the §5.21 (Experiment 23) scope map performs. Equivariance is what removes that requirement where it holds: structure makes the spectrum *faithful* (§5.16), hence the certificate *a-priori trustworthy with zero calibration data* (§5.20 and its recalibration control) — and exclusively so (Lemma 2). The audit is universal; the **a-priori** guarantee is structure's.
 
 ---
@@ -1483,13 +1529,17 @@ recovery, remain ours.
   $\lambda_1$ to $1\text{–}8\%$ ($R^2{=}0.975$–$0.995$). Proposition 7 characterizes *when* the local spectrum certifies
   the horizon — informative on spectrally non-degenerate dynamics ($\lambda_1>0$; Oseledets gives the rate rigorously),
   vacuous on near-neutral dynamics ($\lambda_1\approx0$, the PushT interior, where a learned-model probe gives
-  $R^2{=}0.02$) — so the PushT horizon negative is *explained*, not a gap. What remains un-tightened: the prefactor (the
-  constants $c_j$ are not estimated); the *isotypic* refinement (channels by $\ell$-type) is asserted, not separately
-  measured (Experiment 3 measures the scalar law, Experiment 1 splits contractive from expansive but not by
-  $\ell$-type); and the *lift* of the rate to a learned model is, for Lorenz, **empirical** — shadowing bounds only the
-  forecast-horizon floor and does not transfer the exponent, and classical shadowing does not formally cover
-  singular-hyperbolic Lorenz; that the learned model preserves $\lambda_1$ (verified only via one-step error, an $L^2$
-  proxy for $C^1$-closeness) is the experimental finding, not a theorem.
+  $R^2{=}0.02$) — so the PushT horizon negative is *explained*, not a gap. The prefactor and isotypic hedges are now
+  **closed by measurement**: Proposition 6′ identifies $c_j=1/\sin\theta_j$ — exactly $1$ on isotypic splittings
+  (Schur placement and zero cross-block leakage measured at machine precision, Experiment 27) and attained to four
+  digits under controlled obliqueness — while on audited chaotic loops the worst-case $\kappa_1$ carries a heavy
+  near-tangency tail (median $\sim17$–$21$, max $\sim10^2$–$10^3$): measured calibration ($0.83$–$1.02$) reflects
+  *typical*, not adversarial, defect alignment, an adversarially-aligned defect could spend the
+  $\log\kappa_1/\lambda_1$ haircut, and the Lorenz-96 angle estimator fails its own convergence check (all
+  disclosed). What remains genuinely un-tightened: the *lift* of the rate to a learned model is, for Lorenz,
+  **empirical** — shadowing bounds only the forecast-horizon floor and does not transfer the exponent, and classical
+  shadowing does not formally cover singular-hyperbolic Lorenz; that the learned model preserves $\lambda_1$
+  (verified only via one-step error, an $L^2$ proxy for $C^1$-closeness) is the experimental finding, not a theorem.
 - **The Noether hinge's forward direction is proved; its hypotheses are measured.** The *placement* of each conserved
   charge by isotypic type (Proposition 4 — energy in $\ell{=}0$, angular momentum in the $\ell{=}1$ block via the
   unique degree-2 cross product) is forced by representation theory, and the *conserved $\Rightarrow$ slow* direction

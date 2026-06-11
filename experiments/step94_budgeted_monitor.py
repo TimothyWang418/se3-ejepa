@@ -61,7 +61,8 @@ SMOKE = bool(int(os.environ.get("STEP94_SMOKE", "0")))
 THETA = 0.2
 TASK = os.environ.get("STEP94_TASK", "cheetah-run")
 DOMAIN, TNAME = TASK.split("-", 1)
-OBS_DIM = {"cheetah-run": 17, "walker-walk": 24}[TASK]
+_REG = {"cheetah-run": (17, 6), "walker-walk": (24, 6), "finger-spin": (9, 2), "hopper-hop": (15, 4)}
+OBS_DIM, ACT_DIM = _REG[TASK]
 PUB = ROOT / "papers/figures/step89_pretrained_audit.json"
 
 
@@ -69,8 +70,10 @@ def published_cert(seed: int):
     r"""Published certificate row for this cell (a-priori: the step89 artifact predates step94)."""
     d = json.loads(PUB.read_text())[f"{TASK}-{seed}"]
     row = [r for r in d["cert_rows"] if abs(r["eps"] - THETA) < 1e-9][0]
+    bench = d.get("measured", {}).get("0.2", {})
     return {"T1_pub": row["T1_steps"], "ratio_bench": row["ratio_measured_over_certified"],
-            "lambda1_pub": d["lambda1"], "lambda1_ci_pub": d["lambda1_ci"]}
+            "lambda1_pub": d["lambda1"], "lambda1_ci_pub": d["lambda1_ci"],
+            "bench_median": bench.get("median"), "bench_censored": bench.get("n_censored")}
 
 
 def certify_teacher_forced(sl, T: int = 200, seed: int = 11, n_boot: int = 200, block: int = 30):
@@ -110,7 +113,7 @@ def run_episode(sl, k: int, seed: int, T: int = 400, fault_t: int | None = None,
     env = suite.load(DOMAIN, TNAME, task_kwargs={"random": seed})
     ts = env.reset()
     rng = np.random.RandomState(seed)
-    fault_ch = rng.randint(0, 6)
+    fault_ch = rng.randint(0, ACT_DIM)
     z_hat = None
     flags, crossings = [], []
     invalid = 0
@@ -146,7 +149,7 @@ def run(seeds, k_list, n_ep: int) -> dict:
     out = {"task": TASK, "theta": THETA, "k_list": k_list, "per_seed": {}}
     for s in seeds:
         ck = ROOT / f"models/tdmpc2/{TASK}-{s}.pt"
-        sl = s89.load_tdmpc2_slices(ck, obs_dim=OBS_DIM, action_dim=6)
+        sl = s89.load_tdmpc2_slices(ck, obs_dim=OBS_DIM, action_dim=ACT_DIM)
         pub = published_cert(s)
         T1, r_bench = pub["T1_pub"], pub["ratio_bench"]
         tf = certify_teacher_forced(sl, T=120 if SMOKE else 200, seed=11, n_boot=60 if SMOKE else 200)

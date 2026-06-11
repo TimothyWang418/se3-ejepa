@@ -1,0 +1,75 @@
+{
+  "A_controlled": {
+    "lambda_a": 0.7,
+    "cases": [
+      {
+        "shear": 0.0,
+        "kappa_analytic": 1.0,
+        "kappa_measured": 1.000000000000003,
+        "rel_err": 3.1086244689504383e-15
+      },
+      {
+        "shear": 0.46,
+        "kappa_analytic": 1.100727032465361,
+        "kappa_measured": 1.1007055672014876,
+        "rel_err": 1.9500987293280096e-05
+      },
+      {
+        "shear": 1.95,
+        "kappa_analytic": 2.191460700081113,
+        "kappa_measured": 2.1912669460704226,
+        "rel_err": 8.841318061649268e-05
+      },
+      {
+        "shear": 4.97,
+        "kappa_analytic": 5.069605507334865,
+        "kappa_measured": 5.069061433447425,
+        "rel_err": 0.00010732075437677327
+      },
+      {
+        "shear": 9.95,
+        "kappa_analytic": 10.00012499921876,
+        "kappa_measured": 9.99901949423431,
+        "rel_err": 0.00011054911658982913
+      }
+    ],
+    "G_A1_orthogonal_constant_1": true,
+    "G_A2_oblique_matches_projector_norm": true,
+    "G_A3_horizon_shift_log_kappa": true
+  },
+  "B_true_lorenz96": {
+    "W": 250,
+    "n_samples": 11,
+    "kappa1_median": 17.469339535494758,
+    "kappa1_q25": 6.759388167963937,
+    "kappa1_q75": 24.389836377068892,
+    "kappa1_max": 90.28912006100094,
+    "theta1_median_deg": 3.2815846616557582,
+    "median_at_half_window": 9.26297576027861,
+    "estimator_converged": false
+  },
+  "C_pretrained": {
+    "walker-walk-1": {
+      "W": 120,
+      "n_samples": 9,
+      "kappa1_median": 20.908042374702585,
+      "kappa1_q25": 12.845398569788692,
+      "kappa1_q75": 35.217662345230195,
+      "kappa1_max": 192.5031750250898,
+      "theta1_median_deg": 2.741416227820064,
+      "median_at_half_window": 20.700424011789778,
+      "estimator_converged": true
+    },
+    "cheetah-run-3": {
+      "W": 120,
+      "n_samples": 9,
+      "kappa1_median": 20.789301699788865,
+      "kappa1_q25": 6.190273371306399,
+      "kappa1_q75": 183.2499284128805,
+      "kappa1_max": 788.9299072200852,
+      "theta1_median_deg": 2.757086228971282,
+      "median_at_half_window": 26.32937669271547,
+      "estimator_converged": true
+    }
+  }
+}

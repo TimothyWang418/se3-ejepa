@@ -146,6 +146,52 @@ the upper bound of Theorem B. Consequently a certificate derived from an $\epsil
 promise predictability beyond $T\sim\frac1\lambda\log\frac1\epsilon$ on any expansive channel (worst case over admissible
 targets); only $\epsilon=0$ (exact equivariance) or $\lambda\le0$ (conservation/contraction) gives an unbounded horizon.
 
+### Proposition 6′ (the prefactor is the splitting conditioning — and when it is exactly $1$)
+
+*Statement.* In Theorem B's locally-diagonalized form, with channel decomposition $\mathcal Z=\bigoplus_j V_j$
+invariant for the (linearized) predictor and simple leading multipliers, the channel-$j$ constant can be taken
+$$
+c_j\;=\;\lVert \Pi_j\rVert\;=\;\frac{1}{\sin\theta_j},
+$$
+where $\Pi_j$ is the spectral projector onto $V_j$ along $\bigoplus_{i\ne j}V_i$ and $\theta_j$ is the minimal
+principal angle between $V_j$ and that complement. Consequently: **(i)** if the splitting is *orthogonal*
+($\theta_j=\pi/2$ — e.g. distinct isotypic blocks of the orthogonal representation $\rho$ under a **linear**
+equivariant predictor, or any normal Jacobian), then $c_j=1$ and Theorem B's upper bound matches Proposition 6's
+lower bound **including the constant**; **(ii)** obliqueness, hence any prefactor $>1$, can live only *inside* an
+isotypic block — across distinct blocks, $\mathrm{Hom}_G$ vanishes (Schur) and the isotypic components of an
+orthogonal representation are mutually orthogonal, so both invariance and orthogonality of the cross-block splitting
+are forced; **(iii)** the prefactor's entire effect on the certified horizon is an additive haircut
+$\log\kappa_j/\lambda_j$ map steps, where $\kappa_j:=1/\sin\theta_j$.
+
+*Proof.* A defect $\epsilon u$ propagates under the linearized predictor as
+$\Phi^T\epsilon u=\epsilon\sum_j e^{\lambda_j T}(1+o(1))\,\Pi_j u$, so the channel-$j$ coefficient is at most
+$\lVert\Pi_j u\rVert\le\lVert\Pi_j\rVert$, with equality attained at the maximizing $u$ (the left-vector direction):
+the constant $c_j=\lVert\Pi_j\rVert$ is both valid and attained. The identity $\lVert\Pi_j\rVert=1/\sin\theta_j$ for
+a projector onto $V_j$ along a complement at minimal principal angle $\theta_j$ is classical. If the splitting is
+orthogonal, $\Pi_j$ is an orthogonal projector, $\lVert\Pi_j\rVert=1$, and Proposition 6's construction (coefficient
+exactly $1$) meets the upper bound. For (ii): distinct isotypic components of an orthogonal representation are
+mutually orthogonal, and a linear equivariant map preserves each (Schur:
+$\mathrm{Hom}_G(\rho_\mu,\rho_\nu)=0$ for $\mu\not\cong\nu$). For (iii): scaling the channel coefficient by
+$\kappa_j$ moves the crossing of $\epsilon\,\kappa_j e^{\lambda_j T}=\epsilon_{\mathrm{res}}$ by exactly
+$\log\kappa_j/\lambda_j$. $\square$
+
+*Honest caveat (nonlinear equivariant predictors).* For nonlinear $f$, equivariance gives
+$Df(\rho(g)z)=\rho(g)\,Df(z)\,\rho(g)^{-1}$ — the Jacobian field is equivariant, but $Df(z)$ at a *generic* $z$ need
+not commute with $\rho$, so clause (i)–(ii)'s forced orthogonality applies to the linear/commutant case (and
+pointwise wherever $Df(z)$ is normal); on learned nonlinear loops $\kappa_j$ is the *measured* object. It is
+measurable from the same Jacobian field the certificate already reads (covariant-vector angles), and on chaotic
+loops it is honestly a *distribution* along the orbit (near-tangency tail), not a single scalar.
+
+*Measured (step65b, step95).* Placement and zero cross-block leakage: a group-averaged random matrix has relative
+off-isotypic-block mass $<1.5\times10^{-16}$ ($100$ draws), and a defect confined to one isotypic block grows at
+exactly its block's $e^{\lambda_B T}$ (rel. err $<10^{-14}$) with cross-block leakage numerically $0$. The prefactor
+law is *attained*: under controlled shears the measured worst-case coefficient equals the analytic
+$\lVert\Pi\rVert$ to four digits across $\kappa\in\{1,1.1,2.2,5.1,10\}$, the orthogonal case giving exactly $1$ —
+so the two-sided horizon law holds *with matching constant* there — and the measured horizon shift equals
+$\log\kappa/\lambda$. On real loops (true Lorenz-96; pretrained TD-MPC2 walker/cheetah) the per-orbit-point
+$\kappa_1$ distribution is reported (median + IQR + tail) alongside the E13 calibration, which shows typical bias
+directions do not align with the worst case.
+
 ### Proposition 7 (scope — when the local spectrum certifies a learned model's horizon)
 
 *Statement.* Let $\phi$ have an ergodic invariant measure $\mu$ with $\log^+\lVert D\phi\rVert\in L^1(\mu)$. **(a)

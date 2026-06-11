@@ -985,3 +985,26 @@ Noether 双条、concurrent 段移附录 E、step71/step83/step92 图移附录 A
 Prop 6 构造/谱不新/无控制赢/E14 单 ckpt/Mo 重叠/Bitter Lesson/G1b 边缘/假设强/复现)各配承认-回击-指针 +
 数字速查表。两个长 PDF 同步重建;210 测试全绿。诚实记录:压缩只动连接组织与重复,所有数字、限定词、
 INCONCLUSIVE 原样保留;唯一語义损失是行内证明降为 sketch(全文仍在附录 B)。
+
+## [2026-06-10] 弱点 4+5 真解 — Prop 6′(prefactor=分裂条件数)+ step65b/95/96:全分类学部署复刻;附录 E13 hedge 全闭
+
+用户:"开工吧"(解决评审弱点表仅剩的两个 ⚠️)。**弱点4(Prop 6 常数)**:Prop 6′ 把 Theorem B 的 $c_j$ 精确等同于
+谱投影范数 $1/\sin\theta_j$——(i) 正交不变分裂(isotypic 块,线性等变情形:Schur 强迫不变性+正交表示强迫正交)
+⇒ $c_j{=}1$,**上界=下界连常数都匹配**;(ii) 斜性只能活在 isotypic 块内;(iii) prefactor 对 horizon 的全部影响
+= 加性 haircut $\log\kappa/\lambda$。诚实 caveat 内置:非线性等变 $f$ 的 $Df(z)$ 在一般点不与 $\rho$ 交换——强迫
+正交条款限于线性/commutant 情形,学习环上 $\kappa$ 是被测对象。**step65b**(秒级):Schur placement 实测
+(群平均随机阵 off-block 质量 1.45e-16)+ 逐 irrep 块分层增长(rel-err ~1e-15)+ 跨块泄漏字面 0.0——
+"isotypic refinement asserted, not measured" 这句 limitation 删除。**step95**:A 部受控斜剪切下测得最坏系数 =
+解析 $\|\Pi\|$ 至四位小数($\kappa\in\{1,1.1,2.2,5.1,10\}$,正交格恰为 1),horizon shift = $\log\kappa/\lambda$
+(A1/A2/A3 全 PASS);B/C 部真实环上 $\kappa_1$ 诚实地是分布(v2 设计修正:两窗口估计器错误,混沌吸引子近切点
+重尾是物理不是噪声)——Lorenz-96 中位 17.5(max 90;估计器自身收敛检查失败,如实披露)、walker-1 中位 20.9
+(max 193)、cheetah-3 中位 20.8(max 789);三系统中位惊人一致 ~17–21,与 E13 实测校准 0.83–1.02 并排报告
+="最坏 vs 典型对齐"双披露。**弱点5(部署单域)**:step96 补齐分类学剩余 cell——G3 稳定弃权 2/2 PASS
+(finger-spin-2/3:k=24 下 93–94% 窗口从不穿越、invalid 4.0/4.4%、recall 1.00 delay≤5 ——"弃权-稳定=免费监控");
+G4 偏差弃权 PASS(hopper-1:原位时钟 7.0 vs bench 5.5,落预注册 ×1.5 带内;证书正确拒发 horizon 的格,部署确认)
+;G5 复刻 PASS(finger-spin-1:1.04 vs 0.95)。smoke 中 G4 曾 8.5 出带(n=4),未动 gate,全量 n=20 自然落回——
+纪律生效的实例。**至此已发表分类学的每一种判定(校准/乐观/稳定弃权/偏差弃权/工况 caveat)都有部署实例,全部
+先验预测自已发表 artifact。** 论文折叠:ICLR(§3.2 Prop 6′ 指针、E15 扩展、(vi) 升级、limitation 两条改写为
+已测、等量补偿削减)+ 长版(Prop 6′ 全文内联含 Exp 27、Exp 28 段、§7 hedge 闭合)+ 附录 B 完整 6′ 证明。
+tests/test_step95_96.py 6/6(投影范数恒等式、haircut 恒等式、live 重跑、artifact 一致性);全套 216 绿。
+~2.5 h 全 CPU。弱点表:仅剩"像素/真机"的诚实 out-of-scope。
