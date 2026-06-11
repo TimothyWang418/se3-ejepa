@@ -1,0 +1,60 @@
+{
+ "smoke": false,
+ "seed": 0,
+ "kappas": [
+  0.0,
+  0.5,
+  0.8,
+  0.95,
+  1.0
+ ],
+ "delta0": 0.0001,
+ "window": 60,
+ "protocol": "twin-trajectory, block-angle perturbation, config-space metric (pos/512 + angle/pi), per-control-step exponents",
+ "results": {
+  "0.0": {
+   "n_pairs": 30,
+   "lambda_mean": 0.0057479703931262015,
+   "lambda_median": 0.00015700846255324228,
+   "ci_lo": -0.003976818272104673,
+   "ci_hi": 0.016860511779467662
+  },
+  "0.5": {
+   "n_pairs": 30,
+   "lambda_mean": 0.04324847480695049,
+   "lambda_median": 0.05967677851237419,
+   "ci_lo": -0.006162398538386931,
+   "ci_hi": 0.07591245061802643
+  },
+  "0.8": {
+   "n_pairs": 30,
+   "lambda_mean": 0.08755716264173398,
+   "lambda_median": 0.07544405428280235,
+   "ci_lo": 0.05859058259573018,
+   "ci_hi": 0.11831291088136685
+  },
+  "0.95": {
+   "n_pairs": 30,
+   "lambda_mean": 0.07595976397896047,
+   "lambda_median": 0.08523483636144849,
+   "ci_lo": 0.020847365497343326,
+   "ci_hi": 0.12532155112265259
+  },
+  "1.0": {
+   "n_pairs": 30,
+   "lambda_mean": 0.07513322800709768,
+   "lambda_median": 0.07936353892114187,
+   "ci_lo": 0.036276448715125455,
+   "ci_hi": 0.1102264874014997
+  }
+ },
+ "gate_a_monotone": {
+  "spearman_rho": 0.6,
+  "pass": false
+ },
+ "gate_b_resolution": {
+  "pass": true
+ },
+ "verdict": "FALLBACK-2PT",
+ "wall_sec": 3.3
+}
