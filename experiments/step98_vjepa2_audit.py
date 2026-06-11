@@ -63,6 +63,8 @@ def load_model():
             m.use_sdpa = False
             n_flip += 1
     print(f"[step98] use_sdpa=False on {n_flip} predictor attention modules", file=sys.stderr)
+    for p_ in list(enc.parameters()) + list(pred.parameters()):
+        p_.requires_grad_(False)                                    # no reverse graphs under jvp (OOM fix)
     return enc.cuda().eval().half(), pred.cuda().eval().float()
 
 
@@ -182,6 +184,7 @@ def main() -> int:
     warmup = 8 if SMOKE else 25
     runs = {}
     for q_seed in ([0] if SMOKE else [0, 1]):
+        torch.cuda.empty_cache()
         t1 = time.time()
         lam, (lo, hi) = benettin_jvp_gpu(g, z0, k, n_steps, warmup, q_seed)
         runs[q_seed] = {"lambda1": lam[0], "ci": [lo, hi], "band": lam}
