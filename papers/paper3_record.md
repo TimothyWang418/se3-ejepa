@@ -43,6 +43,13 @@ $\mathrm{SO}(3)$ on 3-vector channels). Built `src/models/cn_regular.py`:
 broken by the square workspace boundary (only $C_4$ exact); wall-contact transitions contribute to
 the *measured* $\hat\epsilon_{\max}$ — on-thesis (Thm B absorbs measured residuals).
 
-**Remaining for step1 (part 2, next session):** `experiments/p4_step1_pipeline.py` — WeakPolicy
-collection (G0b) → oracle-CEM demos (G0c) → $5\times5$ seed-0 training grid (G1) → probe rig (G3)
-→ artifact + record entry. Spec: `docs/specs/2026-06-10-p4-step1-pipeline-bases-seed.md`.
+**Part 2 (same day): pipeline built, smoke end-to-end (13.9 s, bit-identical across runs), full
+seed-0 grid LAUNCHED overnight.** `experiments/p4_step1_pipeline.py` (G0b collection → G0c
+oracle-CEM gate → param ladder → grid → probes-on-every-cell → JSON). Three smoke nails, fixed
+honestly and recorded in-code: (i) vendored `WeakPolicy` is VecEnv-shaped — verbatim single-env
+replica of its sampling (cited to file:lines); (ii) vendored `ConvEncoder` requires
+`width % 8 == 0` (GroupNorm); (iii) G0c assert demoted to a **recorded verdict** — an
+infrastructure-gate FAIL must not burn the overnight grid it does not feed. Resilience: per-base
+MPS device-probe with honest CPU fallback (e2cnn-on-MPS unverified). Artifact lands at
+`papers/figures/p4_step1.json`; read-out + G1/G3 verdicts next session.
+Spec: `docs/specs/2026-06-10-p4-step1-pipeline-bases-seed.md`.
