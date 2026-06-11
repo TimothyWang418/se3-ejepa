@@ -49,7 +49,8 @@ T0 = time.time()
 EPS_MULT = (2, 4, 8, 16)
 BAND = (0.5, 2.0)
 FLOOR = 0.7
-OUT = ROOT / "papers" / "figures" / "p4_champion_confirm.json"
+TAG = __import__("os").environ.get("P4_TAG", "")  # CUDA arm: P4_TAG=_cuda
+OUT = ROOT / "papers" / "figures" / f"p4_champion_confirm{TAG}.json"
 
 CHAMP = dict(ema_decay=0.99, var_coef=0.3, lr_scale=1.0, aux_coef=0.3)
 PLAIN = dict(ema_decay=0.99, var_coef=0.04, lr_scale=1.0, epochs=40)
@@ -57,6 +58,7 @@ PLAIN = dict(ema_decay=0.99, var_coef=0.04, lr_scale=1.0, epochs=40)
 
 def main() -> int:
     art: dict = {"champion": str(CHAMP), "plain_ctrl": str(PLAIN), "corpus": "c2000",
+             "arm": {"tag": TAG or "_mps", "device": __import__("os").environ.get("P4_DEVICE", "default-mps")},
                  "gates": "C3-guar (<=1 all cells, >=90% qual) + C3-cal ([0.5,2], >=2/3 qual)",
                  "cells": {}}
 
@@ -105,7 +107,7 @@ def main() -> int:
         for r in range(10):
             key = f"{name}_r{r}"
             prev = existing.get(key)
-            ckp = DATA_DIR / f"ckpt8_{name}_r{r}.pt"
+            ckp = DATA_DIR / f"ckpt8{TAG}_{name}_r{r}.pt"
             try:
                 if prev and prev.get("c3cal") and "h_meas" in prev["c3cal"][0]:
                     cell = prev                                   # new-schema cell: keep
@@ -124,7 +126,7 @@ def main() -> int:
                     if cell["stable"]:
                         audit_cell(cell, pr)
                         torch.save({"model": m.state_dict(), "target_encoder": tgt.state_dict()},
-                                   DATA_DIR / f"ckpt8_{name}_r{r}.pt")
+                                   DATA_DIR / f"ckpt8{TAG}_{name}_r{r}.pt")
             except Exception as exc:  # noqa: BLE001
                 cell = {"error": str(exc)[:200], "stable": False}
             art["cells"][key] = cell

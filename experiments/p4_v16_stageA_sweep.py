@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import json
 import math
+import os
 import sys
 import time
 import traceback
@@ -41,7 +42,9 @@ from src.training.jepa import train_jepa  # noqa: E402
 
 T0 = time.time()
 BUDGET_STAGEB_START = 3.0 * 3600
-DEVICE = "mps" if torch.backends.mps.is_available() else "cpu"
+# P4_DEVICE env knob (2026-06-11, CUDA replication arm): explicit override wins; default
+# preserves historical behavior (mps-else-cpu) bit-for-bit.
+DEVICE = os.environ.get("P4_DEVICE") or ("mps" if torch.backends.mps.is_available() else "cpu")
 FLOOR = 0.7
 D = 128
 EPS_MULT = (2, 4, 8, 16)
