@@ -135,6 +135,32 @@ re-materialized by seed determinism.)
 3. eq's xy dominance reproduced under re-materialization (0.703 vs grid's 0.709) — the loud signal
    is stable.
 
+## [2026-06-10] P4-step1 v1.2 grid readout — not a clean win: a deeper confound surfaced, and one mechanism now explains the board
+
+(`papers/figures/p4_step1_v12.json`, 8 min wall, MPS, **25/25 checkpoints saved** — the supply
+line for gap audits and $G$-training is open.)
+
+- **G3 STILL FAIL** — θ unreadable in every base under stride-5 (best −0.01). The "1-step never
+  needs orientation" hypothesis was insufficient *alone*.
+- **NEW: training-budget confound** — chunking cut transitions/cell 5× while epochs stayed 20 ⇒
+  small-fraction cells are step-starved (std 0.002–0.16 at @2–@20); @60/@200 (most steps) have
+  healthy std but **xy turned negative** (eq −0.17/−0.16 vs v1.1's +0.55/+0.31). Jointly with the
+  monitored content-decay axis, ONE mechanism explains v1.1+v1.2 coherently: **linear content
+  peaks early in training and decays; cells differ chiefly in optimizer steps, contaminating the
+  fraction axis.** The v1.1 "eq from 2 episodes" reading survives qualitatively (eq leads xy at
+  every comparable cell: 0.55/0.57 at @10/@20 vs plain ≤0.06) but quantitative fraction curves
+  from BOTH grids are confounded — neither enters any claim.
+- **aug**: structural 4-cluster collapse FIXED (healthy std, no clusters) — but pred_loss is still
+  suspiciously low (0.0012 vs plain 0.35) with zero content: per-sample drawing left the angle a
+  *continuous* shared channel (scene orientation: walls/goal zone survive the mask). Check queued.
+- **eq's predictability edge WIDENED under chunking**: pred_loss 0.005–0.010 vs plain 0.24–0.68
+  (70–140×) at matched params and healthy std (@60/@200). Flagged, not yet interpreted (the aug
+  case proves predictability alone ≠ content; eq has both only where probes are positive).
+- **Response = protocol v1.3 (registered in the step1 spec before any 3-seed run):** equal
+  optimizer-step budget per cell (3,000 steps; the data axis becomes pure), probe-vs-step curves
+  at {300, 1000, 3000} as primary instrumentation (the decay axis measured, not suspected;
+  no early-stop-by-probe rule — circularity guarded), aug continuous-angle check.
+
 ## [2026-06-10] P4-step3 — gap-mode instrument built and CERTIFIED (3/3 gates) before it certifies anything
 
 `src/audit/gap_mode.py`: `audit_gap(model, frames, actions)` → the certificate's consumed triple

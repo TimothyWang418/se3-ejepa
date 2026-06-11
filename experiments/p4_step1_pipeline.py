@@ -124,35 +124,51 @@ def collect_weakpolicy(n_episodes: int, seed: int, kappa: float | None = None) -
 
 
 # ----------------------------------------------------------------------------- oracle CEM (G0c)
-def oracle_cem_episode(env, sim, seed: int, k: int = 64, iters: int = 3, elite: int = 8, horizon: int = 4):
-    r"""True-env MPC: plan on ``sim`` clones via reset(options={'goal_state','state'}), execute on ``env``."""
+def pose_cost(state: np.ndarray, goal: np.ndarray) -> float:
+    r"""Angle-aware pose cost (G0c fix v2): the env's 7-d state norm drowns the angle (radians vs
+    hundreds of pixels) — the v1 oracle never reoriented the block and failed 0/20. Weights:
+    block position 1, agent position 0.5, angle 150 px/rad (π/9 ↦ ~52 px — same order as the
+    20 px position criterion)."""
+    s, g = np.asarray(state, np.float64), np.asarray(goal, np.float64)
+    dth = abs(s[4] - g[4])
+    dth = min(dth, 2 * np.pi - dth)
+    return float(np.linalg.norm(s[2:4] - g[2:4]) + 0.5 * np.linalg.norm(s[:2] - g[:2]) + 150.0 * dth)
+
+
+def oracle_cem_episode(env, sim, seed: int, k: int = 64, iters: int = 2, elite: int = 8,
+                       horizon: int = 12):
+    r"""True-env MPC (v2): horizon 12, MPC warm-start (shifted elite mean), angle-aware cost,
+    early-success bonus scaled by time-to-success."""
     obs, _ = env.reset(seed=seed)
     goal = np.asarray(env.unwrapped.goal_state, dtype=np.float64)
     rng = np.random.default_rng(seed)
     traj_a, traj_s = [], [obs["state"]]
+    mu = np.zeros((horizon, 2), dtype=np.float64)  # warm-started across control steps
     for _t in range(ORACLE_MAX_STEPS):
         s = np.asarray(obs["state"], dtype=np.float64)
-        mu = np.zeros((horizon, 2), dtype=np.float64)
-        sig = np.ones((horizon, 2), dtype=np.float64) * 0.6
+        sig = np.ones((horizon, 2), dtype=np.float64) * 0.5
         for _i in range(iters):
             cand = np.clip(rng.normal(mu, sig, size=(k, horizon, 2)), -1, 1)
             costs = np.empty(k)
             for j in range(k):
                 sim.reset(options={"goal_state": goal, "state": s})
-                dist = None
+                c = None
                 for h in range(horizon):
-                    o2, r, term, _tr, _ = sim.step(cand[j, h].astype(np.float32))
-                    dist = -float(r)  # reward = -||goal - state||
+                    o2, _r, term, _tr, _ = sim.step(cand[j, h].astype(np.float32))
                     if term:
-                        dist -= 1000.0  # success bonus
+                        c = -1000.0 + h  # success: earlier is better
                         break
-                costs[j] = dist
+                if c is None:
+                    c = pose_cost(o2["state"], goal)
+                costs[j] = c
             order = np.argsort(costs)[:elite]
             mu, sig = cand[order].mean(0), cand[order].std(0) + 1e-3
         act = mu[0].astype(np.float32)
         obs, _r, term, _tr, _ = env.step(act)
         traj_a.append(act)
         traj_s.append(obs["state"])
+        mu = np.roll(mu, -1, axis=0)
+        mu[-1] = 0.0
         if term:
             return True, np.stack(traj_s), np.stack(traj_a)
     return False, np.stack(traj_s), np.stack(traj_a)

@@ -100,6 +100,30 @@ Forced by the seed-0 readout + the step1b diagnosis (`papers/figures/p4_step1b_d
    grid**; if θ remains unreadable under stride-5, the next registered lever is corpus surgery
    (oracle-demo frames — blocked on the G0c solver fix).
 
+## Protocol v1.3 amendments (registered 2026-06-10 post-v1.2-readout, BEFORE any 3-seed run)
+
+The v1.2 grid (`p4_step1_v12.json`) surfaced a **training-budget confound**: chunking cut
+transitions/cell 5× while epochs stayed 20 ⇒ optimizer steps per cell collapsed at small
+fractions (std 0.002–0.16 at @2–@20) and the fraction axis conflated data quantity with training
+steps; jointly with the content-decay axis (@60/@200 most steps, xy turned negative), one
+mechanism explains the board: **linear content peaks early in training and decays; cells differ
+chiefly in step count.** Amendments:
+
+1. **Equal optimizer-step budget per cell** (replaces fixed epochs): 3,000 steps per cell at batch
+   64, every base, every fraction — the data axis becomes a pure data axis.
+2. **Probe-vs-step curves become primary instrumentation**: probes evaluated at checkpoints
+   $\{300, 1000, 3000\}$ steps per cell (the monitored decay axis is now measured, not suspected);
+   the C2 readout uses the registered step count (3,000) — any early-stop-by-probe rule would
+   require a *held-out probe-validation* design and is NOT adopted now (circularity guarded).
+3. **aug continuous-angle check** (one probe): the v1.2 aug still posts suspiciously low pred_loss
+   (0.0012 vs plain 0.35) with zero content — per-sample drawing removed the discrete clusters but
+   the angle remains a shared o/o₂ channel (scene orientation: walls/goal zone). Probe aug@200 for
+   the continuous angle; if confirmed, the honest R-aug conclusion hardens: **scene-rotation
+   augmentation in JEPA injects a predictable nuisance channel by construction** — reportable, and
+   the Brehmer-control comparison must say so rather than pretend an aug arm exists that doesn't.
+4. G3 unchanged (θ still unreadable in v1.2 — the stride-5 bet alone was insufficient; the
+   probe-vs-step curves will show whether θ ever peaks early before deciding on corpus surgery).
+
 ## Open items carried (not step1's)
 
 - "Dynamic Push-T" query (one targeted search at step2, cite-and-differentiate if physics-dialing).
