@@ -185,7 +185,7 @@ def main() -> int:
     warmup = 8 if SMOKE else 25
     runs = {}
     qseeds = [0] if SMOKE else [int(x) for x in os.environ.get("STEP98_QSEEDS", "0,1").split(",")]
-    part = OUT.with_suffix(".partial.json")
+    part = Path(__file__).resolve().parent.parent / "papers/figures/step98_vjepa2_audit.partial.json"
     if part.exists():                                   # resume after a host-OOM kill: earlier seeds reload
         runs.update({int(k_): v_ for k_, v_ in json.loads(part.read_text()).items()})
         print(f"[step98] resumed {sorted(runs)} from partial artifact", file=sys.stderr)
