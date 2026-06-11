@@ -106,6 +106,7 @@ def train_jepa(
     predictability_gated_var: bool = False,
     refresh_target_cache: bool = False,
     var_field_size: int = 0,
+    aux_state: tuple | None = None,
 ) -> dict:
     r"""Train ``model`` (an :class:`EqJEPA`) with EMA-target JEPA + Muon/AdamW.
 
@@ -128,6 +129,19 @@ def train_jepa(
     for p in target_enc.parameters():
         p.requires_grad_(False)
     target_enc.eval()
+
+    # P4 v1.6: optional proprio/state auxiliary anchor (TC-WM-inspired, simplified to a linear
+    # regression head): loss += coef * MSE(head(z0), state_targets). The anchor makes content
+    # non-collapsible by construction (the collapse attractor is predictability-driven). Additive,
+    # default None = behaviour unchanged. Head gets its own Adam (not routed through Muon).
+    aux_head = aux_opt = aux_targets = None
+    aux_coef = 0.0
+    if aux_state is not None:
+        aux_targets, aux_coef = aux_state[0].to(device), float(aux_state[1])
+        aux_head = torch.nn.Linear(
+            model.latent_dim if hasattr(model, "latent_dim") else 128, aux_targets.shape[1]
+        ).to(device)
+        aux_opt = torch.optim.Adam(aux_head.parameters(), lr=1e-3)
 
     muon, adamw, counts = build_muon_adamw(
         model, muon_lr=muon_lr, adamw_lr=adamw_lr, weight_decay=weight_decay
@@ -183,12 +197,17 @@ def train_jepa(
             else:
                 var_loss = F.relu(1.0 - floor_stat).mean()
             loss = pred_loss + var_coef * var_loss
+            if aux_head is not None:
+                loss = loss + aux_coef * F.mse_loss(aux_head(z0), aux_targets[idx].to(device))
 
             if muon is not None:
                 muon.zero_grad(set_to_none=True)
             if adamw is not None:
                 adamw.zero_grad(set_to_none=True)
             loss.backward()
+            if aux_opt is not None:
+                aux_opt.step()
+                aux_opt.zero_grad(set_to_none=True)
             if muon is not None:
                 muon.step()
             if adamw is not None:
