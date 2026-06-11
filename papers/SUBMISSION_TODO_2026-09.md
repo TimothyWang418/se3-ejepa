@@ -29,3 +29,7 @@
 - [ ] 已核:paper2 全部 e2cnn 步骤(step18/21/34/35/44/46/72)进程内训练+测量、无 save/reload 边界,
       `refresh_target_cache` 默认 False 逐位保留旧语义 ⇒ 发表数字不受影响(2026-06-11 复盘判定,置信 0.85)。
       投稿周若有任何 e2cnn ckpt 进入 artifact:跑 #9 等式测试(进程内==重载)再打包。
+
+## 装饰项(2026-06-11 增)
+- [ ] 运行页眉在 pandoc×iclr-sty 管线下两个分支都不渲染(提交版无 "Under review..."、arXiv 版无 "Preprint.")——
+      虚假声明零出现故安全;9 月模板换代时顺手查 fancyhdr 与 pandoc 模板的 pagestyle 冲突。
