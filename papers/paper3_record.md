@@ -196,6 +196,46 @@ state_dict so strict loads pass against cache-free modules; non-leaf so eval-mod
 crashes; stale after parameter-only EMA). The 40-ep run's in-process 84.8 remains the open
 residual for the matrix experiment.
 
+## [2026-06-11] 3-SEED CONVERSION — first gate PASS on record (C3-cal-static eq, 2/3) WITH AN ASTERISK; seed variance becomes the story
+
+(`experiments/p4_3seed_spine.py`, 11.3 min, 6 cells, protocol freeze honored — only registered
+gates evaluated. Artifact `p4_3seed_spine.json`; ckpt5 pairs saved.)
+
+| cell | std | δ̂ | δ̂_norm | C3-cal ratios (ε=2/4/8/16) |
+|---|---|---|---|---|
+| eq s0 | 1.224 ✓ | 3.30 | 0.238 | [—, 0.50, 0.375✗, 0.875] |
+| eq s1 | 0.917 ✓ | 2.80 | 0.270 | [1.0, 0.67, 0.50, 1.0] ✓ |
+| eq s2 | **0.274 ✗ collapsed** | 1.05 | 0.337 | [1.0, 0.67, 0.50, 1.0] "✓" |
+| plain s0 | 0.750 ✓ | 7.68 | 0.904 | [0.2✗, 0.25✗, 0.50, 1.0] |
+| plain s1 | 1.106 ✓ | 3.73 | 0.298 | all ✓ |
+| plain s2 | 0.898 ✓ | 9.35 | 0.920 | [0.25✗, 0.25✗, 0.625, 1.0] |
+
+**Gate verdicts (as registered):**
+
+1. **C3-cal-static (eq): PASS 2/3 — provisional, with the asterisk stated**: one of the two
+   passing seeds (s2) is variance-collapsed (std 0.274); conditioned on the stability floor the
+   tally is 1/2 stable seeds = inconclusive at n=3. **Not banked dirty**: status =
+   PROVISIONAL-PASS pending a 5-seed extension under the stability-conditioned reading
+   (registered below). plain: FAIL 1/3.
+2. **G-pre shape: FAIL 0/3 both bases — in the CONSERVATIVE direction**: linear shape confirmed
+   everywhere (r²_lin > r²_exp, eq), but the certified per-chunk rate (δ̂) runs 2.3–2.7× the
+   measured growth rate (errors accumulate sub-linearly in δ̂ — correlation/cancellation). As
+   registered = FAIL; consumer-aligned note: the BOUNDARY gate (C3-cal, the quantity the spacing
+   rule consumes) is the one that passes — the rate sub-gate is a shape diagnostic. Certificate
+   as guarantee ✓ (never over-promises at κ=0); as point-estimate, ~2.4× conservative.
+3. **Stability: eq 2/3, plain 3/3** — **the collapse lottery reaches the banked lane**: 1/3 eq
+   seeds collapsed even in the single-frame κ=0 config. The recipe instability is seed-level,
+   not architecture-level.
+4. **Moat (normalized): per-seed [3.79, 1.10, 2.73], mean 2.54, range wide** — and the wideness
+   is two-sided: plain's δ̂ itself swings 2.5× across seeds (7.68/3.73/9.35). The 6.3× headline
+   was partly plain's bad seed-0. Stability-conditioned (eq s0,s1 × plain s0,s1): ~2.4× at n=2.
+   Direction real; magnitude unbankable at n=3.
+
+**Registered next step (before any further seeds are run):** all gates henceforth condition on
+the stability floor (std ≥ 0.7) — the consistent extension of the v1.4 registration; collapsed
+seeds are non-qualifying for every gate and are REPORTED (not hidden, not replaced). A 5-seed
+extension (+s3, +s4) then resolves C3-cal-static and prices the collapse rate properly.
+
 ## [2026-06-11] v1.5 stability sweep — H-v1.5a REFUTED (the isotypic floor ACCELERATES collapse); the attractor is predictability-driven; strategic re-scope
 
 (`experiments/p4_v15_stability.py`, 18 min; artifact `p4_v15_stability.json`; per-field floor
