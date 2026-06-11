@@ -118,19 +118,22 @@ def boundary_from_curve(curve: list[float], eps: float) -> int:
 
 
 def fit_growth(curve: list[float]) -> dict:
-    r"""Exponential vs linear fit of the measured median curve (G-pre, neutral-regime form)."""
+    r"""Exponential vs linear fit of the measured median curve (G-pre, neutral-regime form).
+
+    Both models carry an intercept (review fix 2026-06-11: the original no-intercept linear model
+    made the exp-vs-linear comparison meaningless whenever Err(1) has a floor)."""
     h = np.arange(1, len(curve) + 1, dtype=float)
     y = np.asarray(curve, dtype=float)
-    lam_exp = float(np.polyfit(h, np.log(np.maximum(y, 1e-12)), 1)[0])  # per f-chunk
-    # linear model y = a*h: residuals of both
-    a_lin = float((y @ h) / (h @ h))
+    exp_coef = np.polyfit(h, np.log(np.maximum(y, 1e-12)), 1)   # ln y = lam*h + c
+    lin_coef = np.polyfit(h, y, 1)                              # y = a*h + b
     ss = lambda r: float((r**2).sum())  # noqa: E731
     r2 = lambda r: 1.0 - ss(r) / max(ss(y - y.mean()), 1e-12)  # noqa: E731
     return {
-        "lambda_meas_exp_fit": lam_exp,
-        "linear_rate": a_lin,
-        "r2_exp": r2(y - np.exp(np.polyval(np.polyfit(h, np.log(np.maximum(y, 1e-12)), 1), h))),
-        "r2_linear": r2(y - a_lin * h),
+        "lambda_meas_exp_fit": float(exp_coef[0]),
+        "linear_rate": float(lin_coef[0]),
+        "linear_intercept": float(lin_coef[1]),
+        "r2_exp": r2(y - np.exp(np.polyval(exp_coef, h))),
+        "r2_linear": r2(y - np.polyval(lin_coef, h)),
     }
 
 

@@ -1,0 +1,34 @@
+{
+ "source": "diffusion-policy pusht_cchi_v7_replay.zarr (206 eps)",
+ "fixed_goal": [
+  256.0,
+  256.0,
+  256.0,
+  256.0,
+  0.7853981633974483,
+  0.0,
+  0.0
+ ],
+ "chunk": 5,
+ "device": "mps",
+ "latent_space": "ckpt3 TARGET encoders (deployable pair)",
+ "episodes": 206,
+ "g": {
+  "eq": {
+   "val_mse": 0.011980685405433178,
+   "delta_G": 1.0194118022918701,
+   "delta_persist": 1.0888986587524414,
+   "n_train": 4155,
+   "n_val": 643
+  },
+  "plain_match": {
+   "val_mse": 0.42950671911239624,
+   "delta_G": 6.697475433349609,
+   "delta_persist": 8.01404094696045,
+   "n_train": 4155,
+   "n_val": 643
+  }
+ },
+ "eqg_equivariance_max_err": 0.0,
+ "wall_sec": 18.5
+}

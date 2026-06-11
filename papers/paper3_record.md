@@ -175,6 +175,29 @@ state_dict so strict loads pass against cache-free modules; non-leaf so eval-mod
 crashes; stale after parameter-only EMA). The 40-ep run's in-process 84.8 remains the open
 residual for the matrix experiment.
 
+## [2026-06-11] #10 (half 1) — $G$ trained on human demos via state-re-rendering; both G's barely beat persistence (honest, registered-descriptive)
+
+(`experiments/p4_step10_g_trainer.py`, 18.5 s end-to-end; artifact `p4_step10_g.json`.)
+
+- **Demo ingestion design**: lerobot/pusht parquet exposes only the 2-d agent state (unusable) ⇒
+  source = the canonical diffusion-policy `pusht_cchi_v7_replay.zarr` (206 eps, full 5-d pose;
+  new venv-only dev dep `zarr`). **State re-rendering in OUR env** at chunk boundaries
+  (`reset(options={'goal_state': FIXED_GOAL, 'state': s5})`, goal pinned for pixel consistency) —
+  kills rendering mismatch AND replay drift; $G$ is autonomous, demo actions unneeded. 206
+  episodes re-rendered in 7 s.
+- $G$'s trained in the **ckpt3 TARGET-encoder space** (deployable pair): plain-G residual MLP;
+  eq-G = GroupConv stack on stacked regular fields (P4.C by construction; **exact equivariance
+  assert < 1e-10**).
+- **Readouts (descriptive by registration):** eq-G δ̂_G = 1.019 vs persistence 1.089 (+6%);
+  plain-G 6.70 vs 8.01 (+16%). Both G's are weak against persistence — the human-demo subgoal
+  flow is genuinely multimodal at 0.5 s boundaries; single-point prediction is the wrong-shaped
+  tool (the same limitation FF-JEPA's $G$ faces; their failure mode (b) lives here). Exactly why
+  Stage-2 was registered reported-not-gated. Conflation note stands (base-space × G-architecture).
+- Analysis-code fix landed same-commit: `fit_growth` linear fit now carries an intercept (the
+  exp-vs-linear comparison is meaningful going forward).
+- Stage-1b (planner side: subgoal-conditioned CEM, $H^{\text{plan}}$, crossover, $\hat\theta^\ast$)
+  = next session's blade.
+
 ## [2026-06-11] #9 RESOLVED — e2cnn-aware pairing fix lands, equality gates 3/3, quarantine lifted; first CLEAN certified-vs-measured numbers
 
 **Mechanism, source-confirmed** (e2cnn `r2convolution.py`): `train(False)` re-expands the filter
