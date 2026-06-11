@@ -90,3 +90,30 @@ $\epsilon$ share the latent metric but answer different questions (model trust v
 they are never conflated in a gate. The known instrument bias ($\approx -0.007$ at gap 0.1,
 G-I-measured) is small against the regime contrast ($\Delta\lambda \approx 0.08$) — stated when
 the regime gate is read.
+
+## 6. G-pre — linearization-neighborhood diagnostic (registered 2026-06-10, BEFORE any spine run; forced by paper2's E16/step99)
+
+paper2's step99 (same day, V-JEPA 2-AC 1B on real DROID data) just demonstrated the failure mode
+this gate guards against: **tangent-space $\lambda_1$ over-promises when trajectories never enter
+the linearization neighborhood** — measured deployment error started at the representation-native
+step scale with slope $0.033 \ll \lambda_1 = 0.178$; the measured column overturned the
+tangent-space numbers. Our exposure is narrower by construction — $\hat\delta_f$ is already a
+*measured finite-amplitude* one-step bias (the hybrid step99 recommends on the $\delta$ side) and
+the $\epsilon$ grid is already representation-relative (dimensionless $\hat\delta$ multiples) —
+but $\hat\lambda_1$ (JVP) remains a tangent quantity evaluated at amplitude $\hat\delta$.
+
+**Diagnostic (runs with the first $\mathrm{Err}_f^{\text{meas}}(H)$ curves, before C3-cal is
+read):** fit the finite-amplitude growth rate $\hat\lambda_1^{\text{meas}}$ from the measured
+median curve over the model-limited region; report $r = \hat\lambda_1^{\text{meas}} /
+\hat\lambda_1^{\text{tangent}}$ per (base, regime).
+
+- $r \in [0.5, 2]$ → the tangent certificate is in jurisdiction; C3-cal proceeds as registered.
+- $r$ outside → **FAILED-BY-SCOPE**: C3-cal is reported with the diagnostic attached (the Prop
+  7-flavoured scope condition, now amplitude-indexed), and the registered fallback claim is the
+  *scoped certificate* (valid where amplitude stays measured-consistent). This outcome is a
+  finding, not a burial — paper2's E16 just published the foundation-model side of it.
+
+**Cross-paper synergy (registered observation):** the same instrument now has jurisdiction data at
+two scales — paper3's small structured bases vs paper2's 1B foundation models. If small
+equivariant models stay in tangent jurisdiction where flagships don't, that contrast is itself a
+result the two papers can cite each other for.
