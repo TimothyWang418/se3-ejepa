@@ -1024,3 +1024,14 @@ k=1 干净(0.00)但 k=1=每帧都读=预报器零价值;v1→v2 gate 修正(smok
 无需 DROID;其能量=L1(预测潜表征,编码潜表征)——**与监控器阈值同量,钩子白送**。坑已排:箱 venv 无 pip
 (uv 装 timm/einops);**上游 main 把 VJEPA_BASE_URL 写成 localhost:8300(真 URL 被注释)** —— sed 修复后
 ckpt 下载中。箱:torch 2.5.1+cu121 / 3080 / 947GB 盘。
+
+## [2026-06-10] step98 — 证书读 V-JEPA 2-AC(第三家族,1B 编码器,真机后训练):EXPANSIVE λ1=0.178
+
+Rung 2 主体落地。官方 `vjepa2_ac_vit_giant`(ViT-g/16 1012M + AC predictor ~300M,MIT,DROID 后训练,11GB ckpt)
+经 torch.hub 加载进作者自己的代码;被审计环 = 他们能量景观 notebook 的同款 AR 帧 token 环(256×1408,
+d=360,448 —— 迄今最大审计对象 ×600 倍),固定零增量动作(同 LeWM 预注册范围)。**判定:EXPANSIVE,
+λ1 = 0.180/0.177(双 Q-seed,1.8% 吻合),CI 包络 [0.136, 0.250],T1(0.2)≈9.0 模型步**;fp32 CUDA 精度披露。
+工程战报(全部披露在脚本):上游 main 的 localhost URL 乌龙(猴补)、franka npz 实为 (当前,目标) 帧对
+(0.735 重标注)、前向 AD×SDPA 四连环(sdpa_kernel 上下文在 functorch 失效 → 全局 flag 被他们裸 sdp_kernel()
+覆盖 → use_sdpa=False 被 attn_mask 分支绕过 → 最终猴补显式数学注意力)、反向图保留 OOM(忘冻参数,32GB→修)。
+他们的规划"能量"= L1(预测潜表征, 编码潜表征) = 我们监控器的量——证书定价的就是 V-JEPA 2-AC 自己的能量增长率。

@@ -1,0 +1,66 @@
+{
+  "model": "vjepa2-ac-vit-giant (official hub ckpt, authors' code; fp32 predictor loop on CUDA)",
+  "d_state": 360448,
+  "k": 6,
+  "n_steps": 120,
+  "rel_err_to_goal_frame_NOT_one_step": 0.7345965504646301,
+  "runs": {
+    "0": {
+      "lambda1": 0.17996791005134583,
+      "ci": [
+        0.1387829065322876,
+        0.25004761070013043
+      ],
+      "band": [
+        0.17996791005134583,
+        0.09323440492153168,
+        0.09267420321702957,
+        0.08274906128644943,
+        0.07631723582744598,
+        0.07325945794582367
+      ]
+    },
+    "1": {
+      "lambda1": 0.17674537003040314,
+      "ci": [
+        0.13561649322509767,
+        0.24409555122256274
+      ],
+      "band": [
+        0.17674537003040314,
+        0.10741054266691208,
+        0.08661798387765884,
+        0.0847223624587059,
+        0.07030324637889862,
+        0.0696544498205185
+      ]
+    }
+  },
+  "q_seed_stable": true,
+  "lambda1": 0.17835664004087448,
+  "lambda1_ci_envelope": [
+    0.13561649322509767,
+    0.25004761070013043
+  ],
+  "cert_rows": [
+    {
+      "eps": 0.05,
+      "T1_steps": 16.796303590757546
+    },
+    {
+      "eps": 0.1,
+      "T1_steps": 12.910004878239219
+    },
+    {
+      "eps": 0.2,
+      "T1_steps": 9.023706165720888
+    },
+    {
+      "eps": 0.5,
+      "T1_steps": 3.8862987125183275
+    }
+  ],
+  "verdict": "EXPANSIVE \u2014 certified horizons issued",
+  "scope": "fixed zero-delta-action AR frame-token loop (authors' energy-landscape rollout); fp32 CUDA precision disclosed; upstream localhost-URL goof monkeypatched",
+  "smoke": false
+}
