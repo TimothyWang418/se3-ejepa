@@ -31,8 +31,12 @@ All gap-mode exponents after v1.2 are **per f-chunk**; the κ-gate's env exponen
 conversion is applied at the comparison site and stated, never silently.
 
 Native stride $h_0 = 5$ env steps (LeWM CHUNK convention); gap $H = 5m$ ⇒ the fixed-$H$ grid
-$\{5,10,15,25,40\}$ = rollouts $m \in \{1,2,3,5,8\}$ (FF-JEPA's $H{=}25$ = $m{=}5$). Trained on
-oracle-demo latent sequences (200 successful episodes per regime). Per base: plain $G$ = residual
+$\{5,10,15,25,40\}$ = rollouts $m \in \{1,2,3,5,8\}$ (FF-JEPA's $H{=}25$ = $m{=}5$).
+**Demo source (amended 2026-06-11, before any $G$ exists):** κ=0 $G$ trains on the **human
+lerobot set (206 episodes)** — the oracle-CEM gate retired after v3 showed a structural (not
+budget) failure (4/20 twice; greedy shooting MPC vs face-switching plateaus); κ=0.8 Stage-2 is
+deferred (Stage-1 needs no demos; rejection-sampling at the measured 20% acceptance or a
+BC-bootstrap are the registered later options). Per base: plain $G$ = residual
 MLP $[2D\to512\to512\to D]$ on $K{=}2$ past subgoal latents; **eq $G$** = the same `GroupConv1x1`
 stack on regular fibers **without the action lift** (autonomous) — P4.C's group×invariant
 decomposition by construction, with its own exact-equivariance unit test (repo rule).

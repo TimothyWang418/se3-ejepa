@@ -168,6 +168,29 @@ recorded in full because every step is evidence:
    Kept honest positives: the instrument-bias calibration at spine settings (uniform −0.029,
    W=16/B=4) and the analysis-code note (linear fit needs intercept) survive.
 
+*Same-day review addendum:* the mechanism survives a consistency audit with one refinement — the
+eval cache must be a **non-persistent buffer** (the only form consistent with all four
+micro-evidences: moves with `.cpu()`/`._apply` so CPU forwards don't crash; excluded from
+state_dict so strict loads pass against cache-free modules; non-leaf so eval-mode deepcopy
+crashes; stale after parameter-only EMA). The 40-ep run's in-process 84.8 remains the open
+residual for the matrix experiment.
+
+## [2026-06-11] G0c oracle v3 — 4/20 IDENTICAL to v2: the bottleneck is structural, not budget; gate re-scoped
+
+Doubling the budget (h 12→16, K 64→96, cap 200→300; 23 min) changed nothing — the same 4
+configurations succeed. Reading: greedy shooting MPC cannot cross the "re-position the pusher to
+another face" cost plateaus that pose-matching PushT requires; this is exactly why the field uses
+demonstrations/diffusion policies here. **Registered re-scope instead of solver iteration #4:**
+
+- **κ=0 $G$-training demos = the human lerobot set (206 eps)** — ecosystem-comparable
+  (FF-JEPA-style), no oracle needed. (Spec change registered in the spine seed spec; legitimate —
+  no $G$ has been trained.)
+- **κ=0.8**: Stage-1 needs NO demos (GT subgoals from WeakPolicy trajectories). Stage-2 at κ=0.8
+  (already "reported, not gated") is **deferred behind the incident fix**; if wanted later, the
+  honest options are rejection-sampling at the measured 20% acceptance (~19 h overnight) or a
+  BC-bootstrap generator (recon first).
+- G0c the *gate* is retired in favour of this re-scope; the oracle code remains as a utility.
+
 ## [2026-06-10] P4-step1 v1.2 grid readout — not a clean win: a deeper confound surfaced, and one mechanism now explains the board
 
 (`papers/figures/p4_step1_v12.json`, 8 min wall, MPS, **25/25 checkpoints saved** — the supply

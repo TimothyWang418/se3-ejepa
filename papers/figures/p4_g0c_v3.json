@@ -1,0 +1,8 @@
+{
+ "attempts": 20,
+ "successes": 4,
+ "rate": 0.2,
+ "sec": 1371.1,
+ "verdict": "FAIL",
+ "params": "v3: h16 k96 i2 cap300"
+}
