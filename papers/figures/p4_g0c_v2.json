@@ -1,0 +1,7 @@
+{
+ "attempts": 20,
+ "successes": 4,
+ "rate": 0.2,
+ "sec": 553.7,
+ "verdict": "FAIL"
+}

@@ -79,23 +79,28 @@
 - "This is measured, not asserted: see {JSON/figure}, reproducible by `{script}`."
 - "We report this honestly as INCONCLUSIVE rather than loosening the pre-registered gate; we'd rather under-claim."
 
+### A12.「你们自己的 84-cell 扩张推翻了你们的种子分类学——这不是自打脸吗?」
+
+**答**:这是系统在工作,且是论文的核心论点被加强而非削弱。(1)种子图的逐 cell 数字全部保持为真(walker 0.94–1.02 等),被推翻的是 **λ 轴的外推**("强膨胀⇒校准");扩张前我们就把它作为待检验泛化明示。(2)修正后的轴(增长设定 vs 偏差设定测量视界)**不是新增自由度**,而是 E16 在 DROID 上已独立确立的机制(单步误差 vs 阈值)在 zoo 尺度的重现;重分层标注为描述性、cut 敏感性三档全披露(0.49/0.65/0.89),冻结量(协议+比例)按注册原样报告。(3)修正使三个尺度(toy/zoo/1B)的读法统一:**谱定价误差增长,measured 列检验误差水平,审计是二者合取**——这恰是摘要的"cross-validated audit is the deployable object"。(4)若我们不跑扩张,15-cell 结论会安然过审——我们主动跑了 69 个新 cell 并报告轴失效。这正是可证伪性的展示。
+
 ## 数字速查(rebuttal 高频)
 
 | 主张 | 数字 | 来源 |
 |---|---|---|
 | 谱忠实 vs 稠密垮塌 | $R^2$ 0.98–0.99 vs $<0$;$\lambda_1$ 膨胀 3.4× | step74/83 |
 | 预算决策 | 8–16% vs 61–65%;catch-up 2.7–3.5× vs 预测 c≈3.4 | step85/88 |
-| E13 校准带 | walker 0.94/0.95/1.02;弃权 6/15 正确 | step89 |
+| E13 种子图 | walker 0.94/0.95/1.02;弃权 6/15 正确 | step89 |
+| E13 全 zoo(84 cells) | 弃权 42/84(稳 13/偏 29);带内 λ 跨 0.01–0.39(λ 轴不成立);偏差主导 24/42;增长区(med≥5)15 格中位 0.95、带内 10/15;cut 敏感性 0.49/0.65/0.89 | step89b |
 | 规模梯 | 1M/48M 收缩,5M/19M/317M 膨胀;0.37/1.87/1.16 | step92 |
 | E15 复刻 | 0.4277/0.43,0.4976/0.50(out-of-sample);0.67/0.83 带边 | step94 |
-| 故障检测 | recall 1.00(3/3),delay ≤ k_op(2/3) | step94 |
+| 故障检测 | recall 1.00(3/3),delay ≤ k_op(3/3 @ n=100,1600 窗/籽);ratio 与 n=20 逐位同(0.43/0.50/0.67) | step94 |
 | walker 对照 | 0/3 复刻,recall 0.92–1.0(工况双峰) | step94_walker |
 | 紧性 | $\epsilon e^{\lambda T}$ 至 $10^{-14}$;斜率 $1/\lambda$,$R^2=1.000$ | step65 |
 | 常数(Prop 6′) | 正交格 κ=1 精确;斜剪切 1.1/2.2/5.1/10 四位小数吻合;shift=$\log\kappa/\lambda$ | step95 A |
 | isotypic 实测 | off-block 1.5e-16;逐块增长 1e-15;泄漏 0.0 | step65b |
-| 真实环 κ₁ | 中位 17.5/20.9/20.8(L96/walker/cheetah),max 90/193/789 | step95 B/C |
-| 稳定弃权部署 | invalid@k24 4.0/4.4%,censored 93–94%,recall 1.00 | step96 G3 |
-| 偏差弃权部署 | 原位 7.0 vs bench 5.5(×1.5 带内),recall 1.00 | step96 G4 |
+| 真实环 κ₁ | 中位窗口依赖:walker 20.9@W120→49.2@W200,cheetah 18.7,L96 11.9@W400(过自身收敛检);max ~10² | step95 B/C |
+| 稳定弃权部署 | n=100:invalid 4.0/5.6%(一格压 5% 线 0.6pp,按注册记 INCONCLUSIVE),censored 92–94%,recall 1.00 | step96 G3 |
+| 偏差弃权部署 | n=100:原位 8.0 vs bench 5.5(×1.5 带 [3.7,8.25] 内),recall 1.00 | step96 G4 |
 | finger-1 复刻 | 1.04 vs 0.95 | step96 G5 |
 | LeWM 像素部署 | invalid=(k-1)/k;k≥2 通道全淹 1.00;零节省 | step97 G6/G7 |
 | V-JEPA 2-AC 证书 | λ1=0.180/0.177(双 seed 1.8%),d=360,448 | step98 |
