@@ -27,6 +27,67 @@
 
 ---
 
+## [2026-06-11] 3D lane G0 — ALL GATES PASS on the 3080; contracts banked, plumbing validated end-to-end
+
+**Model gates (V-I..V-VI, run on Mac CPU AND box/cu124, identical):** VN equivariance at
+**machine precision** — VNLinear 4e-16, encoder end-to-end (knn regraph included) 1e-16,
+predictor $f(\rho(R)z, R{\cdot}a) = \rho(R)f(z,a)$ 4e-16, translation invariance 4e-15 (all
+f64; 8 orders of magnitude better than registered tolerances — VN linear equivariance is
+associativity, not approximation). Pairing equality **bit-exact** (V-VI; incident #9's gate
+installed before any 3D audit, as registered).
+
+**Contract (PegInsertionSide-v1, banked in `p4_3d_g0_contract.json`):** action = 7-d
+`pd_ee_delta_pose`, Box(-1,1); **arm frame = `root_translation:root_aligned_body_rotation`** —
+translation deltas are root(world)-frame vectors ⇒ the equivariant action lift is sound for
+the translation block; rotation in root-aligned body frame fits the gravity-aligned symmetry
+tabletop tasks actually have (full SO(3) claims need a frame argument — registered as a
+protocol-design input, not assumed). sim 100 Hz / control 20 Hz; demos: 1000 eps, source
+`pd_joint_pos`, mean length 149.
+
+**Replay:** official CLI conversion path failed (WSL render boundary, by design caught) →
+**state-replay fallback engaged**: 3 eps → 538 clouds (1024 pts, valid-masked) + 535
+tcp-derived approx ee-delta actions (**flagged approx — plumbing only, not for claims**;
+the real corpus needs the CLI conversion fixed or a controller-faithful local conversion).
+Whole G0: **1.2 min** — llvmpipe state-replay rendering is far cheaper than the 0.22 s/step
+worst case; 1000-demo corpus prep is hours-not-days even on CPU render.
+
+**CUDA JEPA smoke:** 200 steps @ 87 ms/step on the 3080; pred_loss 3e-3 → 4e-4; tcp-position
+probe $R^2 = 0.748$ (content present); latent std 0.023 — **collapse pressure with zero
+variance regularization, exactly as the PushT taxonomy predicts** (smoke has no var_coef by
+design; the v1.6 lesson set transfers as the 3D protocol's starting point).
+
+**Next blade:** 3D protocol spec v1 (chunk/stride decision off the 20 Hz timescale, variance
+recipe, SO(2)-of-SO(3) symmetry scope, controller-faithful action conversion, corpus budget).
+
+## [2026-06-11] C3-guar mechanics amendment (registered between r1 and r2) + champion r0/r1 read + CPU-batch autopsy
+
+**Champion confirmation, first two cells (pre-amendment observations, flagged):** r0 std 0.951 /
+xy 0.116; r1 std 1.164 / xy 0.424. The xy spread retires the "uniform content anemia" abort
+hypothesis — this is the registered eq-on-MPS run-to-run variance, not a dead recipe; run
+continues. Cell cost ~41 min (c2000), full n=10×2 ≈ 14 h.
+
+**The amendment (the real catch):** both runs returned `ratio=None` at the ε=2δ̂ cell — the
+measured q90 curve exceeds 2δ̂ already at H=1 (heavy tail: q90/mean > 2), so the measured
+boundary is 0 and the ratio is undefined. Under the ratio-based code a run could NEVER qualify
+⇒ **C3-guar was mechanically unpassable regardless of certificate quality** — an unfaithful
+approximation of the registered text ("certified ≤ measured boundary"). Faithful mechanics now
+in force (registered BEFORE r2 data): store both boundaries; guar = direct $H_{\mathrm{cert}}
+\le H_{\mathrm{meas}}$ per cell (**0 ≤ 0 passes** — the certificate refuses a horizon the world
+also refuses; $H_{\mathrm{cert}} > H_{\mathrm{meas}} = 0$ fails — that IS anticonservative);
+cal band uses ratios only where both > 0. This is code-to-registration alignment, not a
+loosening: the comparison set is unchanged, only the undefined-cell semantics are defined.
+r0/r1 re-evaluated from saved ckpt8 pairs (audit-refresh, no retraining) under new mechanics.
+Honest flag: r0/r1 were seen before the amendment; r2..r9 + all plainc are untouched fresh.
+
+**CPU-batch autopsy (separate kill, same review pass):** first launch died at the shapes block —
+`variation_space["block"]["shape"].value = idx` raises (read-only property). Sanctioned API
+(source-read + 3-point verification): `reset(options={'variation_values': {'block.shape': idx}})`
+(dotted path). Banked side-facts: shape catalog o=0 L=1 **T=2 (default)** Z=3 square=4 I=5
+small_tee=6 +=7 (the script's mapping was accidentally correct); **default resets always revert
+to T=2** — the "historical corpora are T-only" premise is now directly verified, not assumed;
+selection is non-sticky (options must ride every reset). Wedge ×3 + c5000 landed before the
+crash (no loss); skip-if-exists guards added; relaunched.
+
 ## [2026-06-11] 3D lane bootstrap + shared-box incident — zero damage, protocol installed, WSL render boundary measured
 
 **Incident (user caught it):** the 3D-lane rsync targeted `~/se3-ejepa` on the WSL box **without

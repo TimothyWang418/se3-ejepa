@@ -1,0 +1,90 @@
+{
+ "blocks": {
+  "A_contract": {
+   "obs_tree": {
+    "agent/qpos": "torch.Size([1, 9])",
+    "agent/qvel": "torch.Size([1, 9])",
+    "extra/tcp_pose": "torch.Size([1, 7])",
+    "sensor_param/base_camera/extrinsic_cv": "torch.Size([1, 3, 4])",
+    "sensor_param/base_camera/cam2world_gl": "torch.Size([1, 4, 4])",
+    "sensor_param/base_camera/intrinsic_cv": "torch.Size([1, 3, 3])",
+    "sensor_param/hand_camera/extrinsic_cv": "torch.Size([1, 3, 4])",
+    "sensor_param/hand_camera/cam2world_gl": "torch.Size([1, 4, 4])",
+    "sensor_param/hand_camera/intrinsic_cv": "torch.Size([1, 3, 3])",
+    "pointcloud/xyzw": "torch.Size([1, 32768, 4])",
+    "pointcloud/rgb": "torch.Size([1, 32768, 3])",
+    "pointcloud/segmentation": "torch.Size([1, 32768, 1])"
+   },
+   "action_space": "Box(-1.0, 1.0, (7,), float32)",
+   "controller_configs": {
+    "arm": {
+     "damping": "100.0",
+     "delta_solver_config": "{'type': 'levenberg_marquardt', 'alpha': 1.0}",
+     "drive_mode": "force",
+     "ee_link": "panda_hand_tcp",
+     "force_limit": "100",
+     "frame": "root_translation:root_aligned_body_rotation",
+     "friction": "0.0",
+     "interpolate": "False",
+     "joint_names": "['panda_joint1', 'panda_joint2', 'panda_joint3', 'panda_joint4', 'panda_joint5', 'panda_joint6', 'panda_joint7']",
+     "normalize_action": "True",
+     "pos_lower": "-0.1",
+     "pos_upper": "0.1",
+     "root_link_name": "None",
+     "rot_lower": "-0.1",
+     "rot_upper": "0.1",
+     "stiffness": "1000.0",
+     "urdf_path": "/home/whb/se3-ejepa/.venv3d/lib/python3.12/site-packages/mani_skill/assets/robots/panda/panda_v3.urdf",
+     "use_delta": "True",
+     "use_target": "False"
+    },
+    "gripper": {
+     "damping": "100.0",
+     "drive_mode": "force",
+     "force_limit": "100",
+     "friction": "0.0",
+     "interpolate": "False",
+     "joint_names": "['panda_finger_joint1', 'panda_finger_joint2']",
+     "lower": "-0.01",
+     "mimic": "{'panda_finger_joint2': {'joint': 'panda_finger_joint1'}}",
+     "normalize_action": "True",
+     "stiffness": "1000.0",
+     "upper": "0.04",
+     "use_delta": "False",
+     "use_target": "False"
+    }
+   },
+   "sim_freq": 100,
+   "control_freq": 20
+  },
+  "B_demos": {
+   "file": "/home/whb/maniskill_demos/PegInsertionSide-v1/motionplanning/trajectory.h5",
+   "n_episodes": 1000,
+   "source_control_mode": "pd_joint_pos",
+   "len_mean": 149.055,
+   "len_max": 423
+  },
+  "C_replay": {
+   "mode": "manual-approx",
+   "n_frames": 538,
+   "n_eps": 3
+  },
+  "C_tensors": {
+   "clouds": "(538, 1024, 3)",
+   "actions": "(535, 7)"
+  },
+  "D_jepa_smoke": {
+   "device": "cuda",
+   "n_transitions": 535,
+   "action_dim": 7,
+   "pred_loss": {
+    "first10": 0.003,
+    "last10": 0.0004
+   },
+   "latent_std": 0.0227,
+   "tcp_probe_r2": 0.748,
+   "ms_per_step": 86.9
+  }
+ },
+ "elapsed_min": 1.2
+}
