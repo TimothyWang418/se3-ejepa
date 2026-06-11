@@ -59,6 +59,51 @@ acceptable for the sizing pass (full determinism: same seed ⇒ same model), but
 consume trained bases, so checkpoint saving was added to the script for all future runs; the
 in-flight process is unaffected (its code was loaded at commit `b0e58e4`).*
 
+## [2026-06-10] P4-step1 part 3 — seed-0 grid readout: two infrastructure FAILs (as-designed responses queued), one loud structural signal, one textbook augmentation-shortcut collapse
+
+Full grid landed (`papers/figures/p4_step1.json`, 52 min wall, **everything on MPS** — e2cnn
+included; 3-seed replication sized at ~2.5 h). Param ladder well-matched: eq 163k vs match 165k
+(+1.3%), half 144k, double 368k.
+
+**Gate verdicts (registered, zero loosening):**
+
+- **G0b PASS** (260 episodes, shapes/dtypes as contracted).
+- **G0c FAIL — oracle-CEM 0/20** (815 s). The horizon-4 greedy position-distance MPC does not
+  solve pose-matching PushT (success needs agent+block pos <20 px AND angle <π/9 vs a random
+  goal). The verdict-not-crash design did its job (the grid does not consume oracle demos).
+  Response (solver identity is registered-free): longer horizon + iCEM + angle-aware cost shaping;
+  queued as the next infrastructure fix.
+- **G1 PASS on fractions ≥10** (latent_std 0.76–2.1); the @2-episode column is collapsed
+  (std 0.007–0.085) — *exactly the degeneracy the two-tier H1 gate pre-anticipated*; @2 cells are
+  flagged degenerate, not deleted.
+- **G3 FAIL — θ is not linearly probeable in ANY base** (θ-R² negative everywhere, incl. eq).
+  Working hypotheses (ranked): (a) WeakPolicy pokes barely rotate the block within episodes —
+  one-step JEPA has no incentive to encode a per-episode-constant; (b) 20 epochs undertrains;
+  (c) θ is encoded nonlinearly. The spec's pre-authorized response path activates: **protocol
+  v1.2 candidates** — mix oracle-demo frames into the encoder corpus (successful demos rotate the
+  block purposefully), and/or train longer; to be registered as v1.2 BEFORE the 3-seed claim runs.
+
+**Shapes (seed-0 sizing pass — registered as observations, NO claim verdicts):**
+
+1. **eq's xy-probe dominance is loud**: $R^2_{xy}$ = 0.80/0.80/0.71/0.55/0.31 across fractions vs
+   plain's ≤0.12 (mostly negative). The equivariant encoder linearly encodes block position from
+   **2 episodes**. (The @200 drop 0.55→0.31 is noted, unexplained — epochs fixed while data grows
+   is the lead suspect; 3-seed will tell.)
+2. **eq's latent is far more predictable**: pred_loss 0.008–0.017 vs plain 0.055–0.32 at
+   comparable latent_std — consistent with C1's mechanism story (and unlike the aug case below,
+   eq is predictable AND content-bearing).
+3. **aug collapsed to a textbook augmentation shortcut**: pred_loss → 0.0000, latent_std 1.6–2.1,
+   ALL probes ≈ 0 (content-free). Diagnosis (to verify with an angle-probe check): the encoder
+   encodes the **augmentation angle itself** — o and o₂ share the same random rotation, making the
+   angle the most predictable high-variance signal; JEPA + naive rotation augmentation invites
+   exactly this shortcut. If confirmed, this is a *reportable observation*: the Brehmer
+   augmentation control transfers from supervised learning to JEPA **only with anti-shortcut
+   design** — the R-aug arm needs a v1.2 (e.g., angle-marginalized pairs or augmentation only at
+   probe time), registered before any C2 reading.
+
+**Sizing conclusions:** full 5×5 grid = 52 min on MPS ⇒ 3 seeds ≈ 2.5 h; collection 13 min;
+oracle gate dominated by sim resets (8 s/episode-attempt) — budget fine once the solver solves.
+
 ## [2026-06-10] P4-step3 — gap-mode instrument built and CERTIFIED (3/3 gates) before it certifies anything
 
 `src/audit/gap_mode.py`: `audit_gap(model, frames, actions)` → the certificate's consumed triple
