@@ -338,11 +338,13 @@ numerically $0$ ($\mathbb{Z}_4$: trivial $\oplus$ sign $\oplus$ rotation). The p
 controlled shears the measured worst-case coefficient equals the analytic $\lVert\Pi\rVert$ to four digits across
 $\kappa\in\{1,1.1,2.2,5.1,10\}$ (orthogonal case exactly $1$), and the measured horizon shift equals
 $\log\kappa/\lambda$. On real loops the per-orbit-point $\kappa_1$ is honestly a *distribution* with a
-near-tangency tail — true Lorenz-96 median $17.5$ (IQR $6.8$–$24.4$, max $90$; the estimator's own convergence
-check fails there, disclosed), pretrained TD-MPC2 walker-1 median $20.9$ (IQR $12.9$–$35.2$, max $193$), cheetah-3
-median $20.8$ (IQR $6.2$–$183$, max $789$) — while the measured E13 calibration ($0.83$–$1.02$) shows typical bias
-directions do not align adversarially; an adversarially-aligned defect could spend the $\log\kappa_1/\lambda_1$
-haircut, stated rather than hidden.
+near-tangency tail **and a window-dependent median** ($41$ orbit samples): true Lorenz-96 median $11.9$ at
+$W{=}400$ (IQR $5.0$–$21.2$, max $69$) — where, at this window, the estimator **passes its own convergence
+check** (its short-window failure was this same window-dependence); pretrained TD-MPC2 walker-1 median $20.9$ at
+$W{=}120$ vs $49.2$ at $W{=}200$ (IQR $17.3$–$63.8$, max $137$ — each window passing the same stability check,
+so the check is necessary, not sufficient), cheetah-3 median $18.7$ (IQR $6.8$–$41.3$, max $185$) — while the
+measured E13 calibration ($0.83$–$1.02$) shows typical bias directions do not align adversarially; an
+adversarially-aligned defect could spend the $\log\kappa_1/\lambda_1$ haircut, stated rather than hidden.
 
 **Proposition 7 (scope — when the local spectrum certifies the horizon of a *learned* model).** Theorem B and
 Proposition 6 take the latent Jacobian spectrum $\{\lambda_j\}$ as *given*. On a *learned* world model the operative
@@ -1249,7 +1251,33 @@ On **non-uniformly-hyperbolic** dynamics (Hénon, with homoclinic tangencies) a 
 
 ### 5.21 The certificate reads a *public pretrained* world model — training-free (Experiment 23)
 
-**The certificate audits a public pretrained world model — training-free — and maps onto the paper's own scope theory (Experiment 23).** We rebuild the latent-dynamics slices of the official **TD-MPC2** checkpoints (5M single-task DMC models; MIT) and run the *unchanged* certificate machinery on the policy-prior closed loop $g(z)=d(z,\tanh\mu_\pi(z))$ — no training, no environment access on the certified side — across **five tasks $\times$ 3 official seeds (15 latent loops)**. The result is a scope map, not a uniform win, and it tracks the theory cell-by-cell. Where the loop is **strongly expansive** ($\lambda_1{=}0.25$–$0.30$: walker-walk $3/3$, cheetah-run seed 3) the coarse-resolution certificate is **calibrated** — ratio measured/certified $0.83$–$1.02$ (walker $0.94/0.95/1.02$), with the same two-regime $\epsilon$ pattern as every system we trained ourselves (tight-$\epsilon$ optimistic, the Proposition 8 $\delta$-bias). As expansion **weakens** the certificate turns optimistic (cheetah $0.43/0.50$; hopper-hop $0.13/0.38$ at $\lambda_1{=}0.05$–$0.09$): model bias outpaces Lyapunov amplification — the degeneracy direction Proposition 7 flags. Where the loop **contracts** ($6/15$: acrobot $3/3$, finger-spin $2/3$, hopper seed 1) the certificate **abstains, correctly in both sub-cases**: finger-spin's stable loops genuinely do not diverge ($15$–$19/20$ starts censored at $300$ steps — nothing to certify), while acrobot's and hopper-1's residual divergence (median $6$–$45$ steps) is bias-driven, outside a Lyapunov certificate's jurisdiction. The SimNorm structural zero-directions appear as a strongly-negative spectral band ($128$–$270$ directions), reported, not hidden; the certified scope is the prior loop, not the MPPI planner. Closest prior work computes Lyapunov exponents of the *true environment* under RL policies (arXiv:2410.10674); a Jacobian certificate of the *learned latent map* of a public world-model zoo, cross-validated against true-environment divergence and stratified by the certificate's own scope theory, is new. `experiments/step89`, `tests/test_step89.py`; checkpoints by URL, not vendored. A second, architecturally disjoint family lands on the same map: the official **LeWM** checkpoint (ViT + transformer JEPA from pixels, PushT; loaded bit-faithfully into the authors' own code) has a free-running fixed-action loop with $\lambda_1{=}0.001$, CI straddling zero (leading band $\{0,0,-0.01..{-}0.08\}$) — the certificate **abstains**, and the observed $1$–$2$-step divergence is pure one-step bias ($0.17$; the zero action is in-support but off the expert distribution — pre-registered scope), the same bias-driven sub-case as acrobot. Two families, one read-out, one taxonomy (`step91`).
+**The certificate audits a public pretrained world model — training-free — and maps onto the paper's own scope theory (Experiment 23).** We rebuild the latent-dynamics slices of the official **TD-MPC2** checkpoints (5M single-task DMC models; MIT) and run the *unchanged* certificate machinery on the policy-prior closed loop $g(z)=d(z,\tanh\mu_\pi(z))$ — no training, no environment access on the certified side — across **five tasks $\times$ 3 official seeds (15 latent loops — the seed map)**. The result is a scope map, not a uniform win, and it tracks the theory cell-by-cell *on these cells* (the $84$-cell expansion below corrects the axis). Where the loop is **strongly expansive** ($\lambda_1{=}0.25$–$0.30$: walker-walk $3/3$, cheetah-run seed 3) the coarse-resolution certificate is **calibrated** — ratio measured/certified $0.83$–$1.02$ (walker $0.94/0.95/1.02$), with the same two-regime $\epsilon$ pattern as every system we trained ourselves (tight-$\epsilon$ optimistic, the Proposition 8 $\delta$-bias). As expansion **weakens** the certificate turns optimistic (cheetah $0.43/0.50$; hopper-hop $0.13/0.38$ at $\lambda_1{=}0.05$–$0.09$): model bias outpaces Lyapunov amplification — the degeneracy direction Proposition 7 flags. Where the loop **contracts** ($6/15$: acrobot $3/3$, finger-spin $2/3$, hopper seed 1) the certificate **abstains, correctly in both sub-cases**: finger-spin's stable loops genuinely do not diverge ($15$–$19/20$ starts censored at $300$ steps — nothing to certify), while acrobot's and hopper-1's residual divergence (median $6$–$45$ steps) is bias-driven, outside a Lyapunov certificate's jurisdiction. The SimNorm structural zero-directions appear as a strongly-negative spectral band ($128$–$270$ directions), reported, not hidden; the certified scope is the prior loop, not the MPPI planner. Closest prior work computes Lyapunov exponents of the *true environment* under RL policies (arXiv:2410.10674); a Jacobian certificate of the *learned latent map* of a public world-model zoo, cross-validated against true-environment divergence and stratified by the certificate's own scope theory, is new. `experiments/step89`, `tests/test_step89.py`; checkpoints by URL, not vendored. A second, architecturally disjoint family lands on the same map: the official **LeWM** checkpoint (ViT + transformer JEPA from pixels, PushT; loaded bit-faithfully into the authors' own code) has a free-running fixed-action loop with $\lambda_1{=}0.001$, CI straddling zero (leading band $\{0,0,-0.01..{-}0.08\}$) — the certificate **abstains**, and the observed $1$–$2$-step divergence is pure one-step bias ($0.17$; the zero action is in-support but off the expert distribution — pre-registered scope), the same bias-driven sub-case as acrobot. Two families, one read-out, one taxonomy (`step91`).
+
+**The full-zoo expansion: $84$ cells, and the seed map's axis does not survive it (Experiment 23b, `step89b`).**
+We then re-ran the byte-identical protocol on **every remaining public single-task dmcontrol checkpoint** in the
+official zoo. The universe ($34$ tasks) and an inclusion rule were frozen in a spec before any cell ran, and the
+rule is *self-executing*: a task enters iff stock dm\_control ``suite.load`` accepts its name mapping — the $11$
+custom TD-MPC2 variants (cheetah-jump, run-front/back(wards), cup-spin, hopper-hop-backwards, pendulum-spin,
+reacher-three-\*, walker-\*-backwards) are excluded *by the rule*, since the measured cross-check column requires
+the true environment; the excluded list and one engineering retry (fish-swim-3, a corrupt download re-pulled) are
+ledgered in the artifact. Result: $69/69$ new cells, $84$ total. **As frozen**: $42/84$ abstain (stable $13$ —
+median censored $\ge10/20$ starts; bias $29$), $42$ expansive with measured/certified median $0.50$ at
+$\lambda_1\ge0.25$ and $0.33$ below it, in-band $[2/3,3/2]$ only $11/42$. **The seed map's "calibrated where
+strongly expansive" is overturned**: in-band cells span $\lambda_1{=}0.01$–$0.39$ — expansion strength does not
+predict calibration. What predicts it is *which quantity sets the measured horizon*. Where the model's native
+one-step residual already sits at the threshold (measured median $\le3$ steps at $\epsilon{=}0.2$: $24$ of $42$
+expansive cells — the entire dog/humanoid/quadruped block), the certificate prices a growth the rollout never
+exhibits: the **same mechanism E16 found on V-JEPA 2-AC**, now measured in bulk — Proposition 7's degeneracy
+direction as the zoo's *default regime*. Where the horizon is long enough to be growth-set (median $\ge5$:
+$15$ cells), the certificate is **calibrated**: ratio median $0.95$, $10/15$ in $[2/3,3/2]$, across five domains
+including two with no seed-map relative (cup-catch $0.68/1.15/1.44$, cartpole-balance-sparse $1.14$); walker-run-2
+lands at $0.95$ in the *proven-flattening* domain, so the low ratios elsewhere are not a pipeline artifact (its
+own seeds 1/3 land $0.06/0.35$ — certificate quality varies per (task, seed) world model, not per domain). The
+re-stratification is descriptive, not pre-registered; cut sensitivity is disclosed (growth-side median
+$0.49/0.65/0.89$ at cuts $\le1/\le2/\le3$) and the frozen quantities — protocol, fractions, $\lambda$-split
+medians — are reported above unchanged. The corrected reading is uniform from toy to zoo to $1$B: **the spectrum
+prices error *growth*; the measured column tests error *level*; the audit is their conjunction.**
+`experiments/step89b`, `tests/test_step89b.py`; spec `docs/specs/2026-06-11-step89b-audit-expansion-seed.md`.
 
 **Scale does not rescue trustworthiness (Experiment 25, `step92`).** Across the official TD-MPC2 *multitask* ladder (mt30, $1$M$\to$$317$M parameters, same walker-walk task, one official checkpoint per size), the policy-prior loop's regime flips **non-monotonically** with scale — contracting at $1$M *and* $48$M, expansive at $5$M/$19$M/$317$M — and calibration scatters (measured/certified $0.37/1.87/1.16$ at $\epsilon{=}0.2$ where expansive; mt80 cells likewise mixed) with **no size matching the single-task $5$M model's $0.94$–$1.02$**. One checkpoint per cell (no official seed variants) — read as a descriptive scope-map extension, not a seed-averaged law; the direction is nonetheless unambiguous: *trust in a rollout is a property of the loop's dynamics, not of parameter count — scale buys interpolation, not a calibrated horizon.*
 
@@ -1269,9 +1297,11 @@ agreement on the out-of-sample optimistic cells, optimism replicated where optim
 $0.83$ on the calibrated cell, whose stricter $[2/3,3/2]$ check lands $7{\times}10^{-4}$ below the band edge on an
 integer-valued median (crossings are whole steps; the edge sits at $4.003$): recorded **at-the-edge, not rounded up**.
 A frozen-actuator fault (executes $0$ while the nominal forecast is unchanged) is detected at the certificate-derived
-cadence $k_{\mathrm{op}}=\max(2,\mathrm{round}(T_1^{\mathrm{pub}}/3))$ with recall $1.00$ on all three seeds, median
-delay $\le k_{\mathrm{op}}$ on $2/3$ (the miss is the tightest cell, $k_{\mathrm{op}}{=}2$, delay $3.0$ — the frozen
-channel needs $\sim2$–$3$ steps to push relative latent error past $\theta$). Proposition 11 is the formal frame:
+cadence $k_{\mathrm{op}}=\max(2,\mathrm{round}(T_1^{\mathrm{pub}}/3))$ with recall $1.00$ on all three seeds and, at
+$n{=}100$ episodes ($1600$ windows/seed), median delay $\le k_{\mathrm{op}}$ on $3/3$ — the cell that missed by
+one read at $n{=}20$ ($k_{\mathrm{op}}{=}2$, delay $3.0$; the frozen channel needs $\sim2$–$3$ steps to push
+relative latent error past $\theta$) lands exactly at $k_{\mathrm{op}}$ (delay $2.0$), with all in-situ ratios
+replicating $n{=}20$ digit-for-digit ($0.43/0.50/0.67$), the at-the-edge cell included. Proposition 11 is the formal frame:
 clause (i) — the decided quantity here *is* the certified quantity, so certificate value transfers with **zero new
 estimation**; clause (ii) prices §5.19/step93's dilution as a resolution mismatch ($H(\theta^{\ast})\approx2$ vs
 $H(0.2)\approx6$ agent-steps). The design trail is disclosed in the script header and is itself taxonomy-obedient:
@@ -1291,12 +1321,14 @@ G1b (calibrated-cell band): at-the-edge INCONCLUSIVE; G2 (detection): **2/3 PASS
 **The abstain cells deploy as predicted — the taxonomy completes in deployment (Experiment 28, `step96`).** The
 published scope map's remaining cell types, run through the same sensor-only monitor with gates frozen a-priori:
 **stable-abstain** (finger-spin-2/3, $\lambda_1<0$, bench $15$–$19/20$ starts censored — the certificate issued no
-horizon because nothing diverges) deploys as **free monitoring**: $93$–$94\%$ of $k{=}24$ windows never cross
-$\theta$, belief-invalid fraction $4.0$/$4.4\%$ (vs $\sim50\%$ at HALF that cadence on cheetah), frozen-actuator
-recall $1.00$ with median delay $4.5$–$5$ at $k_{\mathrm{op}}{=}8$ — zero-false-alarm monitoring at arbitrary
-cadence with detection intact (pre-registered G3: $2/2$ PASS). **Bias-abstain** (hopper-hop-1, $\lambda_1=-0.105$
+horizon because nothing diverges) deploys as **free monitoring**: $92$–$94\%$ of $k{=}24$ windows never cross
+$\theta$, belief-invalid fraction $4.0$/$5.6\%$ at $n{=}100$ (vs $\sim50\%$ at HALF that cadence on cheetah),
+frozen-actuator recall $1.00$ with median delay $5$ at $k_{\mathrm{op}}{=}8$ — zero-false-alarm monitoring at
+arbitrary cadence with detection intact. The pre-registered G3 gate ($\le5\%$ invalid, $2/2$ cells) goes
+$1/2$ at $n{=}100$: finger-spin-2 lands $0.6$pp over the line — recorded **as-registered, INCONCLUSIVE not
+PASS** ($4.4\%$ at $n{=}20$ was a boundary cell revealed by thickening; the qualitative contrast is intact). **Bias-abstain** (hopper-hop-1, $\lambda_1=-0.105$
 yet bench median crossing $5.5$ with zero censoring — divergence is bias, not amplification) deploys with the same
-fast clock the certificate *refused to price*: in-situ median $7.0$ (q25–q75 $4$–$10$), inside the pre-registered
+fast clock the certificate *refused to price*: in-situ median $8.0$ at $n{=}100$ (q25–q75 $5$–$11$), inside the pre-registered
 $\times1.5$ band of bench (G4 PASS); any Lyapunov price here would be $\infty$ — the abstain is the correct
 verdict, now confirmed where it costs something. A further replication cell (finger-spin-1, bench ratio $0.95$)
 lands at $1.04$ (G5 PASS). With Experiment 26's cells, **every cell type of the published taxonomy — calibrated,
@@ -1581,10 +1613,11 @@ recovery, remain ours.
   **closed by measurement**: Proposition 6′ identifies $c_j=1/\sin\theta_j$ — exactly $1$ on isotypic splittings
   (Schur placement and zero cross-block leakage measured at machine precision, Experiment 27) and attained to four
   digits under controlled obliqueness — while on audited chaotic loops the worst-case $\kappa_1$ carries a heavy
-  near-tangency tail (median $\sim17$–$21$, max $\sim10^2$–$10^3$): measured calibration ($0.83$–$1.02$) reflects
-  *typical*, not adversarial, defect alignment, an adversarially-aligned defect could spend the
-  $\log\kappa_1/\lambda_1$ haircut, and the Lorenz-96 angle estimator fails its own convergence check (all
-  disclosed). What remains genuinely un-tightened: the *lift* of the rate to a learned model is, for Lorenz,
+  near-tangency tail and a window-dependent median (walker $20.9$ at $W{=}120$ vs $49.2$ at $W{=}200$, each
+  passing the same stability check — necessary, not sufficient; max $\sim10^2$; Lorenz-96 passes its own
+  convergence check at $W{=}400$, median $11.9$): measured calibration ($0.83$–$1.02$) reflects *typical*, not
+  adversarial, defect alignment, an adversarially-aligned defect could spend the $\log\kappa_1/\lambda_1$
+  haircut (all disclosed). What remains genuinely un-tightened: the *lift* of the rate to a learned model is, for Lorenz,
   **empirical** — shadowing bounds only the forecast-horizon floor and does not transfer the exponent, and classical
   shadowing does not formally cover singular-hyperbolic Lorenz; that the learned model preserves $\lambda_1$
   (verified only via one-step error, an $L^2$ proxy for $C^1$-closeness) is the experimental finding, not a theorem.
