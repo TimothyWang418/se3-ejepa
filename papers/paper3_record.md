@@ -175,6 +175,43 @@ state_dict so strict loads pass against cache-free modules; non-leaf so eval-mod
 crashes; stale after parameter-only EMA). The 40-ep run's in-process 84.8 remains the open
 residual for the matrix experiment.
 
+## [2026-06-11] v1.5 stability sweep — H-v1.5a REFUTED (the isotypic floor ACCELERATES collapse); the attractor is predictability-driven; strategic re-scope
+
+(`experiments/p4_v15_stability.py`, 18 min; artifact `p4_v15_stability.json`; per-field floor
+roll-invariance asserted 6e-8 before use.)
+
+**Sweep on the worst cell (eq/6-ch@κ0):**
+
+| recipe | floor-stat | pred_loss | xy | gate |
+|---|---|---|---|---|
+| per_dim (baseline) | 0.307 | 0.0176 | +0.41 | fail |
+| per_dim+gated (Step-64) | 0.327 | 0.0130 | +0.34 | fail |
+| **per_field (H-v1.5a)** | **0.083** | **0.0015** | **+0.48** | fail |
+| per_field+gated | 0.136 | 0.0021 | +0.38 | fail |
+
+1. **H-v1.5a REFUTED, instructively:** the isotypic-aware floor didn't rescue stability — it
+   collapsed 4× HARDER (0.083) while pred_loss dropped 12× and xy content went UP (+0.48, the
+   best of the board). Reading: the collapse attractor is **predictability-driven** — any
+   relaxation of the isotropy constraint is *exploited* for deeper collapse into an
+   ultra-predictable shrunken manifold (which still carries content!). The variance term's
+   isotropy wasn't the disease; it was a partial brake. The "stable-but-empty" failure mode
+   (aug-collapse) and this "collapsed-but-contentful" mode are distinct — collapse ≠ content
+   loss here, but a std-0.08 space is numerically unusable downstream (normalized δ̂ explodes).
+2. H-v1.5b marginal (+0.02 std). No recipe passes the 0.7 floor on eq/6-ch; the moat re-ask ran
+   under the least-bad recipe and **remains unbankable** (3.56× @κ0 / 0.57× @κ0.8, eq floors
+   FAIL throughout). Side-signal: plain/6-ch@κ0 has xy = −0.001 — ZERO position content where eq
+   holds +0.34 even collapsed; the content asymmetry persists through everything.
+3. **Strategic re-scope (the honest read of three experiments):** 6-ch frame-pairs destabilize
+   eq AND never delivered velocity (v1.4); no variance-term variant fixes it (v1.5). Meanwhile
+   the **single-frame κ=0 configuration was stable all along** (std 0.985/0.823, the clean
+   Stage-1 numbers). Decision: **bank the stable lane** — 3-seed the single-frame κ=0 spine
+   (where C3-cal shapes, the 6.3× normalized moat, and certificate-as-guarantee live);
+   κ=0.8 + frame-pair stability is documented as the **open frontier** (the paper's honest
+   Limitations §: "the momentum regime requires temporal observability that this recipe does
+   not stably provide; the certificate's G-pre diagnostic correctly refuses jurisdiction
+   there"). The signature figure's surviving form: static-regime calibration + the κ-gate's
+   environment-side two-regime measurement + G-pre's jurisdiction map.
+
 ## [2026-06-11] v1.4 frame-pair — INCONCLUSIVE-BY-RECIPE-INSTABILITY on the moat; velocity-observability hypothesis itself takes damage; first in-jurisdiction certificate cell appears
 
 (`experiments/p4_v14_framepair.py`, 7.9 min, 4 cells; artifact `p4_v14_framepair.json`.)

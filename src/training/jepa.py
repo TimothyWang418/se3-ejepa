@@ -105,6 +105,7 @@ def train_jepa(
     return_target_encoder: bool = False,
     predictability_gated_var: bool = False,
     refresh_target_cache: bool = False,
+    var_field_size: int = 0,
 ) -> dict:
     r"""Train ``model`` (an :class:`EqJEPA`) with EMA-target JEPA + Muon/AdamW.
 
@@ -137,6 +138,7 @@ def train_jepa(
     n = obs.shape[0]
     history = {"pred_loss": [], "var_loss": []}
     last_std = float("nan")
+    last_floor_stat = float("nan")
 
     for epoch in range(epochs):
         perm = torch.randperm(n)
@@ -153,19 +155,33 @@ def train_jepa(
             z_pred = model.predictor(z0, a)  # (B, D)
 
             pred_loss = F.mse_loss(z_pred, z_tgt)
-            std = z0.std(dim=0)  # per-dim batch std
-            if predictability_gated_var:
-                # Predictability-aware anti-collapse: weight the per-dim variance floor by how PREDICTABLE that
-                # dimension is (low 1-step error -> protect its variance; high error / pure anti-collapse noise ->
-                # let it collapse). Resolves the variance<->predictability tension found in Step 64: an isotropic
-                # floor fills unused dims with unpredictable variance, so the rollout cannot beat predict-the-mean.
-                with torch.no_grad():
-                    per_dim_err = (z_pred - z_tgt).pow(2).mean(dim=0)              # (D,) per-dim 1-step error
-                    w = torch.exp(-per_dim_err / (per_dim_err.mean() + 1e-6))      # predictable~1, noise->small
-                    w = w / (w.mean() + 1e-6)                                      # normalize: mean weight = 1
-                var_loss = (w * F.relu(1.0 - std)).mean()
+            std = z0.std(dim=0)  # per-dim batch std (always logged for comparability)
+            if var_field_size > 1:
+                # Isotypic-aware variance floor (P4 v1.5, H-v1.5a): the per-dim std=1 floor is an
+                # ISOTROPY prior that fights a regular-representation latent's natural anisotropy
+                # across isotypic components (observed: eq collapses before plain, four times).
+                # Per-FIELD statistic: sqrt of the fiber-averaged variance (trace of the field's
+                # covariance / N) — manifestly invariant under the fiber permutation action of
+                # rho, so the loss is equivariance-compatible; variance may concentrate
+                # anisotropically WITHIN a field without penalty.
+                B_, D_ = z0.shape
+                zf = z0.view(B_, D_ // var_field_size, var_field_size)
+                v_f = (zf - zf.mean(dim=0, keepdim=True)).pow(2).mean(dim=0).mean(dim=-1)  # (F,)
+                floor_stat = v_f.clamp_min(1e-12).sqrt()
+                err_unit = (z_pred - z_tgt).pow(2).mean(dim=0).view(
+                    D_ // var_field_size, var_field_size).mean(dim=-1)
             else:
-                var_loss = F.relu(1.0 - std).mean()
+                floor_stat = std
+                err_unit = (z_pred - z_tgt).pow(2).mean(dim=0)
+            if predictability_gated_var:
+                # Predictability-aware anti-collapse (Step 64): protect predictable units'
+                # variance, let pure anti-collapse noise collapse.
+                with torch.no_grad():
+                    w = torch.exp(-err_unit / (err_unit.mean() + 1e-6))
+                    w = w / (w.mean() + 1e-6)
+                var_loss = (w * F.relu(1.0 - floor_stat)).mean()
+            else:
+                var_loss = F.relu(1.0 - floor_stat).mean()
             loss = pred_loss + var_coef * var_loss
 
             if muon is not None:
@@ -206,6 +222,7 @@ def train_jepa(
             ep_pred += pred_loss.item()
             ep_var += var_loss.item()
             last_std = std.mean().item()
+            last_floor_stat = floor_stat.mean().item()
             nb += 1
 
         history["pred_loss"].append(ep_pred / max(nb, 1))
@@ -218,6 +235,7 @@ def train_jepa(
 
     model.eval()
     history["latent_std"] = last_std
+    history["latent_floor_stat"] = last_floor_stat
     history["routing"] = counts
     if return_target_encoder:
         target_enc.eval()
