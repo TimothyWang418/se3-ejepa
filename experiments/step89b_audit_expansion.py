@@ -40,7 +40,8 @@ def _maybe_translate_old_format(sd: dict) -> dict:
         items = {}
         for k, v in sd.items():
             if k.startswith(prefix):
-                m = re.match(r"(\d+)\.(weight|bias)$", k[len(prefix):])
+                # flat exports nest dynamics one level deeper (`_dynamics.0.{i}.weight`): strip the optional wrapper
+                m = re.match(r"(?:0\.)?(\d+)\.(weight|bias)$", k[len(prefix):])
                 if m:
                     items.setdefault(int(m.group(1)), {})[m.group(2)] = v
         if not items:
