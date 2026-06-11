@@ -135,6 +135,39 @@ re-materialized by seed determinism.)
 3. eq's xy dominance reproduced under re-materialization (0.703 vs grid's 0.709) — the loud signal
    is stable.
 
+## [2026-06-11] P4-spine Stage-1a first contact — a deployment-pairing catch, then an OPEN instrumentation incident (all pixel-eq audit numbers QUARANTINED)
+
+The first certified-vs-measured run on real bases turned into an instrumentation investigation —
+recorded in full because every step is evidence:
+
+1. **The pairing catch (real, stands):** the deployable JEPA world model is **(EMA-target encoder,
+   predictor)** — train_jepa regresses the predictor onto the target encoder's latents; the v1.2
+   checkpoints saved only the online encoder. Decisive in-process check: δ̂(online pair) = 12.20 vs
+   **δ̂(target pair) = 0.82 ≈ the train pred_loss norm 0.80** (15×, exact closure). Checkpoints
+   extended to save both halves (`ckpt2_*`).
+2. **Then the contradiction:** the SAVED target pair is inconsistent too — δ̂ = 12.15 held-out
+   **and 11.95 on the training prefix** (not a memorization basin). State-dicts verified distinct
+   (online↔target relative distance 0.35, keys 1:1); load path verified exact (deepcopy ≡ fresh
+   ≡ ≠ online).
+3. **One-process round trip (40-ep run): the round trip CHANGES the module** —
+   ‖tgt_inproc(x) − tgt_reload(x)‖ ≈ 16 at scale ~40; and that run's in-process pair read 84.8
+   (vs the 200-ep run's 0.82) — in-process behavior is itself run-dependent.
+4. **Leading mechanism (explains 1, 2, and the 0.82↔12 flip; does NOT yet explain 84.8):**
+   `train_jepa` puts the target in `.eval()` then EMA-updates its **parameters** — but e2cnn's
+   `R2Conv` caches the expanded filter at `.eval()` time and **parameter updates do not refresh
+   the cache**. In-process target behavior = stale-cached filters (what the predictor actually
+   trained against); its state_dict = EMA weights; reload re-expands from those ⇒ a different
+   function. Also explains why the eval-mode deepcopy of an e2cnn module crashes (cached non-leaf
+   tensor). **Upstream-relevant:** paper2's S1 (pixel scale-lift) uses the same train_jepa +
+   SteerableEncoder pair — flagged to the research line via the snapshot.
+5. **Quarantine:** both Stage-1a artifacts (`p4_spine_stage1a*.json` — pairbug and "fixed" rerun)
+   are descriptive of MIS-PAIRED or cache-ambiguous models; **no pixel-eq audit number is usable
+   until the target-encoder handling is redesigned e2cnn-aware** (refresh cache after EMA / keep
+   functional form explicit) and verified by an in-process == reloaded equality test. plain bases
+   (no e2cnn) are less exposed but get the same verification before use.
+   Kept honest positives: the instrument-bias calibration at spine settings (uniform −0.029,
+   W=16/B=4) and the analysis-code note (linear fit needs intercept) survive.
+
 ## [2026-06-10] P4-step1 v1.2 grid readout — not a clean win: a deeper confound surfaced, and one mechanism now explains the board
 
 (`papers/figures/p4_step1_v12.json`, 8 min wall, MPS, **25/25 checkpoints saved** — the supply

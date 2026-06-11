@@ -62,7 +62,7 @@ N_PROBE_TRAIN = 1 if SMOKE else 40
 N_PROBE_EVAL = 1 if SMOKE else 20
 EPOCHS = 2 if SMOKE else 20
 ORACLE_ATTEMPTS = 2 if SMOKE else 20  # G0c gate sample (full demo generation is a later overnight)
-ORACLE_MAX_STEPS = 30 if SMOKE else 200
+ORACLE_MAX_STEPS = 30 if SMOKE else 300
 DEVICE = "mps" if torch.backends.mps.is_available() and not SMOKE else "cpu"
 DATA_DIR = ROOT / "data" / "p4_step1"
 OUT_JSON = ROOT / "papers" / "figures" / ("p4_step1_smoke.json" if SMOKE else "p4_step1_v12.json")
@@ -135,8 +135,8 @@ def pose_cost(state: np.ndarray, goal: np.ndarray) -> float:
     return float(np.linalg.norm(s[2:4] - g[2:4]) + 0.5 * np.linalg.norm(s[:2] - g[:2]) + 150.0 * dth)
 
 
-def oracle_cem_episode(env, sim, seed: int, k: int = 64, iters: int = 2, elite: int = 8,
-                       horizon: int = 12):
+def oracle_cem_episode(env, sim, seed: int, k: int = 96, iters: int = 2, elite: int = 10,
+                       horizon: int = 16):
     r"""True-env MPC (v2): horizon 12, MPC warm-start (shifted elite mean), angle-aware cost,
     early-success bonus scaled by time-to-success."""
     obs, _ = env.reset(seed=seed)
