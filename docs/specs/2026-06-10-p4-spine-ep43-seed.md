@@ -60,6 +60,16 @@ across bases without metric games. Held-out demo windows throughout.
 - **$\hat\theta^\ast$ elicitation (consumed by C4's certified-$H$ cells, Prop 11(ii)):** at fixed
   $H{=}15$, inject controlled noise $\nu$ into GT subgoals; $\hat\theta^\ast = \max\{\nu:
   \text{reach-rate} \ge 0.5\}$.
+  **v2 amendment (registered 2026-06-11, after the seed-0 pass caught quasi-static vacuity in BOTH
+  planner-side readouts):** at κ=0 with weak-poke windows, $z(t{+}H)\approx z(t)$ makes "reach
+  within $4\hat\delta$" achievable by doing nothing — θ̂* saturated at the sweep ceiling, and the
+  same contamination threatens $H^{\text{plan}}_{\max}$ at small $H$. All planner-side readouts
+  (reach-rate, $H^{\text{plan}}_{\max}$, θ̂*) henceforth carry: (i) **motion-selected windows**
+  ($\lVert z(t{+}H)-z(t)\rVert > 4\hat\delta$); (ii) **a no-plan control row** (zero-action and
+  recorded-action executions through the same readout) so vacuity is visible by construction;
+  (iii) ε_reach tightened to $2\hat\delta$. Seed-0's large-$H$ planning signal (planned reach
+  2.5δ̂ vs ~8.7δ̂ natural drift at H=8) survives this critique; small-$H$ and θ* numbers from the
+  v1 pass are quarantined as protocol-vacuous.
 - **Stage 2 ($G$ in the loop):** repeat the planner-side boundary with $G$-proposed subgoals; the
   Stage-1$\to$Stage-2 degradation is attributed to $G$ and read against
   $\widehat{\mathrm{Err}}_G(m)$.
