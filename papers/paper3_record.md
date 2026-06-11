@@ -175,6 +175,36 @@ state_dict so strict loads pass against cache-free modules; non-leaf so eval-mod
 crashes; stale after parameter-only EMA). The 40-ep run's in-process 84.8 remains the open
 residual for the matrix experiment.
 
+## [2026-06-11] #10 (half 2) — Stage-1b planner side: feedback planning BEATS the open-loop boundary; θ̂* protocol v1 caught vacuous at κ=0
+
+(`experiments/p4_spine_stage1b.py`, 11 s; artifact `p4_spine_stage1b.json`. Fixed-goal windows
+(seed 2, `FIXED_GOAL` shared with G-training) with a same-windows measured curve — the Stage-1a
+random-goal sets are not re-entered; apples-to-apples crossover by construction.)
+
+1. **$H^{\text{plan}}_{\max} \ge H^{\text{model}}_{\max}$ at every ε, both bases** (eq: 3/8/8 vs
+   2/5/8 at ε ∈ {2,4,8}δ̂) — **feedback planning corrects model bias**; the optimizer limb does
+   not bind at κ=0 with chunked actions (the registered crossover sits at/above the grid
+   ceiling). C3 implication, strengthening: the certified open-loop curve is a *conservative
+   bound* on closed-loop reach — certificate-as-guarantee, not certificate-as-estimate.
+2. **Cross-base ε tension made concrete:** plain's per-base "2δ̂" threshold is 6× eq's in
+   absolute terms (δ̂ 6.97 vs 1.09 on these windows) — its boundaries saturate trivially. The
+   honest cross-base statement stays the δ̂ ratio + per-base calibration (C3 is per-base by
+   design; unaffected). Absolute cross-space thresholds are apples-to-oranges (different
+   metrics) — not introduced.
+3. **θ̂* elicitation v1 is VACUOUS in the quasi-static regime — caught by its own sweep:**
+   reach-rate 0.80–0.97 flat across ν ∈ {0..16}δ̂ (both bases) ⇒ θ̂* = sweep ceiling. Cause: at
+   H=3 with weak-poke windows, $z(t{+}3) \approx z(t)$ — ANY mild action sequence lands within
+   ε_reach=4δ̂ of the true future, independent of the subgoal. The Prop-11 *principle* stands;
+   the instantiation needs **v2 (registered before any C4 consumption): motion-selected windows
+   ($\lVert z(t{+}H) - z(t)\rVert > 4\hat\delta$) + tighter ε_reach (2δ̂) + report the
+   no-plan/random-plan control row** so vacuity is visible by construction next time.
+4. Reach medians grow gracefully for eq (0.68δ̂ → 2.5δ̂ over H=1..8); CEM (K=64×3) on the f64
+   deployable pair plans 8-chunk windows in ~10 ms each — the planner stack is cheap.
+
+**Stage-1 seed-0 is now complete end-to-end** (1a audits + 1b planner) on certified instruments:
+the remaining spine work is 3-seed replication, the κ=0.8 lane (bases + audits at the expansive
+point), wedge cells, and the v2 θ* protocol.
+
 ## [2026-06-11] #10 (half 1) — $G$ trained on human demos via state-re-rendering; both G's barely beat persistence (honest, registered-descriptive)
 
 (`experiments/p4_step10_g_trainer.py`, 18.5 s end-to-end; artifact `p4_step10_g.json`.)
