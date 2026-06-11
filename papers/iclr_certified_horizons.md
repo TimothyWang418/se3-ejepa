@@ -412,7 +412,7 @@ own energy-landscape rollout, $g(z)=\mathrm{LN}(\mathrm{Pred}(z,a^{\ast},s))[:,-
 distance between predicted and encoded tokens — the same quantity the monitor thresholds. Certificate: leading-$6$
 Benettin via forward-mode JVP, fp32 CUDA (precision disclosed; the authors' explicit-attention branch is used, as
 flash/efficient SDPA lack forward-AD), two independent $Q$-seeds agreeing to $1.8\%$:
-$\lambda_1=0.180/0.177$, envelope CI $[0.136,0.250]$ — **expansive**, nominal $T_1(0.2)=9.0$. Measured side ($40$
+$\lambda_1=0.176$–$0.180$ across **five** $Q$-seeds ($2.4\%$ spread), envelope CI $[0.133,0.250]$ — **expansive**, nominal $T_1(0.2)=9.1$. Measured side ($40$
 real DROID episodes, `lerobot/droid_100`, exterior camera, $4$-frame model step per the official config, telemetry
 actions from logged poses via the authors' `poses_to_diff`): one-step relative error $0.629$ (median) vs
 consecutive-latent distance $0.680$ and copy-of-last-read baseline $0.742$; staleness error grows

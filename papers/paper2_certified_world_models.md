@@ -1357,7 +1357,7 @@ authors' own code, audited along the authors' own energy-landscape rollout: per-
 pre-registered scope). Their planning *energy* is the L1 distance between predicted and encoded tokens — the very
 quantity our monitor thresholds: the certificate prices the growth of V-JEPA 2-AC's own energy. **Certificate
 (Experiment 30):** leading-$6$ JVP-Benettin, fp32 CUDA (disclosed), two independent $Q$-seeds agreeing to $1.8\%$:
-$\lambda_1=0.180/0.177$, envelope CI $[0.136,0.250]$ — **expansive**, nominal $T_1(0.2)=9.0$ model steps.
+$\lambda_1=0.176$–$0.180$ across **five** $Q$-seeds ($2.4\%$ spread; 2026-06-11 thickening from two), envelope CI $[0.133,0.250]$ — **expansive**, nominal $T_1(0.2)=9.1$ model steps.
 **Measured side on real robot data (Experiment 31):** $40$ real DROID episodes (`lerobot/droid_100`, exterior
 camera, $4$-frame model step per the official config, telemetry actions via the authors' `poses_to_diff`) — the
 deployment error *starts* at the representation's native step-motion scale: one-step median $0.629$ vs

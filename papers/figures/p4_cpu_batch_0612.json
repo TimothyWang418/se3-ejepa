@@ -1,7 +1,257 @@
 {
  "blocks": {
   "wedge_prep": "saved",
-  "c5000": "(5000, 101, 96, 96, 3)"
+  "c5000": "exists, skipped",
+  "shape_transfer": {
+   "T(ref)": {
+    "eq_r0": {
+     "delta": 3.179,
+     "guar_onesided": true,
+     "ratios": [
+      null,
+      0.33,
+      0.38,
+      0.88
+     ]
+    },
+    "eq_r1": {
+     "delta": 3.134,
+     "guar_onesided": true,
+     "ratios": [
+      1.0,
+      0.67,
+      0.5,
+      1.0
+     ]
+    },
+    "eq_r3": {
+     "delta": 3.603,
+     "guar_onesided": true,
+     "ratios": [
+      null,
+      0.5,
+      0.38,
+      0.88
+     ]
+    },
+    "plain_r0": {
+     "delta": 8.314,
+     "guar_onesided": true,
+     "ratios": [
+      0.25,
+      0.25,
+      0.38,
+      0.75
+     ]
+    },
+    "plain_r1": {
+     "delta": 3.918,
+     "guar_onesided": true,
+     "ratios": [
+      1.0,
+      0.4,
+      0.5,
+      0.88
+     ]
+    },
+    "plain_r2": {
+     "delta": 9.266,
+     "guar_onesided": true,
+     "ratios": [
+      0.25,
+      0.25,
+      0.5,
+      0.88
+     ]
+    }
+   },
+   "L": {
+    "eq_r0": {
+     "delta": 3.405,
+     "guar_onesided": true,
+     "ratios": [
+      null,
+      0.5,
+      0.38,
+      0.88
+     ]
+    },
+    "eq_r1": {
+     "delta": 3.217,
+     "guar_onesided": true,
+     "ratios": [
+      null,
+      0.33,
+      0.38,
+      0.88
+     ]
+    },
+    "eq_r3": {
+     "delta": 3.574,
+     "guar_onesided": true,
+     "ratios": [
+      null,
+      0.5,
+      0.38,
+      0.88
+     ]
+    },
+    "plain_r0": {
+     "delta": 8.39,
+     "guar_onesided": true,
+     "ratios": [
+      0.33,
+      0.25,
+      0.5,
+      0.75
+     ]
+    },
+    "plain_r1": {
+     "delta": 4.038,
+     "guar_onesided": true,
+     "ratios": [
+      1.0,
+      0.67,
+      0.5,
+      0.88
+     ]
+    },
+    "plain_r2": {
+     "delta": 9.622,
+     "guar_onesided": true,
+     "ratios": [
+      0.25,
+      0.25,
+      0.5,
+      0.88
+     ]
+    }
+   },
+   "Z": {
+    "eq_r0": {
+     "delta": 3.457,
+     "guar_onesided": true,
+     "ratios": [
+      null,
+      0.5,
+      0.38,
+      0.88
+     ]
+    },
+    "eq_r1": {
+     "delta": 3.332,
+     "guar_onesided": true,
+     "ratios": [
+      1.0,
+      0.67,
+      0.5,
+      1.0
+     ]
+    },
+    "eq_r3": {
+     "delta": 3.642,
+     "guar_onesided": true,
+     "ratios": [
+      null,
+      0.5,
+      0.38,
+      0.75
+     ]
+    },
+    "plain_r0": {
+     "delta": 8.454,
+     "guar_onesided": true,
+     "ratios": [
+      0.5,
+      0.25,
+      0.5,
+      0.88
+     ]
+    },
+    "plain_r1": {
+     "delta": 3.835,
+     "guar_onesided": true,
+     "ratios": [
+      1.0,
+      0.4,
+      0.5,
+      0.88
+     ]
+    },
+    "plain_r2": {
+     "delta": 9.67,
+     "guar_onesided": true,
+     "ratios": [
+      0.2,
+      0.25,
+      0.5,
+      0.88
+     ]
+    }
+   },
+   "square": {
+    "eq_r0": {
+     "delta": 3.169,
+     "guar_onesided": true,
+     "ratios": [
+      null,
+      0.33,
+      0.38,
+      0.88
+     ]
+    },
+    "eq_r1": {
+     "delta": 3.173,
+     "guar_onesided": true,
+     "ratios": [
+      1.0,
+      0.5,
+      0.5,
+      1.0
+     ]
+    },
+    "eq_r3": {
+     "delta": 3.311,
+     "guar_onesided": true,
+     "ratios": [
+      null,
+      0.5,
+      0.38,
+      0.88
+     ]
+    },
+    "plain_r0": {
+     "delta": 8.637,
+     "guar_onesided": true,
+     "ratios": [
+      0.33,
+      0.25,
+      0.38,
+      0.75
+     ]
+    },
+    "plain_r1": {
+     "delta": 3.838,
+     "guar_onesided": true,
+     "ratios": [
+      1.0,
+      0.33,
+      0.5,
+      0.88
+     ]
+    },
+    "plain_r2": {
+     "delta": 9.455,
+     "guar_onesided": true,
+     "ratios": [
+      0.33,
+      0.25,
+      0.38,
+      0.75
+     ]
+    }
+   }
+  }
  },
- "elapsed_min": 7.7
+ "elapsed_min": 4.7
 }
