@@ -146,7 +146,7 @@ def part_b() -> dict:
     x = torch.randn(N, dtype=torch.float64)
     for _ in range(2000):                                            # attractor transient
         x = step(x)
-    T_tot = (300 if SMOKE else 900)
+    T_tot = int(os.environ.get("STEP95_TB", "300" if SMOKE else "900"))
     traj = [x]
     for _ in range(T_tot):
         traj.append(step(traj[-1]))
@@ -157,8 +157,8 @@ def part_b() -> dict:
             jacs[t] = torch.autograd.functional.jacobian(step, traj[t], vectorize=True)
         return jacs[t]
 
-    W = 100 if SMOKE else 250
-    dist = kappa1_distribution(jac, traj, T_tot, W, n_samples=5 if SMOKE else 11)
+    W = int(os.environ.get("STEP95_WB", "100" if SMOKE else "250"))
+    dist = kappa1_distribution(jac, traj, T_tot, W, n_samples=int(os.environ.get("STEP95_SAMPLES", "5" if SMOKE else "11")))
     print(f"[step95:B] true Lorenz-96 kappa_1: median={dist['kappa1_median']:.2f} "
           f"IQR=[{dist['kappa1_q25']:.2f},{dist['kappa1_q75']:.2f}] max={dist['kappa1_max']:.1f} "
           f"theta_med={dist['theta1_median_deg']:.1f}deg | converged={dist['estimator_converged']}", file=sys.stderr)
@@ -176,7 +176,7 @@ def part_c() -> dict:
         g = s89.make_autonomous(sl)
         zs = s89.rollout_true(task, sl, T=60, seed=11)
         z = zs[40]
-        T_tot = 140 if SMOKE else 320
+        T_tot = int(os.environ.get("STEP95_TC", "140" if SMOKE else "320"))
         traj = [z]
         with torch.no_grad():
             for _ in range(T_tot):
@@ -188,8 +188,8 @@ def part_c() -> dict:
                 _jacs[t] = torch.autograd.functional.jacobian(_g, _traj[t], vectorize=True)
             return _jacs[t]
 
-        W = 60 if SMOKE else 120
-        dist = kappa1_distribution(jac, traj, T_tot, W, n_samples=5 if SMOKE else 9)
+        W = int(os.environ.get("STEP95_WC", "60" if SMOKE else "120"))
+        dist = kappa1_distribution(jac, traj, T_tot, W, n_samples=int(os.environ.get("STEP95_SAMPLES", "5" if SMOKE else "9")))
         out[cell] = dist
         print(f"[step95:C] {cell}: kappa_1 median={dist['kappa1_median']:.2f} "
               f"IQR=[{dist['kappa1_q25']:.2f},{dist['kappa1_q75']:.2f}] max={dist['kappa1_max']:.1f} "
