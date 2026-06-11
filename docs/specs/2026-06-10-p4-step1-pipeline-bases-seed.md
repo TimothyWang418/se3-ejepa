@@ -159,6 +159,30 @@ latent_std ≥ 0.7 (or per-field equivalent) on ALL cells** before the moat ques
 in-jurisdiction cell, or any C2 probe is re-asked. Equivariance unit tests re-run for any new
 floor (a per-field norm floor is manifestly equivariant; assert anyway).
 
+## Protocol v1.6 — two-stage tuning + run-count standard (registered 2026-06-11, user-prompted)
+
+The 5-run verdict exposed two methodological debts at once: the "frozen" hyperparameters were
+never tuned (v1.1 defaults), and our run counts are statistically thin for the variance regime we
+turned out to be in (eq collapse 60%, plain δ̂ swinging 2.5× across runs). Registered remedy:
+
+**Stage A — recipe tuning (infrastructure, NOT claim evaluation):**
+- Tune on HEALTH metrics only: stable-run fraction (std ≥ 0.7), held-out δ̂, content pulse
+  (xy probe) — never on any claim gate (full separation ⇒ no gate-shopping by construction).
+- **Both bases get equal tuning budget** (fairness: an untuned baseline fakes the moat): ≤ 20
+  configs × 3 runs per base over {ema_decay, var_coef, lr, epochs}. TC-WM proprio/block anchor
+  runs as one config family within the same budget.
+- Output: ONE frozen recipe per base + measured stable-run rate. Tuning artifacts ledgered.
+
+**Stage B — claims (post-freeze):**
+- **Run-count standard upgraded:** claim gates evaluate at **n = 10 runs** (collapse-conditioned;
+  runs not seeds per the MPS record); descriptive headline quantities (moat ratio) get
+  mean ± 95% CI at n ≥ 10 per side. Rationale: at ~1.5 min/run this is ~30 min/gate — compute
+  was never the constraint; statistical adequacy now keeps pace with instrument quality.
+- Borderline outcomes (pass-fraction within one run of the threshold) trigger +5 runs ONCE,
+  declared in advance — not repeated until passage.
+- Suggestion forwarded to paper2 (their territory): the same n-upgrade is worth considering at
+  their known thin-n cells (pendulum conditional-causal 2/5).
+
 ## Open items carried (not step1's)
 
 - "Dynamic Push-T" query (one targeted search at step2, cite-and-differentiate if physics-dialing).
