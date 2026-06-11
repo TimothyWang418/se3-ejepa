@@ -212,6 +212,24 @@ regresses a coherent moving target).
   determinism here); its exp-vs-linear fit comparison still carries the known no-intercept
   analysis bug — fix pending, conclusions not drawn from it.
 
+*Same-day review addenda:*
+
+1. **Closure both ways:** δ̂_eq held-out 1.47 vs train-loss norm 1.62; δ̂_plain 7.68 vs 6.72 —
+   both bases generalize cleanly, so the 5.2× gap is a genuine fit-quality gap, not a
+   generalization artifact.
+2. **The λ̂=0.0000 mystery solved by direct probe:** $\partial\Delta/\partial z = 0$ to machine
+   precision (8 random JVP directions all 0.0; $\Delta(z')-\Delta(z) = 2\times10^{-16}$) — the eq
+   predictor trained to a **purely action-driven** solution $f(z,a) = z + \Delta(a)$ ($J\equiv I$;
+   quasi-static PushT makes this near-optimal, and the frequency-1 action lift makes it cheap to
+   express). Registered consequences: new **C3-zsens pre-gate** in the spine spec (λ̂ labelled
+   *structural* when $J\equiv I$; expansive-regime under-amplification named in advance); plain's
+   λ̂ (−0.006, proper CI) shows it DID learn mild z-dependence — an asymmetry worth tracking.
+3. **C3-cal gate amended to like-for-like quantiles** (q90↔q90, median↔median reported) — the
+   seed-0 fine-ε "failures" (0.29–0.33) were the q90-vs-median construction, not calibration.
+4. **Instrument-bias note:** the planted −0.029 offset is a *transient-alignment* bias — it
+   applies to gapped spectra, NOT to $J\equiv I$ bases (no transient exists); bias accounting is
+   regime-dependent and stated per base.
+
 ## [2026-06-11] G0c oracle v3 — 4/20 IDENTICAL to v2: the bottleneck is structural, not budget; gate re-scoped
 
 Doubling the budget (h 12→16, K 64→96, cap 200→300; 23 min) changed nothing — the same 4

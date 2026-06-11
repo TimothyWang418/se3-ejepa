@@ -66,11 +66,21 @@ across bases without metric games. Held-out demo windows throughout.
 
 ## 3. Pre-registered gates (C3; bands $[0.5, 2]$, zero loosening)
 
-- **C3-cal:** $H^*(\epsilon)$ from $\widehat{\mathrm{Err}}_f$ (q90 curve = the certificate-flavoured
-  bound; **the q90 curve is the registered consumer**, the mean curve is reported context) vs
-  $H^{\text{model}}_{\max}(\epsilon)$: ratio in band across the $\epsilon$ grid, both regimes,
-  $\ge 2/3$ seeds, **within the model-limited region** (the crossover locates it, per the
-  proposal's scope-law hygiene).
+- **C3-cal (quantile-matched, amended 2026-06-11 pre-3-seed):** the Stage-1a seed-0 pass exposed a
+  directional mismatch in the original wording — a q90-derived certificate boundary compared
+  against a *median*-derived measured boundary is conservative by construction and would fail the
+  band for construction reasons, not calibration reasons. Amended to **like-for-like quantiles**:
+  the gate compares $H^*_{q90}(\epsilon)$ vs $H^{\text{meas}}_{q90,\max}(\epsilon)$ (and the
+  median↔median pair is reported alongside as context). Ratio in band across the $\epsilon$ grid,
+  both regimes, $\ge 2/3$ seeds, within the model-limited region.
+- **C3-zsens (NEW pre-gate, registered 2026-06-11):** before any certificate is issued for a base,
+  measure the predictor's latent sensitivity $\lVert \partial \Delta/\partial z\, v\rVert$ over
+  random unit $v$ (the Stage-1a clean pass found the eq predictor **purely action-driven** —
+  $\partial\Delta/\partial z = 0$ to machine precision, hence $J \equiv I$ and $\hat\lambda_1$
+  *structurally* zero rather than measured-zero). A base with $J \equiv I$ gets its $\hat\lambda_1$
+  labelled **structural**; in the expansive regime such a base's certificate would under-amplify
+  by construction — the G-pre r-ratio is expected to catch it, and this pre-gate names the cause
+  in advance instead of discovering it post hoc.
 - **C3-wedge:** eq's in-wedge-measured curve transfers out-of-wedge (ratio in band; the
   $m\,\hat\epsilon_{\max}$ term included); plain's does not (out of band). Wedge = collection
   episodes filtered to initial block orientation $\in [0°, 90°)$; out-of-wedge = the remaining
