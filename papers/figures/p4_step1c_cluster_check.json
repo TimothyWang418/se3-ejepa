@@ -1,0 +1,8 @@
+{
+ "seed": 0,
+ "n_per_copy": 2000,
+ "between_within_variance_ratio": 686392.625,
+ "copy_identity_probe_acc": 0.7415000200271606,
+ "verdict": "PARTIAL",
+ "wall_sec": 21.7
+}

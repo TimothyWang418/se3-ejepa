@@ -23,6 +23,13 @@ hereby pinned to **two curves, each consumed where it binds** (Prop 11 disciplin
 
 ## 1. $G$ design (registered)
 
+**Unit hygiene (amended post-v1.2, before any spine code):** step1's protocol v1.2 moves $f$ to
+**5-env-step action chunks**, so three timescales coexist — pin them once: *1 f-chunk = 5 env
+steps = 1 G-step*. The gap $H$ is **always quoted in env steps**; in f/G units it is $m = H/5$.
+All gap-mode exponents after v1.2 are **per f-chunk**; the κ-gate's env exponents
+($\hat\lambda_1^{\text{env}}$, per env step) convert by ×5 before any cross-comparison — the
+conversion is applied at the comparison site and stated, never silently.
+
 Native stride $h_0 = 5$ env steps (LeWM CHUNK convention); gap $H = 5m$ ⇒ the fixed-$H$ grid
 $\{5,10,15,25,40\}$ = rollouts $m \in \{1,2,3,5,8\}$ (FF-JEPA's $H{=}25$ = $m{=}5$). Trained on
 oracle-demo latent sequences (200 successful episodes per regime). Per base: plain $G$ = residual

@@ -117,6 +117,13 @@ re-materialized by seed determinism.)
    readout 0.49). An *implementation artifact*, not the Brehmer control's substance — honest
    distinction recorded. (Side data: ALL bases read the probe's own corner artifact at mod-4,
    0.49–0.84 — the probe's rotation introduces the cue; eliminated in v1.2 by circular masking.)
+   **step1c direct verification (CONFIRMED at three levels)**
+   (`experiments/p4_step1c_cluster_check.py`): between/within-copy variance ratio **686,393**
+   (latents are 4 near-point clusters); copy-identity probe accuracy **0.742 ≈ 3/4 = the
+   merged-pair signature**; the merged pair is quantitatively explained by the corner-wedge
+   arithmetic — drawn angles mod 90° = $\{0.0, 88.7, 6.6, 31.9\}$°, so copy-1 (178.7° ≈ 180°,
+   which needs no padding on a square image) sits 1.3° from copy-0 in wedge space and the two
+   clusters coincide. Mechanism, not just structure, verified.
 2. **θ unreadability — BOTH prior hypotheses dead**: corpus rotation is ample (median 70.6°
    within-episode, q90 357°); longer training makes it WORSE (θ +0.03→−0.40 at 60 epochs) and
    **decays xy content too** (0.70→0.44 — the @200 column's drop reproduced at fixed data). Live
