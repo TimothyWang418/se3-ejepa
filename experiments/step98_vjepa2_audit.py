@@ -59,7 +59,7 @@ def load_model():
 def encode_frame(enc, frame_hw3_uint8: np.ndarray) -> torch.Tensor:
     r"""Authors' per-frame recipe: transform -> repeat the frame into a 2-slot tubelet clip -> encoder -> (256,1408).
     Normalization follows the repo transform (resize/crop to 256, ImageNet-ish norm inside make_transforms)."""
-    from src.datasets.utils.video.transforms import make_transforms  # hub-repo import
+    from app.vjepa_droid.transforms import make_transforms  # hub-repo import (notebook's own path)
     if not hasattr(encode_frame, "_tf"):
         encode_frame._tf = make_transforms(random_horizontal_flip=False, random_resize_aspect_ratio=(1., 1.),
                                            random_resize_scale=(1., 1.), reprob=0., auto_augment=False,
@@ -135,7 +135,7 @@ def main() -> int:
     # one-step sanity: predict frame1 tokens from frame0 under the TRUE pose diff action
     sys.path.insert(0, str(HUB_DIR / "notebooks"))
     try:
-        from utils.world_model_wrapper import poses_to_diff  # type: ignore
+        from utils.mpc_utils import poses_to_diff  # type: ignore
         a_true = torch.tensor(poses_to_diff(states[0], states[1]), dtype=torch.float32).view(1, 1, 7).cuda()
     except Exception:
         diff = states[1] - states[0]
