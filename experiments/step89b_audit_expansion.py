@@ -26,6 +26,48 @@ import torch
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import step89_pretrained_wm_audit as s89  # noqa: E402
 
+
+def _maybe_translate_old_format(sd: dict) -> dict:
+    r"""The official zoo mixes two export generations: FUSED (NormedLinear keys ``i.weight/i.ln.weight``) and
+    FLAT (separate Linear/LayerNorm at interleaved indices, e.g. ``state.1/2/4/5``). Translate FLAT -> FUSED for
+    the three slices step89 loads, pairing each 2-D-weight Linear with a following same-dim 1-D-weight LayerNorm.
+    Fused checkpoints pass through untouched (the original five tasks are unaffected)."""
+    import re
+    if any(k.startswith("_encoder.state.") and ".ln." in k for k in sd):
+        return sd
+    out = dict(sd)
+    for prefix in ("_encoder.state.", "_dynamics.", "_pi."):
+        items = {}
+        for k, v in sd.items():
+            if k.startswith(prefix):
+                m = re.match(r"(\d+)\.(weight|bias)$", k[len(prefix):])
+                if m:
+                    items.setdefault(int(m.group(1)), {})[m.group(2)] = v
+        if not items:
+            continue
+        for k in [k for k in out if k.startswith(prefix)]:
+            del out[k]
+        idxs = sorted(items)
+        fused, i = 0, 0
+        while i < len(idxs):
+            layer = items[idxs[i]]
+            w = layer.get("weight")
+            if w is None or w.dim() != 2:
+                i += 1
+                continue
+            out[f"{prefix}{fused}.weight"] = w
+            out[f"{prefix}{fused}.bias"] = layer["bias"]
+            if i + 1 < len(idxs):
+                nxt = items[idxs[i + 1]]
+                nw = nxt.get("weight")
+                if nw is not None and nw.dim() == 1 and nw.shape[0] == w.shape[0]:
+                    out[f"{prefix}{fused}.ln.weight"] = nw
+                    out[f"{prefix}{fused}.ln.bias"] = nxt["bias"]
+                    i += 1
+            fused += 1
+            i += 1
+    return out
+
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "papers/figures/step89b_audit_expansion.json"
 HF = "https://huggingface.co/nicklashansen/tdmpc2/resolve/main/dmcontrol"
@@ -81,14 +123,17 @@ def main() -> int:
         included.append(key)
         for seed in (1, 2, 3):
             cell = f"{key}-{seed}"
-            if cell in results:
-                continue
+            if cell in results and "error" not in results[cell]:
+                continue                                            # errored cells are retried
             if LIMIT and n_new >= LIMIT:
                 break
             try:
                 ck = ensure_ckpt(key, seed)
                 print(f"[step89b] {cell}: loading slices (obs={obs_dim}, act={act_dim}) ...", file=sys.stderr)
-                slices = s89.load_tdmpc2_slices(ck, action_dim=act_dim, obs_dim=obs_dim)
+                raw = torch.load(ck, map_location="cpu", weights_only=True)
+                sd = raw["model"] if isinstance(raw, dict) and "model" in raw else raw
+                slices = s89.load_tdmpc2_slices({"model": _maybe_translate_old_format(sd)},
+                                                action_dim=act_dim, obs_dim=obs_dim)
                 zs = s89.rollout_true(key, slices, 60, seed)
                 z0 = zs[len(zs) // 2]
                 cert = s89.certify(slices, z0, EPS_LIST, seed=seed)
