@@ -18,6 +18,11 @@ r"""P4-step1b — two diagnoses before protocol v1.2 is registered.
 Bases re-materialized by seed determinism (collection prefix is bit-identical for the same seed;
 training seeds identical; the overnight grid predates checkpointing).
 
+PROVENANCE: the committed artifact (`p4_step1b_diagnosis.json`) was produced under protocol
+**v1.1** semantics (1-step transitions, per-copy aug angles, no mask) at commit `21fc746`. The
+pipeline this script imports has since moved to v1.2 — a rerun today answers a DIFFERENT question;
+the recorded conclusions stand as v1.1 records (git history holds the producing code).
+
 Run: .venv/bin/python experiments/p4_step1b_diagnosis.py   (~10 min, MPS)
 """
 

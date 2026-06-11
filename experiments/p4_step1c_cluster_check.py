@@ -9,6 +9,10 @@ Confirmed iff between/within is large (copy identity dominates the latent) AND c
 linearly readable (~100% accuracy). Refuted again iff the ratio is O(1).
 
 Run: .venv/bin/python experiments/p4_step1c_cluster_check.py  (~2 min, MPS)
+
+PROVENANCE: the committed artifact was produced under protocol v1.1 semantics (per-copy angles —
+the very bug it verifies) at commit `422e0fe`. The imported pipeline has since moved to v1.2
+(per-sample angles + mask), so a rerun would — by design — no longer reproduce the collapse.
 """
 
 from __future__ import annotations
