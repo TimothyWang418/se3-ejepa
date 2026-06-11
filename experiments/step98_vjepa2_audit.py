@@ -97,13 +97,25 @@ def make_loop(pred, s0: torch.Tensor):
     return g
 
 
+def _math_sdpa(q, k, v, attn_mask=None, dropout_p=0.0, is_causal=False, scale=None, **kw):
+    r"""Explicit softmax attention — forward-AD-safe by construction. Needed because (i) the authors' bare
+    `torch.backends.cuda.sdp_kernel()` context re-enables efficient attention over any global flag, and (ii) their
+    explicit-attention fallback is bypassed whenever an attn_mask is passed (`if attn_mask is not None or use_sdpa`).
+    dropout_p ignored (eval; Dropout-as-identity)."""
+    sc = scale if scale is not None else q.size(-1) ** -0.5
+    attn = (q @ k.transpose(-2, -1)) * sc
+    if is_causal:
+        L, S = q.size(-2), k.size(-2)
+        attn = attn.masked_fill(~torch.ones(L, S, dtype=torch.bool, device=q.device).tril(), float("-inf"))
+    if attn_mask is not None:
+        attn = attn.masked_fill(~attn_mask, float("-inf")) if attn_mask.dtype == torch.bool else attn + attn_mask
+    return attn.softmax(-1) @ v
+
+
 def benettin_jvp_gpu(g, z0: torch.Tensor, k: int, n_steps: int, warmup: int, q_seed: int):
     from torch.func import jvp
-    # forward-AD through SDPA: the sdpa_kernel() context is NOT honored under functorch transforms (torch 2.5),
-    # so force the math backend via the GLOBAL dispatcher flags instead (efficient/flash lack forward-AD kernels).
-    torch.backends.cuda.enable_flash_sdp(False)
-    torch.backends.cuda.enable_mem_efficient_sdp(False)
-    torch.backends.cuda.enable_math_sdp(True)
+    import torch.nn.functional as TF
+    TF.scaled_dot_product_attention = _math_sdpa                    # global; all encoding is done before this point
     d = z0.numel()
     gen = torch.Generator(device="cpu").manual_seed(q_seed)
     Q = torch.linalg.qr(torch.randn(d, k, generator=gen).float())[0].cuda()
