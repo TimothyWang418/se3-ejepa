@@ -303,8 +303,9 @@ intersection.
   our scale (escape was re-observation-interval-invariant — control-quality-limited); safety *necessity* is open.
 
 - **Where decision value concentrates — and where it dilutes.** Closing the loop on the real TD-MPC2 agent (faithful
-  MPPI replica; cadence-1 anchor return $994$ vs the official $977$–$983$ band), return degrades from replan cadence
-  $k{=}2$ — well inside $T_1(0.2)\approx5.4$–$6.4$; the control-relevant resolution is finer and sits in the
+  MPPI replica; cadence-1 anchor mean $986$ over $n{=}10$ episodes, range $977$–$996$ overlapping the official
+  $977$–$983$ band), return degrades from replan cadence $k{=}2$ ($90\%$ of anchor, $n{=}10$) — well inside
+  $T_1(0.2)\approx5.4$–$6.4$; the control-relevant resolution is finer and sits in the
   certificate's known tight-$\epsilon$ optimistic regime (`step93`). With E11, the honest scope law: value
   concentrates where the decided quantity IS the certified quantity (E12's re-observation win, E15's deployed
   monitor) and dilutes behind a task-level map (return, gait quality). **Proposition 11 makes the law a theorem**:

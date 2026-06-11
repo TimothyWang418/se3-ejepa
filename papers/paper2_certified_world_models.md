@@ -1540,7 +1540,9 @@ recovery, remain ours.
   certificate buys *cheaper* trustworthy action under budget; whether it buys *safer* action awaits a stronger controller.
 
 - **Where the certificate's decision value concentrates — and where it dilutes.** We closed the loop on the real
-  TD-MPC2 agent (faithful MPPI replica; cadence-1 anchor return $994$ vs the official $977$–$983$ band): replanning
+  TD-MPC2 agent (faithful MPPI replica; cadence-1 anchor mean $986$ over $n{=}10$ episodes, per-episode range
+  $977$–$996$ overlapping the official $977$–$983$ band — n-thickened from $3$ to $10$ episodes per cadence
+  2026-06-11, knee unchanged): replanning
   every $k$ steps with the certified prior loop executed in between, return degrades from $k{=}2$ — well inside
   $T_1(0.2)\approx5.4$–$6.4$. The control-relevant resolution is finer ($\epsilon\approx0.05$, where the *measured*
   divergence of $1$–$2$ steps matches the return knee) but there the certificate sits in its known tight-$\epsilon$
