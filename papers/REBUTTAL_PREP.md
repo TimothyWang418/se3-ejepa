@@ -16,11 +16,11 @@
 
 **指针**:§1 "One certificate, a universal half and an exclusive half";§4 收尾段;E2/step74、E12/step85+88、Lemma 2 证明。
 
-## A2. "Prop 6 的下界是单缺陷的风格化构造"
+## A2. "Prop 6 的下界是单缺陷的风格化构造 / 常数不紧"
 
-**承认**:是构造——下界本来就由构造承载。
+**承认**:下界由构造承载——下界本来就该如此。
 
-**回击**:(i) 构造精确匹配 Theorem B 的形式,数值上 $\epsilon e^{\lambda T}$ 到相对误差 $10^{-14}$(step65,3 seeds);(ii) 训练模型版本是 E3:对称破缺线性退化、在 Prop 6 预测的穿越点交叉(相关 0.88–0.98);(iii) "tight in form, not in prefactor" 已在 Limitations 自首——我们没有声称常数紧。
+**回击**:(i) 构造精确匹配 Theorem B 的形式,数值上 $\epsilon e^{\lambda T}$ 到相对误差 $10^{-14}$(step65,3 seeds);(ii) **常数现在也闭合了**:Prop 6′ 证明 $c_j=1/\sin\theta_j$(谱投影范数),正交/isotypic 分裂处恰为 1 ——**上界=下界连常数都匹配**;受控斜剪切下实测系数 = 解析值至四位小数,horizon shift = $\log\kappa/\lambda$(step95 A1–A3);isotypic 分层实测至机器精度、跨块泄漏字面 0(step65b);(iii) 真实环上 $\kappa_1$ 是带近切点重尾的分布(中位 17–21,max 至 ~800),与实测校准 0.83–1.02 并排披露——最坏 vs 典型对齐双报告,Limitations 如实保留"对抗对齐缺陷可花掉 $\log\kappa_1/\lambda_1$ haircut"。
 
 ## A3. "学习模型的 Lyapunov 谱不是新东西(Özalp & Magri;Lyapunov 正则化 policies)"
 
@@ -30,7 +30,7 @@
 
 **承认**:对——而且我们把它写成了定理而不是藏起来。
 
-**回击**:Prop 11 给出精确边界:对齐决策(被决策量=被认证量)零额外 regret @ $c{=}1$——E12(预算 8–16% vs 61–65%)和 E15(已发表证书 out-of-sample 两位小数复刻部署时钟)是正例;任务映射决策携带不可约错分辨率罚 $|\log(\epsilon/\theta^\ast)|/\lambda_1$——E11/step93 的稀释被定量预测(因子 ≈3)。"证书对什么决策有值"现在是**定理 + 双向实验证据**,不是希望。
+**回击**:Prop 11 给出精确边界:对齐决策(被决策量=被认证量)零额外 regret @ $c{=}1$——E12(预算 8–16% vs 61–65%)和 E15(已发表证书 out-of-sample 两位小数复刻部署时钟)是正例;任务映射决策携带不可约错分辨率罚 $|\log(\epsilon/\theta^\ast)|/\lambda_1$——E11/step93 的稀释被定量预测(因子 ≈3)。且部署证据现在覆盖**全分类学**:稳定弃权=免费监控(93–94% 窗口从不穿越,recall 1.00)、偏差弃权时钟落 bench ×1.5 带内(证书正确拒价)、复刻 cell 共 4 个。"证书对什么决策有值"是**定理 + 全象限实验证据**,不是希望。
 
 ## A5. "E14 每个 size 只有一个 checkpoint,不构成统计结论"
 
@@ -82,3 +82,9 @@
 | 故障检测 | recall 1.00(3/3),delay ≤ k_op(2/3) | step94 |
 | walker 对照 | 0/3 复刻,recall 0.92–1.0(工况双峰) | step94_walker |
 | 紧性 | $\epsilon e^{\lambda T}$ 至 $10^{-14}$;斜率 $1/\lambda$,$R^2=1.000$ | step65 |
+| 常数(Prop 6′) | 正交格 κ=1 精确;斜剪切 1.1/2.2/5.1/10 四位小数吻合;shift=$\log\kappa/\lambda$ | step95 A |
+| isotypic 实测 | off-block 1.5e-16;逐块增长 1e-15;泄漏 0.0 | step65b |
+| 真实环 κ₁ | 中位 17.5/20.9/20.8(L96/walker/cheetah),max 90/193/789 | step95 B/C |
+| 稳定弃权部署 | invalid@k24 4.0/4.4%,censored 93–94%,recall 1.00 | step96 G3 |
+| 偏差弃权部署 | 原位 7.0 vs bench 5.5(×1.5 带内),recall 1.00 | step96 G4 |
+| finger-1 复刻 | 1.04 vs 0.95 | step96 G5 |
