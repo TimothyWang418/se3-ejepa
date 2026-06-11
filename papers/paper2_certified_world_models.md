@@ -1326,13 +1326,13 @@ pre-registered scope). Their planning *energy* is the L1 distance between predic
 quantity our monitor thresholds: the certificate prices the growth of V-JEPA 2-AC's own energy. **Certificate
 (Experiment 30):** leading-$6$ JVP-Benettin, fp32 CUDA (disclosed), two independent $Q$-seeds agreeing to $1.8\%$:
 $\lambda_1=0.180/0.177$, envelope CI $[0.136,0.250]$ — **expansive**, nominal $T_1(0.2)=9.0$ model steps.
-**Measured side on real robot data (Experiment 31):** $20$ real DROID episodes (`lerobot/droid_100`, exterior
+**Measured side on real robot data (Experiment 31):** $40$ real DROID episodes (`lerobot/droid_100`, exterior
 camera, $4$-frame model step per the official config, telemetry actions via the authors' `poses_to_diff`) — the
-deployment error *starts* at the representation's native step-motion scale: one-step median $0.632$ vs
-consecutive-latent distance $0.681$ (the predictor beats the copy-of-last-read baseline, $0.632$ vs $0.748$, its
+deployment error *starts* at the representation's native step-motion scale: one-step median $0.629$ vs
+consecutive-latent distance $0.680$ (the predictor beats the copy-of-last-read baseline, $0.629$ vs $0.742$, its
 value being energy *ordering* for CEM rather than metric forecasting — the franka energy-landscape check orders
-random $0.471\gg$ true $0.426$); staleness error grows $0.625\to0.787$ over $8$ steps, log-slope
-$0.033\ (\text{per-window median }0.028)$ — $5$–$6\times$ below the certified $\lambda_1$; belief-invalid
+random $0.471\gg$ true $0.426$); staleness error grows $0.623\to0.774$ over $8$ steps, log-slope
+$0.030\ (\text{per-window median }0.027)$ — $5$–$6\times$ below the certified $\lambda_1$; belief-invalid
 fraction $1.00$ at every cadence including $k{=}1$. The pre-registered pricing branch **G8-E fails as registered**
 and the pre-registered sub-classification rule reads **bias**: the error never enters the linearization
 neighborhood, so the tangent spectrum's jurisdiction and the monitor's operating point do not overlap —

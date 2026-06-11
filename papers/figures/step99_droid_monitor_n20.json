@@ -6,7 +6,7 @@
     4,
     8
   ],
-  "n_ep": 40,
+  "n_ep": 20,
   "T": 60,
   "sub": 4,
   "camera": "observation.images.exterior_image_1_left",
@@ -30,27 +30,7 @@
     39,
     40,
     42,
-    44,
-    45,
-    46,
-    50,
-    52,
-    53,
-    56,
-    57,
-    62,
-    64,
-    67,
-    69,
-    71,
-    72,
-    73,
-    78,
-    80,
-    81,
-    82,
-    84,
-    87
+    44
   ],
   "invalid_by_k": {
     "1": 1.0,
@@ -64,7 +44,7 @@
     "4": 1.0,
     "8": 1.0
   },
-  "one_step_rel_err_median": 0.6291523575782776,
+  "one_step_rel_err_median": 0.6315681040287018,
   "crossing_median": 1.0,
   "censored_frac": 0.0,
   "telemetry_fault_pre_post": [
@@ -80,19 +60,19 @@
   "measured_subclass": "bias",
   "mechanism": {
     "median_err_vs_staleness": [
-      0.6231106519699097,
-      0.661397397518158,
-      0.6918843686580658,
-      0.7126767635345459,
-      0.7350468933582306,
-      0.7523884773254395,
-      0.7654012441635132,
-      0.7743011713027954
+      0.6246068477630615,
+      0.6629582345485687,
+      0.696415364742279,
+      0.7202354371547699,
+      0.742631196975708,
+      0.7649306058883667,
+      0.7788161933422089,
+      0.7870161831378937
     ],
-    "growth_log_slope": 0.03015824239661942,
-    "per_window_slope_median": 0.027124411911739796,
-    "consecutive_latent_dist_median": 0.6797578632831573,
-    "copy_baseline_err_median": 0.7419989109039307,
+    "growth_log_slope": 0.0325635490864602,
+    "per_window_slope_median": 0.027702795127068955,
+    "consecutive_latent_dist_median": 0.6805829405784607,
+    "copy_baseline_err_median": 0.7482310831546783,
     "note": "growth slope ~0.025 << certified lambda1: deployment error starts at the native step-motion scale (~0.6) and never enters the linearization neighborhood \u2014 bias-dominated; the E13 protocol's measured cross-check overrides the tangent certificate (Prop 7 degeneracy at foundation-model scale; thresholds are representation-relative)."
   },
   "branch": "G8-E (expansive pricing)",

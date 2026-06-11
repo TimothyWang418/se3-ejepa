@@ -242,7 +242,7 @@ exponent off its Jacobian field alone. On **uniformly-hyperbolic** dynamics it i
 **Every taxonomy cell type now has a deployment instance, predicted a-priori — and the taxonomy *orders* deployment
 value: stable-abstain (free monitoring) $>$ expansive (priced savings) $>$ bias-abstain (do not deploy).**
 
-**(E16) At foundation-model scale the cross-check column is load-bearing (`step98`–`step99`).** **V-JEPA 2-AC** ($1$B encoder, official checkpoint, authors' code; $d{=}360{,}448$) reads **expansive** ($\lambda_1{=}0.178$, two seeds agreeing to $1.8\%$) — yet on $20$ real DROID episodes the deployment error *starts* at the representation's native step motion ($0.63$ one-step vs $0.68$ consecutive-latent distance) and grows at log-slope $0.03\ll\lambda_1$: it never enters the linearization neighborhood, and the pre-registered pricing gate **fails as registered** (measured sub-class: bias — Proposition 7's degeneracy at $1$B scale). A spectrum-only audit would over-promise $T_1{\approx}9$; **the cross-validated audit is the deployable object**. Thresholds are representation-relative; rates price only errors inside the linearization neighborhood (Appendix D).
+**(E16) At foundation-model scale the cross-check column is load-bearing (`step98`–`step99`).** **V-JEPA 2-AC** ($1$B encoder, official checkpoint, authors' code; $d{=}360{,}448$) reads **expansive** ($\lambda_1{=}0.178$, two seeds agreeing to $1.8\%$) — yet on $40$ real DROID episodes the deployment error *starts* at the representation's native step motion ($0.63$ one-step vs $0.68$ consecutive-latent distance) and grows at log-slope $0.03\ll\lambda_1$: it never enters the linearization neighborhood, and the pre-registered pricing gate **fails as registered** (measured sub-class: bias — Proposition 7's degeneracy at $1$B scale). A spectrum-only audit would over-promise $T_1{\approx}9$; **the cross-validated audit is the deployable object**. Thresholds are representation-relative; rates price only errors inside the linearization neighborhood (Appendix D).
 
 **What does structure buy, if the read-out audits any smooth model?** The law applies to any $C^1$ latent map — hence E13–E16. What it cannot supply there is *trust in the number*: a dense spectrum can be silently wrong while predictions stay good (E2), so a generic certificate must be cross-validated against held-out divergence — E13's per-model check, **load-bearing by E16**. Structure removes that requirement where it holds (E2 $\Rightarrow$ E12's zero-calibration action), exclusively so (Lemma 2). **The audit is universal; the a-priori guarantee is structure's.**
 
@@ -412,11 +412,11 @@ own energy-landscape rollout, $g(z)=\mathrm{LN}(\mathrm{Pred}(z,a^{\ast},s))[:,-
 distance between predicted and encoded tokens — the same quantity the monitor thresholds. Certificate: leading-$6$
 Benettin via forward-mode JVP, fp32 CUDA (precision disclosed; the authors' explicit-attention branch is used, as
 flash/efficient SDPA lack forward-AD), two independent $Q$-seeds agreeing to $1.8\%$:
-$\lambda_1=0.180/0.177$, envelope CI $[0.136,0.250]$ — **expansive**, nominal $T_1(0.2)=9.0$. Measured side ($20$
+$\lambda_1=0.180/0.177$, envelope CI $[0.136,0.250]$ — **expansive**, nominal $T_1(0.2)=9.0$. Measured side ($40$
 real DROID episodes, `lerobot/droid_100`, exterior camera, $4$-frame model step per the official config, telemetry
-actions from logged poses via the authors' `poses_to_diff`): one-step relative error $0.632$ (median) vs
-consecutive-latent distance $0.681$ and copy-of-last-read baseline $0.748$; staleness error grows
-$0.625\to0.787$ over $8$ steps — log-slope $0.033$ (per-window median $0.028$), $5$–$6\times$ below the certified
+actions from logged poses via the authors' `poses_to_diff`): one-step relative error $0.629$ (median) vs
+consecutive-latent distance $0.680$ and copy-of-last-read baseline $0.742$; staleness error grows
+$0.623\to0.774$ over $8$ steps — log-slope $0.030$ (per-window median $0.027$), $5$–$6\times$ below the certified
 $\lambda_1$; belief-invalid fraction $1.00$ at every cadence including $k{=}1$; crossing median $1$ ($0\%$
 censored). Pre-registered branch G8-E (pricing band $[T_1/1.5, 1.5T_1]$) **fails as registered**; the
 pre-registered sub-classification rule reads **bias**. Mechanism: the deployment error *starts* at the
