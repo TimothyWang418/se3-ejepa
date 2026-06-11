@@ -21,7 +21,11 @@ import subprocess
 import sys
 from pathlib import Path
 
+import numpy as np
 import torch
+
+if not hasattr(np, "in1d"):
+    np.in1d = np.isin            # NumPy 2.x removed the alias; dm_control 1.0.28 (quadruped.py) still calls it
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import step89_pretrained_wm_audit as s89  # noqa: E402
@@ -110,19 +114,23 @@ def main() -> int:
     from dm_control import suite
     torch.manual_seed(0)
     results = json.loads(OUT.read_text()) if OUT.exists() else {}
-    excluded, included = [], []
+    excluded, included, eng_failed = [], [], []
     n_new = 0
     for key in UNIVERSE:
         domain, task = map_task(key)
         try:
             env = suite.load(domain, task, task_kwargs={"random": 0})
-        except Exception as e:
-            excluded.append(key)
+        except Exception:
+            excluded.append(key)                                   # the pre-registered rule: stock suite.load
             continue
-        ts = env.reset()
-        obs_dim = int(s89._flat_obs(ts).numel())
-        act_dim = int(env.action_spec().shape[0])
-        env.close()
+        try:
+            ts = env.reset()
+            obs_dim = int(s89._flat_obs(ts).numel())
+            act_dim = int(env.action_spec().shape[0])
+            env.close()
+        except Exception as e:                                     # engineering incompatibility, NOT the rule:
+            eng_failed.append({"task": key, "error": repr(e)[:200]})  # ledgered separately, disclosed
+            continue
         s89.TASKS[key] = (domain, task, obs_dim, act_dim)
         included.append(key)
         for seed in (1, 2, 3):
@@ -161,12 +169,12 @@ def main() -> int:
                 results[cell] = {"error": repr(e)[:300]}
                 print(f"[step89b] {cell}: ERROR {repr(e)[:120]}", file=sys.stderr)
             results["_meta"] = {"universe": UNIVERSE, "excluded_by_rule": excluded, "included": included,
-                                "spec": "docs/specs/2026-06-11-step89b-audit-expansion-seed.md"}
+                                "engineering_failed": eng_failed, "spec": "docs/specs/2026-06-11-step89b-audit-expansion-seed.md"}
             OUT.write_text(json.dumps(results, indent=2))
         if LIMIT and n_new >= LIMIT:
             break
     results["_meta"] = {"universe": UNIVERSE, "excluded_by_rule": excluded, "included": included,
-                        "spec": "docs/specs/2026-06-11-step89b-audit-expansion-seed.md"}
+                        "engineering_failed": eng_failed, "spec": "docs/specs/2026-06-11-step89b-audit-expansion-seed.md"}
     OUT.write_text(json.dumps(results, indent=2))
     n_cells = sum(1 for k, v in results.items() if not k.startswith("_") and "error" not in v)
     n_err = sum(1 for k, v in results.items() if not k.startswith("_") and "error" in v)
