@@ -1,0 +1,91 @@
+{
+  "kind": "POST-HOC diagnostic controls (not pre-registered gates)",
+  "alignment_ab": {
+    "registered": 0.1657115298603596,
+    "shifted_minus_one": 0.16571689110143825,
+    "zero_actions": 0.16480239668929975,
+    "spread_rel": 0.005518592537943039,
+    "verdict": "INSENSITIVE (spread < 1%; source-level verification stands)"
+  },
+  "imprint_control": {
+    "atm_vs_fed_action": {
+      "D": {
+        "D_TT": 2.4270272254943848,
+        "D_TP": 2.5051589012145996,
+        "D_PT": 11.616778373718262,
+        "D_PP": 1.0551095008850098
+      },
+      "D_norm": {
+        "D_TT": 1.0006594920407303,
+        "D_TP": 1.032873058545966,
+        "D_PT": 4.789579376979078,
+        "D_PP": 0.4350199808689311
+      },
+      "readouts": {
+        "G_TP": 0.032192335783285696,
+        "G_PT": 10.010021484854482,
+        "I_diag": 0.7879746400171376,
+        "L_sym": 10.765803789088334
+      },
+      "action_var": 2.4254276752471924,
+      "main_width": 256,
+      "per_width": {
+        "256": {
+          "median": {
+            "D_TT": 2.4270272254943848,
+            "D_TP": 2.5051589012145996,
+            "D_PT": 11.616778373718262,
+            "D_PP": 1.0551095008850098
+          },
+          "per_seed": {
+            "0": {
+              "D_TT": 2.424659490585327,
+              "D_TP": 2.450840950012207,
+              "D_PT": 13.51753044128418,
+              "D_PP": 0.9921591877937317
+            },
+            "1": {
+              "D_TT": 2.4270272254943848,
+              "D_TP": 2.5051589012145996,
+              "D_PT": 11.126066207885742,
+              "D_PP": 1.0551095008850098
+            },
+            "2": {
+              "D_TT": 2.433985710144043,
+              "D_TP": 2.5544593334198,
+              "D_PT": 11.616778373718262,
+              "D_PP": 1.058416485786438
+            }
+          }
+        }
+      },
+      "config": {
+        "widths": [
+          256
+        ],
+        "probe_seeds": [
+          0,
+          1,
+          2
+        ],
+        "max_steps": 2000,
+        "batch_size": 256,
+        "lr": 0.001,
+        "eval_every": 50,
+        "patience": 5,
+        "eps": 1e-08,
+        "n": 4884,
+        "n_train": 3922,
+        "n_test": 962,
+        "split_seed": 0
+      }
+    },
+    "Dnorm_TT_sanity": 1.0006594920407303,
+    "Dnorm_PP_imprint": 0.4350199808689311,
+    "imprint_confirmed": true,
+    "construction": "last action row replaced by roll(1)-permuted chunk; probe target = the fed (permuted) chunk"
+  },
+  "n_transitions": 4884,
+  "wall_seconds": 85.6,
+  "smoke": false
+}

@@ -1,0 +1,186 @@
+{
+  "model": "lewm-pusht (official ckpt, authors' code, strict load; reused step91 loader)",
+  "instrument": "ATM self-implementation (arXiv:2606.09028; official code unreleased)",
+  "atm": {
+    "D": {
+      "D_TT": 2.267268657684326,
+      "D_TP": 3.822834014892578,
+      "D_PT": 8.851181030273438,
+      "D_PP": 1.1186834573745728
+    },
+    "D_norm": {
+      "D_TT": 0.9359003303439076,
+      "D_TP": 1.578018381395554,
+      "D_PT": 3.653657550502779,
+      "D_PP": 0.461778631199558
+    },
+    "readouts": {
+      "G_TP": 0.6860966145653254,
+      "G_PT": 6.912140742587524,
+      "I_diag": 0.6784414867635297,
+      "L_sym": 6.904485614785727
+    },
+    "action_var": 2.422553539276123,
+    "main_width": 256,
+    "per_width": {
+      "64": {
+        "median": {
+          "D_TT": 2.258155345916748,
+          "D_TP": 3.2505688667297363,
+          "D_PT": 6.783107280731201,
+          "D_PP": 1.127650260925293
+        },
+        "per_seed": {
+          "0": {
+            "D_TT": 2.244386672973633,
+            "D_TP": 3.2505688667297363,
+            "D_PT": 8.298906326293945,
+            "D_PP": 0.9794745445251465
+          },
+          "1": {
+            "D_TT": 2.258155345916748,
+            "D_TP": 3.17551589012146,
+            "D_PT": 6.435280799865723,
+            "D_PP": 1.2096489667892456
+          },
+          "2": {
+            "D_TT": 2.267268419265747,
+            "D_TP": 4.059508323669434,
+            "D_PT": 6.783107280731201,
+            "D_PP": 1.127650260925293
+          }
+        }
+      },
+      "256": {
+        "median": {
+          "D_TT": 2.267268657684326,
+          "D_TP": 3.822834014892578,
+          "D_PT": 8.851181030273438,
+          "D_PP": 1.1186834573745728
+        },
+        "per_seed": {
+          "0": {
+            "D_TT": 2.2506866455078125,
+            "D_TP": 3.822834014892578,
+            "D_PT": 8.851181030273438,
+            "D_PP": 1.1186834573745728
+          },
+          "1": {
+            "D_TT": 2.333019733428955,
+            "D_TP": 4.450566291809082,
+            "D_PT": 9.681743621826172,
+            "D_PP": 1.105202317237854
+          },
+          "2": {
+            "D_TT": 2.267268657684326,
+            "D_TP": 2.9613611698150635,
+            "D_PT": 8.712565422058105,
+            "D_PP": 1.1842927932739258
+          }
+        }
+      },
+      "1024": {
+        "median": {
+          "D_TT": 2.330498218536377,
+          "D_TP": 4.870378017425537,
+          "D_PT": 11.72807788848877,
+          "D_PP": 1.1258902549743652
+        },
+        "per_seed": {
+          "0": {
+            "D_TT": 2.320911169052124,
+            "D_TP": 5.669416427612305,
+            "D_PT": 12.036669731140137,
+            "D_PP": 1.07016921043396
+          },
+          "1": {
+            "D_TT": 2.351520299911499,
+            "D_TP": 3.328143358230591,
+            "D_PT": 11.72807788848877,
+            "D_PP": 1.1258902549743652
+          },
+          "2": {
+            "D_TT": 2.330498218536377,
+            "D_TP": 4.870378017425537,
+            "D_PT": 6.140378952026367,
+            "D_PP": 1.2053495645523071
+          }
+        }
+      }
+    },
+    "config": {
+      "widths": [
+        64,
+        256,
+        1024
+      ],
+      "probe_seeds": [
+        0,
+        1,
+        2
+      ],
+      "max_steps": 2000,
+      "batch_size": 256,
+      "lr": 0.001,
+      "eval_every": 50,
+      "patience": 5,
+      "eps": 1e-08,
+      "n": 5016,
+      "n_train": 4028,
+      "n_test": 988,
+      "split_seed": 0
+    }
+  },
+  "gates": {
+    "G2": {
+      "pass": false,
+      "abs_G_TP": 0.6860966145653254,
+      "L_sym": 6.904485614785727,
+      "thresholds": {
+        "abs_G_TP": 0.5,
+        "L_sym": 2.0
+      },
+      "reference_atm_table6_lewm_pusht": {
+        "D_TT": 0.1829,
+        "abs_G_TP": 0.0372,
+        "L_sym": 0.2263
+      },
+      "D_TT_ratio_vs_paper": 12.396220107623433,
+      "note": "pattern gate; magnitude deviation disclosed, ungated (probe hyperparams / data distribution / action normalization are paper-unstated degrees of freedom)"
+    },
+    "G3": {
+      "one_step_errs_replay": {
+        "true": 0.16450770364158623,
+        "false": 0.28945768707283326
+      },
+      "scale01": true,
+      "step91_recorded": {
+        "true": 0.16450770364158623,
+        "false": 0.28945768707283326
+      },
+      "max_abs_diff": 0.0,
+      "scale01_match": true,
+      "pass": true
+    }
+  },
+  "data": {
+    "env": "swm/PushT-v1",
+    "policy": "WeakPolicy replica (dist_constraint=100)",
+    "episodes": 132,
+    "dropped": 0,
+    "n_transitions": 5016,
+    "model_steps_per_ep": 40,
+    "split": {
+      "test_frac_ep": 0.2,
+      "split_seed": 0,
+      "n_train": 4028,
+      "n_test": 988
+    },
+    "action_convention": "target = last action row of swm window (buffer._gather_clip): 10-d chunk driving F_t->F_{t+1}",
+    "pixel_scale01": true,
+    "ep_seed0": 1000
+  },
+  "one_step_rel_err_median": 0.16574418468694976,
+  "wall_seconds": 116.6,
+  "smoke": false
+}

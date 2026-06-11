@@ -1,0 +1,65 @@
+{
+  "repro": {
+    "recorded_w256": {
+      "D_TT": 2.267268657684326,
+      "D_TP": 3.822834014892578,
+      "D_PT": 8.851181030273438,
+      "D_PP": 1.1186834573745728
+    },
+    "fresh_w256": {
+      "D_TT": 2.267268657684326,
+      "D_TP": 3.822834014892578,
+      "D_PT": 8.851181030273438,
+      "D_PP": 1.1186834573745728
+    },
+    "max_rel_diff": 0.0,
+    "verdict": "REPRODUCIBLE (CPU lane)"
+  },
+  "distribution_sensitivity": {
+    "weak": {
+      "D_norm": {
+        "TT": 0.9359003303439076,
+        "TP": 1.578018381395554,
+        "PT": 3.653657550502779,
+        "PP": 0.461778631199558
+      },
+      "readouts": {
+        "G_TP": 0.6860966145653254,
+        "G_PT": 6.912140742587524,
+        "I_diag": 0.6784414867635297,
+        "L_sym": 6.904485614785727
+      },
+      "action_var": 2.422553539276123,
+      "n": 5016
+    },
+    "random": {
+      "D_norm": {
+        "TT": 1.0015676917027498,
+        "TP": 1.0305237428604892,
+        "PT": 2.54290884879393,
+        "PP": 0.47818596629299365
+      },
+      "readouts": {
+        "G_TP": 0.028910727961291332,
+        "G_PT": 4.317824057759369,
+        "I_diag": 0.7073903422045945,
+        "L_sym": 4.996303672002672
+      },
+      "action_var": 3.2814855575561523,
+      "n": 5016
+    },
+    "note": "same official ckpt, same pipeline, only behavior policy differs (both policies registered in the step1 seed)"
+  },
+  "imprint_derangement": {
+    "cross_episode_fraction": 0.9936204146730463,
+    "Dnorm_TT_sanity": 1.0052393343353034,
+    "Dnorm_PP_imprint": 0.4450476704673958,
+    "imprint_confirmed": true,
+    "step1b_roll1_reference": {
+      "Dnorm_TT": 1.001,
+      "Dnorm_PP": 0.435,
+      "caveat": "roll(1) a' mostly = same-episode c_{t-1}"
+    }
+  },
+  "wall_seconds": 189.6
+}
