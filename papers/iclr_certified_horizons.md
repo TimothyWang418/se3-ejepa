@@ -74,8 +74,9 @@ Lyapunov/NWP horizon law, invariant decision theory, and the $e^{\lambda T}$ gro
 ## 2. Setup and assumptions
 
 A latent world model is an encoder $E:\mathcal X\to\mathcal Z$ and a predictor $f:\mathcal Z\times\mathcal A\to
-\mathcal Z$ with $f(E(x),a)\approx E(\Phi(x,a))$, $\Phi$ the (unknown) environment dynamics; the $T$-step rollout
-error is $\mathrm{Err}_T(x)=\lVert \hat z_T - E(\Phi^T x)\rVert$. A group $G$ acts on $\mathcal X$, $\mathcal Z$
+\mathcal Z$ with $f(E(x),a)\approx E(\Phi(x,a))$, $\Phi$ the (unknown) environment dynamics; rolling out
+$\hat z_T=f(\cdot,a_{T-1})\circ\cdots\circ f(E(x),a_0)$, the $T$-step error is
+$\mathrm{Err}_T(x)=\lVert \hat z_T - E(\Phi^T x)\rVert$. A group $G$ acts on $\mathcal X$, $\mathcal Z$
 (via a representation $\rho$), and $\mathcal A$ (via $\sigma$). We use:
 
 - **(A1) Encoder equivariance:** $E(g\cdot x)=\rho(g)\,E(x)$.
@@ -105,8 +106,9 @@ set** — all of $\langle S\rangle$.
 **Lemma 2 (the certificate characterizes equivariance — the converse).** Let $\rho:G\to O(\mathcal Z)$ act *freely* on
 an open $U\subseteq\mathcal Z$. If a predictor $f$'s error $\lVert f-\Phi\rVert$ is orbit-constant on $U$ for *every*
 equivariant target $\Phi$, then $f$ is equivariant on $U$. *Proof sketch (full proof and the continuity refinement in Appendix B).* Freeness makes $\Phi(\rho(h)z):=\rho(h)c$ a
-well-defined equivariant probe target for any $c$; orbit-constancy then forces $f(z)$ and $\rho(g)^{-1}f(\rho(g)z)$
-equidistant from *every* $c$, hence equal. $\square$ With Theorem A this is a **characterization**: orbit-constant
+well-defined equivariant probe target for any $c$; orbit-constancy then gives
+$\lVert f(z)-c\rVert=\lVert f(\rho(g)z)-\rho(g)c\rVert=\lVert\rho(g)^{-1}f(\rho(g)z)-c\rVert$ (the last step
+by (A4)) for *every* $c$ — two points equidistant from every $c$ coincide, so $f(\rho(g)z)=\rho(g)f(z)$. $\square$ With Theorem A this is a **characterization**: orbit-constant
 error $\iff$ equivariance — **no non-equivariant model possesses the certificate at any size**; the impossibility is
 a theorem, not an observation.
 
@@ -147,8 +149,9 @@ an upper estimate.** The conceptual payload is sharp:
 
 This is the horizon-domain companion of Lemma 2: scale and data buy *approximate* equivariance at best (a fair
 augmentation baseline floors at $\epsilon\approx10^{-4}$, never exact), and Proposition 6 amplifies that residual
-$e^{\lambda T}$ — a single-step tie between augmentation and equivariance **must break over horizon**. **The prefactor is the splitting
-conditioning (Proposition 6′, Appendix B):** $c_j=1/\sin\theta_j$ — exactly $1$ on orthogonal invariant splittings
+$e^{\lambda T}$ — a single-step tie between augmentation and equivariance **must break over horizon**.
+
+**The prefactor is the splitting conditioning (Proposition 6′, Appendix B):** $c_j=1/\sin\theta_j$ — exactly $1$ on orthogonal invariant splittings
 (isotypic blocks — Schur placement and zero leakage at machine precision), attained to four digits under
 controlled shears with the predicted $\log\kappa/\lambda$ haircut; on real loops it is *computable from the
 audited Jacobian field* — honestly a distribution (median $\kappa_1\!\approx\!20$, heavy tail) — while measured
@@ -160,7 +163,7 @@ calibration stays $0.83$–$1.02$ (`step65b`, `step95`).
 answer splits a rigorous **rate** half from an orbit-error **lift** half. Let $\phi$ have an ergodic invariant measure
 $\mu$ with $\log^+\lVert D\phi\rVert\in L^1(\mu)$. By **Oseledets** [@oseledets1968],
 $\tfrac1t\log\lVert\delta_t\rVert\to\lambda_1$ $\mu$-a.e. for generic perturbations. *(a) Non-degenerate
-($\lambda_1>0$):* $T(\epsilon)=\tfrac1{\lambda_1}\log(\epsilon_{\mathrm{res}}/\epsilon)+o(t)$ — Theorem B's law with
+($\lambda_1>0$):* $T(\epsilon)=\tfrac1{\lambda_1}\log(\epsilon_{\mathrm{res}}/\epsilon)\,(1+o(1))$ — Theorem B's law with
 $\lambda_1$ the *measurable* asymptotic rate. For a learned $\hat\phi$, shadowing [@pilyugin1999shadowing] bounds only
 the forecast-horizon *floor* $\sim\tfrac1{\lambda_1}\log(1/\delta)$ — trajectory closeness, **not** the asymptotic
 exponent — so that $\hat\phi$ *reproduces* $\lambda_1$ is a finite-horizon continuity statement (Proposition 8),
