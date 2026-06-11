@@ -46,19 +46,26 @@ OUT = ROOT / "papers" / "figures" / "p4_cpu_batch_0612.json"
 
 
 def collect_shape(n_episodes: int, seed: int, shape_idx: int) -> dict:
-    r"""WeakPolicy episodes with the block shape pinned; render-difference guard."""
+    r"""WeakPolicy episodes with the block shape pinned via reset options; render-diff guard.
+
+    API autopsy (2026-06-11, first launch died here): ``variation_space[...].value`` is a
+    READ-ONLY property — the sanctioned setter is
+    ``reset(options={'variation_values': {'block.shape': idx}})`` (dotted path,
+    ``swm_spaces.Dict.set_value``). Catalog: o=0 L=1 **T=2(default)** Z=3 square=4 I=5
+    small_tee=6 +=7. Defaults verified non-sticky: every plain reset reverts to T=2, so the
+    options dict must ride along on EVERY reset.
+    """
     env = make_env(None)
     env.reset(seed=0)
     ref = env.render().copy()  # T-shape reference
-    env.unwrapped.variation_space["block"]["shape"].value = shape_idx
-    env.reset(seed=0)
+    opts = {"variation_values": {"block.shape": shape_idx}}
+    env.reset(seed=0, options=opts)
     assert np.abs(env.render().astype(int) - ref.astype(int)).sum() > 1000, \
         f"shape set to {shape_idx} did not change the render — selection is a no-op"
     rng = np.random.default_rng(seed)
     frames, states, actions = [], [], []
     for ep in range(n_episodes):
-        env.unwrapped.variation_space["block"]["shape"].value = shape_idx
-        obs, _ = env.reset(seed=seed * 100_000 + ep)
+        obs, _ = env.reset(seed=seed * 100_000 + ep, options=opts)
         f = [env.render()]
         s = [obs["state"]]
         a = []
@@ -120,23 +127,29 @@ def main() -> int:
         art["elapsed_min"] = round((time.time() - T0) / 60, 1)
         OUT.write_text(json.dumps(art, indent=1))
 
-    # --- block 3 first (cheap, unblocks Tier 1): wedge data prep
+    # --- block 3 first (cheap, unblocks Tier 1): wedge data prep (skip-if-exists: relaunch-safe)
     print("[wedge] corpora ...")
     for tag, n, inw, seed in (("wedge_corpus", 200, True, 0),
                               ("wedge_ho_in", 60, True, 1),
                               ("wedge_ho_out", 60, False, 1)):
+        if (DATA_DIR / f"{tag}.npz").exists():
+            print(f"  {tag}: exists, skip")
+            continue
         d = collect_wedge(n, seed, inw)
         np.savez_compressed(DATA_DIR / f"{tag}.npz", **d)
         print(f"  {tag}: {d['frames'].shape}")
     art["blocks"]["wedge_prep"] = "saved"
     save()
 
-    # --- block 2: c5000
-    print("[c5000] collecting ...")
-    d = collect_weakpolicy(5000, seed=0)
-    np.savez_compressed(DATA_DIR / "corpus_c5000.npz", **d)
-    art["blocks"]["c5000"] = str(d["frames"].shape)
-    del d
+    # --- block 2: c5000 (skip-if-exists)
+    if not (DATA_DIR / "corpus_c5000.npz").exists():
+        print("[c5000] collecting ...")
+        d = collect_weakpolicy(5000, seed=0)
+        np.savez_compressed(DATA_DIR / "corpus_c5000.npz", **d)
+        art["blocks"]["c5000"] = str(d["frames"].shape)
+        del d
+    else:
+        art["blocks"]["c5000"] = "exists, skipped"
     save()
 
     # --- block 1: shape-generalization audits on existing stable Stage-B pairs
