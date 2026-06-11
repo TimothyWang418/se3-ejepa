@@ -25,6 +25,7 @@ out); we monkeypatch the module constant to `https://dl.fbaipublicfiles.com/vjep
 Run (box, GPU):  ~/se3-ejepa/.venv/bin/python experiments/step98_vjepa2_audit.py
 Writes: papers/figures/step98_vjepa2_audit.json
 """
+import gc
 import json
 import os
 import sys
@@ -184,13 +185,21 @@ def main() -> int:
     warmup = 8 if SMOKE else 25
     runs = {}
     qseeds = [0] if SMOKE else [int(x) for x in os.environ.get("STEP98_QSEEDS", "0,1").split(",")]
+    part = OUT.with_suffix(".partial.json")
+    if part.exists():                                   # resume after a host-OOM kill: earlier seeds reload
+        runs.update({int(k_): v_ for k_, v_ in json.loads(part.read_text()).items()})
+        print(f"[step98] resumed {sorted(runs)} from partial artifact", file=sys.stderr)
     for q_seed in qseeds:
+        if q_seed in runs:
+            continue
+        gc.collect()
         torch.cuda.empty_cache()
         t1 = time.time()
         lam, (lo, hi) = benettin_jvp_gpu(g, z0, k, n_steps, warmup, q_seed)
         runs[q_seed] = {"lambda1": lam[0], "ci": [lo, hi], "band": lam}
         print(f"[step98] Q-seed {q_seed}: lambda1={lam[0]:.4f} CI[{lo:.4f},{hi:.4f}] "
               f"band={[round(x,3) for x in lam[:4]]} ({time.time()-t1:.0f}s)", file=sys.stderr)
+        part.write_text(json.dumps({str(k_): v_ for k_, v_ in runs.items()}))   # survive silent kills
     l1s = [runs[s]["lambda1"] for s in runs]
     # n-seed generalization of the pre-registered 2-seed agreement rule (same sign + within 30%),
     # applied to the extreme pair — reduces to the original rule at n=2:
