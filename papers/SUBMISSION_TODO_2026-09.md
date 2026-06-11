@@ -1,5 +1,8 @@
 # paper2 投稿周清单(2026 年 9 月,ICLR 2027 截稿前)
 
+> **2026-06-11:arXiv 占坑已完成**(用户提交,待 ID)。ID 公告后立即:README/CITATION.cff 回填 eprint 号、
+> vault 快照登记、wm-audit quickstart 加引用块。ICLR 投稿时 OpenReview 表单照实申报 arXiv 预印本(政策允许)。
+
 > 状态:稿件已封版(2026-06-10,联合通读 R1–R8 完成,commit `6660b17`)。
 > 本清单 = 投稿周的全部机械动作。科学与文本不再动,除非 lit sweep 出现新撞车。
 

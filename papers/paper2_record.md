@@ -1070,3 +1070,11 @@ BRo/UWM arXiv id 内联;结论 E13–E16;双 HR 清理。布局决策(用户签)
 + 附录 C 代码链接)→ XeLaTeX tar 包(25 成员,2.1MB,含 .bbl/字体/00README)。消毒断言:Anonymous 零出现、
 虚假发表声明零出现、行号关闭;首页目检过。已知装饰缺陷:运行页眉两分支均不渲染(安全,9 月查)。
 包在用户桌面 arxiv_iclr_upload.tar.gz;待用户:repo 转公开 → 上传(cs.LG 主,cross cs.RO/math.DS)。
+
+## [2026-06-11] arXiv 已提交(用户操作)——占坑完成
+
+用户完成上传(cs.LG 主分类,cross cs.RO/math.DS,arXiv 非独占许可;摘要栏 ASCII 化后通过)。repo 已转公开
+(未认证 200 验证)。待 moderation → 公告 → arXiv ID。ID 到手后:README/CITATION.cff 回填、9 月清单更新、
+vault 快照登记、wm-audit 公开发布说明解锁。**时间戳意义:两侧紧 horizon、Lemma 2 逆命题、公开 WM 审计纲领、
+Prop 9/11、E15 out-of-sample 复刻、E16 1B override——全部主张自此有公开优先权;7–9 月任何撞车自动降级为
+concurrent。**
