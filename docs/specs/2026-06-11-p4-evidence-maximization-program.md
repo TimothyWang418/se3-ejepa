@@ -21,6 +21,25 @@ probes). This program upgrades scale and coverage, priority = value ÷ cost.
   unseen shapes — *certificate generality across tasks* is paper-grade evidence nobody asked us
   for and the env gives it away.
 
+## Tier 0.5 — recipe-refinement loop (user amendment 2026-06-11: "the just-run experiments get
+the same tuning treatment")
+
+Failures and coarse picks from the v1.6 sweep enter a standing refinement loop — health metrics
+only, every retry declared, n = 10 confirmation before any recipe is promoted to claims:
+
+- **E0.5.1 aux-anchor variant family** (the combo's 2/3 means it is CLOSE, not dead): θ-only
+  anchor target; InfoNCE variant (TC-WM's actual form) vs the regression head; finer coef grid
+  {0.3, 0.5, 2.0}; anchor × floor grid (v0.15/0.2/0.3). The content channel (xy 0.50–0.54) is the
+  most promising single discovery of the sweep — it deserves a full family, not four cells.
+- **E0.5.2 local refinement around the Stage-A winners**: the 3/3 picks come from a coarse grid
+  and may themselves be lottery wins — neighborhood sweep (var {0.15, 0.25, 0.3} × ema
+  {0.985, 0.99, 0.995} × the winner's lr) at 3 runs, then n = 10 on the local best to measure a
+  TRUE stability rate with binomial CI.
+- **E0.5.3 data × recipe interaction**: rerun the refined recipes on the E0.1 corpora
+  (500/1000/2000) — stability and content may scale with data, changing which recipe wins.
+- Standing rule: any Stage-B claim failure → diagnose → refine here → declared re-run. Fails
+  feed the ledger either way.
+
 ## Tier 1 — the unique-moat experiments (the paper's heart, time-rich versions)
 
 - **E1.1 Wedge lane, full protocol** (C1b + C3-wedge): wedge-restricted collection, bases,
