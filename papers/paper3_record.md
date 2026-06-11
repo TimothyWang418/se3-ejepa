@@ -27,6 +27,36 @@
 
 ---
 
+## [2026-06-11] 3D lane bootstrap + shared-box incident — zero damage, protocol installed, WSL render boundary measured
+
+**Incident (user caught it):** the 3D-lane rsync targeted `~/se3-ejepa` on the WSL box **without
+checking prior tenancy**. Post-hoc forensics: the box IS the paper2 research line's CUDA lane
+(step74/75/84 in `.bash_history`; `.venv` py3.11 + torch cu130 built 06-06). Damage audit —
+**zero**: rsync had no `--delete` (nothing removed); research-line stashes `stash@{0}` (step73
+WIP) / `stash@{1}` (exp17 WIP) intact; the "Step 77" dangling object is a pre-amend duplicate of
+`eb1d7aa` (in main); untracked box artifact `step85_phase1_frontier_seed10.json` untouched;
+`.venv` imports torch+CUDA fine. Phantom "ahead of origin by 1" was a stale `origin/main` ref
+(cleared by fetch). Lesson registered: **probe target dirs before rsync — same class of error as
+the pairing incident (assumed instead of checked).**
+
+**Protocol installed** (spec `2026-06-12-p4-3d-lane-bootstrap.md` §shared-lane): env split
+`.venv`(theirs)/`.venv3d`(ours); box = pull-only git leaf (commits happen on the Mac); GPU
+scheduling via `nvidia-smi` + `~/GPU_LANE.lock` with research-line priority on contention;
+3D-lane writes confined to `data/p4_3d/` + `p4_3d_` prefixes.
+
+**Bootstrap verdicts:** smoke 1 PASS (torch 2.6.0+cu124, RTX 3080 visible). Smoke 2 FAIL→PASS:
+SAPIEN `RenderSystem` cannot bind `cuda:0` (WSL Vulkan = dzn wrapper + llvmpipe only, no NVIDIA
+CUDA-interop extensions — an environment boundary, not a config bug); **llvmpipe CPU-render
+fallback works**: reset 0.5 s, pointcloud (1, 32768, 4), ~0.22 s/step, action dim 8
+(pd_joint_delta_pos default — H1-original wants `pd_ee_delta_pose`, set at `gym.make`). Smoke 3
+PASS (PegInsertionSide demos, 29.5 MB). Smoke 4 PASS (vnn reference clone). Architecture
+consequence: **render on CPU/llvmpipe (or Mac/MoltenVK later), train on the 3080** — training
+scripts must not import SAPIEN.
+
+**Next blade (G0, mirrors PushT discipline):** G0a obs/action contract + demo replay → G0b
+VN-DGCNN forward + SO(3) equivariance unit test (float-exact for VN linear) → VN pairing-equality
+test (incident #9's lesson, installed BEFORE any audit) → JEPA training smoke.
+
 ## [2026-06-10] P4-step1 (part 1) — the missing equivariant predictor lands EXACT; G0a confirms the κ lane's load-bearing assumption
 
 **The gap the build surfaced first:** Theorem A needs $E$ *and* $f$ equivariant; the repo had the
