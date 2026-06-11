@@ -1,0 +1,80 @@
+{
+  "theta": 0.2,
+  "k_list": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "n_ep": 20,
+  "T": 60,
+  "sub": 4,
+  "camera": "observation.images.exterior_image_1_left",
+  "episodes": [
+    7,
+    9,
+    10,
+    11,
+    14,
+    17,
+    23,
+    24,
+    25,
+    27,
+    28,
+    30,
+    33,
+    34,
+    35,
+    36,
+    39,
+    40,
+    42,
+    44
+  ],
+  "invalid_by_k": {
+    "1": 1.0,
+    "2": 1.0,
+    "4": 1.0,
+    "8": 1.0
+  },
+  "flag_rate_by_k": {
+    "1": 1.0,
+    "2": 1.0,
+    "4": 1.0,
+    "8": 1.0
+  },
+  "one_step_rel_err_median": 0.6315681040287018,
+  "crossing_median": 1.0,
+  "censored_frac": 0.0,
+  "telemetry_fault_pre_post": [
+    1.0,
+    1.0
+  ],
+  "certificate": {
+    "verdict": "EXPANSIVE \u2014 certified horizons issued",
+    "lambda1": 0.17835664004087448,
+    "T1_at_theta": 9.023706165720888
+  },
+  "subclass_rule": "stable iff censored>=50% AND one-step<theta/2; bias iff one-step>=theta/2 OR crossing<=3",
+  "measured_subclass": "bias",
+  "mechanism": {
+    "median_err_vs_staleness": [
+      0.6246068477630615,
+      0.6629582345485687,
+      0.696415364742279,
+      0.7202354371547699,
+      0.742631196975708,
+      0.7649306058883667,
+      0.7788161933422089,
+      0.7870161831378937
+    ],
+    "growth_log_slope": 0.0325635490864602,
+    "per_window_slope_median": 0.027702795127068955,
+    "consecutive_latent_dist_median": 0.6805829405784607,
+    "copy_baseline_err_median": 0.7482310831546783,
+    "note": "growth slope ~0.025 << certified lambda1: deployment error starts at the native step-motion scale (~0.6) and never enters the linearization neighborhood \u2014 bias-dominated; the E13 protocol's measured cross-check overrides the tangent certificate (Prop 7 degeneracy at foundation-model scale; thresholds are representation-relative)."
+  },
+  "branch": "G8-E (expansive pricing)",
+  "G8": false
+}

@@ -1317,6 +1317,38 @@ deployment value a-priori: stable-abstain $=$ free monitoring (Experiment 28) $>
 savings (Experiments 26/28) $>$ bias-abstain $=$ do not deploy (here)** — three verdicts, three architectures, one
 training-free read-out. `experiments/step97_lewm_monitor.py`.
 
+**At foundation-model scale the cross-check column is load-bearing (Experiments 30–31, `step98`–`step99`).** The
+third architecture family: **V-JEPA 2-AC** — Meta's $1$B-encoder action-conditioned world model (official
+`vjepa2_ac_vit_giant`, ViT-g/16 $1012$M + AC predictor, MIT, post-trained on DROID), loaded via torch.hub into the
+authors' own code, audited along the authors' own energy-landscape rollout: per-frame token blocks
+($256\times1408$, $d{=}360{,}448$ — $600\times$ the largest previous loop), fixed zero-delta action (the LeWM
+pre-registered scope). Their planning *energy* is the L1 distance between predicted and encoded tokens — the very
+quantity our monitor thresholds: the certificate prices the growth of V-JEPA 2-AC's own energy. **Certificate
+(Experiment 30):** leading-$6$ JVP-Benettin, fp32 CUDA (disclosed), two independent $Q$-seeds agreeing to $1.8\%$:
+$\lambda_1=0.180/0.177$, envelope CI $[0.136,0.250]$ — **expansive**, nominal $T_1(0.2)=9.0$ model steps.
+**Measured side on real robot data (Experiment 31):** $20$ real DROID episodes (`lerobot/droid_100`, exterior
+camera, $4$-frame model step per the official config, telemetry actions via the authors' `poses_to_diff`) — the
+deployment error *starts* at the representation's native step-motion scale: one-step median $0.632$ vs
+consecutive-latent distance $0.681$ (the predictor beats the copy-of-last-read baseline, $0.632$ vs $0.748$, its
+value being energy *ordering* for CEM rather than metric forecasting — the franka energy-landscape check orders
+random $0.471\gg$ true $0.426$); staleness error grows $0.625\to0.787$ over $8$ steps, log-slope
+$0.033\ (\text{per-window median }0.028)$ — $5$–$6\times$ below the certified $\lambda_1$; belief-invalid
+fraction $1.00$ at every cadence including $k{=}1$. The pre-registered pricing branch **G8-E fails as registered**
+and the pre-registered sub-classification rule reads **bias**: the error never enters the linearization
+neighborhood, so the tangent spectrum's jurisdiction and the monitor's operating point do not overlap —
+**Proposition 7's bias degeneracy at $1$B scale**. The consequence is the experiment's headline: a spectrum-only
+audit would have over-promised $T_1{\approx}9$ on a flagship foundation world model; the E13 protocol's measured
+cross-check **overrides the tangent number**, and the cross-validated audit — not the raw spectrum — is the
+deployable object. Two transferable lessons, stated plainly: *thresholds are representation-relative* (this token
+geometry moves $\sim0.68$ per step natively; the DMC convention $\theta{=}0.2$ does not transfer), and *rates
+price only errors inside the linearization neighborhood*. Wording红线 honored throughout: real-robot **data**,
+offline monitoring (the monitor is passive — replaying logged episodes is a faithful instantiation). Engineering
+disclosures in the script headers: upstream's `localhost` URL goof (monkeypatched), the (current, goal) semantics
+of the repo's franka pair, four layers of forward-AD$\times$SDPA incompatibility ending in the authors' own
+explicit-attention branch + an explicit math-SDPA, and a reverse-graph-retention OOM (parameters now frozen).
+`experiments/step98_vjepa2_audit.py`, `experiments/step99_droid_monitor.py`; conditional-gate spec
+(`docs/specs/2026-06-10-step99-droid-monitor-seed.md`) frozen before the certificate was read.
+
 **What does structure buy, if the read-out audits any smooth model?** Theorem B's spectral law applies to any $C^1$ latent map — that is what §5.21 (Experiment 23) exercises on (non-equivariant) TD-MPC2 and LeWM. What the law cannot supply for a generic model is *trust in the number itself*: a dense model's spectrum can be silently wrong while its predictions stay good (§5.16: $\lambda_1$ inflated $\sim3.4\times$ at one-step relMSE $10^{-5}$), so a generic certificate must be cross-validated against held-out divergence — exactly the per-model empirical check the §5.21 (Experiment 23) scope map performs. Equivariance is what removes that requirement where it holds: structure makes the spectrum *faithful* (§5.16), hence the certificate *a-priori trustworthy with zero calibration data* (§5.20 and its recalibration control) — and exclusively so (Lemma 2). The audit is universal; the **a-priori** guarantee is structure's.
 
 ---
