@@ -59,6 +59,34 @@ acceptable for the sizing pass (full determinism: same seed ⇒ same model), but
 consume trained bases, so checkpoint saving was added to the script for all future runs; the
 in-flight process is unaffected (its code was loaded at commit `b0e58e4`).*
 
+## [2026-06-10] P4-step3 — gap-mode instrument built and CERTIFIED (3/3 gates) before it certifies anything
+
+`src/audit/gap_mode.py`: `audit_gap(model, frames, actions)` → the certificate's consumed triple
+$(\hat\delta, \hat\lambda_1, \hat\epsilon_{\max})$ + the certified curve
+$\widehat{\mathrm{Err}}(H)$ with CI band. Design facts locked at build: **the loop Jacobian runs
+through the predictor only** (the seed spec's e2cnn forward-AD risk is moot — the encoder never
+enters the loop), in float64 on a deep-copied predictor; the encoder stays in NATIVE dtype
+(lesson: e2cnn's R2Conv cannot be wholesale `.double()`-ed — expanded filter stays f32; and δ̂ at
+$10^{-1}$ scale is indifferent); `eps_max = None` for plain/aug (Lemma 2 — no canonical ρ, no fake
+numbers).
+
+**Instrument gates (tests/test_p4_step3.py, all PASS):**
+
+1. **G-I planted-spectrum recovery** — the gate caught a real instrument bias on first run:
+   without burn-in, planted $-0.05$ read as $-0.076$ (transient alignment of the Benettin band
+   contaminates short windows). Fixed with the standard burn-in (B=10); the residual
+   finite-window bias at deployed settings (W=40, gap 0.1) is **uniform $\approx-0.007$**
+   (planted $-0.05/0/+0.08$ → $-0.0567/-0.0067/+0.0733$), shrinking to $\sim2\times10^{-4}$ at
+   W=220 — the gap-mode analogue of Prop 8's finite-$T$ truncation, now *measured* and registered
+   as a known instrument bias (reported, not corrected away).
+2. **G-II determinism** — bit-identical artifacts across runs.
+3. **G-III orbit-invariance witness** — random-weights exactly-equivariant base:
+   $\hat\lambda_1$ on $g$-transformed data $+0.1065$ vs base $+0.1040$ (within tolerance), grid
+   angle $\hat\epsilon = 2.5\times10^{-6}$ — instrument and equivariance jointly consistent.
+
+Consumption blocked only on step1 checkpoints (overnight grid in flight; original run
+re-materializes by seed-determinism). Spec: `docs/specs/2026-06-10-p4-step3-gap-mode-seed.md`.
+
 ## [2026-06-10] P4-step2 — κ validation gate: FALLBACK-2PT, honestly — the dial saturates, but TWO regimes are real and resolved
 
 Run concurrently with step1's grid (true-env measurement, no learned model). **Registered
