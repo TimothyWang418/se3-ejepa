@@ -175,6 +175,43 @@ state_dict so strict loads pass against cache-free modules; non-leaf so eval-mod
 crashes; stale after parameter-only EMA). The 40-ep run's in-process 84.8 remains the open
 residual for the matrix experiment.
 
+## [2026-06-11] #9 RESOLVED — e2cnn-aware pairing fix lands, equality gates 3/3, quarantine lifted; first CLEAN certified-vs-measured numbers
+
+**Mechanism, source-confirmed** (e2cnn `r2convolution.py`): `train(False)` re-expands the filter
+cache **only `if self.training`** — an already-eval module's stale cache survives `.eval()` calls
+silently; the cache is a re-registered buffer (in state_dict when eval-mode). So: in-process
+target = init-frozen filters (predictor's true regression object); reload into a fresh train-mode
+module + `.eval()` re-expands from the EMA weights ⇒ a different function. Every observation of
+the incident is now derived from source.
+
+**Fix:** `train_jepa(..., refresh_target_cache=True)` — a `train()/eval()` cycle on the target
+after each EMA update (re-expansion from current weights; no forward between flips ⇒ BN stats
+untouched). **Additive flag, default False — paper2-era behaviour bit-preserved** (their S1 call
+sites unchanged; snapshot already carries the warning).
+
+**Equality gates (tests/test_p4_step9_pairfix.py, 3/3 PASS):** E-I fix: function gap **exactly
+0.0** across save/load, δ̂ identical to all digits; E-II teeth: legacy path reproduces the bug
+(gap 0.374) — permanent forensic control; E-III plain: exact round trip. Bonus: the fix improves
+pairing quality itself (legacy in-process δ̂ 13.6 → fixed 3.05 at 20 eps — the predictor finally
+regresses a coherent moving target).
+
+**Stage-1a CLEAN rerun (ckpt3 pairs, seed-0 descriptive,
+`papers/figures/p4_spine_stage1a.json`; ckpt2-era artifacts archived as `*_quarantined2`):**
+
+- **The moat quantity appears: δ̂_eq = 1.47 vs δ̂_plain = 7.68 (5.2×) at matched params on
+  held-out data** — equal-ε certified horizons will be ~5× longer for eq. This is C3's
+  load-bearing input, now on certified instruments.
+- **Neutral-regime certificate shape CONFIRMED for eq**: measured Err(H) grows LINEARLY
+  (r²_lin 0.98 vs r²_exp 0.90; 1.10 → 5.87 over H=1..8), exactly the δ̂·H form the κ=0
+  certificate predicts; measured per-chunk rate 0.77 vs certified 1.47 — conservative ~1.9×,
+  within the registered band. C3-cal (q90 consumer): ratios 0.33/0.29/0.50/1.00 over the ε grid —
+  conservative at fine ε, in-band at coarse (q90-vs-median directionality is by construction).
+- eq λ̂₁ = +0.0000 with degenerate CI — neutral as the env (cross-consistent with step2's κ=0)
+  but suspiciously exact (identity-dominant residual predictor?); flagged for a precision look.
+- plain: bit-identical to its ckpt2 run (no e2cnn ⇒ flag is a no-op; also confirms MPS run
+  determinism here); its exp-vs-linear fit comparison still carries the known no-intercept
+  analysis bug — fix pending, conclusions not drawn from it.
+
 ## [2026-06-11] G0c oracle v3 — 4/20 IDENTICAL to v2: the bottleneck is structural, not budget; gate re-scoped
 
 Doubling the budget (h 12→16, K 64→96, cap 200→300; 23 min) changed nothing — the same 4

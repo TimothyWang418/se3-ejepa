@@ -104,6 +104,7 @@ def train_jepa(
     verbose: bool = True,
     return_target_encoder: bool = False,
     predictability_gated_var: bool = False,
+    refresh_target_cache: bool = False,
 ) -> dict:
     r"""Train ``model`` (an :class:`EqJEPA`) with EMA-target JEPA + Muon/AdamW.
 
@@ -188,6 +189,19 @@ def train_jepa(
                     bs = online_b.get(name)
                     if bs is not None and bt.shape == bs.shape:  # BN running stats
                         bt.copy_(bs)
+                if refresh_target_cache:
+                    # e2cnn R2Conv caches its expanded filter as a re-registered buffer at
+                    # .eval() time and never refreshes it on parameter mutation; moreover
+                    # train(False) re-expands only `if self.training` — a stale eval-mode cache
+                    # survives further .eval() calls silently. Without this flag the EMA
+                    # target's FUNCTION stays frozen at its initialization filters while its
+                    # state_dict carries the EMA weights — in-process and reloaded targets are
+                    # then two different functions (P4 incident 2026-06-11, paper3_record.md).
+                    # The train()/eval() cycle forces re-expansion from the current EMA weights;
+                    # no forward happens between the flips, so BN stats are untouched.
+                    # Default False: paper2-era behaviour preserved bit-for-bit.
+                    target_enc.train()
+                    target_enc.eval()
 
             ep_pred += pred_loss.item()
             ep_var += var_loss.item()

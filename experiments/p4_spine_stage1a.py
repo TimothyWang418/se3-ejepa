@@ -176,7 +176,9 @@ def main() -> int:
     w_match = pick_ladder(sum(p.numel() for p in build_eq().parameters()))["plain_match"]
     bases = {}
     for name, builder in (("eq", build_eq), ("plain_match", lambda: build_plain(w_match))):
-        ck = torch.load(DATA_DIR / f"ckpt2_{name}_f200.pt", map_location="cpu", weights_only=True)
+        # ckpt3 = trained with refresh_target_cache=True (the e2cnn pairing fix; #9 equality
+        # gates E-I/II/III all PASS — in-process == reloaded exactly). ckpt2 era is quarantined.
+        ck = torch.load(DATA_DIR / f"ckpt3_{name}_f200.pt", map_location="cpu", weights_only=True)
         m = builder()
         m.load_state_dict(ck["model"])
         import copy as _copy
