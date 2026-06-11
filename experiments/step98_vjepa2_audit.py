@@ -183,7 +183,8 @@ def main() -> int:
     n_steps = 30 if SMOKE else 120
     warmup = 8 if SMOKE else 25
     runs = {}
-    for q_seed in ([0] if SMOKE else [0, 1]):
+    qseeds = [0] if SMOKE else [int(x) for x in os.environ.get("STEP98_QSEEDS", "0,1").split(",")]
+    for q_seed in qseeds:
         torch.cuda.empty_cache()
         t1 = time.time()
         lam, (lo, hi) = benettin_jvp_gpu(g, z0, k, n_steps, warmup, q_seed)
@@ -191,8 +192,10 @@ def main() -> int:
         print(f"[step98] Q-seed {q_seed}: lambda1={lam[0]:.4f} CI[{lo:.4f},{hi:.4f}] "
               f"band={[round(x,3) for x in lam[:4]]} ({time.time()-t1:.0f}s)", file=sys.stderr)
     l1s = [runs[s]["lambda1"] for s in runs]
-    stable = (len(l1s) == 1) or (np.sign(l1s[0]) == np.sign(l1s[1])
-                                 and abs(l1s[0] - l1s[1]) / max(abs(l1s[0]), abs(l1s[1]), 1e-9) < 0.30)
+    # n-seed generalization of the pre-registered 2-seed agreement rule (same sign + within 30%),
+    # applied to the extreme pair — reduces to the original rule at n=2:
+    stable = (len(l1s) == 1) or (len({np.sign(x) for x in l1s}) == 1
+                                 and (max(l1s) - min(l1s)) / max(max(abs(x) for x in l1s), 1e-9) < 0.30)
     l1 = float(np.mean(l1s))
     lo = min(runs[s]["ci"][0] for s in runs)
     hi = max(runs[s]["ci"][1] for s in runs)

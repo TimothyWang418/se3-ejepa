@@ -124,6 +124,65 @@ def _train_probe(
     return probe
 
 
+def derangement(n: int, seed: int, ep_ids=None) -> Tuple[Tensor, Optional[float]]:
+    r"""Seeded fixed-point-free permutation for the action-imprint control (wma-step1b/1c).
+
+    Used to feed an environment-irrelevant action $a' = a_{\pi(i)}$ to an action-conditioned
+    predictor: if $\tilde D_{P,P}(a')$ stays low, the predicted latent tracks whatever action
+    is fed. Interpretation REQUIRES the echo-excess readout (see :func:`echo_excess`) — a
+    perfect counterfactual model also decodes $a'$ (competence, not pathology).
+
+    Returns ``(perm, cross_episode_fraction)``; the fraction (None without ``ep_ids``) should
+    be reported — episode-ordered data makes naive ``roll(1)`` mostly same-episode (step1b's
+    asterisk, fixed in step1c).
+    """
+    g = torch.Generator().manual_seed(seed)
+    perm = torch.randperm(n, generator=g)
+    idx = torch.arange(n)
+    fixed = (perm == idx).nonzero().flatten()
+    while fixed.numel():
+        if fixed.numel() >= 2:
+            perm[fixed] = perm[torch.roll(fixed, 1)]
+        else:
+            i = int(fixed[0])
+            j = (i + 1) % n
+            perm[i], perm[j] = int(perm[j]), int(perm[i])
+        fixed = (perm == idx).nonzero().flatten()
+    cross = None
+    if ep_ids is not None:
+        e = torch.as_tensor(ep_ids)
+        cross = float((e[perm] != e).float().mean())
+    return perm, cross
+
+
+def echo_excess(d_norm: Dict[Cell, float]) -> float:
+    r"""Echo excess $\eta = \tilde D_{T,T} - \tilde D_{P,P}$ — action information in the
+    PREDICTED transition exceeding what REAL encoded transitions carry (wma-step2 v1.1).
+
+    $\eta \approx 0$: competent or jointly uninformative; $\eta \gg 0$: manufactured action
+    code (the LeWM/PushT finding, $\eta = 0.474$). **Jurisdiction**: $\eta \le \tilde D_{T,T}$
+    always — in action-revealing regimes ($\tilde D_{T,T}$ small) the readout is structurally
+    vacuous (VACUOUS-BY-CEILING) and code-compatibility ($L_{\mathrm{sym}}$) is the
+    non-vacuous axis instead (spec v1.2).
+    """
+    return d_norm[("T", "T")] - d_norm[("P", "P")]
+
+
+def imprint_ratio(dpp_real_norm: float, dpp_perm_norm: float, *,
+                  no_signal_threshold: float = 0.9) -> Optional[float]:
+    r"""Attribution readout $\rho_{\mathrm{imp}} = \max(0, 1 - \tilde D_{P,P}(a')) / (1 -
+    \tilde D_{P,P}(a))$: does the P-domain action signal track ARBITRARY fed actions?
+
+    NOT a pathology test on its own (spec v1.1): a perfect counterfactual model and a pure
+    echo both give $\rho \approx 1$. Pathology = $\eta > 0$ AND $\rho \approx 1$. Returns
+    None (NO-SIGNAL) when $\tilde D_{P,P}(a) \ge$ ``no_signal_threshold`` — nothing to
+    attribute.
+    """
+    if dpp_real_norm >= no_signal_threshold:
+        return None
+    return max(0.0, 1.0 - dpp_perm_norm) / (1.0 - dpp_real_norm)
+
+
 def compute_readouts(D: Dict[Cell, float], eps: float = 1e-8) -> Dict[str, float]:
     r"""Eqs. 8-9 readouts from the four cells (see module docstring for formulas)."""
     dtt, dtp, dpt, dpp = D[("T", "T")], D[("T", "P")], D[("P", "T")], D[("P", "P")]
