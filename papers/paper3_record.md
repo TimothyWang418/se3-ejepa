@@ -236,6 +236,17 @@ the stability floor (std ≥ 0.7) — the consistent extension of the v1.4 regis
 seeds are non-qualifying for every gate and are REPORTED (not hidden, not replaced). A 5-seed
 extension (+s3, +s4) then resolves C3-cal-static and prices the collapse rate properly.
 
+*Same-day review discovery (changes the statistical language):* **eq training is
+run-nondeterministic on MPS** — three nominally identical seed-0 runs give δ̂ = {1.47, 3.30,
+2.75} (2.2× spread; third-run verification deliberate), while plain reproduces bit-close
+(7.677/7.68). Attribution: e2cnn kernels on MPS (plain's stack is deterministic there).
+Consequences, registered: (i) for eq, "seeds" are labels — **n counts RUNS**, sampled from a run
+distribution; all eq statistics are stated per-run; (ii) iteration continues on MPS with
+run-count language (the extra variance is real and honestly reported); CPU-deterministic training
+is reserved as a camera-ready reproducibility option; (iii) **upstream notice to paper2/S1**
+(same steerable-on-MPS combination) via the snapshot. The collapse lottery and the run lottery
+are now one phenomenon class: the eq recipe's outcome distribution is wide on MPS.
+
 ## [2026-06-11] v1.5 stability sweep — H-v1.5a REFUTED (the isotypic floor ACCELERATES collapse); the attractor is predictability-driven; strategic re-scope
 
 (`experiments/p4_v15_stability.py`, 18 min; artifact `p4_v15_stability.json`; per-field floor
