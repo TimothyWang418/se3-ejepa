@@ -1,5 +1,7 @@
 # SE(3)-Equivariant JEPA — a geometric latent world model
 
+> **Preprint:** the certified-horizons paper (E1–E16, Props 4–11) is on arXiv (announcement pending; ID will be linked here).
+
 > **The bet.** If the world carries a symmetry group $G$, *hard-wiring* that symmetry into a
 > latent world model should let it learn from far fewer interactions and generalise **zero-shot**
 > to configurations it never saw (举一反三) — instead of paying for that generalisation with scale.
@@ -51,11 +53,22 @@ after a real training run** (`tests/test_*.py`), and each fails the non-equivari
 
 ## The papers
 
+**Current — Certified Predictability for Equivariant World Models** (the arXiv preprint above):
+
+- **[`papers/iclr_certified_horizons.md`](papers/iclr_certified_horizons.md)** /
+  [PDF](papers/iclr_certified_horizons.pdf) — *Scale Buys Interpolation, Structure Buys a Horizon*:
+  the certified-horizon theory (Theorems A/B/B′, Lemma 2, Propositions 4–11) + experiments E1–E16,
+  including the training-free audits of TD-MPC2, LeWM, and V-JEPA 2-AC and the real-robot-data monitor.
+- **[`papers/paper2_certified_world_models.md`](papers/paper2_certified_world_models.md)** /
+  [PDF](papers/paper2_certified_world_models.pdf) — the extended version (Experiments 1–31, full
+  experiment log and honest-negative ledger in [`papers/paper2_record.md`](papers/paper2_record.md)).
+- **Audit your own world model:** [`docs/wm_audit_quickstart.md`](docs/wm_audit_quickstart.md).
+
+**Earlier line — the equivariant-generalization core** this grew out of:
+
 - **[`papers/equivariance_generalization_core.md`](papers/equivariance_generalization_core.md)** — the
-  focused, submission-targeted write-up of the most robust result: the **[A] + [B] + [C]** core in both
-  $\mathrm{SO}(2)$ and $\mathrm{SE}(3)$.
-- **[`papers/geometric_payoff.md`](papers/geometric_payoff.md)** — the full per-step results log (27
-  steps): every experiment, table, caveat, and the boundary-locating analyses above.
+  focused write-up of the **[A] + [B] + [C]** core in both $\mathrm{SO}(2)$ and $\mathrm{SE}(3)$.
+- **[`papers/geometric_payoff.md`](papers/geometric_payoff.md)** — the per-step results log (27 steps).
 
 Result dumps and figures for every step live in [`papers/figures/`](papers/figures/) (`*.json` numeric
 dumps + `*.png` / `*.pdf`).
@@ -220,4 +233,4 @@ Copyright © 2026 Hongbo Wang.
 
 ---
 
-*Laptop-scale (CPU/MPS), fully seeded and deterministic. Last updated: 2026-05-30.*
+*Laptop-scale (CPU/MPS), fully seeded and deterministic. Last updated: 2026-06-11.*

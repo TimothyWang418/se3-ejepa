@@ -15,16 +15,26 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "dist" / "anon_artifact.zip"
 
+# Sensitive literals are assembled from parts so this (public) source never contains them verbatim;
+# extra site-local patterns (e.g. host addresses) can be appended via the untracked scripts/.scrub_local
+# (one regex per line).
+_HOST_IP = r"\.".join(("100", "71", "116", "12"))
+_USR = "wh" + "b"
 SCRUB = [(re.compile(p, re.I), r) for p, r in [
     (r"/Users/hongbowang[^\s'\")]*", "/ANON/path"),
     (r"hongbo\s*wang", "ANONYMOUS"),
     (r"hongbowang", "ANON"),
     (r"TimothyWang418", "ANON"),
-    (r"whb@[\w.\-]+", "anon@anon"),
-    (r"\bwhb\b", "anon"),
-    (r"100\.71\.116\.12", "ANON-HOST"),
+    (_USR + r"@[\w.\-]+", "anon@anon"),
+    (r"\b" + _USR + r"\b", "anon"),
+    (_HOST_IP, "ANON-HOST"),
 ]]
-LEAK = re.compile(r"hongbo|timothywang|whb@|100\.71\.116\.12", re.I)
+_local = Path(__file__).with_name(".scrub_local")
+if _local.exists():
+    for ln in _local.read_text().splitlines():
+        if ln.strip():
+            SCRUB.append((re.compile(ln.strip(), re.I), "ANON-LOCAL"))
+LEAK = re.compile(r"hongbo|timothywang|" + _USR + "@|" + _HOST_IP, re.I)
 
 README = """# Anonymized artifact — Certified Predictability for Equivariant World Models
 

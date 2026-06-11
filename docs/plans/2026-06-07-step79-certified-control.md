@@ -6,7 +6,7 @@
 
 **Architecture:** Reuse `experiments/step74_lorenz96_spectrum.py` (dynamics, $\mathbb{Z}_N$-conv & MLP, Benettin–QR spectrum) and `experiments/step78_certified_horizon_ci.py` (bootstrap CI). Add a control input $u_i$ per site, an action-conditioned world model, an equivariant CEM-MPC planner, and a closed-loop runner. One new experiment file + one new test file, mirroring the `step76/77/78` structure.
 
-**Tech Stack:** Python 3.11, PyTorch (CPU/MPS, float64 for spectra), matplotlib. Repo: `/Users/hongbowang/Workspace/se3-ejepa`, `.venv/bin/python`.
+**Tech Stack:** Python 3.11, PyTorch (CPU/MPS, float64 for spectra), matplotlib. Repo: `~/se3-ejepa`, `.venv/bin/python`.
 
 **Repo rules (non-negotiable):** NEVER loosen a gate (report `INCONCLUSIVE`). Stage files by name (never `git add -A`). Commit locally; confirm before push. HEREDOC commit messages ending `Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>`. Honest math in LaTeX.
 
@@ -47,7 +47,7 @@ def test_controlled_dynamics_is_ZN_equivariant():
 
 - [ ] **Step 2: Run to verify it fails**
 
-Run: `cd /Users/hongbowang/Workspace/se3-ejepa && .venv/bin/python -m pytest tests/test_step79.py -k equivariant -q`
+Run: `cd ~/se3-ejepa && .venv/bin/python -m pytest tests/test_step79.py -k equivariant -q`
 Expected: FAIL (`ModuleNotFoundError` / `AttributeError: l96_controlled_rhs`).
 
 - [ ] **Step 3: Implement the controlled dynamics** at the top of `experiments/step79_certified_control.py`
@@ -86,7 +86,7 @@ Run: same pytest command. Expected: PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/hongbowang/Workspace/se3-ejepa
+cd ~/se3-ejepa
 git add experiments/step79_certified_control.py tests/test_step79.py
 git commit -F- <<'EOF'
 Step 79 phase 0: controlled Lorenz-96 dynamics + Z_N-equivariance test
