@@ -84,15 +84,23 @@ def test_step95_artifact_gates_consistent():
 
 @pytest.mark.skipif(not S96.exists(), reason="step96 artifact missing")
 def test_step96_artifact_gates_reproducible():
+    """At n=100 the pre-registered G3 gate (<=5% invalid, 2/2 cells) goes 1/2: finger-spin-2 lands
+    0.6pp over the line (5.6%) -- recorded as-registered, INCONCLUSIVE not PASS. This test is the
+    ledger of that state: it re-derives every gate from the artifact and pins the honest outcome."""
     d = json.loads(S96.read_text())
+    assert d["n_ep"] == 100
     c = d["cells"]
     for s in ["finger-spin-2", "finger-spin-3"]:
         v = c[s]
         g3 = v["invalid_at_k24"] <= 0.05 and v["fault_recall_at_k8"] >= 0.95 and v["median_delay"] <= 8
-        assert g3 == v["G3"] and v["G3"]
+        assert g3 == v["G3"]                                         # recomputation matches artifact
         assert v["censored_frac"] > 0.9                              # the stable-abstain signature
+    assert c["finger-spin-3"]["G3"] is True
+    assert c["finger-spin-2"]["G3"] is False                         # the boundary cell thickening revealed
+    assert abs(c["finger-spin-2"]["invalid_at_k24"] - 0.056) < 0.005
     h = c["hopper-hop-1"]
     assert (h["bench_median"] / 1.5 <= h["insitu_median"] <= h["bench_median"] * 1.5) == h["G4"]
     f1 = c["finger-spin-1"]
     assert (abs(f1["ratio_insitu"] - f1["ratio_bench"]) <= 0.25) == f1["G5"]
-    assert all(d["verdict"].values())
+    assert d["verdict"]["G3_stable_abstain"] is False                # as-registered: INCONCLUSIVE
+    assert d["verdict"]["G4_bias_abstain"] and d["verdict"]["G5_replication"]

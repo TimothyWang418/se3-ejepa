@@ -1,36 +1,36 @@
 {
   "theta": 0.2,
-  "n_ep": 20,
+  "n_ep": 100,
   "cells": {
     "finger-spin-2": {
       "type": "stable-abstain",
       "lambda1_pub": -0.060787585594366124,
       "bench_censored": 15,
-      "invalid_at_k24": 0.0445,
-      "censored_frac": 0.93125,
+      "invalid_at_k24": 0.055525000000000005,
+      "censored_frac": 0.92125,
       "fault_recall_at_k8": 1.0,
       "median_delay": 5.0,
-      "G3": true
+      "G3": false
     },
     "finger-spin-3": {
       "type": "stable-abstain",
       "lambda1_pub": -0.051744633155911005,
       "bench_censored": 19,
-      "invalid_at_k24": 0.04025,
-      "censored_frac": 0.9375,
+      "invalid_at_k24": 0.04,
+      "censored_frac": 0.93625,
       "fault_recall_at_k8": 1.0,
-      "median_delay": 4.5,
+      "median_delay": 5.0,
       "G3": true
     },
     "hopper-hop-1": {
       "type": "bias-abstain",
       "lambda1_pub": -0.10538331184252363,
       "bench_median": 5.5,
-      "insitu_median": 7.0,
-      "q25": 4.0,
-      "q75": 10.0,
-      "invalid_at_k24": 0.38887499999999997,
-      "fault_recall_at_k4": 1.0,
+      "insitu_median": 8.0,
+      "q25": 5.0,
+      "q75": 11.0,
+      "invalid_at_k24": 0.33682500000000004,
+      "fault_recall_at_k4": 0.99,
       "median_delay": 3.0,
       "G4": true
     },
@@ -39,13 +39,13 @@
       "T1_pub": 16.307763392590818,
       "ratio_bench": 0.9504675550445003,
       "insitu_median": 17.0,
-      "censored_frac": 0.2625,
+      "censored_frac": 0.264375,
       "ratio_insitu": 1.042448286177839,
       "G5": true
     }
   },
   "verdict": {
-    "G3_stable_abstain": true,
+    "G3_stable_abstain": false,
     "G4_bias_abstain": true,
     "G5_replication": true
   }

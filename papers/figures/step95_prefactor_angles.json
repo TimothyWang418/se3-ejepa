@@ -16,9 +16,9 @@
       },
       {
         "shear": 1.95,
-        "kappa_analytic": 2.191460700081113,
+        "kappa_analytic": 2.1914607000811124,
         "kappa_measured": 2.1912669460704226,
-        "rel_err": 8.841318061649268e-05
+        "rel_err": 8.841318061629005e-05
       },
       {
         "shear": 4.97,
@@ -38,37 +38,37 @@
     "G_A3_horizon_shift_log_kappa": true
   },
   "B_true_lorenz96": {
-    "W": 250,
-    "n_samples": 11,
-    "kappa1_median": 17.469339535494758,
-    "kappa1_q25": 6.759388167963937,
-    "kappa1_q75": 24.389836377068892,
-    "kappa1_max": 90.28912006100094,
-    "theta1_median_deg": 3.2815846616557582,
-    "median_at_half_window": 9.26297576027861,
-    "estimator_converged": false
+    "W": 400,
+    "n_samples": 41,
+    "kappa1_median": 11.853665219349248,
+    "kappa1_q25": 4.950179658518743,
+    "kappa1_q75": 21.161331187641938,
+    "kappa1_max": 69.32377807349486,
+    "theta1_median_deg": 4.839343698539656,
+    "median_at_half_window": 16.540388243222313,
+    "estimator_converged": true
   },
   "C_pretrained": {
     "walker-walk-1": {
-      "W": 120,
-      "n_samples": 9,
-      "kappa1_median": 20.908042374702585,
-      "kappa1_q25": 12.845398569788692,
-      "kappa1_q75": 35.217662345230195,
-      "kappa1_max": 192.5031750250898,
-      "theta1_median_deg": 2.741416227820064,
-      "median_at_half_window": 20.700424011789778,
+      "W": 200,
+      "n_samples": 41,
+      "kappa1_median": 49.20777304002183,
+      "kappa1_q25": 17.260663238639562,
+      "kappa1_q75": 63.82209049814825,
+      "kappa1_max": 137.17245451054623,
+      "theta1_median_deg": 1.1644445665196297,
+      "median_at_half_window": 49.561438826916714,
       "estimator_converged": true
     },
     "cheetah-run-3": {
-      "W": 120,
-      "n_samples": 9,
-      "kappa1_median": 20.789301699788865,
-      "kappa1_q25": 6.190273371306399,
-      "kappa1_q75": 183.2499284128805,
-      "kappa1_max": 788.9299072200852,
-      "theta1_median_deg": 2.757086228971282,
-      "median_at_half_window": 26.32937669271547,
+      "W": 200,
+      "n_samples": 41,
+      "kappa1_median": 18.737500454527986,
+      "kappa1_q25": 6.821415017503952,
+      "kappa1_q75": 41.32284894002321,
+      "kappa1_max": 185.21364905665,
+      "theta1_median_deg": 3.059266803880588,
+      "median_at_half_window": 18.73739757029418,
       "estimator_converged": true
     }
   }
