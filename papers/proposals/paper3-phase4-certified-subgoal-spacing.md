@@ -124,6 +124,16 @@ measured.
   $\Delta\theta$;
 - **H1-primary:** the same inequalities at $5\%$ ($\approx10$ episodes).
 
+**Both tiers are evaluated against the stronger of $\{$R-plain, R-aug$\}$** — the novelty sweep
+(2026-06-10) surfaced Brehmer et al. (arXiv:2410.23179): rotation *augmentation* with enough epochs
+can close equivariance's data-efficiency gap, so an eq-vs-plain win alone is quotable-against. The
+honest claim hierarchy this induces (pre-registered): **H1 is an empirical bet that augmentation may
+partially close — reported either way; the certificate moat (C1b/C3 wedge transfer) is
+theorem-protected against exactly this substitute** — paper2 Lemma 2 (orbit-constant error $\iff$
+equivariance) means an augmented model has no certificate transfer at any parameter count or epoch
+budget. If augmentation closes H1, the paper's equivariance value concentrates at the certificate
+layer, and says so.
+
 The paper reports whichever tier survives (strong $\Rightarrow$ primary); curves reported regardless.
 Rationale: at $1\%$ ($=2$ episodes) *any* pixel model may degenerate — the strong tier must not be
 the claim's single point of failure. Any curve shape is a result — including "plain learns it but
@@ -193,11 +203,13 @@ All cells reported; no claim dies for another's miss.
 | **R-eq** — $C_{16}$-steerable pixel JEPA (`eqjepa.py::SteerableEncoder` + `train_jepa`) | ▢ | ▢ | ★ spearhead cell |
 | **R-plain** — parameter-matched CNN ladder, 3 sizes (step51 protocol) | ▢ | ▢ | ▢ |
 | **R-lewm** — frozen official LeWM (step91 strict-load, zero training) | ▢ (FF-JEPA's failing baseline) | ▢ ($H{=}25$ = FF-JEPA replication cell) | ▢ |
+| **R-aug** — rotation-augmented R-plain (the **Brehmer control**, arXiv:2410.23179: augmentation can close equivariance's data-efficiency gap) | — | — | — (E-P4.1/E-P4.2 only) |
 
 Fixed-$H$ grid $\{5,10,15,25,40\}$ (FF-JEPA's 25 included). **Anti-explosion rule (pre-registered cell
 priority):** full $3\times3$ only on PushT-static; PushT-dyn runs the C3 spine + selected closed-loop
 cells (eq/plain $\times$ fixH/certH); 3-D co-anchor runs H1-original + C3-3D + a minimal closed-loop
-pair.
+pair; **R-aug runs probes + certificate audit only** (it exists to Brehmer-proof C2 and to test
+Lemma 2's prediction in C1b, not to quadruple the closed-loop grid).
 
 ### 3.2 Environments — including the dynamics knob (the potential signature figure)
 
@@ -315,6 +327,19 @@ the exact count/source). Three variants: full; fraction sweep $\{1\%,10\%,100\%\
   non-official-reproduction caveat.
 - **vs LeWM:** frozen official checkpoints only (step91 pipeline); we are a consumer of their base, an
   auditor of their loop, and now a *retrofitter* of their planning layer.
+- **vs HWM (arXiv:2604.03208, found by the 2026-06-10 novelty sweep — highest-priority neighbor):**
+  hierarchical latent-WM planning with hand-set multi-timescales and a **post-hoc** error-vs-horizon
+  analysis (their Fig 6) that is the empirical shadow of our certified curve. Differentiation: they
+  *validate* a hand-set hierarchy after the fact; we *derive* the spacing a priori from the
+  certificate — the law they observed is the one we predict. Two hierarchical-latent-planning papers
+  in eight weeks (HWM, FF-JEPA) = the direction is heating; arXiv flag-plant stays on the critical
+  path.
+- **vs self-triggered / event-triggered control (classical family):** they pre-compute update times
+  a priori — but from Lyapunov conditions of *known* (or GP-learned, gradient-optimized) dynamics, at
+  the control-input level. Ours: measured spectral certificate of a *learned latent JEPA loop*,
+  applied to *subgoal* spacing, with zero-data equivariant calibration. Cite GP-ETMPC
+  (arXiv:2110.12214) and kin; full must-cite map in
+  `papers/proposals/paper3-novelty-sweep-2026-06-10.md`.
 
 ## 8. Bookkeeping
 
