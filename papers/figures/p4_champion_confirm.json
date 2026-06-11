@@ -1,0 +1,41 @@
+{
+ "champion": "{'ema_decay': 0.99, 'var_coef': 0.3, 'lr_scale': 1.0, 'aux_coef': 0.3}",
+ "plain_ctrl": "{'ema_decay': 0.99, 'var_coef': 0.04, 'lr_scale': 1.0, 'epochs': 40}",
+ "corpus": "c2000",
+ "gates": "C3-guar (<=1 all cells, >=90% qual) + C3-cal ([0.5,2], >=2/3 qual)",
+ "cells": {
+  "champ_r0": {
+   "std": 0.950949490070343,
+   "delta": 2.7932499641676745,
+   "xy": 0.11587058771478675,
+   "stable": true,
+   "delta_norm": 0.25962551268968304,
+   "c3cal": [
+    {
+     "em": 2,
+     "ratio": null
+    },
+    {
+     "em": 4,
+     "ratio": 0.5
+    },
+    {
+     "em": 8,
+     "ratio": 0.375
+    },
+    {
+     "em": 16,
+     "ratio": 0.875
+    }
+   ],
+   "growth": {
+    "lambda_meas_exp_fit": 0.2090165928180543,
+    "linear_rate": 1.0304023007694947,
+    "linear_intercept": 1.0533734541995543,
+    "r2_exp": 0.8991885847048836,
+    "r2_linear": 0.9926234819402381
+   }
+  }
+ },
+ "elapsed_min": 38.8
+}
