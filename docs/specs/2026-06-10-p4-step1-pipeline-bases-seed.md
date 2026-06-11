@@ -71,6 +71,35 @@ contracts, probe-rig shape contract. Deps: none new (everything vendored).
 4. **Param-matching ambiguity** (steerable vs plain conv params): match total trainable params
    within ±10%, report counts verbatim in the record.
 
+## Protocol v1.2 amendments (registered 2026-06-10 post-diagnosis, BEFORE any 3-seed claim run)
+
+Forced by the seed-0 readout + the step1b diagnosis (`papers/figures/p4_step1b_diagnosis.json`):
+
+1. **R-aug v1.2** — the seed-0 aug collapse traced to an *implementation artifact*, not the Brehmer
+   control's substance: `augment_x4` drew angles **per copy, not per sample** (the whole dataset
+   had 4 discrete angles), and zeros-padding gave each angle a corner-wedge signature ⇒ 4-cluster
+   collapse (high variance, perfectly predictable, content-free; the continuous-angle probe reads
+   it at only 0.49 because 4-discrete-angles training is OOD for it). Fix: **per-sample angles +
+   a fixed circular mask applied to ALL frames everywhere** (augmented and not, train and probe —
+   metric fairness; kills the corner cue at the source). Re-run the step1b diagnosis after the fix;
+   only then may R-aug enter any C2 reading.
+2. **Transitions v1.2 — stride-5 action chunks** (the θ-readability response): both within-episode
+   rotation (median 70.6°/episode — hypothesis "corpus lacks rotation" is DEAD) and training
+   length (60 epochs made θ WORSE, −0.40, and xy decayed 0.70→0.44 — "undertraining" is DEAD)
+   are exonerated; the live hypothesis is that 1-step prediction at 10 Hz never needs orientation
+   (~0.7°/step). Amendment: transitions become **5-step action chunks** (the LeWM/FF-JEPA CHUNK
+   convention; ~3.5° median motion per chunk makes orientation a needed signal). Predictor change:
+   `CNRegularPredictor` lifts each of the 5 sub-actions separately (10 lifted fields; equivariance
+   preserved per sub-action — the unit test extends accordingly).
+3. **Content-decay-with-epochs registered as a monitored axis** (not a fix): linear readability
+   decays with training (xy 0.70→0.44, θ +0.03→−0.40 at 20→60 epochs; the @200 column's 0.55→0.31
+   drop is the same shape). Epochs stay 20; v1.2 runs log probe-vs-epoch curves. Relates to the
+   repo's own Step-64 predictability–variance tension and PoR's temporal-collapse axis — possibly
+   reportable, not yet theorized.
+4. Corpus and all C2 gate definitions unchanged. **G3 sanity reruns under v1.2 before the 3-seed
+   grid**; if θ remains unreadable under stride-5, the next registered lever is corpus surgery
+   (oracle-demo frames — blocked on the G0c solver fix).
+
 ## Open items carried (not step1's)
 
 - "Dynamic Push-T" query (one targeted search at step2, cite-and-differentiate if physics-dialing).

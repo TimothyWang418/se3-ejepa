@@ -104,6 +104,30 @@ included; 3-seed replication sized at ~2.5 h). Param ladder well-matched: eq 163
 **Sizing conclusions:** full 5×5 grid = 52 min on MPS ⇒ 3 seeds ≈ 2.5 h; collection 13 min;
 oracle gate dominated by sim resets (8 s/episode-attempt) — budget fine once the solver solves.
 
+## [2026-06-10] P4-step1b — diagnosis pass: both first hypotheses REFUTED; the truth was better
+
+(`experiments/p4_step1b_diagnosis.py`, `papers/figures/p4_step1b_diagnosis.json`, 2×~6 min; bases
+re-materialized by seed determinism.)
+
+1. **aug collapse — first hypothesis (encodes the applied angle) REFUTED** (angle-$R^2$ −0.07),
+   which forced the real mechanism into the open: `augment_x4` drew rotation angles **per copy,
+   not per sample** — the entire augmented dataset contained 4 discrete angles, each with a
+   zeros-padding corner-wedge signature ⇒ **4-cluster collapse** (high variance across clusters,
+   o/o₂ same cluster ⇒ pred_loss→0, zero content; the continuous-angle probe is OOD for it, mod-4
+   readout 0.49). An *implementation artifact*, not the Brehmer control's substance — honest
+   distinction recorded. (Side data: ALL bases read the probe's own corner artifact at mod-4,
+   0.49–0.84 — the probe's rotation introduces the cue; eliminated in v1.2 by circular masking.)
+2. **θ unreadability — BOTH prior hypotheses dead**: corpus rotation is ample (median 70.6°
+   within-episode, q90 357°); longer training makes it WORSE (θ +0.03→−0.40 at 60 epochs) and
+   **decays xy content too** (0.70→0.44 — the @200 column's drop reproduced at fixed data). Live
+   hypothesis: 1-step prediction at 10 Hz (~0.7°/step) never needs orientation. **Response =
+   protocol v1.2** (registered in the step1 spec before any 3-seed run): stride-5 action-chunked
+   transitions (LeWM/FF-JEPA convention), per-sample-angle + circular-mask R-aug, epochs held at
+   20 with probe-vs-epoch curves logged (content-decay registered as a monitored axis — relates to
+   Step-64's predictability–variance tension; possibly reportable, not yet theorized).
+3. eq's xy dominance reproduced under re-materialization (0.703 vs grid's 0.709) — the loud signal
+   is stable.
+
 ## [2026-06-10] P4-step3 — gap-mode instrument built and CERTIFIED (3/3 gates) before it certifies anything
 
 `src/audit/gap_mode.py`: `audit_gap(model, frames, actions)` → the certificate's consumed triple
