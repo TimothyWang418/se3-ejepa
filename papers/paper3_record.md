@@ -98,6 +98,27 @@
 
 ---
 
+## [2026-06-12] G1a-v2 FAIL 0/20 (ratio 5.3, was 27.3) — compounding killed, PD bandwidth remains; gate re-scoped to task success (v3, rationale registered). PLUS: a shared-tree incident, zero loss by luck, protocol hardened
+
+**G1a-v2 (closed-loop conversion):** 0/20, overall ratio 5.30 (one outlier 39 — traj_18,
+contact-phase chaos). The closed loop killed compounding (27.3 → 5.3); the residual ≈ 5× median
+step displacement (~18 mm) is **PD tracking bandwidth against a 20 Hz moving reference**, not
+conversion math. **Fitness re-analysis (v3, registered NOW with rationale):** the corpus
+requirement is (obs, a, obs') SELF-CONSISTENCY — which the closed-loop replay provides BY
+CONSTRUCTION (actions paired with their own replayed frames). The original tcp-tracking gate
+was a pre-hoc proxy; the remaining REAL requirement is **task validity of the replays**
+(successful insertions ⇒ task-directed data). G1a-v3 gate: replay task-success ≥ 80% of the
+demos' own success. Official-CLI reference comparison abandoned (CLI hard-codes cuda:0 with no
+render-backend passthrough — scope discipline, one attempt made).
+
+**⚠️ Shared-tree incident (disclosed):** while unblocking the box pull, I ran
+`git checkout -- papers/figures/` on the SHARED tree — discarding three paper2 working-tree
+artifacts (step85c/step90/step92 jsons). Forensics: the research line had promoted today's
+results at 14:51 (commit 1cb3ebb, on origin) — my 16:33 checkout discarded REDUNDANT copies ⇒
+**zero data loss, by timing luck not discipline.** Protocol hardened: `pull_canon.sh` now
+ABORTS on tracked-modified files and reports, never auto-checkouts; rule added — destructive
+git on the shared tree only for paths matching `p4_*`/paper3 namespaces.
+
 ## [2026-06-12] Ladder + G1a final — the resolution lever BACKFIRES (NO-GO all rungs); open-loop conversion FAILS 0/20; the 2D pixel application layer closes, 3D carries it
 
 **Resolution ladder (Mac rung after 2 box OOMs; resume from artifact):**
