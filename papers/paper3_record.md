@@ -6,7 +6,36 @@
 > W1 recon: `docs/specs/2026-06-10-p4-w1-recon.md`. No gate is loosened, ever; INCONCLUSIVE is
 > reported as such. Entries below are newest-first.
 
-## STATUS DIGEST (updated 2026-06-11 evening, post-E0.3 / mid-champion)
+## STATUS DIGEST (updated 2026-06-12 morning — the night the claims landed)
+
+- **C3 (spear-tip): CLOSED, guarantee form.** C3-guar **PASS** at full registration — 38/38
+  qualifying runs faithful-one-sided across two devices (MPS registered + CUDA replication),
+  plus shape-OOD 30/30 (E0.3b) and pose-OOD 7/7 (wedge G-W1): **75 qualifying audits, zero
+  anticonservative cells** (self-scaled-degenerate disclosure in the record). C3-cal FAIL
+  conservative (median ratio 0.67) — registered narrative: *guarantee holds, point-estimate
+  conservative*. Methodological note: task-fixed ε (C4) needed to surface degenerate models.
+- **The moat is TWO findings, not one:** (i) low-N reliability cliff — plain P(fail)→1 below
+  ~2700 transitions (bimodal at ~3000), eq flat to 2606; at 40k transitions xy INVERTS
+  (plain 0.67-0.69 > eq 0.32-0.42, both devices) — Brehmer-consistent, the honest H1;
+  (ii) **θ does not invert**: plainc θ-R² 0.29 linear / 0.11-0.19 MLP vs eq 0.91-0.96 at the
+  same 40k — *the group coordinate is equivariant-only*. Orbit transport ≤4.1% n=7 (Lemma 2
+  through pixels).
+- **C2: UNBLOCKED** (full-state aux anchor delivers θ-R² 0.96; θ-only backfires — night
+  shift). Next: θ* elicitation design on candidate pairs.
+- **Banked recipe: aux0.5_v0.3** (swap ledgered 06-12: beats old champion on all six axes).
+- **C1a:** still needs a stable expansive base — κ=0.8 rescue sweep with modern recipes
+  QUEUED (the one hypothesis-driven tuning worth doing). C1b ratio-observable refuted in
+  substance (self-deflated G-W2); its assets moved to the two-regime moat + transport. **C4:**
+  untouched; importance UP (degeneracy detection requires task-fixed ε).
+- **Instruments:** canonical gates module (`src/audit/gates.py` — gate mechanics import-only);
+  VN-JEPA 3D stack G0-certified; 3D protocol spec v1 registered (G1-bound formulas); fleet =
+  Mac M5 + 3080 box (shared, lock protocol) + backup Intel MacBook. Stdout is buffered —
+  sentinels watch artifacts.
+- **In flight:** low-N figure batch (P(fail) densification, 3080). **Next blades:** C2 design
+  (θ* elicitation) → κ=0.8 rescue → C4 (task-fixed ε, double duty) → 3D G1 (conversion fix,
+  hands-on) → v1.3 grid.
+
+## OLD DIGEST (2026-06-11 evening, superseded)
 
 - **Protocol:** v1.2 + v1.6 (two-stage tuning, n=10 runs, stability floor std ≥ 0.7) in force;
   v1.3 registered NOT run; v1.4/v1.5 CLOSED (banked config = single-frame κ=0). **C3-guar
@@ -36,6 +65,32 @@
   banked, CPU free) → aux0.5_v0.3 × c2000 stage-B → 3D protocol spec v1 → v1.3 grid (C2) → C4.
 
 ---
+
+## [2026-06-12] Candidate stage-B verdict — **SWAP: aux0.5_v0.3 becomes the banked recipe**; θ-deficit fairness check kills the probe-linearity attack
+
+**Candidate (aux0.5_v0.3 × c2000 × n=10, MPS, same harness/gates as the champion):** stable
+**9/10**, **C3-guar PASS 9/9**, C3-cal FAIL but **5/9 in band**, xy_mean **0.624**,
+delta_norm 0.257. Head-to-head vs the registered champion on the same device:
+
+| axis | champion (aux0.3) | candidate (aux0.5_v0.3) |
+|---|---|---|
+| stability | 8/10 | **9/10** |
+| C3-guar | PASS 8/8 | PASS 9/9 |
+| C3-cal in-band | 3/8 | **5/9** |
+| xy content | 0.317 | **0.624** |
+| θ-R² | 0.913 | **0.961** |
+| delta_norm | 0.295 | **0.257** |
+
+**Decision: SWAP.** aux0.5_v0.3 is the banked default recipe for all future paper3 PushT work
+(C2 instruments, κ=0.8 rescue, v1.3 grid). The CLOSED C3 verdicts stand on the old champion
+as registered — the swap is forward-looking, not retroactive. Borrowed-plainc note: candidate
+arm reused the registered MPS plainc rows (same device/corpus/session window) — ledgered, and
+its own gates did not depend on them.
+
+**θ-fairness (MLP probe on plainc latents): the deficit DEEPENS under nonlinear probing** —
+plainc MLP θ-R² [0.113, 0.180, 0.187] (vs 0.292 linear); cand MLP [0.905, 0.944] ≈ linear.
+**The θ deficit is representational.** "Position is learnable with data; the group coordinate
+is equivariant-only" now stands on linear AND nonlinear probes.
 
 ## [2026-06-12] MPS registered verdicts — **C3-guar PASS confirmed on the registered instrument**; cross-device concordance complete; C3's verdict pair CLOSES
 
