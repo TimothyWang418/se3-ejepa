@@ -33,9 +33,14 @@
   VN-JEPA 3D stack G0-certified; 3D protocol spec v1 registered (G1-bound formulas); fleet =
   Mac M5 + 3080 box (shared, lock protocol) + backup Intel MacBook. Stdout is buffered —
   sentinels watch artifacts.
-- **In flight:** low-N figure batch (P(fail) densification, 3080). **Next blades:** C2 design
-  (θ* elicitation) → κ=0.8 rescue → C4 (task-fixed ε, double duty) → 3D G1 (conversion fix,
-  hands-on) → v1.3 grid.
+- **⚠️ Structural gap (global review 06-12):** the night's harvest is ALL certificate-side;
+  the title's APPLICATION layer (H*(ε) → planner spacing) still rests on Stage-1b seed-0 with
+  the registered quasi-static-vacuity concern. **Planner v2 (E1.2) is registered but never
+  executed** — highest-priority exposure.
+- **Next blades (revised by global review):** ONE integrated campaign on the new banked pairs —
+  planner v2 (application layer) + C2 θ* elicitation + C4 task-fixed ε (incl. turning the
+  self-scaled-ε blind spot into a measured degeneracy-detection result) → κ=0.8 rescue →
+  3D G1 (hands-on) → v1.3 grid. Optional: cliff-exit pinning batch (plain 3500×6, eq 1750×3).
 
 ## OLD DIGEST (2026-06-11 evening, superseded)
 
