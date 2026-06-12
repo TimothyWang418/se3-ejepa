@@ -37,6 +37,41 @@
 
 ---
 
+## [2026-06-11] Wedge v2 verdicts — G-W1 **PASS 7/7** (first wedge gate pass); G-W2 pass-by-sign honestly deflated; the unexpected headline is a 4.2× restricted-data moat
+
+**G-W1 (C3-wedge guarantee): PASS — 7/7 stable eq runs faithful-one-sided on ho_out** (quorum 4
+met at 7; canonical semantics; 0 anticonservative cells). With E0.3's 30/30 shapes, the
+certificate's guarantee now holds under BOTH geometry-OOD and group-pose-OOD evaluation.
+*"Certificate as guarantee" is the most replicated result of the project.*
+
+**G-W2 (C1b-prelim sign gate): PASS as registered — and we deflate it ourselves.** Medians: eq
+1.017 [1.000, 1.023] vs plain 1.025 [1.004, 1.052]. The sign is right but Δ = 0.008 with
+overlapping CI90s; the pre-registered prediction said "both ≈ 1 ⇒ C1b-prelim refuted in
+substance at this κ" — that reading applies. **We do not claim C1b 经由 out/in ratios.** The
+out/in degradation ratio is simply not an observable where equivariance pays in this regime
+(eq_ctrl, trained on LEAKY angles, also sits at 1.029 — everything generalizes out-wedge).
+
+**Orbit transport, n=7: all within 4.1%** (ratios 0.959–1.026) — Lemma-2 orbit-constancy
+through the pixel pipeline, now at 7-run replication. Banked as a §C1 instrument result.
+
+**The unexpected headline (descriptive, no gate was registered for it):** under strictly
+in-wedge training data (2606 transitions), median in-distribution δ̂:
+
+| arm | data | median δ̂ | stability |
+|---|---|---|---|
+| eq_w2 | filtered@2606 | **2.49** | 7/8 |
+| eq_ctrl | unfiltered@2606 | 3.21 | 4/4 |
+| plain_w2 | filtered@2606 | **10.54** (5/6 ≈ 10.3–10.9; one run 3.53) | 6/6 |
+| (v1 ref) plain | unfiltered@4000 | ≈ 3.8 | 6/6 |
+
+— a **4.2× moat that OPENS under data restriction** (v1 unfiltered: ~1.2×), while filtering
+*improves* eq (2.49 < 3.21; stability 7/8 vs v1's 3/6). eq is count-insensitive (ctrl ≈ v1).
+This is the 举一反三 thesis's exact prediction surfacing unprompted. plain's explosion is still
+confounded (count 4000→2606 vs restriction) ⇒ **plain_ctrl addendum registered + launched**
+(plain × unfiltered@2606 n=4, eq_ctrl's exact data): ≈3.8 ⇒ restriction kills plain (the
+structural mechanism); ≈10.5 ⇒ count (sample-efficiency moat at low N). Either way the measured
+moat stands; only the attribution moves.
+
 ## [2026-06-11] Wedge lane v1 — verdicts as registered + the design-leak diagnosis; orbit transport ≤2%; v2 registered
 
 **Verdicts (exactly as registered, no reinterpretation):**
