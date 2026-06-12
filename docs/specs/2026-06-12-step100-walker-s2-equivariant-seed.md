@@ -68,3 +68,15 @@ threshold; training loss still descending at cutoff). That is a training-adequac
 structure-vs-dense comparison — no arm differences were read. Recipe iteration, applied SYMMETRICALLY:
 epochs 400 → 5000, everything else unchanged. The 400-epoch artifact is archived as
 `step100_walker_s2_results_e400.json` (diagnostic). Gates unchanged.
+
+## Verdict (2026-06-12, as-registered)
+
+**INCONCLUSIVE-BY-LEVEL-DOMINANCE** (the G-TAME family's third branch, recorded as-is): at 5000 epochs /
+48-d latent / 60k transitions, ALL 30 cells land with certificates abstaining (28/30 CI straddling zero)
+and measured median = 1 at every ε in every arm — the scratch models never reach the precision where
+growth-vs-level competes, so the structure-vs-dense comparison never opens. G-EQ passed at its strongest
+form (eq defect literally 0.0, 10/10; dense 1.1–1.4). What the experiment DID establish: (i) **the
+dmcontrol walker is EXACTLY S₂-equivariant** (median defect 4.75e-16 — a new, citable measured fact);
+(ii) the first S₂-equivariant world model on a dmcontrol task, with float-exact tied-weight equivariance;
+(iii) the honest scaling lesson — the bridge needs TD-MPC2-scale training (GPU-days) to be meaningful.
+Escalation deferred (September decision); no paper fold beyond a possible appendix footnote.
