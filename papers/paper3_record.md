@@ -85,12 +85,19 @@
   "≥1.75× lower bound"). Figure-grade table complete at n ≥ 3 everywhere except 4000 (n=6 via
   v1 pool).
 
-**Quirk verdict (three-arm discrimination): H-C — motion-selection bias.** The low-rotation-
+**Review-pass disclosure (same day): cliff cells are PARTIALLY RANK-CORRELATED** — training
+seed and subsample are bundled per run-rank (seed=r, rng=100r): rank1 passes 4/4 counts, rank5
+fails 0/4, ranks 0/2/3/4 flip between counts. Marginal P(fail) estimates stand (zone marginal
+≈ 67%); per-cell independence must NOT be assumed; seed-vs-subsample factor separation is an
+optional registered follow-up (cheap). Figure caption must carry this.
+
+**Quirk verdict (three-arm discrimination): H-C — motion-selection bias, strongly favored
+(n=4, one outlier 4.83 disclosed; median 3.5× closer to the filtered ref than the random ref).** The low-rotation-
 matched angle-UNRESTRICTED arm lands at median δ̂ 2.648 ≈ filtered 2.49 (≠ unfiltered-random
 3.21): in-wedge-throughout windows are dynamically QUIETER windows; "filtering improves eq"
 was never about angular homogeneity. Consequence audit: the wedge-v2 moat comparison stays
 internally fair (both arms trained on the same quieter windows), but eq_w2's δ̂ improvement
-and possibly part of its stability gain are motion-bias artifacts — annotated, mystery closed.
+and possibly part of its stability gain are motion-bias artifacts — annotated; mystery closed at n=4 strength.
 
 ## [2026-06-12] CAMPAIGN D4 VERDICTS — G-P2 FAIL / G-C2 FAIL / G-C4a INCONCLUSIVE-BY-RESOLUTION; the certificate called every one of them a priori
 
