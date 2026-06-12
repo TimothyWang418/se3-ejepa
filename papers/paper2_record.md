@@ -1142,3 +1142,15 @@ venv(torch 2.2.2 是 Intel mac 终版,numpy 钉 1.26.4)+ 冒烟 9/9 过。定位
 不跑 LeWM/lancedb 重栈(无 Intel 轮子)。
 
 **待办**:step98 五籽 v2 落地 → E16 包络折叠 → arXiv 包重打(若 v1 未公告则替换)→ vault 快照同步。
+
+## [2026-06-12] C 侦察关闭(无可审计第二官方 zoo)+ step100 spec 冻结(A:桥实验)
+
+**C(第二家族复证轴修正)侦察终判:NO-GO**——DreamerV3 无官方 ckpt(danijar repo 零 release,HF 仅
+零下载社区残片,官方工件主张不可建);IRIS/DIAMOND 官方 ckpt 存在(eloialonso HF)但 token/扩散 WM
+非 C¹ 确定性潜环,雅可比无定义——**落在证书管辖权外**(此范围声明可入 wm-audit 文档:"families
+surveyed 2026-06")。轴修正保持 TD-MPC2-zoo 范围 + LeWM/V-JEPA 单模型旁证的诚实框架。
+
+**A(step100,walker S₂ 桥实验)spec 已冻结**:`docs/specs/2026-06-12-step100-walker-s2-equivariant-seed.md`
+——双腿交换 S₂ 对称、三臂(eq/dense/dense+aug)×10 籽、step89 机器原封审计、G-EQ/G-SYM/G-CAL/G-TAME
+预注册(含 INCONCLUSIVE-BY-TAMENESS 诚实出口)。定位:补"结构⇒先验可信"与"zoo⇒须交叉验证"之间
+的桥,E17 + 附录,9 月润色期若页预算允许才进主文。
