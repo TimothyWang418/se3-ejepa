@@ -48,6 +48,7 @@ class VNJEPA(nn.Module):
         super().__init__()
         self.encoder = VNDGCNNEncoder(c_vec=C_VEC, k=K_NN, width=WIDTH)
         self.predictor = VNPredictor(C_VEC, 3 * C_VEC, a_inv_dim=1)
+        self.latent_dim = self.encoder.latent_dim          # train_jepa aux head sizing
 
 
 def load_shards() -> tuple[list, list, list]:
