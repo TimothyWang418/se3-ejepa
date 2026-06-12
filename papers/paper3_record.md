@@ -37,6 +37,29 @@
 
 ---
 
+## [2026-06-12] MPS registered verdicts — **C3-guar PASS confirmed on the registered instrument**; cross-device concordance complete; C3's verdict pair CLOSES
+
+**MPS arm (the registered evaluation):** champ stable 8/10, **C3-guar PASS 8/8**, C3-cal FAIL
+(3/8); plainc stable 10/10, **C3-guar PASS 10/10**, C3-cal FAIL (4/10). xy: champ 0.317 /
+plainc 0.671 — the high-N content inversion replicates on the registered device.
+
+**Cross-device concordance (the replication arm's purpose, delivered):**
+
+| | MPS (registered) | CUDA (replication) |
+|---|---|---|
+| champ guar | PASS 8/8 | PASS 10/10 |
+| plainc guar | PASS 10/10 | PASS 10/10 |
+| cal | FAIL conservative | FAIL conservative |
+| xy inversion | 0.671 > 0.317 | 0.689 > 0.421 |
+
+**38/38 qualifying runs faithful-one-sided across two devices, two architectures, fresh data,
+canonical semantics.** C3's verdict pair is CLOSED: *certificate-as-guarantee PASSES at full
+registration; certificate-as-point-estimate is conservative (cal FAIL, direction measured).*
+Combined with E0.3 (shape-OOD 30/30) and wedge G-W1 (pose-OOD 7/7): the guarantee claim now
+rests on 75 qualifying runs/audits without a single anticonservative cell outside the
+self-scaled-degenerate disclosure. Remaining champion-program item: candidate stage-B (mid-run)
+for the swap decision — a recipe choice, not a C3 question.
+
 ## [2026-06-12] θ-probe: **C2 UNBLOCKED** (cand θ-R² 0.961) + the θ-moat does NOT invert at high N (plain 0.292) — the group coordinate is equivariant-only
 
 **Probe (ridge, cos/sin θ_block, c2000 held-out, EMA-target latents, 5 pairs/arm):**
