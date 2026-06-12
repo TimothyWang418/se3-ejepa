@@ -31,7 +31,22 @@
    "std": 1.0483582019805908,
    "xy": 0.20701865124997287,
    "stable": true
+  },
+  "aux10d_r2": {
+   "std": 0.9975045323371887,
+   "xy": 0.30647665516106115,
+   "stable": true
+  },
+  "aux10d_r3": {
+   "std": 0.33446356654167175,
+   "xy": 0.046597584294518324,
+   "stable": false
   }
  },
- "elapsed_min": 21.2
+ "elapsed_min": 27.9,
+ "verdict": {
+  "aux7d": "2/4",
+  "aux10d": "3/4",
+  "hypothesis": "SUPPORTED"
+ }
 }

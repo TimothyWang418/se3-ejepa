@@ -18,6 +18,12 @@
    "xy": -0.9414609382366774,
    "stable": true,
    "in_delta": 10.174
+  },
+  "plain_mc_r3": {
+   "std": 1.0446857213974,
+   "xy": -0.6064345173324985,
+   "stable": true,
+   "in_delta": 11.969
   }
  },
  "timing": {
@@ -27,5 +33,20 @@
   "plain_epochs_matched": 171,
   "capped": false
  },
- "elapsed_min": 23.2
+ "elapsed_min": 29.2,
+ "readout": {
+  "deltas": [
+   5.299,
+   10.174,
+   11.969,
+   12.071
+  ],
+  "ref_plain_40ep": [
+   4.23,
+   7.99,
+   10.66,
+   10.89
+  ],
+  "verdict": "compute does NOT rescue"
+ }
 }

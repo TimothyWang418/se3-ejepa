@@ -73,6 +73,21 @@
 
 ---
 
+## [2026-06-12] Holes #2/#5 land — both registered predictions HIT: compute does not rescue plain (claim 4 armored); the non-Markov anchoring hypothesis survives falsification (claim 9 ↑)
+
+**#2 matched-compute moat row:** measured wall-time ratio bound the match; plain at
+compute-matched epochs lands δ̂ = [5.30, 10.17, 11.97, 12.07] @2606 — still the failure regime
+(40-epoch ref [4.23, 7.99, 10.66, 10.89]; if anything slightly worse — low-N overtraining).
+**The low-N reliability moat is structural, not a compute artifact.** The standard reviewer
+attack on claim 4 is pre-empted with data.
+
+**#5 κ=0.8 10-d anchor falsification:** aux7d **2/4** vs aux10d **3/4** stable — the registered
+rule (10d ≥ 3/4 ∧ 7d ≤ 2/4) fires: **hypothesis SUPPORTED at n=4.** Momentum-complete anchoring
+restores the stability the 7-d anchor destroys; the dose-ordered inversion now has a mechanism
+that survived one falsification attempt. Claim 9 upgrades C → B- (language: "supported by a
+registered falsification test at n=4"). Practical: the C1a lane's recipe candidate becomes
+**winner_v02 OR aux0.5+10-d** — to be settled when C1a treatment starts.
+
 ## [2026-06-12] Skeleton-hole batch — cal factor is single-scalar correctable (claim 2 ↑); θ-moat at full n (claim 5 ↑); holes #2/#5 launched with registered predictions
 
 **Hole #3 (cal-conservatism factor, pure analysis of existing artifacts):** 47 runs / 171
