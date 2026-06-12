@@ -37,6 +37,26 @@
 
 ---
 
+## [2026-06-12] θ-probe: **C2 UNBLOCKED** (cand θ-R² 0.961) + the θ-moat does NOT invert at high N (plain 0.292) — the group coordinate is equivariant-only
+
+**Probe (ridge, cos/sin θ_block, c2000 held-out, EMA-target latents, 5 pairs/arm):**
+cand median **0.961** [0.92–0.971]; champ 0.913 (the aux full-state anchor was delivering θ all
+along); **plainc 0.292** [0.224–0.342]. Two consequences:
+1. **C2's θ-readability blocker is GONE** — θ* elicitation experiments are GO on cand (or
+   champ) pairs. The night-shift "θ-only anchor backfires" verdict stands; the fix was the
+   FULL-state anchor (θ rides along with xy).
+2. **On the same models where xy inverted at high N (plainc 0.689 > champ 0.421), θ did NOT
+   invert** — at 40k transitions plain still cannot read the block orientation. Position is
+   learnable with data; **the group coordinate itself stays equivariant-only**. Cleanest
+   thesis-aligned axis yet. Fairness check launched (MLP probe on plainc latents — if
+   nonlinear probing also fails, the deficit is representational, not probe-linearity).
+
+**Saturation deployments (same review pass):** low-N figure batch on the 3080 (plain
+{2800,3000,3200}×n=6 + eq {1500,2000}×n=3 — P(fail)-vs-N densification; GPU-light, nice-10,
+paper2-priority lock note); θ-fairness MLP probe on Mac CPU; κ=0.8 recipe-rescue sweep QUEUED
+behind paper2's box batch (C1a unlock attempt with the modern recipe family — the one
+"fine-tuning" worth doing, hypothesis-driven).
+
 ## [2026-06-12] CUDA arm full verdicts — **C3-guar PASS (first complete legal evaluation)**; C3-cal FAIL conservative; the two-regime moat story completes
 
 **Verdicts (CUDA replication arm, all-fresh n=10×2, c2000, registered gates, canonical
