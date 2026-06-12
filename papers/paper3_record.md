@@ -27,6 +27,29 @@
 
 ---
 
+## [2026-06-11] E0.3 shape-generalization audits (CPU batch v2) — certificate one-sidedness holds OOD on all 4 unseen shapes, 30/30
+
+**Setup (as declared):** ckpt7 stable Stage-B pairs (eq r0/r1/r3, plain r0/r1/r2; all T-trained),
+audited on held-out episodes of 4 never-seen block shapes {L, Z, square, +} + on-T reference
+(30 eps each; shape pinned via the autopsy-fixed `variation_values` API, render-diff guarded).
+
+**Verdicts:**
+- **One-sided (C3-guar-style) on OOD shapes: 30/30 ✓** — every pair × every shape, the certified
+  q90 boundary never exceeds the measured one. *The certificate-as-guarantee property survives
+  object-geometry OOD.* (C1b-adjacent free evidence; the wedge lane tests the group-theoretic
+  version of the same claim.)
+- **δ̂ is nearly flat across shapes (eq):** r0 3.18(T) → 3.41(L) / 3.46(Z) / 3.17(sq) / 4.14(+)
+  — worst-case +30% on the most dissimilar shape ('+'); same pattern r1/r3. The certificate's
+  load-bearing input barely notices geometry it has never seen.
+- **Moat is distributional, not uniform, OOD too:** plain r0/r2 sit at δ̂ 8.2–9.7 across shapes
+  (2.4–2.9× eq), but the known good plain seed (r1) reaches 3.8–4.5 ≈ eq levels — consistent
+  with the 5-run moat spread [3.79, 1.10, 2.73]; report as distribution, never as a single ×.
+
+**Parallel read, aux-health n=10 (MPS lane 2, in progress):** the night-shift "content star"
+family at real n — aux0.3_v0.15 so far **stable 1/6** (n=3's 3/3 was small-sample flattery; the
+exact failure the v1.6 n-upgrade exists to catch) while non-collapsed runs hit **xy 0.60–0.90**
+(champion ≈ 0.4). The stability–content trade-off is now a measured curve, not an anecdote.
+
 ## [2026-06-11] 3D lane G0 — ALL GATES PASS on the 3080; contracts banked, plumbing validated end-to-end
 
 **Model gates (V-I..V-VI, run on Mac CPU AND box/cu124, identical):** VN equivariance at
