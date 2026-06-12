@@ -49,6 +49,21 @@ generally). Failed runs are NOT collapsed: std 0.94–1.32 healthy, xy probe ≤
 Paper figure material: P(fail) vs N for plain, eq at 0% — the moat as a reliability cliff, not
 just a mean shift. CUDA throughput note: plain cells ≈ 3.5 min/run on the 3080.
 
+**Review-pass amendments (same night, before champion verdicts):**
+1. *Device-mixing caveat:* the curve's refs (2606/4000) ran on Mac/MPS, the probe points
+   (3000/3500) on the 3080/CUDA. Same-recipe champ rows measure the cross-device δ̂ shift at
+   ≈ 20% (MPS median 3.06 vs CUDA 2.51) — small against the 3× cliff gap, so the qualitative
+   conclusion stands; exact cliff location carries a device error bar.
+2. *Taxonomy attribution softened:* ALL low-N plain runs have weak/negative positional content
+   (plain_ctrl xy ∈ [−0.89, −0.29], including the good-δ̂ run at −0.35); the δ̂↔content link is
+   noisy at n=4. "stable-but-empty" assignment is TENTATIVE, not established.
+3. *Degenerate-run disclosure queued for the champion verdict entry:* one CUDA champ run sits
+   at δ̂ = 14.08 (≈ 5× arm median), stable, guar-✓ **vacuously** (cells ≈ (0,0) everywhere).
+   As-registered it counts; verdict entry must footnote it (9/9 without it — verdict unchanged)
+   and bank the positive reading: **the certificate returns $H^*(\epsilon) = 0$ for a
+   degenerate model — refusing to certify the unpredictive is the mechanism working**, i.e. a
+   runtime detector for the stable-but-empty failure class.
+
 ## [2026-06-11] plain_ctrl attribution: COUNT, not restriction — the moat is a **low-N data-efficiency moat**; champion champ-side complete: 18/18 faithful guar across two devices
 
 **plain_ctrl (plain × unfiltered@2606, eq_ctrl's exact data, n=4):** 4/4 stable, in-δ̂ =
