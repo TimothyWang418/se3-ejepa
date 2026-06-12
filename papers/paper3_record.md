@@ -73,6 +73,25 @@
 
 ---
 
+## [2026-06-12] Cliff-exit pinning + quirk verdict — plain's failure zone extends THROUGH 3500 (the n=2 luck suspicion vindicated); the wedge "filtering benefit" was motion-selection bias (H-C)
+
+**Cliff exits (Mac MPS, protocol = cliff-probe verbatim):**
+- **plain @3500: 5/6 FAIL** (δ̂ 7.7–10.9; one run 3.16) — the earlier "3500: 0/2 clean" was
+  sampling luck, exactly as the registered thin-n caveat suspected. Updated P(fail): 2606 8/10
+  → 2800 5/6 → 3000 3/6 → 3200 4/6 → **3500 5/6** → 4000 ~1/6. The bimodal zone spans
+  ~2600–3500+ with P(fail) ≈ 0.5–0.8 throughout; the exit lies in (3500, 4000).
+- **eq @1750: 1/3 fail** (8.77) — eq's zone spans at least (1500, 1750); entry in (1750, 2000)
+  (2000: 0/3). **Safe-threshold ratio firms up: eq ≈ 2000 vs plain ≈ 4000 ⇒ ≈ 2.0×** (was
+  "≥1.75× lower bound"). Figure-grade table complete at n ≥ 3 everywhere except 4000 (n=6 via
+  v1 pool).
+
+**Quirk verdict (three-arm discrimination): H-C — motion-selection bias.** The low-rotation-
+matched angle-UNRESTRICTED arm lands at median δ̂ 2.648 ≈ filtered 2.49 (≠ unfiltered-random
+3.21): in-wedge-throughout windows are dynamically QUIETER windows; "filtering improves eq"
+was never about angular homogeneity. Consequence audit: the wedge-v2 moat comparison stays
+internally fair (both arms trained on the same quieter windows), but eq_w2's δ̂ improvement
+and possibly part of its stability gain are motion-bias artifacts — annotated, mystery closed.
+
 ## [2026-06-12] CAMPAIGN D4 VERDICTS — G-P2 FAIL / G-C2 FAIL / G-C4a INCONCLUSIVE-BY-RESOLUTION; the certificate called every one of them a priori
 
 **Verdicts (as registered, canonical semantics, D1-frozen bindings):**

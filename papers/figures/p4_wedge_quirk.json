@@ -1,0 +1,39 @@
+{
+ "refs": {
+  "eq_filtered_2606": 2.49,
+  "eq_unfiltered_2606": 3.21
+ },
+ "arm": "low-rotation-matched, angle-unrestricted",
+ "cells": {
+  "lowrot_r0": {
+   "std": 0.9242423176765442,
+   "xy": 0.6039952120064074,
+   "stable": true,
+   "in_delta": 2.687
+  },
+  "lowrot_r1": {
+   "std": 0.9460338354110718,
+   "xy": 0.5573772216074024,
+   "stable": true,
+   "in_delta": 2.483
+  },
+  "lowrot_r2": {
+   "std": 1.304783582687378,
+   "xy": 0.6155311608677878,
+   "stable": true,
+   "in_delta": 2.609
+  },
+  "lowrot_r3": {
+   "std": 1.1282734870910645,
+   "xy": 0.11870408190134596,
+   "stable": true,
+   "in_delta": 4.834
+  }
+ },
+ "selected_dtheta_q90_deg": 3.35,
+ "elapsed_min": 9.7,
+ "readout": {
+  "median": 2.648,
+  "verdict": "H-C (motion bias)"
+ }
+}
