@@ -37,6 +37,36 @@
 
 ---
 
+## [2026-06-12] CUDA arm full verdicts — **C3-guar PASS (first complete legal evaluation)**; C3-cal FAIL conservative; the two-regime moat story completes
+
+**Verdicts (CUDA replication arm, all-fresh n=10×2, c2000, registered gates, canonical
+semantics):**
+- **champ: stable 10/10, C3-guar PASS 10/10, C3-cal FAIL (3/10 in band)** — xy_mean 0.421.
+- **plainc: stable 10/10, C3-guar PASS 10/10, C3-cal FAIL (2/10)** — xy_mean 0.689.
+- Calibration failure direction confirmed conservative: median evaluable ratio 0.67, 37% of
+  cells below 0.5. **The registered narrative lands: certificate-as-guarantee PASSES at full
+  n, certificate-as-point-estimate is conservative** (G-pre's 2.3–2.7× rate conservatism
+  compounding through horizons, as expected).
+
+**Degenerate-run disclosure (corrects the queued note):** champ_r0 δ̂ = 14.1 (≈ 5× arm
+median), std 0.89, xy −0.41 (content-empty). Its guar cells are **exact ties** (1,1) (3,3)
+(6,6) (8,8) — NOT (0,0): because ε cells scale with each run's OWN δ̂, a degenerate model is
+self-consistently "certified" against its own huge errors. Verdict robust without it (9/9).
+**Methodological note registered: self-scaled ε cells cannot surface degeneracy; task-fixed ε
+(C4's θ*-elicited budgets) is where a junk model correctly collapses to $H^* = 0$.** (The
+earlier "H*=0 refusal" reading applies under task-fixed ε only.)
+
+**The data-regime inversion (with the cliff entry, the moat story is now complete):** at c2000
+(40k transitions) plainc BEATS champ on content (0.689 vs 0.421) and normalized δ̂ (0.241 vs
+0.349) — deep in plain's data-rich regime, structure pays nothing. Combined with the cliff
+(plain reliability collapses below ~3000 transitions; eq flat): **the equivariance moat is a
+LOW-DATA moat, vanishing (even mildly inverting) at high N** — Brehmer 2410.23179-consistent,
+must-cite link at writing time. This is the honest, two-regime version of H1 — and the version
+the 举一反三 thesis actually predicts.
+
+**Cross-device note:** CUDA stability 20/20 overall (champ+plainc) vs MPS 8/10 champ-side —
+the MPS stability tax is real and worth a sentence in the experimental setup section.
+
 ## [2026-06-12] plain's cliff located: ~3000 ± 300 transitions, BIMODAL at the boundary; failure mode = stable-but-empty (existing taxonomy)
 
 Cliff probe (3080/CUDA, 14 min, counts {3000, 3500} × n=2 + refs): plain in-δ̂ curve over
