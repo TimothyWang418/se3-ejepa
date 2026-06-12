@@ -34,11 +34,12 @@ from src.training.jepa import train_jepa  # noqa: E402
 
 T0 = time.time()
 DEVICE = os.environ.get("P4_DEVICE") or ("cuda" if torch.cuda.is_available() else "cpu")
-N_RUNS = 6
+RUNS = [int(x) for x in os.environ.get("P4_RUNS", "0 1 2 3 4 5").split()]
+TAG = os.environ.get("P4_TAG", "")
 RECIPE = dict(ema_decay=0.99, var_coef=0.3, aux_coef=0.5)
 C_VEC, K_NN, WIDTH = 32, 16, 64
 CORPUS_DIR = ROOT / "data" / "p4_3d"
-OUT = ROOT / "papers" / "figures" / "p4_3d_g2.json"
+OUT = ROOT / "papers" / "figures" / f"p4_3d_g2{TAG}.json"
 
 
 class VNJEPA(nn.Module):
@@ -86,7 +87,7 @@ def probe_r2(z: torch.Tensor, y: torch.Tensor) -> float:
 
 def main() -> int:
     art: dict = {"recipe": str(RECIPE), "arch": f"c_vec={C_VEC},k={K_NN},w={WIDTH}",
-                 "device": DEVICE, "cells": {}}
+                 "device": DEVICE, "runs": RUNS, "cells": {}}
 
     def save():
         art["elapsed_min"] = round((time.time() - T0) / 60, 1)
@@ -100,7 +101,7 @@ def main() -> int:
     art["n_transitions"] = int(obs.shape[0])
     save()
 
-    for r in range(N_RUNS):
+    for r in RUNS:
         try:
             torch.manual_seed(r)
             m = VNJEPA()
@@ -130,7 +131,7 @@ def main() -> int:
               f"({cell.get('train_min')}min) {cell.get('error', '')[:60]}")
 
     ok = [c for c in art["cells"].values() if c.get("stable_provisional")]
-    art["stage_A"] = {"stable_provisional": f"{len(ok)}/{N_RUNS}",
+    art["stage_A"] = {"stable_provisional": f"{len(ok)}/{len(RUNS)}",
                       "tcp_r2": sorted(round(c["tcp_r2"], 3) for c in ok if "tcp_r2" in c),
                       "note": "VN floor calibration TBD on these distributions (A2)"}
     save()
