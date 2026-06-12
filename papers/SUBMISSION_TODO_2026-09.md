@@ -36,3 +36,12 @@
 ## 装饰项(2026-06-11 增)
 - [ ] 运行页眉在 pandoc×iclr-sty 管线下两个分支都不渲染(提交版无 "Under review..."、arXiv 版无 "Preprint.")——
       虚假声明零出现故安全;9 月模板换代时顺手查 fancyhdr 与 pandoc 模板的 pagestyle 冲突。
+
+
+## lit 终扫增补名单(2026-06-12,来源:vault wiki 增援清单)
+
+- PoR(arXiv:2606.07687)→ §1 一句("像素是错误抽象层"最系统第三方实证;Dreamer 4 动作 R²≈0)
+- ATM(arXiv:2606.09028)→ related work 一句(免仿真诊断同道,正交可组合)
+- WEAVER(arXiv:2606.13672)→ related work 借力:三 desiderata 之外 "the fourth desideratum is certifiability"
+- WM Tutorial(arXiv:2606.12783)→ §2 背景一句:显式/隐式二分,证书化 latent WM 横跨缝隙
+- 配套 rebuttal 弹药 A14–A19 已入 REBUTTAL_PREP(2026-06-12)
