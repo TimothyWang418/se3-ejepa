@@ -17,3 +17,9 @@ def test_merged_margins_n20_all_win():
     assert abs(np.median(m) - d["median"]) < 1e-12
     lo, hi = d["ci95_median"]
     assert lo > 0.45 and hi < 0.56                      # the cited bootstrap CI [0.48, 0.54]
+
+
+def test_step85c_recalibration_closes_n10():
+    d = json.loads((ROOT / "papers/figures/step85c_n10_merged.json").read_text())
+    assert d["n_seeds"] == 10 and d["gap_closed_count"] == 10
+    assert 0.4 <= d["raw_gap_med"] <= 0.6 and abs(d["recal_gap_med"]) < 0.12

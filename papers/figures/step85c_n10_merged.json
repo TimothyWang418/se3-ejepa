@@ -1,0 +1,127 @@
+{
+ "n_seeds": 10,
+ "per_seed": {
+  "0": {
+   "iv_conv": 75,
+   "iv_mlp": 28,
+   "iv_mlp_recal": 70,
+   "conv_viol": 0.128,
+   "mlp_raw_viol": 0.6146666666666667,
+   "mlp_recal_viol": 0.108,
+   "raw_gap": 0.4866666666666667,
+   "recal_gap": -0.020000000000000004,
+   "gap_closed": true
+  },
+  "1": {
+   "iv_conv": 81,
+   "iv_mlp": 29,
+   "iv_mlp_recal": 73,
+   "conv_viol": 0.118,
+   "mlp_raw_viol": 0.604,
+   "mlp_recal_viol": 0.15933333333333333,
+   "raw_gap": 0.486,
+   "recal_gap": 0.04133333333333333,
+   "gap_closed": true
+  },
+  "2": {
+   "iv_conv": 71,
+   "iv_mlp": 24,
+   "iv_mlp_recal": 64,
+   "conv_viol": 0.05466666666666667,
+   "mlp_raw_viol": 0.632,
+   "mlp_recal_viol": 0.06733333333333333,
+   "raw_gap": 0.5773333333333334,
+   "recal_gap": 0.01266666666666666,
+   "gap_closed": true
+  },
+  "3": {
+   "iv_conv": 64,
+   "iv_mlp": 28,
+   "iv_mlp_recal": 68,
+   "conv_viol": 0.03333333333333333,
+   "mlp_raw_viol": 0.528,
+   "mlp_recal_viol": 0.07933333333333334,
+   "raw_gap": 0.4946666666666667,
+   "recal_gap": 0.046000000000000006,
+   "gap_closed": true
+  },
+  "4": {
+   "iv_conv": 89,
+   "iv_mlp": 27,
+   "iv_mlp_recal": 74,
+   "conv_viol": 0.14066666666666666,
+   "mlp_raw_viol": 0.6753333333333333,
+   "mlp_recal_viol": 0.21733333333333332,
+   "raw_gap": 0.5346666666666666,
+   "recal_gap": 0.07666666666666666,
+   "gap_closed": true
+  },
+  "5": {
+   "iv_conv": 78,
+   "iv_mlp": 27,
+   "iv_mlp_recal": 64,
+   "conv_viol": 0.04133333333333333,
+   "mlp_raw_viol": 0.6026666666666667,
+   "mlp_recal_viol": 0.13666666666666666,
+   "raw_gap": 0.5613333333333334,
+   "recal_gap": 0.09533333333333333,
+   "gap_closed": true
+  },
+  "6": {
+   "iv_conv": 88,
+   "iv_mlp": 30,
+   "iv_mlp_recal": 89,
+   "conv_viol": 0.16133333333333333,
+   "mlp_raw_viol": 0.616,
+   "mlp_recal_viol": 0.18533333333333332,
+   "raw_gap": 0.45466666666666666,
+   "recal_gap": 0.023999999999999994,
+   "gap_closed": true
+  },
+  "7": {
+   "iv_conv": 92,
+   "iv_mlp": 25,
+   "iv_mlp_recal": 64,
+   "conv_viol": 0.12333333333333334,
+   "mlp_raw_viol": 0.6986666666666667,
+   "mlp_recal_viol": 0.27066666666666667,
+   "raw_gap": 0.5753333333333334,
+   "recal_gap": 0.14733333333333332,
+   "gap_closed": true
+  },
+  "8": {
+   "iv_conv": 81,
+   "iv_mlp": 34,
+   "iv_mlp_recal": 60,
+   "conv_viol": 0.13333333333333333,
+   "mlp_raw_viol": 0.5333333333333333,
+   "mlp_recal_viol": 0.24,
+   "raw_gap": 0.4,
+   "recal_gap": 0.10666666666666666,
+   "gap_closed": true
+  },
+  "9": {
+   "iv_conv": 80,
+   "iv_mlp": 27,
+   "iv_mlp_recal": 62,
+   "conv_viol": 0.06666666666666667,
+   "mlp_raw_viol": 0.644,
+   "mlp_recal_viol": 0.19,
+   "raw_gap": 0.5773333333333334,
+   "recal_gap": 0.12333333333333334,
+   "gap_closed": true
+  }
+ },
+ "gap_closed_count": 10,
+ "raw_gap_med": 0.5146666666666666,
+ "raw_gap_range": [
+  0.4,
+  0.5773333333333334
+ ],
+ "recal_gap_med": 0.06133333333333334,
+ "recal_gap_range": [
+  -0.020000000000000004,
+  0.14733333333333332
+ ],
+ "provenance": "lanes A(seeds 0-4 box main)+B(seeds 5-9 box lane2), merged 2026-06-12"
+}

@@ -1,0 +1,62 @@
+{
+ "design": "plain recipe x UNFILTERED@2606 (eq_ctrl's exact data), n=4",
+ "cells": {
+  "plain_ctrl_r0": {
+   "std": 1.0135645866394043,
+   "delta": 10.885253851910432,
+   "xy": -0.8920871447785523,
+   "stable": true,
+   "in": {
+    "delta": 10.885
+   },
+   "out": {
+    "delta": 10.93
+   },
+   "out_in_ratio": 1.004
+  },
+  "plain_ctrl_r1": {
+   "std": 1.5776331424713135,
+   "delta": 4.226605706612269,
+   "xy": -0.34709937881711483,
+   "stable": true,
+   "in": {
+    "delta": 4.227
+   },
+   "out": {
+    "delta": 4.351
+   },
+   "out_in_ratio": 1.029
+  },
+  "plain_ctrl_r2": {
+   "std": 1.2030341625213623,
+   "delta": 7.990896802842617,
+   "xy": -0.29333418850731485,
+   "stable": true,
+   "in": {
+    "delta": 7.991
+   },
+   "out": {
+    "delta": 8.0
+   },
+   "out_in_ratio": 1.001
+  },
+  "plain_ctrl_r3": {
+   "std": 0.9398456811904907,
+   "delta": 10.659674407144388,
+   "xy": -0.6121987037935743,
+   "stable": true,
+   "in": {
+    "delta": 10.66
+   },
+   "out": {
+    "delta": 10.75
+   },
+   "out_in_ratio": 1.008
+  }
+ },
+ "elapsed_min": 6.7,
+ "readout": {
+  "median_in_delta": 9.33,
+  "attribution": "COUNT (data lever at low N)"
+ }
+}
