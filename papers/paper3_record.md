@@ -73,6 +73,22 @@
 
 ---
 
+## [2026-06-12] Skeleton-hole batch — cal factor is single-scalar correctable (claim 2 ↑); θ-moat at full n (claim 5 ↑); holes #2/#5 launched with registered predictions
+
+**Hole #3 (cal-conservatism factor, pure analysis of existing artifacts):** 47 runs / 171
+evaluable cells: ratio median 0.667, **cross-run CV 0.20** — a single scalar λ = 1.50 brings
+**93% of cells into the calibration band** (from 70%). Claim 2 upgrades: *conservative with a
+stable, single-scalar-correctable factor* (descriptive; no gate was registered — stated as
+analysis, candidate for a registered confirmation on future fresh runs).
+
+**Hole #4 (θ-probe, full n):** cand 9 pairs median 0.946 [0.911, 0.971]; champ 8 pairs 0.928;
+plainc 10 pairs 0.285 [0.224, 0.342] — **zero distribution overlap**. Claim 5 now at full n.
+
+**Hole #2 (matched-compute moat row, running):** prediction registered — low-N failure is
+structural; plain at wall-time-matched epochs stays in the failure regime. **Hole #5 (κ=0.8
+10-d anchor, running):** prediction registered — momentum-complete anchor restores stability
+(10-d ≥ 3/4 vs 7-d ≤ 2/4) else the non-Markov hypothesis is refuted.
+
 ## [2026-06-12] Cliff-exit pinning + quirk verdict — plain's failure zone extends THROUGH 3500 (the n=2 luck suspicion vindicated); the wedge "filtering benefit" was motion-selection bias (H-C)
 
 **Cliff exits (Mac MPS, protocol = cliff-probe verbatim):**
