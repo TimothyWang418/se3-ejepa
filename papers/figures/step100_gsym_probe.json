@@ -1,0 +1,9 @@
+{
+ "n_states": 200,
+ "defect_median": 4.745536033363293e-16,
+ "defect_p90": 2.325975018538839e-15,
+ "defect_max": 1.4646814353939332e-14,
+ "abs_median": 1.1449874702822136e-14,
+ "verdict_exact": true,
+ "gate": "G-SYM: epsilon_world = median defect; <0.05 required for the exact-symmetry reading"
+}
