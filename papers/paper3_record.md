@@ -73,6 +73,28 @@
 
 ---
 
+## [2026-06-12] D2 mid-run diagnostic — planner < random; truth replays 10/10; the SNR analysis says the certificate's H*=1 was the warning
+
+**Observed (r6, first pair):** all planner rows reach ≈ 0.033, zero 0.0, random 0.133 —
+selection by predicted cost UNDERPERFORMS random. **Diagnostic chain (run while D2 continues):**
+1. Ground-truth replay from identical resets: **10/10 reach** (distances 0.28–4.58 vs ε_reach
+   4.98) — pipeline (reset/index/metric/encode) exonerated; targets genuinely reachable.
+2. Coherent-parametrization CEM (per-chunk constant 2-d direction, matching WeakPolicy's
+   within-chunk structure): **1/10 ≈ random** — the incoherence hypothesis is NOT the cause.
+3. **SNR analysis (the actual mechanism):** motion windows move ‖Δz‖ ≈ 4δ̂ over 8 chunks ⇒
+   per-chunk signal ≈ 1.25; per-chunk model error δ̂ ≈ 2.5 ⇒ **planning-timescale SNR ≈ 0.5** —
+   CEM candidate differences are noise-dominated; argmin over noise ≈ random with a do-little
+   bias. Budget bumps would optimize noise more precisely (contingency clause correctly NOT
+   invoked — this is not CEM-side failure, it is model-side infeasibility).
+
+**The reframe this licenses (registered before D2 completes):** $H^*(\epsilon_{\mathrm{reach}})
+= 1$ across pairs was the certificate REFUSING multi-chunk tracking at this precision — and
+reality agrees. G-P2 heads to an honest FAIL; the deeper testable claim becomes **certificate
+as planning-feasibility GO/NO-GO** (C4's degeneracy detection generalized to precision): if
+reach competence orders by each pair's ε_reach/δ̂ headroom across the 9 pairs (r8 largest),
+the certificate's ORDERING predicts planner feasibility a priori. Cross-pair correlation to be
+read at D4 — declared now, before the remaining pairs' data exists.
+
 ## [2026-06-12] Campaign D1 frozen (two estimator iterations + tolerance ladder, all pre-D2)
 
 **Bindings (frozen in `p4_campaign_d1.json`):** τ = (20 env-units, π/9) verbatim from the env's
