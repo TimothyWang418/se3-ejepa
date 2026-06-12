@@ -37,6 +37,27 @@
 
 ---
 
+## [2026-06-11] plain_ctrl attribution: COUNT, not restriction — the moat is a **low-N data-efficiency moat**; champion champ-side complete: 18/18 faithful guar across two devices
+
+**plain_ctrl (plain × unfiltered@2606, eq_ctrl's exact data, n=4):** 4/4 stable, in-δ̂ =
+[4.23, 7.99, 10.66, 10.89], median 9.33 ⇒ the registered branch **"COUNT (data lever at low
+N)"** fires. plain explodes at 2606 transitions with or without the wedge restriction
+(filtered 10.54 / unfiltered 9.33); at 4000 it sits at ≈ 3.8. eq is flat across all of it
+(2.49–3.29). **Relabel: the 4.2× moat is a low-N data-efficiency moat** — halve the data, eq
+doesn't notice, plain breaks. This is the 举一反三 thesis in its purest measured form so far
+(structure ⇒ sample efficiency), found by an experiment designed to test something else.
+Restriction is innocent; v2's filtering even *helps* eq (2.49 < 3.21 — registered as a quirk,
+mechanism unknown). Open probe (EMP queue): locate plain's cliff in (2606, 4000) — cheap n=2
+cells per point; backup-MacBook-able.
+
+**Champion confirmation, champ side complete both arms (plainc control rows still running):**
+- MPS (registered eval): stable 8/10, **faithful guar 8/8**; stable-xy spread [0.10, 0.63] —
+  content variance remains the recipe's weak axis, irrelevant to C3-guar.
+- CUDA (replication arm): stable **10/10**, **faithful guar 10/10** — and CUDA training is
+  measurably more stable than MPS (10/10 vs 8/10), consistent with the MPS-nondeterminism
+  stability tax hypothesis. **Cross-device: 18/18 qualifying runs faithful-one-sided.**
+  C3-guar's champ side cannot fail from here; full verdicts await the plainc rows.
+
 ## [2026-06-11] Wedge v2 verdicts — G-W1 **PASS 7/7** (first wedge gate pass); G-W2 pass-by-sign honestly deflated; the unexpected headline is a 4.2× restricted-data moat
 
 **G-W1 (C3-wedge guarantee): PASS — 7/7 stable eq runs faithful-one-sided on ho_out** (quorum 4
