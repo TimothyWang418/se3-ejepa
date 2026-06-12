@@ -37,6 +37,18 @@
 
 ---
 
+## [2026-06-12] plain's cliff located: ~3000 ± 300 transitions, BIMODAL at the boundary; failure mode = stable-but-empty (existing taxonomy)
+
+Cliff probe (3080/CUDA, 14 min, counts {3000, 3500} × n=2 + refs): plain in-δ̂ curve over
+transitions = 2606: [9.33, 10.54] → **3000: [10.6, 3.51] (one run per regime)** → 3500: [3.49,
+3.32] → 4000: [3.8]. The data-efficiency failure is a **sharp, run-stochastic transition**:
+below ~2700 plain fails ~8/10 runs, at 3000 ~1/2, above ~3500 ~0/2 — a failure-probability
+curve vs N, while **eq sits flat at δ̂ ≈ 2.5–3.2 down to 2606** (and is fine at 200-ep scale
+generally). Failed runs are NOT collapsed: std 0.94–1.32 healthy, xy probe ≤ −0.37 ⇒
+**stable-but-empty** (the aug-v1.1 taxonomy entry, now observed as plain's low-N failure mode).
+Paper figure material: P(fail) vs N for plain, eq at 0% — the moat as a reliability cliff, not
+just a mean shift. CUDA throughput note: plain cells ≈ 3.5 min/run on the 3080.
+
 ## [2026-06-11] plain_ctrl attribution: COUNT, not restriction — the moat is a **low-N data-efficiency moat**; champion champ-side complete: 18/18 faithful guar across two devices
 
 **plain_ctrl (plain × unfiltered@2606, eq_ctrl's exact data, n=4):** 4/4 stable, in-δ̂ =
