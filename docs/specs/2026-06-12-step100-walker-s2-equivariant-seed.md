@@ -60,3 +60,11 @@ zoo task, same audit machinery).
 
 E17 + appendix write-up; one-sentence pointer in main text only if the 9-page budget allows post-September
 polish; otherwise appendix-only with rebuttal entry. No main-text restructure before the ICLR push.
+
+## Addendum (2026-06-12, before any arm-comparison was read)
+
+First 400-epoch pass: ALL arms land measured-median = 1 at every ε (one-step error above the coarsest
+threshold; training loss still descending at cutoff). That is a training-adequacy floor, not a
+structure-vs-dense comparison — no arm differences were read. Recipe iteration, applied SYMMETRICALLY:
+epochs 400 → 5000, everything else unchanged. The 400-epoch artifact is archived as
+`step100_walker_s2_results_e400.json` (diagnostic). Gates unchanged.
