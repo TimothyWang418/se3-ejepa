@@ -23,3 +23,16 @@ def test_step85c_recalibration_closes_n10():
     d = json.loads((ROOT / "papers/figures/step85c_n10_merged.json").read_text())
     assert d["n_seeds"] == 10 and d["gap_closed_count"] == 10
     assert 0.4 <= d["raw_gap_med"] <= 0.6 and abs(d["recal_gap_med"]) < 0.12
+
+
+def test_catchup_factor_n20_brackets_prediction():
+    import glob
+    base = json.loads((ROOT / "papers/figures/step85_phase1_frontier.json").read_text())
+    ps = dict(base["per_seed"])
+    for f in sorted(glob.glob(str(ROOT / "papers/figures/step85_phase1_frontier_seed*.json"))):
+        ps.update(json.loads(Path(f).read_text())["per_seed"])
+    fac = np.array([v["cover_mlp_budget"] / v["knee_budget"] for v in ps.values()
+                    if v.get("cover_mlp_budget") and v.get("knee_budget")])
+    assert len(fac) == 20
+    assert abs(float(np.median(fac)) - 2.97) < 0.05
+    assert fac.min() > 2.0 and fac.max() < 4.5          # brackets the predicted c~3.4
