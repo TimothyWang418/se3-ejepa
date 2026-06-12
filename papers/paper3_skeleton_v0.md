@@ -28,8 +28,8 @@ Decision point: after ladder + (if GO) the 192px D2 rerun.
 | 7 | Orbit transport (Lemma 2 through pixels) | n=7, all ≤ 4.1% (wedge v2) | A- | C16 quantization residual documented |
 | 8 | Instrument exactness | C_N fiber exact; VN 1e-16; pairing bit-exact; canonical gates equivalence-tested | A | — |
 | 9 | κ-regime map + aux inversion at κ=0.8 | rescue sweep: winner 3/4 vs aux 1/4; dose ordering; non-Markov anchoring hypothesis | C | n=4; 10-d falsification queued; HYPOTHESIS language only |
-| 10 | Resolution lever / price of pixels | D1: ε_task floor ≈ 3.8 render px; data lever flat (δ̂ 2.59/2.29/3.05); ladder IN FLIGHT (96: ratio .5 → 144: .75 → 192 ?) | slot | the decisive rung lands today |
-| 11 | 3D feasibility (no pixel floor) | G0 all-pass; G1 IN FLIGHT (conversion gate) | slot | timeline risk — scope to "early evidence" if needed |
+| 10 | **Price of pixels: both 2D levers measured dead** — data flat; resolution ratio 0.5→0.75→0.3 (away from GO at top rung; off-tune caveat) | ladder complete, NO-GO 0/12 | **A-** | thesis-aligned; 192px-tuned-recipe rebuttal possible but expensive |
+| 11 | 3D feasibility (no pixel floor) | G0 all-pass; G1a open-loop FAIL 0/20 (honest, mechanism known) → closed-loop v2 next; G1.2 timescales banked | slot | **the ONLY remaining GO path** — timeline is the paper's main risk |
 
 ## 2. Section outline
 
@@ -75,9 +75,9 @@ Decision point: after ladder + (if GO) the 192px D2 rerun.
 
 ## 4. Holes the map exposes (work queue, ordered)
 
-1. **GO-side validation of claim 3** — the gate has only refused so far. Ladder-GO ⇒ 192px
-   D2 rerun is the direct path; 3D is the structural path. *Without one of these, claim 3
-   ships as "validated in the refusal direction" — honest but weaker.*
+1. **GO-side validation of claim 3 — 2D branch CLOSED (ladder NO-GO 0/12). 3D is the only
+   remaining path**: G1a-v2 closed-loop conversion → corpus → VN training → 3D planner row.
+   Fallback ship-shape: claim 3 as "validated in the refusal direction" + 3D early evidence.
 2. Matched-COMPUTE moat row (params are matched; compute is not — cheap pre-emption of a
    standard reviewer ask).
 3. Cal-conservatism correction factor (claim 2 upgrade, registered-idea-only).

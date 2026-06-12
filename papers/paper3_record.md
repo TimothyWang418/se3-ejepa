@@ -83,10 +83,13 @@
 | 144 | 2.6–3.3 | 2.0–2.5 | ≈ 0.75 (best) |
 | 192 | **5.1–6.7 (doubles!)** | 1.75–2.25 (flat) | **≈ 0.3 (worst)** |
 
-**VERDICT: any_go = False, 0/12 cells.** The lever BACKFIRES: higher input resolution makes the
-latent prediction problem HARDER (δ̂ doubles at 192px) while the task radius ε_task stays flat
-(~2) at every rung — **the binding constraint is latent predictive precision, not sensor
-resolution.** With the data lever already measured flat: **the 2D pixel application layer is
+**VERDICT: any_go = False, 0/12 cells.** Review-pass wording (same day): cross-rung δ̂
+comparisons are NOT unit-safe (each rung trains its own latent); the unit-safe statement is the
+within-rung ratio ε_task/δ̂: **0.5–0.75 (96) → 0.75 (144) → 0.3 (192) — the lever moves AWAY
+from GO at the top rung.** Caveat registered: 192px ran the 96px-tuned recipe (off-tune; stage-A
+health passed 4/4, so the hit lands on predictive precision, not stability) — the rung measures
+the lever AS-AVAILABLE, not at a hypothetical 192px-optimum. Conclusion unchanged in direction:
+**the binding constraint is latent predictive precision, not sensor resolution.** With the data lever already measured flat: **the 2D pixel application layer is
 closed for this architecture class.** Claim 10 (price of pixels) upgrades from "floor located"
 to "both levers measured: data flat, resolution counterproductive" — direct thesis material
 (pixel abstraction is the wrong level; the GO regime, if it exists, lives in 3D point clouds).
