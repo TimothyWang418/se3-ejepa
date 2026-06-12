@@ -73,6 +73,18 @@
 
 ---
 
+## [2026-06-12] κ=0.8 rescue — **C1a base UNLOCKED by winner_v02 (3/4 stable)**; the aux anchor INVERTS to a liability in the expansive regime
+
+13-min sweep on the free 3080 (~65 s/cell at 200 eps): banked aux0.5_v0.3 **1/4** stable;
+oldchamp aux0.3 2/4; **winner_v02 (no aux) 3/4 → C1a unlock criterion met** (xy 0.112 — low
+content, but C1a consumes predictability structure, not probes). **Mechanism HYPOTHESIS
+(registered, not claimed):** κ=0.8 carries hidden block momentum (step2's 7-d underdetermination
+finding) — the aux anchor pins latents to an incomplete, non-Markov state; the stronger the
+anchor, the harder it fights the latent's need to encode velocity. Coherent with the dose
+ordering (aux0.5 < aux0.3 < none). Falsifiable: a 10-d (momentum-complete) aux target should
+restore stability — queued as the κ=0.8 lane's first refinement when C1a treatment starts.
+Recipe-regime map note: **the banked recipe is banked FOR κ=0**; κ=0.8 work uses winner_v02.
+
 ## [2026-06-12] Low-N figure complete — and it CORRECTS two earlier readings: plain's failure zone is BROAD (not a point cliff), and **eq has its own cliff below 2000**
 
 **P(δ̂ > 6) vs transitions (wedge-corpus unfiltered subsample, n=6 per plain point, n=3 eq):**
