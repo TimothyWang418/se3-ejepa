@@ -80,3 +80,14 @@ dmcontrol walker is EXACTLY S₂-equivariant** (median defect 4.75e-16 — a new
 (ii) the first S₂-equivariant world model on a dmcontrol task, with float-exact tied-weight equivariance;
 (iii) the honest scaling lesson — the bridge needs TD-MPC2-scale training (GPU-days) to be meaningful.
 Escalation deferred (September decision); no paper fold beyond a possible appendix footnote.
+
+## Addendum 2 (2026-06-12, escalation justified by measurement — before any new arm comparison)
+
+True-system probe (twin closed-loop trajectories, 5 trials, renormalized): **the walker-under-policy
+closed loop is strongly chaotic — λ₁ = +0.82/env-step (0.816–0.837)**. The stable-limit-cycle worry is
+refuted by measurement; the scratch models' λ≈0 readings are under-fit smoothing (Prop 7's degeneracy
+direction, live). Escalation is therefore justified and targeted: data 60→300 episodes, latent 48→96
+(LAT blocks 16→32), hidden ×2, epochs 5000→40000 — symmetric across arms, param-matching maintained.
+The precision bar implied by λ₁≈0.8: one-step relative error ≲0.05 for growth to be measurable above
+level. If the bar is still unmet, that is the recorded ceiling for this scale — no further escalation
+within paper2's window.

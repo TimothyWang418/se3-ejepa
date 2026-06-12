@@ -40,7 +40,9 @@ SEEDS = [int(x) for x in os.environ.get("STEP100_SEEDS", "0").split(",")]
 ARMS = os.environ.get("STEP100_ARMS", "eq,dense,aug").split(",")
 SMOKE = bool(int(os.environ.get("STEP100_SMOKE", "0")))
 K_ROLL = 5
-LAT_LEG, LAT_INV = 16, 16          # z = (z_inv 16, z_R 16, z_L 16) -> 48 total
+LAT_LEG = int(os.environ.get("STEP100_LAT", "16"))
+LAT_INV = LAT_LEG                      # z = (z_inv, z_R, z_L); 16 -> 48-d, 32 -> 96-d
+HID = int(os.environ.get("STEP100_HID", "64"))
 EPOCHS = 2 if SMOKE else int(os.environ.get("STEP100_EPOCHS", "400"))
 EPS_LIST = [0.05, 0.1, 0.2]
 
@@ -68,12 +70,12 @@ class EqWM(nn.Module):
 
     def __init__(s):
         super().__init__()
-        s.enc_leg = mlp(9 + 6, LAT_LEG, 64)            # (leg, torso) -> z_leg
-        s.enc_inv = mlp(6 + LAT_LEG, LAT_INV, 64)      # (torso, pooled legs) -> z_inv
-        s.dyn_leg = mlp(LAT_LEG + LAT_INV + LAT_LEG + 3 + 3, LAT_LEG, 96)   # (z_i, z_inv, pool, a_i, a_pool)
-        s.dyn_inv = mlp(LAT_INV + LAT_LEG + 3, LAT_INV, 96)                 # (z_inv, pool, a_pool)
-        s.dec_leg = mlp(LAT_LEG + LAT_INV, 9, 64)
-        s.dec_inv = mlp(LAT_INV + LAT_LEG, 6, 64)
+        s.enc_leg = mlp(9 + 6, LAT_LEG, HID)            # (leg, torso) -> z_leg
+        s.enc_inv = mlp(6 + LAT_LEG, LAT_INV, HID)      # (torso, pooled legs) -> z_inv
+        s.dyn_leg = mlp(LAT_LEG + LAT_INV + LAT_LEG + 3 + 3, LAT_LEG, HID + HID // 2)   # (z_i, z_inv, pool, a_i, a_pool)
+        s.dyn_inv = mlp(LAT_INV + LAT_LEG + 3, LAT_INV, HID + HID // 2)                 # (z_inv, pool, a_pool)
+        s.dec_leg = mlp(LAT_LEG + LAT_INV, 9, HID)
+        s.dec_inv = mlp(LAT_INV + LAT_LEG, 6, HID)
 
     def encode(s, o):
         t, r, l = split_obs(o)
@@ -105,9 +107,9 @@ class DenseWM(nn.Module):
     def __init__(s):
         super().__init__()
         D = LAT_INV + 2 * LAT_LEG
-        s.enc = mlp(24, D, 110)
-        s.dyn = mlp(D + 6, D, 150)
-        s.dec = mlp(D, 24, 110)
+        s.enc = mlp(24, D, HID * 5 // 4)
+        s.dyn = mlp(D + 6, D, HID * 2 + HID // 8)
+        s.dec = mlp(D, 24, HID * 5 // 4)
 
     def encode(s, o):
         return s.enc(o)
@@ -175,14 +177,14 @@ def train_arm(arm, seed, obs, act, nxt, mu, sd):
                   file=sys.stderr)
     # distilled policy head on latents (eq arm: tied leg heads)
     if arm == "eq":
-        head_leg = mlp(LAT_LEG + LAT_INV, 3, 48).double()
+        head_leg = mlp(LAT_LEG + LAT_INV, 3, HID * 3 // 4).double()
         head_params = list(head_leg.parameters())
 
         def pi_hat(z):
             zi, zr, zl = z[:, :LAT_INV], z[:, LAT_INV:LAT_INV + LAT_LEG], z[:, LAT_INV + LAT_LEG:]
             return torch.cat([head_leg(torch.cat([zr, zi], -1)), head_leg(torch.cat([zl, zi], -1))], -1)
     else:
-        head = mlp(LAT_INV + 2 * LAT_LEG, 6, 64).double()
+        head = mlp(LAT_INV + 2 * LAT_LEG, 6, HID).double()
         head_params = list(head.parameters())
 
         def pi_hat(z):
