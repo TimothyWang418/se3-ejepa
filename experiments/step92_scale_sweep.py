@@ -88,7 +88,8 @@ def load_mt_slices(path, task="walker-walk") -> MTSlices:
     return MTSlices(enc, dyn, pi, e, obs_pad, act_pad, latent)
 
 
-def run_cell(name: str, eps_list, k=16, qr_steps=300, qr_warm=60, n_starts=12) -> dict:
+def run_cell(name: str, eps_list, k=16, qr_steps=300, qr_warm=60,
+             n_starts=int(os.environ.get("STEP92_NSTARTS", "12"))) -> dict:
     sl = load_mt_slices(CKPT_DIR / f"{name}.pt")
     # on-attractor latent: encode a mid-episode true obs under the policy prior
     zs = s89.rollout_true("walker-walk", sl, T=60, seed=11)
