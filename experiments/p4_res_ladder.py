@@ -67,15 +67,21 @@ def collect_res(n_episodes: int, seed: int, res: int) -> dict:
             "actions": np.stack(actions).astype(np.float32)}
 
 
-def to_transitions_res(data: dict, res: int):
-    f = torch.from_numpy(data["frames"]).float().div_(255.0).permute(0, 1, 4, 2, 3)
-    f = circ_mask_res(f.reshape(-1, 3, res, res), res).reshape(f.shape)
+def to_transitions_res(data: dict, res: int, batch_eps: int = 40):
+    r"""Episode-batched (lean) — the eager version OOM-killed the 192px rung (9GB float
+    spike + copies vs 23GB box; autopsy 06-12). Numerically identical per episode."""
+    obs_l, nxt_l, fb_l = [], [], []
     a = torch.from_numpy(data["actions"])
     n_ch = a.shape[1] // CHUNK
-    obs = f[:, 0 : n_ch * CHUNK : CHUNK].reshape(-1, 3, res, res)
-    nxt = f[:, CHUNK : n_ch * CHUNK + 1 : CHUNK].reshape(-1, 3, res, res)
+    n_eps = data["frames"].shape[0]
+    for i in range(0, n_eps, batch_eps):
+        f = torch.from_numpy(data["frames"][i:i+batch_eps]).float().div_(255.0).permute(0, 1, 4, 2, 3)
+        f = circ_mask_res(f.reshape(-1, 3, res, res), res).reshape(f.shape)
+        obs_l.append(f[:, 0 : n_ch * CHUNK : CHUNK].reshape(-1, 3, res, res))
+        nxt_l.append(f[:, CHUNK : n_ch * CHUNK + 1 : CHUNK].reshape(-1, 3, res, res))
+        fb_l.append(f[:, ::CHUNK])
     act = a[:, : n_ch * CHUNK].reshape(a.shape[0], n_ch, CHUNK * 2).reshape(-1, CHUNK * 2)
-    return obs, act, nxt, f[:, ::CHUNK]
+    return torch.cat(obs_l), act, torch.cat(nxt_l), torch.cat(fb_l)
 
 
 def eps_task_bind(z: torch.Tensor, sb: torch.Tensor, n_eps: int) -> float | None:
@@ -113,7 +119,14 @@ def main() -> int:
         art["elapsed_min"] = round((time.time() - T0) / 60, 1)
         OUT.write_text(json.dumps(art, indent=1))
 
+    if OUT.exists():                                   # rung-level resume
+        art.update(json.loads(OUT.read_text()))
+        art.pop("verdict", None)
     for res in RUNGS:
+        done = art["rungs"].get(str(res), [])
+        if len([c for c in done if "std" in c or "error" in c]) >= 4:
+            print(f"[res {res}] resumed from artifact, skip")
+            continue
         print(f"[res {res}] collect ...")
         corpus = collect_res(200, seed=0, res=res)
         obs, act, nxt, _ = to_transitions_res(corpus, res)

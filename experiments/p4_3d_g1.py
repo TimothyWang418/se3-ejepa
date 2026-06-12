@@ -73,7 +73,8 @@ def main() -> int:
     traj = sorted(DEMO_DIR.rglob("*.h5"))[0]
     meta = json.loads(traj.with_suffix(".json").read_text())
     env = gym.make("PegInsertionSide-v1", obs_mode="state",
-                   control_mode="pd_ee_delta_pose", sim_backend="physx_cpu")
+                   control_mode="pd_ee_delta_pose", sim_backend="physx_cpu",
+                   render_backend="cpu")   # _setup_scene builds RenderSystem UNCONDITIONALLY (autopsy: state mode does NOT bypass it)
 
     all_disp, all_err, ep_verdicts = [], [], []
     with h5py.File(traj, "r") as f:
