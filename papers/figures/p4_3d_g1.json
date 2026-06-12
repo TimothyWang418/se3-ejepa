@@ -1,0 +1,162 @@
+{
+ "constants": {
+  "pos_scale": 0.1,
+  "rot_scale": 0.1,
+  "gate": "median tracking err < 10% median step displacement"
+ },
+ "episodes": {
+  "traj_0": {
+   "n": 178,
+   "med_err": 0.08782,
+   "med_disp": 0.00362,
+   "ratio": 24.25,
+   "pass": false
+  },
+  "traj_1": {
+   "n": 156,
+   "med_err": 0.06636,
+   "med_disp": 0.00332,
+   "ratio": 19.994,
+   "pass": false
+  },
+  "traj_2": {
+   "n": 201,
+   "med_err": 0.08891,
+   "med_disp": 0.00312,
+   "ratio": 28.497,
+   "pass": false
+  },
+  "traj_3": {
+   "n": 117,
+   "med_err": 0.08996,
+   "med_disp": 0.00438,
+   "ratio": 20.525,
+   "pass": false
+  },
+  "traj_4": {
+   "n": 189,
+   "med_err": 0.08198,
+   "med_disp": 0.00329,
+   "ratio": 24.889,
+   "pass": false
+  },
+  "traj_5": {
+   "n": 118,
+   "med_err": 0.07878,
+   "med_disp": 0.004,
+   "ratio": 19.676,
+   "pass": false
+  },
+  "traj_6": {
+   "n": 151,
+   "med_err": 0.09852,
+   "med_disp": 0.00267,
+   "ratio": 36.849,
+   "pass": false
+  },
+  "traj_7": {
+   "n": 128,
+   "med_err": 0.10198,
+   "med_disp": 0.00447,
+   "ratio": 22.8,
+   "pass": false
+  },
+  "traj_8": {
+   "n": 134,
+   "med_err": 0.08246,
+   "med_disp": 0.00364,
+   "ratio": 22.642,
+   "pass": false
+  },
+  "traj_9": {
+   "n": 190,
+   "med_err": 0.09749,
+   "med_disp": 0.00356,
+   "ratio": 27.382,
+   "pass": false
+  },
+  "traj_10": {
+   "n": 193,
+   "med_err": 0.08657,
+   "med_disp": 0.00367,
+   "ratio": 23.565,
+   "pass": false
+  },
+  "traj_11": {
+   "n": 132,
+   "med_err": 0.0757,
+   "med_disp": 0.00307,
+   "ratio": 24.691,
+   "pass": false
+  },
+  "traj_12": {
+   "n": 192,
+   "med_err": 0.08797,
+   "med_disp": 0.00347,
+   "ratio": 25.377,
+   "pass": false
+  },
+  "traj_13": {
+   "n": 152,
+   "med_err": 0.10846,
+   "med_disp": 0.00271,
+   "ratio": 39.951,
+   "pass": false
+  },
+  "traj_14": {
+   "n": 128,
+   "med_err": 0.10131,
+   "med_disp": 0.00331,
+   "ratio": 30.649,
+   "pass": false
+  },
+  "traj_15": {
+   "n": 200,
+   "med_err": 0.11398,
+   "med_disp": 0.00373,
+   "ratio": 30.534,
+   "pass": false
+  },
+  "traj_16": {
+   "n": 203,
+   "med_err": 0.11016,
+   "med_disp": 0.00365,
+   "ratio": 30.16,
+   "pass": false
+  },
+  "traj_17": {
+   "n": 137,
+   "med_err": 0.10576,
+   "med_disp": 0.00432,
+   "ratio": 24.506,
+   "pass": false
+  },
+  "traj_18": {
+   "n": 148,
+   "med_err": 0.06118,
+   "med_disp": 0.0029,
+   "ratio": 21.125,
+   "pass": false
+  },
+  "traj_19": {
+   "n": 153,
+   "med_err": 0.08818,
+   "med_disp": 0.00438,
+   "ratio": 20.129,
+   "pass": false
+  }
+ },
+ "elapsed_min": 1.1,
+ "G1a": {
+  "pass_eps": "0/20",
+  "overall_ratio": 27.318,
+  "verdict": "FAIL"
+ },
+ "G1_2": {
+  "tcp_step_disp": {
+   "median": 0.00354,
+   "q10": 0.00034,
+   "q90": 0.01151
+  }
+ }
+}

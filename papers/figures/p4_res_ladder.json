@@ -87,8 +87,20 @@
     "stable": true,
     "eps_task": 1.75,
     "go": false
+   },
+   {
+    "std": 1.1549590826034546,
+    "delta": 5.111,
+    "xy": 0.4277311185230097,
+    "stable": true,
+    "eps_task": 1.75,
+    "go": false
    }
   ]
  },
- "elapsed_min": 37.7
+ "elapsed_min": 49.0,
+ "verdict": {
+  "any_go": false,
+  "n_go_cells": 0
+ }
 }

@@ -73,6 +73,35 @@
 
 ---
 
+## [2026-06-12] Ladder + G1a final — the resolution lever BACKFIRES (NO-GO all rungs); open-loop conversion FAILS 0/20; the 2D pixel application layer closes, 3D carries it
+
+**Resolution ladder (Mac rung after 2 box OOMs; resume from artifact):**
+
+| rung | δ̂ (4 runs) | ε_task | ratio ε/δ̂ |
+|---|---|---|---|
+| 96 | 1.6–3.3 | 1.5–2.0 | ≈ 0.5–0.75 |
+| 144 | 2.6–3.3 | 2.0–2.5 | ≈ 0.75 (best) |
+| 192 | **5.1–6.7 (doubles!)** | 1.75–2.25 (flat) | **≈ 0.3 (worst)** |
+
+**VERDICT: any_go = False, 0/12 cells.** The lever BACKFIRES: higher input resolution makes the
+latent prediction problem HARDER (δ̂ doubles at 192px) while the task radius ε_task stays flat
+(~2) at every rung — **the binding constraint is latent predictive precision, not sensor
+resolution.** With the data lever already measured flat: **the 2D pixel application layer is
+closed for this architecture class.** Claim 10 (price of pixels) upgrades from "floor located"
+to "both levers measured: data flat, resolution counterproductive" — direct thesis material
+(pixel abstraction is the wrong level; the GO regime, if it exists, lives in 3D point clouds).
+
+**G1a (open-loop conversion): FAIL 0/20, overall ratio 27.3** (gate: < 0.1). Mechanism:
+pd_ee_delta_pose anchors targets on the ACHIEVED pose — open-loop delta chains compound lag.
+**G1a-v2 registered: closed-loop conversion** (delta = ref[t+1] ⊖ achieved[t], computed during
+replay — the official CLI's own mechanism), with point clouds rendered in the SAME pass so
+corpus actions pair with their own replayed frames. G1.2 timescales banked alongside.
+
+**Engineering lessons (4th set, indexed):** remote launches use absolute paths only —
+`(cd X && A) & B` leaves B in $HOME; pgrep/pkill liveness is unreliable in 4 distinct ways —
+artifacts/logs only; 192px work needs ≥ 32 GB or the Mac; `obs_mode="state"` does not bypass
+SAPIEN's RenderSystem.
+
 ## [2026-06-12] Holes #2/#5 land — both registered predictions HIT: compute does not rescue plain (claim 4 armored); the non-Markov anchoring hypothesis survives falsification (claim 9 ↑)
 
 **#2 matched-compute moat row:** measured wall-time ratio bound the match; plain at
