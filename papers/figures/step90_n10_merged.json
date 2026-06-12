@@ -1,0 +1,296 @@
+{
+ "n_seeds": 10,
+ "summary": {
+  "cert": {
+   "ratios": [
+    1.3129770992366412,
+    1.4029850746268657,
+    0.8617021276595744,
+    1.6304347826086956,
+    1.401360544217687,
+    1.010989010989011,
+    1.1412429378531073,
+    0.7676056338028169,
+    1.2101910828025477,
+    1.1377245508982037
+   ],
+   "mean_abs_log_ratio": 0.2313369980434557,
+   "n": 10
+  },
+  "ensemble": {
+   "ratios": [
+    1.0680272108843538,
+    1.158273381294964,
+    0.7446808510638298,
+    1.6764705882352942,
+    1.5064935064935066,
+    1.2094240837696335,
+    1.2258064516129032,
+    0.9414414414414415,
+    1.2242424242424241,
+    1.0160427807486632
+   ],
+   "mean_abs_log_ratio": 0.2106342749545453,
+   "n": 10
+  },
+  "conformal": {
+   "ratios": [
+    0.9389312977099237,
+    1.126865671641791,
+    0.8670212765957447,
+    1.5543478260869565,
+    0.9047619047619048,
+    0.7747252747252747,
+    0.8192090395480226,
+    0.8908450704225352,
+    0.9299363057324841,
+    0.7425149700598802
+   ],
+   "mean_abs_log_ratio": 0.1806883245221041,
+   "n": 10
+  }
+ },
+ "per_seed": {
+  "0": {
+   "relmse": 1.844492852173264e-05,
+   "cert": {
+    "pred": 86,
+    "actual": 65.5,
+    "ratio": 1.3129770992366412,
+    "models": 1,
+    "truth_rollouts": 0
+   },
+   "ensemble": {
+    "pred": 78.5,
+    "actual": 73.5,
+    "ratio": 1.0680272108843538,
+    "models": 4,
+    "truth_rollouts": 0
+   },
+   "conformal": {
+    "pred": 61.5,
+    "actual": 65.5,
+    "ratio": 0.9389312977099237,
+    "models": 1,
+    "truth_rollouts": 10
+   }
+  },
+  "1": {
+   "relmse": 1.162369147735785e-05,
+   "cert": {
+    "pred": 94,
+    "actual": 67.0,
+    "ratio": 1.4029850746268657,
+    "models": 1,
+    "truth_rollouts": 0
+   },
+   "ensemble": {
+    "pred": 80.5,
+    "actual": 69.5,
+    "ratio": 1.158273381294964,
+    "models": 4,
+    "truth_rollouts": 0
+   },
+   "conformal": {
+    "pred": 75.5,
+    "actual": 67.0,
+    "ratio": 1.126865671641791,
+    "models": 1,
+    "truth_rollouts": 10
+   }
+  },
+  "2": {
+   "relmse": 1.251354765654111e-05,
+   "cert": {
+    "pred": 81,
+    "actual": 94.0,
+    "ratio": 0.8617021276595744,
+    "models": 1,
+    "truth_rollouts": 0
+   },
+   "ensemble": {
+    "pred": 87.5,
+    "actual": 117.5,
+    "ratio": 0.7446808510638298,
+    "models": 4,
+    "truth_rollouts": 0
+   },
+   "conformal": {
+    "pred": 81.5,
+    "actual": 94.0,
+    "ratio": 0.8670212765957447,
+    "models": 1,
+    "truth_rollouts": 10
+   }
+  },
+  "3": {
+   "relmse": 1.6805335408782975e-05,
+   "cert": {
+    "pred": 75,
+    "actual": 46.0,
+    "ratio": 1.6304347826086956,
+    "models": 1,
+    "truth_rollouts": 0
+   },
+   "ensemble": {
+    "pred": 85.5,
+    "actual": 51.0,
+    "ratio": 1.6764705882352942,
+    "models": 4,
+    "truth_rollouts": 0
+   },
+   "conformal": {
+    "pred": 71.5,
+    "actual": 46.0,
+    "ratio": 1.5543478260869565,
+    "models": 1,
+    "truth_rollouts": 10
+   }
+  },
+  "4": {
+   "relmse": 1.4530311969882095e-05,
+   "cert": {
+    "pred": 103,
+    "actual": 73.5,
+    "ratio": 1.401360544217687,
+    "models": 1,
+    "truth_rollouts": 0
+   },
+   "ensemble": {
+    "pred": 116.0,
+    "actual": 77.0,
+    "ratio": 1.5064935064935066,
+    "models": 4,
+    "truth_rollouts": 0
+   },
+   "conformal": {
+    "pred": 66.5,
+    "actual": 73.5,
+    "ratio": 0.9047619047619048,
+    "models": 1,
+    "truth_rollouts": 10
+   }
+  },
+  "5": {
+   "relmse": 9.899014339370282e-06,
+   "cert": {
+    "pred": 92,
+    "actual": 91.0,
+    "ratio": 1.010989010989011,
+    "models": 1,
+    "truth_rollouts": 0
+   },
+   "ensemble": {
+    "pred": 115.5,
+    "actual": 95.5,
+    "ratio": 1.2094240837696335,
+    "models": 4,
+    "truth_rollouts": 0
+   },
+   "conformal": {
+    "pred": 70.5,
+    "actual": 91.0,
+    "ratio": 0.7747252747252747,
+    "models": 1,
+    "truth_rollouts": 10
+   }
+  },
+  "6": {
+   "relmse": 1.192314279604956e-05,
+   "cert": {
+    "pred": 101,
+    "actual": 88.5,
+    "ratio": 1.1412429378531073,
+    "models": 1,
+    "truth_rollouts": 0
+   },
+   "ensemble": {
+    "pred": 114.0,
+    "actual": 93.0,
+    "ratio": 1.2258064516129032,
+    "models": 4,
+    "truth_rollouts": 0
+   },
+   "conformal": {
+    "pred": 72.5,
+    "actual": 88.5,
+    "ratio": 0.8192090395480226,
+    "models": 1,
+    "truth_rollouts": 10
+   }
+  },
+  "7": {
+   "relmse": 1.2414797052463549e-05,
+   "cert": {
+    "pred": 109,
+    "actual": 142.0,
+    "ratio": 0.7676056338028169,
+    "models": 1,
+    "truth_rollouts": 0
+   },
+   "ensemble": {
+    "pred": 104.5,
+    "actual": 111.0,
+    "ratio": 0.9414414414414415,
+    "models": 4,
+    "truth_rollouts": 0
+   },
+   "conformal": {
+    "pred": 126.5,
+    "actual": 142.0,
+    "ratio": 0.8908450704225352,
+    "models": 1,
+    "truth_rollouts": 10
+   }
+  },
+  "8": {
+   "relmse": 1.60826094826365e-05,
+   "cert": {
+    "pred": 95,
+    "actual": 78.5,
+    "ratio": 1.2101910828025477,
+    "models": 1,
+    "truth_rollouts": 0
+   },
+   "ensemble": {
+    "pred": 101.0,
+    "actual": 82.5,
+    "ratio": 1.2242424242424241,
+    "models": 4,
+    "truth_rollouts": 0
+   },
+   "conformal": {
+    "pred": 73.0,
+    "actual": 78.5,
+    "ratio": 0.9299363057324841,
+    "models": 1,
+    "truth_rollouts": 10
+   }
+  },
+  "9": {
+   "relmse": 9.20317854814427e-06,
+   "cert": {
+    "pred": 95,
+    "actual": 83.5,
+    "ratio": 1.1377245508982037,
+    "models": 1,
+    "truth_rollouts": 0
+   },
+   "ensemble": {
+    "pred": 95.0,
+    "actual": 93.5,
+    "ratio": 1.0160427807486632,
+    "models": 4,
+    "truth_rollouts": 0
+   },
+   "conformal": {
+    "pred": 62.0,
+    "actual": 83.5,
+    "ratio": 0.7425149700598802,
+    "models": 1,
+    "truth_rollouts": 10
+   }
+  }
+ },
+ "provenance": "lanes A(0-4)+B(5-9) merged 2026-06-12"
+}
