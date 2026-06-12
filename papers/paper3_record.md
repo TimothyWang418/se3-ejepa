@@ -19,7 +19,9 @@
   (plain 0.67-0.69 > eq 0.32-0.42, both devices) — Brehmer-consistent, the honest H1;
   (ii) **θ does not invert**: plainc θ-R² 0.29 linear / 0.11-0.19 MLP vs eq 0.91-0.96 at the
   same 40k — *the group coordinate is equivariant-only*. Orbit transport ≤4.1% n=7 (Lemma 2
-  through pixels).
+  through pixels). [06-12 figure-batch correction: the cliff is a BROAD bimodal zone
+  (plain P(fail) ≥ 1/2 through 3200, exit unpinned) and **eq has its own cliff below 2000**
+  (1/3 @1500) — framing = both cliff, equivariance shifts the safe threshold ≥1.75× left.]
 - **C2: UNBLOCKED** (full-state aux anchor delivers θ-R² 0.96; θ-only backfires — night
   shift). Next: θ* elicitation design on candidate pairs.
 - **Banked recipe: aux0.5_v0.3** (swap ledgered 06-12: beats old champion on all six axes).
@@ -65,6 +67,32 @@
   banked, CPU free) → aux0.5_v0.3 × c2000 stage-B → 3D protocol spec v1 → v1.3 grid (C2) → C4.
 
 ---
+
+## [2026-06-12] Low-N figure complete — and it CORRECTS two earlier readings: plain's failure zone is BROAD (not a point cliff), and **eq has its own cliff below 2000**
+
+**P(δ̂ > 6) vs transitions (wedge-corpus unfiltered subsample, n=6 per plain point, n=3 eq):**
+
+| N | plain | eq |
+|---|---|---|
+| 1500 | — | **1/3** (δ̂ 10.6 — eq fails too!) |
+| 2000 | — | 0/3 |
+| 2606 | 8/10 (pooled v2+ctrl) | 0/4 |
+| 2800 | **5/6** | — |
+| 3000 | **3/6** | — |
+| 3200 | **4/6** | — |
+| 3500 | 0/2 (*n=2 — thin, exit point NOT pinned*) | — |
+| 4000 | ~1/6 (v1 had one 7.09) | 0/3 (v1) |
+
+**Corrections (densification doing its job):**
+1. "Cliff at ~3000 ± 300" → **a broad bimodal zone**: P(fail) ≥ 1/2 from ≤2606 through 3200;
+   the exit is somewhere ≥3200 and the 3500-clean reading rests on n=2 — underdetermined.
+2. "eq flat at 0%" (stated when 2606 was the lowest measured) → **eq has its own cliff below
+   2000**: 1/3 fail at 1500 (δ̂ 10.64, std 1.11 — same stable-high-δ̂ phenomenology as plain).
+   **Honest framing: BOTH architectures have reliability cliffs; equivariance shifts the safe
+   threshold left by ≥ 1.75×** (eq safe ≥2000 vs plain unsafe ≤3200; lower bound since plain's
+   exit is unpinned). The δ̂-ratio moat at 2606 (4.2×) stands unchanged.
+Optional refinement queued (not launched): plain 3500×n=6 + eq 1750×n=3 to pin both exits if
+the figure wants them.
 
 ## [2026-06-12] Candidate stage-B verdict — **SWAP: aux0.5_v0.3 becomes the banked recipe**; θ-deficit fairness check kills the probe-linearity attack
 
