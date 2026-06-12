@@ -50,9 +50,16 @@ EPS_MULT = (2, 4, 8, 16)
 BAND = (0.5, 2.0)
 FLOOR = 0.7
 TAG = __import__("os").environ.get("P4_TAG", "")  # CUDA arm: P4_TAG=_cuda
+# P4_RECIPE: JSON override of the champ recipe (candidate stage-B reuse); default = registered champion.
+# P4_ARMS: comma list, default "champ,plainc" (candidate arms may borrow the registered plainc rows
+# from the same-device registered artifact -- equal-data moat row without re-spending 5h; ledgered).
+_RECIPE_ENV = __import__("os").environ.get("P4_RECIPE")
+ARMS = tuple(__import__("os").environ.get("P4_ARMS", "champ,plainc").split(","))
 OUT = ROOT / "papers" / "figures" / f"p4_champion_confirm{TAG}.json"
 
 CHAMP = dict(ema_decay=0.99, var_coef=0.3, lr_scale=1.0, aux_coef=0.3)
+if _RECIPE_ENV:
+    CHAMP = json.loads(_RECIPE_ENV)
 PLAIN = dict(ema_decay=0.99, var_coef=0.04, lr_scale=1.0, epochs=40)
 
 
@@ -102,7 +109,7 @@ def main() -> int:
     art["resumed_cells"] = [k for k, v in existing.items() if "c3cal" in v
                             and v["c3cal"] and "h_meas" in v["c3cal"][0]]
 
-    for name in ("champ", "plainc"):
+    for name in ARMS:
         print(f"[{name}] n=10 on c2000 ...")
         for r in range(10):
             key = f"{name}_r{r}"
@@ -135,7 +142,7 @@ def main() -> int:
                   f"cells {[(x.get('h_cert'), x.get('h_meas')) for x in cell.get('c3cal', [])]}")
 
     verd = {}
-    for name in ("champ", "plainc"):
+    for name in ARMS:
         cs = [art["cells"].get(f"{name}_r{r}", {}) for r in range(10)]
         qual = [c for c in cs if c.get("stable")]
 
