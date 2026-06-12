@@ -98,6 +98,28 @@
 
 ---
 
+## [2026-06-12] G1a-v3 FAIL 0/20 (demos 20/20) — and the scope review it forces: the 3D claims need COVERAGE corpora, not task-directed replays; corpus production proceeds on the v2 mechanism
+
+**Verdict as registered: FAIL** (replay task-success 0/20 vs demos' own 20/20). The ee-delta
+conversion at default PD gains cannot complete mm-precision insertions (18 mm residual). Three
+honest FAILs total (27.3 → 5.3 → 0/20 task) — the conversion-to-task-replay route is dead at
+default settings.
+
+**Scope review (the productive part — checked against the claims ladder, not invented):** the
+PushT D2 protocol's planner targets were WITHIN-TRAJECTORY states (z(t+8) of held-out episodes,
+reachable by construction) — task success was never a corpus requirement in 2D either. The 3D
+claims as registered (C3-3D certificates, encoder equivariance, feasibility gate) consume
+**self-consistent coverage corpora** — exactly what the v2 closed-loop replays provide BY
+CONSTRUCTION (actions paired with their own frames; near-demo contact-rich coverage).
+**Decision: goal-directed demo rows move OUT of 3D scope** (v3's FAIL stands un-relitigated;
+slow-motion K=4 conversion is the registered upgrade path IF such rows are ever wanted).
+Corpus production proceeds on the v2 mechanism + same-pass point-cloud rendering.
+
+**Physics note banked for G2's symmetry section:** fixed-base manipulation breaks scene-level
+rotation symmetry (arm kinematics anchor the frame) — the 3D equivariance claims must be scoped
+OBJECT-CENTRIC (object poses ↦ latent co-rotation), as the protocol spec's SO(2)-z note
+anticipated. To be made precise before G2 training.
+
 ## [2026-06-12] G1a-v2 FAIL 0/20 (ratio 5.3, was 27.3) — compounding killed, PD bandwidth remains; gate re-scoped to task success (v3, rationale registered). PLUS: a shared-tree incident, zero loss by luck, protocol hardened
 
 **G1a-v2 (closed-loop conversion):** 0/20, overall ratio 5.30 (one outlier 39 — traj_18,
