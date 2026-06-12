@@ -1278,8 +1278,13 @@ $\le1/\le2/\le3$) and the frozen quantities — protocol, fractions, $\lambda$-s
 unchanged. All measured statistics are at $100$ rollout starts per cell (`step89c`, a $5\times$ thickening of the
 published $20$; spec frozen first): the regime map is start-count-stable — bias $24\to25$, growth set $15\to15$
 (one boundary swap), in-band $10/15\to8/15$ with cup-catch-2 exiting *above* the band ($1.68$, the conservative
-side) — and the growth-side median moves $0.95\to0.94$. The corrected reading is uniform from toy to zoo to $1$B: **the spectrum
-prices error *growth*; the measured column tests error *level*; the audit is their conjunction.**
+side) — and the growth-side median moves $0.95\to0.94$. The split is moreover **$\epsilon$-monotone in the predicted direction**: recomputed at the tighter published
+resolutions, bias-dominance grows $25/42\to31/42\to39/42$ and the growth set shrinks $15\to7\to3$
+($\epsilon=0.2\to0.1\to0.05$, same $100$-start artifact) — the threshold is $\epsilon\cdot\mathrm{scale}$, so
+tighter $\epsilon$ hands more horizons to the fixed native residual, which is precisely the seed map's
+tight-$\epsilon$ optimistic regime (Proposition 8's $\delta$-bias) as a measured dose–response. The corrected
+reading is uniform from toy to zoo to $1$B: **the spectrum prices error *growth*; the measured column tests
+error *level*; the audit is their conjunction.**
 `experiments/step89b`, `tests/test_step89b.py`; spec `docs/specs/2026-06-11-step89b-audit-expansion-seed.md`.
 
 **Scale does not rescue trustworthiness (Experiment 25, `step92`).** Across the official TD-MPC2 *multitask* ladder (mt30, $1$M$\to$$317$M parameters, same walker-walk task, one official checkpoint per size), the policy-prior loop's regime flips **non-monotonically** with scale — contracting at $1$M *and* $48$M, expansive at $5$M/$19$M/$317$M — and calibration scatters (measured/certified $0.37/1.87/1.16$ at $\epsilon{=}0.2$ where expansive; mt80 cells likewise mixed) with **no size matching the single-task $5$M model's $0.94$–$1.02$**. One checkpoint per cell (no official seed variants) — read as a descriptive scope-map extension, not a seed-averaged law; the direction is nonetheless unambiguous: *trust in a rollout is a property of the loop's dynamics, not of parameter count — scale buys interpolation, not a calibrated horizon.*

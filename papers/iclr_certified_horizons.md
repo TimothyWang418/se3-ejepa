@@ -427,6 +427,17 @@ bias-cell verdict (no Lyapunov pricing); the wording claim is **real-robot data,
 is sensor-only/passive, so replaying logged episodes is a faithful instantiation, not a simulation of one.
 (`step98`, `step99`; conditional-gate spec frozen before the certificate was read.)
 
+**(E13, ε-axis) The regime split is ε-monotone — in the direction Proposition 8 predicts.** A reviewer may ask
+whether the growth-vs-bias re-stratification of the $84$-cell map is an artifact of the $\epsilon{=}0.2$ column.
+Recomputing it from the same $100$-start artifact at the other published resolutions: bias-dominated
+$25/42\to31/42\to39/42$ and growth-set size $15\to7\to3$ as $\epsilon$ tightens $0.2\to0.1\to0.05$, with the
+growth-side ratio median moving $0.94\to0.55\to0.26$. This is not fragility but the mechanism's own dose–response
+along the $\epsilon$ axis: the threshold is $\epsilon\cdot\mathrm{scale}$, so as $\epsilon\to0$ the fixed native
+one-step residual dominates every horizon — exactly the tight-$\epsilon$ optimistic regime the seed map already
+reported (Prop. 8's $\delta$-bias), now measured as a monotone fraction across the zoo. The deployment-relevant
+column is the coarse one ($\epsilon{=}0.2$); the certificate's jurisdiction shrinks with $\epsilon$, and the map
+says so quantitatively. (`step89c` artifact, descriptive re-analysis; no new runs.)
+
 ## Appendix E — concurrent and recent work (full sweep through 2026-06)
 
 Mo (arXiv:2605.03338) proves symmetry-protected *neutral* Lyapunov modes for continuously-equivariant fields ($\ge\dim(G/H)$ zero exponents along the group orbit) — complementary to ours: it constrains the spectrum's *kernel*, while we certify the *horizon* stratified by the whole spectrum (for our discrete $\mathbb{Z}_N$ systems $\dim(G/H){=}0$, so their lower bound is zero there — the two results constrain disjoint parts of the spectrum: they the kernel, we the horizon). Geng et al. (arXiv:2512.08991) bound world-model rollout deviation *conformally* for closed-loop verification — statistical and rollout-hungry where ours is a-priori and training-free; the same trade-off separates us from reachability-based MBRL safety (UPSi, arXiv:2604.26836) and where-to-trust heuristics (arXiv:2606.01363). Pretrained world models have been probed *semantically* (arXiv:2603.21546) and benchmarked by sample rollouts (WorldBench, arXiv:2601.21282; WorldArena, arXiv:2602.08971); a Jacobian certificate of a public model's latent map, cross-validated against true-environment divergence, is to our knowledge new — the nearest priors being latent-space stability analyses of *self-trained* autoencoders (Özalp & Magri, arXiv:2410.00480) and Lyapunov-regularized DreamerV3 *policies* (arXiv:2410.10674). Flow-equivariant world models ([@lillemark2026flowm], now ICML 2026; antecedent FERNN, arXiv:2507.14793) preserve equivariance over arbitrarily long rollouts — an exactness/closure property, not a quantitative horizon. Inductive-bias studies (arXiv:2602.06923) and position papers calling for verified world models (arXiv:2602.23997) support the framing; PDEder (arXiv:2603.22655) *suppresses* latent Lyapunov exponents where we *certify* them; two-sided calibration bounds under equivariance (arXiv:2510.21691) concern calibration error, not horizon; and the data-assimilation literature's observation-frequency-vs-Lyapunov-time rule (e.g. Bocquet et al. 2026) is the classical neighbor of our sensing-budget law (Proposition 9).
