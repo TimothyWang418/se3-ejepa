@@ -73,6 +73,19 @@
 
 ---
 
+## [2026-06-12] Campaign D1 frozen (two estimator iterations + tolerance ladder, all pre-D2)
+
+**Bindings (frozen in `p4_campaign_d1.json`):** τ = (20 env-units, π/9) verbatim from the env's
+success test; ε_reach = 2δ̂ per pair ∈ [4.3, 9.2]; ε_task per pair via conditional-q90 latent→
+state mapping. **Estimator iteration (disclosed):** v1 (random cross-episode pairs) returned
+None everywhere — small-‖Δz‖ balls unpopulated (sampling density, not criterion); v2 adds all
+within-episode pairs |Δt| ≤ 3 → ε_task(τ) ∈ [1.5, 2.75], median 1.5. The broken v1 freeze was
+never consumed. **Position is the binding axis** (θ passes its tolerance until r≈6 — consistent
+with θ-R² 0.96 > xy-R² 0.62). **Pre-registered risk + Amendment A1:** ε_task(τ) < δ̂ for every
+pair (τ_pos ≈ 3.8 render px = the 96px encoder's resolution floor) ⇒ H* = 0 across healthy
+pairs is plausible ⇒ tolerance ladder (τ/2τ/4τ) registered BEFORE D2: primary gates at τ
+unchanged; C4a gets one backup rung (smallest with ≥80% healthy H* ≥ 1, rung always reported).
+
 ## [2026-06-12] κ=0.8 rescue — **C1a base UNLOCKED by winner_v02 (3/4 stable)**; the aux anchor INVERTS to a liability in the expansive regime
 
 13-min sweep on the free 3080 (~65 s/cell at 200 eps): banked aux0.5_v0.3 **1/4** stable;

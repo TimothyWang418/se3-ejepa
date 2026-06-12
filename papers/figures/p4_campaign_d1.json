@@ -1,0 +1,85 @@
+{
+ "tau": {
+  "pos": 20.0,
+  "theta": 0.3490658503988659,
+  "source": "pusht env.py:348-352"
+ },
+ "eps_reach_formula": "2 * delta_hat(pair)",
+ "pairs": {
+  "r0": {
+   "delta": 3.404,
+   "eps_reach": 6.809,
+   "eps_task": 2.0,
+   "eps_task_2tau": 2.75,
+   "eps_task_4tau": 4.25,
+   "xy": 0.531
+  },
+  "r1": {
+   "delta": 2.309,
+   "eps_reach": 4.617,
+   "eps_task": 1.5,
+   "eps_task_2tau": 2.25,
+   "eps_task_4tau": 3.0,
+   "xy": 0.862
+  },
+  "r2": {
+   "delta": 2.308,
+   "eps_reach": 4.615,
+   "eps_task": 1.5,
+   "eps_task_2tau": 1.75,
+   "eps_task_4tau": 2.0,
+   "xy": 0.629
+  },
+  "r3": {
+   "delta": 2.155,
+   "eps_reach": 4.31,
+   "eps_task": 1.5,
+   "eps_task_2tau": 2.0,
+   "eps_task_4tau": 2.5,
+   "xy": 0.606
+  },
+  "r4": {
+   "delta": 4.057,
+   "eps_reach": 8.114,
+   "eps_task": 2.0,
+   "eps_task_2tau": 2.75,
+   "eps_task_4tau": 3.5,
+   "xy": 0.713
+  },
+  "r5": {
+   "delta": 4.605,
+   "eps_reach": 9.21,
+   "eps_task": 1.5,
+   "eps_task_2tau": 2.5,
+   "eps_task_4tau": 4.0,
+   "xy": 0.742
+  },
+  "r6": {
+   "delta": 2.488,
+   "eps_reach": 4.976,
+   "eps_task": 1.75,
+   "eps_task_2tau": 2.5,
+   "eps_task_4tau": 3.5,
+   "xy": 0.665
+  },
+  "r8": {
+   "delta": 3.152,
+   "eps_reach": 6.303,
+   "eps_task": 2.75,
+   "eps_task_2tau": 5.0,
+   "eps_task_4tau": 8.25,
+   "xy": 0.519
+  },
+  "r9": {
+   "delta": 2.381,
+   "eps_reach": 4.763,
+   "eps_task": 1.5,
+   "eps_task_2tau": 2.25,
+   "eps_task_4tau": 2.75,
+   "xy": 0.351
+  }
+ },
+ "eps_task_median": 1.5,
+ "frozen_at": "D1 complete - values immutable for D2/D3",
+ "elapsed_min": 1.4
+}

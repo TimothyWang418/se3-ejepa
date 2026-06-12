@@ -53,6 +53,19 @@ degenerate CUDA pair (ckpt8_cuda_champ_r0, δ̂ 14.08) as the C4 detection targe
 2. Decision-scope row (Prop 11 alignment check at c=1): aligned-decision regret spot check on
    Component A's planner outputs — descriptive, scope-language per paper2's Prop 11.
 
+## Amendment A1 (registered after D1 binding, BEFORE any D2 planner run)
+
+D1's bindings alone (no planner data) exposed a resolution-floor risk: ε_task(τ) ∈ [1.5, 2.75]
+< δ̂ ∈ [2.2, 4.6] for every pair — H*(ε_task) = 0 across the board is plausible, which would
+(honestly) FAIL G-C2 and collapse G-C4a's contrast to 0-vs-0. **Registered response: a
+tolerance ladder** — ε_task bound at τ, 2τ, 4τ (frozen in `p4_campaign_d1.json`). Primary
+gates UNCHANGED (evaluated at τ). The ladder is descriptive context, plus ONE registered backup
+for C4a: if all healthy pairs give H*(ε_task(τ)) = 0, G-C4a is evaluated at the smallest ladder
+rung where ≥ 80% of healthy pairs reach H* ≥ 1 (rung reported, never silently substituted).
+Physical reading bound now: τ_pos = 20 env units ≈ 3.8 render pixels at 96px — the task
+tolerance sits at the encoder's resolution floor; this is a finding about 96px encoders, not a
+flaw in the elicitation.
+
 ## Phases
 
 - **D1 (CPU, ~30 min):** bind τ, ε_reach (2δ̂ per pair), ε_task (quantile map) → freeze in the
