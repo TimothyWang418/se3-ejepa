@@ -6,7 +6,32 @@
 > W1 recon: `docs/specs/2026-06-10-p4-w1-recon.md`. No gate is loosened, ever; INCONCLUSIVE is
 > reported as such. Entries below are newest-first.
 
-## STATUS DIGEST (updated 2026-06-12 morning — the night the claims landed)
+## STATUS DIGEST (updated 2026-06-12 afternoon — the 2D story closes; 3D carries the application layer)
+
+- **C3 CLOSED (guarantee form):** 75 qualifying audits, 0 anticonservative, dual-OOD dual-device;
+  cal conservative with a **single-scalar-correctable factor** (λ=1.5 → 93% in band, CV 0.20).
+- **NEW CLAIM (campaign): certificate as planning-feasibility GO/NO-GO** — H*≤1 predicted the
+  planner NO-GO a priori; every probe agreed (truth-replay 10/10 exonerates pipeline; SNR≈0.5).
+  GO side untested — **3D is the only remaining path** (2D closed, see below).
+- **2D application layer CLOSED, both levers measured:** data lever flat (δ̂ 2.59/2.29/3.05);
+  resolution lever moves AWAY from GO (ε_task/δ̂: 0.5-0.75 → 0.75 → 0.3@192px, off-tune caveat
+  registered). *Binding constraint = latent predictive precision, not sensor resolution* —
+  thesis-grade material (claim 10, A-).
+- **Equivariance economics (claims 4/5/6):** low-N reliability moat ≈2× safe-threshold (compute-
+  matched attack pre-empted: 171 epochs doesn't rescue plain); θ-moat full-n zero overlap
+  (0.946/0.928 vs 0.285, linear+MLP); high-N xy inversion (two-regime, Brehmer-consistent).
+  Cliff cells partially rank-correlated (disclosed, caption-bound).
+- **κ=0.8:** C1a base unlocked (winner 3/4); non-Markov anchoring hypothesis SURVIVED its 10-d
+  falsification (3/4 vs 2/4, n=4) — claim 9 at B-.
+- **3D lane:** G0 all-pass; G1a open-loop conversion FAIL 0/20 (honest; mechanism = delta-chain
+  lag compounding) → **next blade: G1a-v2 closed-loop conversion** (official mechanism, point
+  clouds rendered same-pass) → corpus → VN training → the 3D planner row. G1.2 banked (tcp
+  step median 3.5mm). **Timeline is the paper's main risk** (scoping decision ~07-15).
+- **Paper:** skeleton v0 live (11 claims graded, 6 holes → 5 cleared, hole #1 = 3D-only);
+  title pivot pending rule-based review. Banked recipe aux0.5_v0.3 (κ=0); winner_v02 or
+  aux0.5+10d for κ=0.8. Engineering lesson sets 1–4 indexed in specs/ledger.
+
+## OLD DIGEST (2026-06-12 morning, superseded)
 
 - **C3 (spear-tip): CLOSED, guarantee form.** C3-guar **PASS** at full registration — 38/38
   qualifying runs faithful-one-sided across two devices (MPS registered + CUDA replication),
