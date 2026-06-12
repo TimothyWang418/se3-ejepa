@@ -1317,11 +1317,15 @@ the teacher-forced loop variant $z\mapsto d(z,a_t)$ lands weakly expansive ($\la
 certificate would be optimistic exactly as the scope map predicts; and the same monitor on walker-walk is
 **regime-bimodal** (the deterministic prior falls on some env seeds; belief-invalidity $0.24\to0.66$ tracks torso
 height $1.05\to0.68$) — a monitor presumes a nominal regime, Proposition 7's scope clause in deployment guise, **and
-the clause is load-bearing**: the walker secondary run's in-situ ratios land $0.32$–$0.47$ against bench
-$0.94$–$1.02$ ($0/3$ replication; fault recall still $0.92$–$1.0$) — regime contamination breaks the clock
-replication while detection survives (`step94_budgeted_monitor_walker-walk.json`).
+the clause is load-bearing**: the walker secondary run's in-situ ratios land $0.37$–$0.63$ against bench
+$0.94$–$1.02$ ($0/3$ replication at $n{=}100$ episodes, $1600$ windows/seed; at $n{=}20$: $0.32$–$0.47$) — and the
+bimodality now has a quantitative signature: **all three seeds pin the lower quartile at $1$ window** (q25 $=1$,
+medians $2$–$4$) — a mass of instant crossings from the fallen regime dragging the clock, while fault recall stays
+$0.9$–$1.0$. Regime contamination breaks clock replication while detection survives
+(`step94_budgeted_monitor_walker-walk.json`).
 `experiments/step94_budgeted_monitor.py`; gates G1a (cell-by-cell replication, $|\Delta r|\le0.25$): **3/3 PASS**;
-G1b (calibrated-cell band): at-the-edge INCONCLUSIVE; G2 (detection): **2/3 PASS** per pre-registration.
+G1b (calibrated-cell band): at-the-edge INCONCLUSIVE; G2 (detection): **3/3 PASS** at $n{=}100$ (per the original
+pre-registration: $2/3$ at $n{=}20$); the walker arm is observational per the spec, no gate binds on it.
 
 
 

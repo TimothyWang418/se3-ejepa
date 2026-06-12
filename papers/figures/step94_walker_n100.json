@@ -1,0 +1,124 @@
+{
+  "task": "cheetah-run",
+  "theta": 0.2,
+  "k_list": [
+    2,
+    3,
+    4,
+    6,
+    8,
+    12
+  ],
+  "per_seed": {
+    "1": {
+      "T1_published": 11.689163886055015,
+      "ratio_bench": 0.42774659066632814,
+      "teacher_forced_diag": {
+        "lambda1_tf": 0.12507892452934313,
+        "lambda1_tf_ci": [
+          0.09729077145409133,
+          0.170870000689699
+        ]
+      },
+      "insitu": {
+        "median": 5.0,
+        "q25": 3.0,
+        "q75": 9.0,
+        "n_windows": 1600,
+        "ratio_insitu": 0.42774659066632814
+      },
+      "invalid_by_k": {
+        "2": 0.08592500000000002,
+        "3": 0.139,
+        "4": 0.19844999999999996,
+        "6": 0.307175,
+        "8": 0.38965000000000005,
+        "12": 0.5161250000000001
+      },
+      "k_star_25pct": 4,
+      "k_op": 4,
+      "fault_recall": 1.0,
+      "median_delay": 3.0,
+      "prefault_flag_rate": 0.3388127318875734,
+      "G1a_replicates_bench": true,
+      "G1b_calibrated_cell": null,
+      "G2_detection": true
+    },
+    "2": {
+      "T1_published": 8.038799815642497,
+      "ratio_bench": 0.49758671589464154,
+      "teacher_forced_diag": {
+        "lambda1_tf": 0.09400529118130993,
+        "lambda1_tf_ci": [
+          0.07287414972818952,
+          0.12794808459953858
+        ]
+      },
+      "insitu": {
+        "median": 4.0,
+        "q25": 2.0,
+        "q75": 6.0,
+        "n_windows": 1600,
+        "ratio_insitu": 0.49758671589464154
+      },
+      "invalid_by_k": {
+        "2": 0.15389999999999998,
+        "3": 0.237,
+        "4": 0.31245000000000006,
+        "6": 0.443025,
+        "8": 0.529175,
+        "12": 0.6586500000000001
+      },
+      "k_star_25pct": 3,
+      "k_op": 3,
+      "fault_recall": 1.0,
+      "median_delay": 2.0,
+      "prefault_flag_rate": 0.3845073184357971,
+      "G1a_replicates_bench": true,
+      "G1b_calibrated_cell": null,
+      "G2_detection": true
+    },
+    "3": {
+      "T1_published": 6.00570039361763,
+      "ratio_bench": 0.8325423634708107,
+      "teacher_forced_diag": {
+        "lambda1_tf": 0.12116582051614304,
+        "lambda1_tf_ci": [
+          0.070078481230616,
+          0.17176332526097726
+        ]
+      },
+      "insitu": {
+        "median": 4.0,
+        "q25": 3.0,
+        "q75": 6.0,
+        "n_windows": 1600,
+        "ratio_insitu": 0.6660338907766485
+      },
+      "invalid_by_k": {
+        "2": 0.146675,
+        "3": 0.21512500000000007,
+        "4": 0.28485,
+        "6": 0.3978,
+        "8": 0.49402500000000005,
+        "12": 0.619325
+      },
+      "k_star_25pct": 3,
+      "k_op": 2,
+      "fault_recall": 1.0,
+      "median_delay": 2.0,
+      "prefault_flag_rate": 0.2369039722430201,
+      "G1a_replicates_bench": true,
+      "G1b_calibrated_cell": false,
+      "G2_detection": true
+    }
+  },
+  "verdict": {
+    "G1a_pass": true,
+    "G1b_pass": false,
+    "G2_pass": true,
+    "n_g1a": 3,
+    "n_g2": 3,
+    "n_seeds": 3
+  }
+}
