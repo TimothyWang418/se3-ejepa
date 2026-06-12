@@ -1,0 +1,37 @@
+{
+ "hypothesis": "10-d momentum-complete anchor restores stability at k=0.8",
+ "prediction": "10d >= 3/4 stable, 7d <= 2/4",
+ "cells": {
+  "aux7d_r0": {
+   "std": 0.29374703764915466,
+   "xy": -0.040733663942614795,
+   "stable": false
+  },
+  "aux7d_r1": {
+   "std": 0.8960016965866089,
+   "xy": 0.12533358866406996,
+   "stable": true
+  },
+  "aux7d_r2": {
+   "std": 0.5848345756530762,
+   "xy": 0.29189798153505975,
+   "stable": false
+  },
+  "aux7d_r3": {
+   "std": 1.651085376739502,
+   "xy": 0.2985623260126993,
+   "stable": true
+  },
+  "aux10d_r0": {
+   "std": 1.6009881496429443,
+   "xy": 0.3738139266251157,
+   "stable": true
+  },
+  "aux10d_r1": {
+   "std": 1.0483582019805908,
+   "xy": 0.20701865124997287,
+   "stable": true
+  }
+ },
+ "elapsed_min": 21.2
+}

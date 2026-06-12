@@ -1,0 +1,31 @@
+{
+ "design": "plain epochs scaled by measured wall-time ratio; cap 300",
+ "cells": {
+  "plain_mc_r0": {
+   "std": 1.1616408824920654,
+   "xy": -1.4553404266680712,
+   "stable": true,
+   "in_delta": 12.071
+  },
+  "plain_mc_r1": {
+   "std": 1.245530605316162,
+   "xy": -0.2719475327225409,
+   "stable": true,
+   "in_delta": 5.299
+  },
+  "plain_mc_r2": {
+   "std": 1.1665778160095215,
+   "xy": -0.9414609382366774,
+   "stable": true,
+   "in_delta": 10.174
+  }
+ },
+ "timing": {
+  "eq_s_per_epoch": 6.49,
+  "plain_s_per_epoch": 1.52,
+  "ratio": 4.28,
+  "plain_epochs_matched": 171,
+  "capped": false
+ },
+ "elapsed_min": 23.2
+}

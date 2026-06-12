@@ -1503,4 +1503,6 @@ def _save_figure(res, soundness_scatter):
 
 
 if __name__ == "__main__":
-    run()
+    import os
+    _seeds = tuple(int(x) for x in os.environ.get("STEP82_SEEDS", "0,1,2").split(","))
+    run(seeds=_seeds)
