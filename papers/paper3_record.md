@@ -6,24 +6,34 @@
 > W1 recon: `docs/specs/2026-06-10-p4-w1-recon.md`. No gate is loosened, ever; INCONCLUSIVE is
 > reported as such. Entries below are newest-first.
 
-## STATUS DIGEST (updated 2026-06-11, post-v1.5)
+## STATUS DIGEST (updated 2026-06-11 evening, post-E0.3 / mid-champion)
 
-- **Protocol:** v1.2 in force (stride-5 chunks, circular mask, per-sample aug); v1.3 (equal-step
-  budget + probe-vs-step curves) registered NOT yet run; v1.4 (frame-pair) and v1.5 (variance
-  floors) RAN and CLOSED the 6-ch direction — **the banked configuration is single-frame κ=0**
-  (stable: std 0.985/0.823).
-- **Instruments (all certified):** C_N predictor (exact, chunked); κ-gate (two regimes measured);
-  gap mode (G-I/II/III + known biases −0.007@W40 / −0.029@W16); pairing-equality gates (#9 fix,
-  E-I/II/III); eq-G (exact); planner stack (CEM ~10 ms/window). Failure taxonomy so far:
-  stable-but-empty (aug v1.1) vs collapsed-but-contentful (per-field v1.5).
-- **Claims:** C3 healthiest (seed-0 shapes: shape-confirmed linear, conservative-in-band coarse-ε,
-  planner ≥ model ⇒ certificate-as-guarantee; **needs 3-seed on the banked config**). Moat: 6.3×
-  normalized at κ=0 (stable recipes both sides, seed-0); κ=0.8 + temporal observability =
-  documented open frontier (G-pre refuses jurisdiction there — correctly). C2 blocked on
-  θ-readability (TC-WM proprio-arm registered as candidate, see proposal amendment). C1a awaits a
-  stable expansive base; C1b/wedge unbuilt. C4 untouched (θ̂* protocol v2 registered).
-- **Next blades (order):** 3-seed banked spine → wedge lane (C1b/C3-wedge) → v1.3 grid (C2
-  diagnostics + TC-WM arm) → C4.
+- **Protocol:** v1.2 + v1.6 (two-stage tuning, n=10 runs, stability floor std ≥ 0.7) in force;
+  v1.3 registered NOT run; v1.4/v1.5 CLOSED (banked config = single-frame κ=0). **C3-guar
+  faithful mechanics amendment** (2026-06-11, between champion r1/r2): dual boundaries, direct
+  $H_{\mathrm{cert}} \le H_{\mathrm{meas}}$, 0≤0 passes, cal band on both-positive cells only.
+  Caveat registered: cells censored at h_max=8 on both sides ((8,8)) are pass-by-censoring —
+  verdict language must say "within the audited horizon".
+- **Instruments (all certified):** C_N predictor (exact); κ-gate (two regimes); gap mode
+  (G-I/II/III, biases −0.007@W40/−0.029@W16); pairing-equality (#9); eq-G; planner stack;
+  **VN-JEPA 3D stack (G0: equivariance at 1e-16, pairing bit-exact)**; `to_transitions_lean`
+  (OOM-safe, numerically identical). Taxonomy: stable-but-empty vs collapsed-but-contentful.
+- **In flight:** champion confirmation (v0.3+aux0.3 × c2000 × n=10): **MPS arm** (registered
+  eval; 4/4 guar ✓ so far, cal trending over-conservative-FAIL) + **CUDA replication arm**
+  (3080, fresh n=10, device-robustness). aux-health n=10 read: aux0.3_v0.15 = 3/10 stable but
+  stable-xy ≈ 0.84; **aux0.5_v0.3 = 7/10 stable, stable-xy up to 0.84 — next champion candidate
+  (needs c2000)**. Trade-off curve is now measured, not anecdotal.
+- **Claims:** C3 spear-tip: 3-seed PASS*, E0.3 adds **OOD one-sidedness: 109/109 evaluable
+  cells ≤ 1 across 4 unseen shapes** (11 vacuous cells under dual-boundary re-verification,
+  E0.3b); narrative settling at "guarantee holds (incl. OOD), point-estimate conservative".
+  Moat distributional [3.79, 1.10, 2.73] κ=0, inverts κ=0.8 (open frontier). C2 blocked on
+  θ-readability (θ-only anchor backfires — night shift). C1b wedge: **data ready** (corpus +
+  in/out held-outs). C4 untouched.
+- **Fleet:** Mac M5 (MPS×2 + CPU), 3080 box (shared w/ paper2, lock protocol, `.venv3` full
+  deps), backup Intel MacBook (papers 2+3 small CPU jobs). 3D lane: G0 done; render = CPU
+  (llvmpipe/WSL boundary), train = CUDA; demos downloaded (1000 eps).
+- **Next blades (order):** champion verdicts (both arms) → wedge lane (C1b/C3-wedge; data
+  banked, CPU free) → aux0.5_v0.3 × c2000 stage-B → 3D protocol spec v1 → v1.3 grid (C2) → C4.
 
 ---
 
@@ -33,11 +43,16 @@
 audited on held-out episodes of 4 never-seen block shapes {L, Z, square, +} + on-T reference
 (30 eps each; shape pinned via the autopsy-fixed `variation_values` API, render-diff guarded).
 
-**Verdicts:**
-- **One-sided (C3-guar-style) on OOD shapes: 30/30 ✓** — every pair × every shape, the certified
-  q90 boundary never exceeds the measured one. *The certificate-as-guarantee property survives
-  object-geometry OOD.* (C1b-adjacent free evidence; the wedge lane tests the group-theoretic
-  version of the same claim.)
+**Verdicts (CORRECTED by review pass + E0.3b, same day):** the first run's "one-sided ✓" used
+the pre-amendment ratio semantics (None auto-passed; 11/120 cells were None). E0.3b recomputed
+all 30 audits storing dual boundaries (collection is seed-7 CPU-deterministic — exact replay):
+- **Faithful one-sided on OOD shapes: 30/30 rows, 0 violations** — 109/120 cells evaluable and
+  all ≤ 1; the 11 vacuous cells are all $(H_{\mathrm{cert}}, H_{\mathrm{meas}}) = (0,0)$
+  (vacuous-conservative, NOT hidden violations; same phenomenology as the champion cells).
+  *The certificate-as-guarantee property survives object-geometry OOD, now under the faithful
+  semantics.* (C1b-adjacent free evidence; the wedge lane tests the group-theoretic version.)
+- Artifact: `p4_e03b_boundaries.json`. Lesson doubled: the ratio-semantics gap was planted in
+  TWO scripts independently — gate mechanics belong in ONE shared function, not copies.
 - **δ̂ is nearly flat across shapes (eq):** r0 3.18(T) → 3.41(L) / 3.46(Z) / 3.17(sq) / 4.14(+)
   — worst-case +30% on the most dissimilar shape ('+'); same pattern r1/r3. The certificate's
   load-bearing input barely notices geometry it has never seen.
@@ -45,10 +60,12 @@ audited on held-out episodes of 4 never-seen block shapes {L, Z, square, +} + on
   (2.4–2.9× eq), but the known good plain seed (r1) reaches 3.8–4.5 ≈ eq levels — consistent
   with the 5-run moat spread [3.79, 1.10, 2.73]; report as distribution, never as a single ×.
 
-**Parallel read, aux-health n=10 (MPS lane 2, in progress):** the night-shift "content star"
-family at real n — aux0.3_v0.15 so far **stable 1/6** (n=3's 3/3 was small-sample flattery; the
-exact failure the v1.6 n-upgrade exists to catch) while non-collapsed runs hit **xy 0.60–0.90**
-(champion ≈ 0.4). The stability–content trade-off is now a measured curve, not an anecdote.
+**Parallel read, aux-health n=10 (final for the two registered configs):** the night-shift
+"content star" at real n — **aux0.3_v0.15: 3/10 stable** (n=3's 3/3 was small-sample flattery —
+the exact failure the v1.6 n-upgrade exists to catch), stable-conditional xy ≈ 0.84 but
+unbettable odds. **aux0.5_v0.3: 7/10 stable, stable-xy up to 0.84** — stability AND content
+simultaneously; **promoted to next champion candidate (needs c2000 stage-B before any claim
+gate)**. The stability–content trade-off is now a measured curve, not an anecdote.
 
 ## [2026-06-11] 3D lane G0 — ALL GATES PASS on the 3080; contracts banked, plumbing validated end-to-end
 
