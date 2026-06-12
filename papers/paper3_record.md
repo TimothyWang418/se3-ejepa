@@ -73,6 +73,37 @@
 
 ---
 
+## [2026-06-12] CAMPAIGN D4 VERDICTS — G-P2 FAIL / G-C2 FAIL / G-C4a INCONCLUSIVE-BY-RESOLUTION; the certificate called every one of them a priori
+
+**Verdicts (as registered, canonical semantics, D1-frozen bindings):**
+- **G-P2: FAIL.** All planner rows ≈ random across all 9 pairs (0–13%); zero-action 0%;
+  certificate row not above controls. The contingency clause correctly NOT invoked (diagnostic
+  chain: truth replay 10/10 = pipeline sound; coherent-CEM 1/10 = not parametrization; SNR ≈
+  0.5 at planning timescale = model-side infeasibility).
+- **G-C2: FAIL.** $H^*(\epsilon_{\mathrm{task}}(\tau)) = 0$ for 9/9 healthy pairs; ladder:
+  0/9 at 2τ, 1/9 at 4τ (r8 only).
+- **G-C4a: INCONCLUSIVE-BY-RESOLUTION.** Degenerate pair = 0 everywhere as predicted, but
+  healthy pairs are ALSO 0 at every rung (A1's backup rule finds no qualifying rung: 11% < 80%
+  at 4τ). No contrast available at this encoder resolution. Ladder fully reported.
+- **Disclosed:** the mid-run "cross-pair headroom ordering" prediction was ill-posed BY
+  CONSTRUCTION (ε_reach = 2δ̂ and motion threshold = 4δ̂ are both δ̂-scaled — every pair faces
+  identical relative difficulty; nothing to correlate). Declared, found degenerate, reported.
+
+**The coherent story (write fairly):** at 96px model quality, the certified error scale
+(δ̂ 2.2–4.6) exceeds the task-elicited precision (ε_task ≤ 2.75 ≈ 3.8 render px) AND the
+per-chunk motion signal. **The certificate refused (H* ≤ 1, four pairs H*_raw = 0) — and every
+empirical probe agreed with the refusal.** The application layer at this fidelity is an honest
+NO-GO, with the certificate as the one instrument that said so before any planner ran.
+**Claim that survives and strengthens: certified spacing as a planning-feasibility GO/NO-GO
+gate** — the FF-JEPA contrast sharpens (a fixed H=25 would silently fail here; $H^*$ says
+"don't" a priori).
+
+**Strategic consequence (registered as the next lever):** the binding constraint is the 96px
+position-resolution floor. The 3D lane's point-cloud latents have no pixel floor — **the
+application-layer GO regime is most plausibly reachable in the 3D lane**, which re-orders its
+priority upward. 2D paths to GO (data lever δ̂ scaling on c5000; resolution ladder 96→192px)
+are cheaper probes and registered as E-next candidates.
+
 ## [2026-06-12] D2 mid-run diagnostic — planner < random; truth replays 10/10; the SNR analysis says the certificate's H*=1 was the warning
 
 **Observed (r6, first pair):** all planner rows reach ≈ 0.033, zero 0.0, random 0.133 —
