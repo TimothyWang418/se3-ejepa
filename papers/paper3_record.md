@@ -37,6 +37,41 @@
 
 ---
 
+## [2026-06-11] Wedge lane v1 — verdicts as registered + the design-leak diagnosis; orbit transport ≤2%; v2 registered
+
+**Verdicts (exactly as registered, no reinterpretation):**
+- **G-W1 (C3-wedge guarantee): INCONCLUSIVE-BY-STABILITY** — stable eq 3/6 < quorum 4. The 3
+  stable eq runs were 3/3 faithful-guar ✓ on ho_out with 0 violating cells (below quorum, so
+  reported descriptively, not as a gate pass). eq std spread [1.20, 0.64, 0.26, 1.39, 0.60,
+  0.80] — within the winner-recipe@200eps historical range, no new anomaly. plain: 6/6 stable.
+- **G-W2 (C1b-prelim sign gate): FAIL as registered** — median out/in δ̂ ratio eq 1.030 [CI90
+  1.028, 1.048] vs plain 1.015 [0.994, 1.025].
+
+**Diagnosis (disclosed in order):** the flat result (both arms ≈ 1.0) triggered a data audit →
+**the wedge leaks**: only initial angles were constrained; WeakPolicy rotates the block during
+episodes — 31.1% of training timesteps are out-of-wedge (median per-episode drift 41.7°, q90
+109.7°; 49.5% of final frames remain in-wedge; ho_in itself only 73.3% in-wedge timesteps).
+Both arms therefore TRAINED on substantial out-of-wedge state coverage — **the v1 design has no
+power to separate the C1b hypotheses**. G-W2's FAIL stands against v1's design; it is not
+evidence against C1b. (ho_out is 92.8% out-of-wedge — the eval side is sound.)
+
+**Uncontaminated positives:**
+- **Orbit transport (the day's cleanest result):** eq δ̂(transported)/δ̂(in) = 1.021 / 1.011 /
+  0.998 — rotating out-of-wedge episodes back by nearest-$C_{16}$ inverse reproduces in-wedge
+  audit statistics to ≤ 2%. **Lemma-2 orbit-constancy validated through the real pixel
+  pipeline** (residual ≤ 11.25° quantization documented).
+- **First eq/plain separation on guarantees:** plain shows its first faithful-guar violation
+  (plain_r3 on ho_out, 1 cell anticonservative); eq 0 violations in 3/3. Descriptive (n tiny).
+
+**Wedge v2 (registered now, before any further run):** training transitions filtered to chunk
+windows whose block angle stays in-wedge throughout ($\theta_t \in [0°, 90°)$ for all 6 window
+frames; ≈ 60–65% of transitions survive). Eval sets unchanged (leak fractions documented).
+Arms: eq-w2 n=8 (quorum head-room at ~50% stability), plain-w2 n=6, **eq count-control n=4**
+(unfiltered transitions subsampled to the filtered count — separates "wedge restriction" from
+"fewer transitions"; the data lever is a known confound). Gates: G-W1/G-W2 unchanged, canonical
+`gates.py`. Prediction registered: if C1b is real, plain-w2's out/in ratio rises materially
+above 1 while eq-w2 stays ≈ 1 (transport); if both stay ≈ 1, C1b-prelim is refuted at this κ.
+
 ## [2026-06-11] E0.3 shape-generalization audits (CPU batch v2) — certificate one-sidedness holds OOD on all 4 unseen shapes, 30/30
 
 **Setup (as declared):** ckpt7 stable Stage-B pairs (eq r0/r1/r3, plain r0/r1/r2; all T-trained),
