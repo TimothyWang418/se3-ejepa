@@ -31,3 +31,12 @@ cp bridge_deploy/eq_world_model.py  <tdmpc2>/tdmpc2/common/eq_world_model.py
 ## 6. Launch (per instance, one arm×seed):
    MUJOCO_GL=egl python train.py task=walker-walk model=<eq|dense> seed=<s> steps=1_000_000 \
      exp_name=bridge_<arm>_s<s> eval_episodes=5 enable_wandb=false save_csv=true save_agent=true save_video=false
+
+## 7. CRITICAL (2026-06-13, RTX 5090 / torch 2.8 / torchrl-tensordict 0.13):
+   - Blackwell (5090) forces torch 2.8 -> torchrl/tensordict 0.13 (tdmpc2 was written for ~0.6).
+     numpy<2 + --break-system-packages + hydra-submitit-launcher needed (PEP668 system python).
+   - torch.compile x tensordict 0.13 crashes the update: "'TensorDict' has no attribute '_batch_size'"
+     (dynamo tracing artifact). FIX: run with **compile=false** (eager). Trains end-to-end, ~40 steps/s
+     on a 5090 eager (compiled would be ~2-3x faster but is broken on this stack).
+   - On a 4090/3090 (Ada/Ampere) one could instead use torch 2.5.1 + the official pinned nightly
+     tensordict/torchrl and keep compile=true (faster). 5090 = eager-only here.
