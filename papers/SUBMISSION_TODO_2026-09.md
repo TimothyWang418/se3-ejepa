@@ -45,3 +45,4 @@
 - WEAVER(arXiv:2606.13672)→ related work 借力:三 desiderata 之外 "the fourth desideratum is certifiability"
 - WM Tutorial(arXiv:2606.12783)→ §2 背景一句:显式/隐式二分,证书化 latent WM 横跨缝隙
 - 配套 rebuttal 弹药 A14–A19 已入 REBUTTAL_PREP(2026-06-12)
+- **✅ 已提前执行(2026-06-12)**:PoR/ATM/WEAVER 三条入短版 Concurrent-work 段(等量偿还,9 页保持);四条全量入长版 §6 头部新段;WM-Tutorial 短版按可选留待九月斟酌

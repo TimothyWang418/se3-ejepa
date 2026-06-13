@@ -275,19 +275,18 @@ intersection.
 ---
 
 
-**Concurrent work (2026, briefly).** Nearest neighbors: symmetry-protected *neutral* Lyapunov modes (Mo, arXiv:2605.03338 — the spectrum's kernel, vacuously zero for our discrete $\mathbb{Z}_N$ systems), conformal rollout bounds (Geng et al., arXiv:2512.08991 — statistical and rollout-hungry where ours is a-priori, training-free), flow-equivariant world models ([@lillemark2026flowm] — exactness/closure, no quantitative horizon). A Jacobian certificate of a *public* model's latent map, cross-validated against true-environment divergence, is to our knowledge new. **Appendix E**: the full sweep and per-work distinctions.
+**Concurrent work (2026, briefly).** Nearest neighbors: symmetry-protected *neutral* Lyapunov modes (Mo, arXiv:2605.03338 — spectrum kernel; vacuous for discrete $\mathbb{Z}_N$), conformal rollout bounds (Geng et al., arXiv:2512.08991 — statistical, rollout-hungry where ours is a-priori), flow-equivariant world models ([@lillemark2026flowm] — exactness/closure, no quantitative horizon); WEAVER's desiderata (arXiv:2606.13672) name our fourth — *certifiability*. Independent 2026 probes corroborate the premise: reconstruction fidelity measures orthogonal to action recoverability (PoR, arXiv:2606.07687); action-semantics probes (ATM, arXiv:2606.09028) compose with the horizon column. **Appendix E**: the full sweep.
 
 ## 6. Limitations
 
-- **Exactness needs a genuine dynamical symmetry (A3).** Exact where $G$ is a symmetry of the dynamics, *gracefully
-  approximate* elsewhere — the degradation two-sidedly bounded (Theorem B, Proposition 6) and measured (E3).
+- **Exactness needs a genuine dynamical symmetry (A3)** — exact where $G$ is one, *gracefully approximate*
+  elsewhere; degradation two-sidedly bounded (Thm B, Prop. 6) and measured (E3).
 - **Prefactor: computable and measured — worst-case vs typical disclosed.** $c_j=1/\sin\theta_j$ (Prop. 6′) is
   exactly $1$ on isotypic splittings (measured at machine precision), but on audited chaotic loops the worst-case
-  $\kappa_1$ carries a heavy near-tangency tail and a **window-dependent median** (walker $20.9$ at $W{=}120$ vs $49.2$ at
-  $W{=}200$, each passing the same stability check — necessary, not sufficient; max $\sim10^2$; Lorenz-96
-  converges at $W{=}400$, median $11.9$): the measured calibration ($0.83$–$1.02$)
-  reflects *typical*, not adversarial, defect alignment — an adversarially-aligned defect could spend the
-  $\log\kappa_1/\lambda_1$ haircut.
+  $\kappa_1$ carries a heavy near-tangency tail and a **window-dependent median** (walker $20.9@W{=}120$ vs $49.2@W{=}200$, each passing the same
+  stability check — necessary, not sufficient; max $\sim10^2$; L96 converges at $W{=}400$, median $11.9$):
+  measured calibration ($0.83$–$1.02$) reflects *typical*, not adversarial, defect alignment — an
+  adversarially-aligned defect could spend the $\log\kappa_1/\lambda_1$ haircut.
 - **The Noether hinge: forward direction proved, hypotheses measured, emergence open.** Proposition 5 assumes a $G$-invariant
   Hamiltonian latent flow (the defect $\eta$ exact only under an equivariant symplectic discretization); the
   converse fails (slow $\not\Rightarrow$ conserved). Validated on *constructed* equivariant teachers — E5/E6 validate *flatness*,
@@ -308,9 +307,9 @@ intersection.
   $T_1(0.2)\approx5.4$–$6.4$; the control-relevant resolution is finer and sits in the
   certificate's known tight-$\epsilon$ optimistic regime (`step93`). With E11, the honest scope law — value concentrates
   where the decided quantity IS the certified quantity and dilutes behind a task-level map — which **Proposition 11
-  makes a theorem**: an aligned decision inherits certificate value at calibration cost alone (zero regret at
-  $c{=}1$); a task-mapped one pays an irreducible $|\log(\epsilon/\theta^{\ast})|/\lambda_1$ — and
-  $\theta^{\ast}$ is the task's to give, not the certificate's.
+  makes a theorem**: an aligned decision inherits certificate value at calibration cost alone (zero regret);
+  a task-mapped one pays an irreducible $|\log(\epsilon/\theta^{\ast})|/\lambda_1$ — and $\theta^{\ast}$ is
+  the task's to give, not the certificate's.
 
 - **Scale and modality.** All experiments are $1$–$2$-GPU. Exact flatness transfers across modalities (state,
   $\mathrm{SO}(3)$ point clouds, pixels), but multi-step pixel accuracy is poor for *every* architecture at this scale —

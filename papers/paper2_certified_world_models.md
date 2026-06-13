@@ -1399,6 +1399,16 @@ explicit-attention branch + an explicit math-SDPA, and a reverse-graph-retention
 
 ## 6. Related Work
 
+**2026 instruments adjacent to the audit (added at the June sweep).** Reconstruction fidelity is measured
+orthogonal to action recoverability across encoder families (PoR, arXiv:2606.07687 — Dreamer-4 action
+$R^2\approx0$ across three configurations), corroborating the audit's premise that average fidelity hides
+control-relevant failure; action-semantics consistency probes (ATM, arXiv:2606.09028 — simulation-free,
+seconds per checkpoint) compose with the horizon certificate as an orthogonal audit axis; WEAVER's three
+world-model desiderata — fidelity, consistency, efficiency (arXiv:2606.13672) — name the fourth this paper
+supplies: *certifiability*; and the explicit/implicit world-model dichotomy of the recent tutorial
+(arXiv:2606.12783) places the certified latent loop squarely across its seam — explicit enough to audit,
+implicit enough to scale.
+
 The paper sits among a cluster of concurrent *structure-for-prediction* works. The table places each against the
 certificate's three axes and the *kind* of guarantee it offers (✓ provides; ~ partial/empirical; — not addressed);
 the prose elaborates below.
