@@ -34,11 +34,17 @@ Decision point: after ladder + (if GO) the 192px D2 rerun.
 ## 2. Section outline
 
 1. **Intro.** Pixel world models are expensive at exactly the precision tasks need; we ship
-   certificates instead of promises. Contributions: (i) faithful-semantics certified horizons
-   with guarantee-grade evidence (75 audits, dual OOD, dual device); (ii) the certificate as
-   an a-priori feasibility gate — including an honest NO-GO it called correctly; (iii) the
-   equivariance economics: reliability at low N and exclusive access to the group coordinate;
-   (iv) the price-of-pixels analysis (resolution, not data, is the binding lever).
+   certificates instead of promises. **Opening exhibit — the field picks $H$ by hand:** FF-JEPA
+   fixes subgoal spacing $H{=}25$, EA-WM's "long-horizon" online planning runs $H{=}20$ (wiki
+   D2.1) — both unprincipled constants; we DERIVE $H^*(\epsilon)$ and, where it says NO-GO, the
+   hand-picked $H$ silently fails (our campaign §5). Contributions: (i) faithful-semantics
+   certified horizons with guarantee-grade evidence (75 audits, dual OOD, dual device); (ii) the
+   certificate as an a-priori feasibility gate — including an honest NO-GO it called correctly;
+   (iii) the equivariance economics: reliability at low N and exclusive access to the group
+   coordinate; (iv) the price-of-pixels analysis (resolution, not data, is the binding lever).
+   *Thesis backing (latent prediction > pixels), three independent third-party bricks: PoR
+   (action $R^2$), YoCausal (causal probes), "Do VFMs understand intuitive physics" — V-JEPA
+   tops all (wiki F1).*
 2. **Setup.** JEPA deployable pair; audit instruments + known biases; Thm A/B + Lemma 2
    inheritance (cite paper2); $H^*(\epsilon)$; canonical gate semantics ((0,0) passes,
    censoring language, degenerate self-scaled disclosure).
@@ -50,12 +56,26 @@ Decision point: after ladder + (if GO) the 192px D2 rerun.
    verdict and the agreement chain (truth 10/10 / coherent-CEM / SNR); D1 elicitation
    (τ from env, ladder); [SLOT: 192px GO rerun]. (F6, F7)
 6. **Beyond pixels.** [SLOT: 3D lane G0/G1 + first VN numbers if ready]. The pixel floor
-   argument makes point clouds the natural home for task-precision certificates.
-7. **Related work.** FF-JEPA (fixed H=25 vs our $H^*$ function — and our gate would have
-   refused where theirs silently fails); HWM (post-hoc error-horizon analysis vs a-priori);
-   Brehmer 24 (data closes equivariance gaps — our two-regime result is the refinement:
-   content yes, reliability and group coordinate no); V-JEPA/Dreamer lines; certified/safe
-   control. Novelty-sweep must-cites.
+   argument makes point clouds the natural home for task-precision certificates. **3D
+   geometry-injection spectrum (the C2 "learn vs guarantee" comparison matrix, wiki E2/D2.2):**
+   OASIS (SE(3) output, non-equivariant) → MRO-GWM (canonical-frame + rigid-transform, learns
+   rigidity, non-equivariant) → EquiDexFlow (VN, true-equivariant, generative side) → **ours
+   (equivariant JEPA + certificate)** — increasing geometric prescription; the non-equivariant
+   points are predicted to degrade on OOD rotation where ours holds by construction. Eval proxy:
+   WorldOlympiad's geometry track (GS-reconstruction as a 3D-consistency surrogate, wiki F2).
+7. **Related work.** *Subgoal spacing / hierarchical planning (3 tiers of structure):* FF-JEPA
+   (no structure, fixed $H{=}25$) / WorldDP (hand-injected object-centric structure) / ours
+   (group-prescribed) — and our gate refuses where the fixed-$H$ lines silently fail; HWM
+   (post-hoc error-horizon analysis vs our a-priori). *Equivariance economics:* Brehmer 24
+   (data closes equivariance gaps — our two-regime refinement: content yes, reliability and
+   group coordinate no). *Manifold solvers (orthogonal, composable):* LieIPM optimizes
+   trajectories on KNOWN dynamics; we certify the trust window of a LEARNED model — a manifold
+   solver can slot in below a certified spacing (note: latent $\mathrm{SE}(3)$ $\exp/\log$ needs
+   the Cartan–Schouten connection, non-compact Lie exp ≠ Riemannian exp). *Symmetry handling:*
+   EquiDexFlow AVOIDS gravity tension (yaw-only); our $\kappa$-gate MEASURES it (avoidance vs
+   measurement). *Audit/instrument neighbors:* ATM action-decodability (orthogonal: direction-
+   right vs how-far-trustworthy). V-JEPA/Dreamer lines; certified/safe control. Novelty-sweep
+   must-cites.
 8. **Honest accounting (limitations).** Cal conservatism; 96px resolution floor; MPS
    stability tax; rank-correlation in cliff cells; single 2D env + early 3D; aux inversion
    at κ=0.8 is hypothesis-grade.
@@ -78,9 +98,20 @@ Decision point: after ladder + (if GO) the 192px D2 rerun.
 1. **GO-side validation of claim 3 — 2D branch CLOSED (ladder NO-GO 0/12). 3D is the only
    remaining path**: G1a-v2 closed-loop conversion → corpus → VN training → 3D planner row.
    Fallback ship-shape: claim 3 as "validated in the refusal direction" + 3D early evidence.
-2. Matched-COMPUTE moat row (params are matched; compute is not — cheap pre-emption of a
-   standard reviewer ask).
-3. Cal-conservatism correction factor (claim 2 upgrade, registered-idea-only).
-4. θ-probe extension to all 10 pairs (claim 5 cosmetic).
-5. κ=0.8 10-d falsification (claim 9 upgrade or retirement).
+2. ~~Matched-COMPUTE moat row~~ DONE (compute doesn't rescue plain, ledgered 06-12).
+3. ~~Cal-conservatism correction factor~~ measured (λ=1.5 → 93% in band); confirm on fresh runs.
+4. ~~θ-probe all 10 pairs~~ DONE (0.946/0.928 vs 0.285).
+5. ~~κ=0.8 10-d falsification~~ DONE at n=8 (10-d 6/8 > winner 4/8; banked κ=0.8 recipe).
 6. 3D timeline scoping decision by ~07-15: full section vs "early evidence" paragraph.
+7. **ATM action-decodability instrument into the 3D stage-B health panel** (wiki B1.1) —
+   two-layer MLP $D_{T,T}$ probe per ckpt; catches stable-but-empty (the campaign's SNR failure
+   mode). Ordering-only, absolute values not cited (capacity-confound caveat).
+
+## Reinforcement adoption ledger (wiki list B/D2/E2/F, adjudicated 2026-06-13)
+
+USED: TC-WM proprio anchor (B2.3 → banked aux recipe + C2 unlock + κ=0.8 10-d) · PoR
+dimension-wise probes (B3.6 → θ-moat) · EquiDexFlow triple (D2.2 → VN feasibility, eq
+verification, avoidance-vs-measurement A2). FOLDED INTO SKELETON (this edit): EA-WM H=20 +
+intuitive-physics/YoCausal bricks (§1) · MRO-GWM/OASIS geometry spectrum + WorldOlympiad eval
+proxy (§6) · WorldDP/LieIPM/ATM (§7). DEFERRED: PRISM (B1.2, 2D planning closed) · QGF/Echo
+(B4, conditions untriggered).
