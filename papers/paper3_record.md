@@ -141,7 +141,22 @@ results at 14:51 (commit 1cb3ebb, on origin) — my 16:33 checkout discarded RED
 ABORTS on tracked-modified files and reports, never auto-checkouts; rule added — destructive
 git on the shared tree only for paths matching `p4_*`/paper3 namespaces.
 
-## [2026-06-13] T1.2 cliff factor separation — failure is SEED-dominated (init lottery); rank-correlation disclosure now CHARACTERIZED, not just flagged
+## [2026-06-13] 2D night batch — #8 finer cliff (broad zone confirmed), #9 eq has its own cliff, #10 κ=0.8: 10-d anchor wins
+
+Free Mac MPS overnight, all pre-registered:
+- **#8 finer plain cliff (n=8/point):** P(fail) = 0.75/0.88/0.50/0.57/0.75 at N=2400/2800/3200/
+  3600/3800. The failure zone is BROAD and persists through 3800 (no clean exit) — confirms and
+  hardens the earlier finding; plain's safe threshold is ≥ 4000, full figure-grade curve now.
+- **#9 eq cliff (n=6/point):** P(fail) = 0.33/0.33/0.40/0.17 at N=1200/1500/1750/2000 — eq DOES
+  have a low-N cliff but MILDER (≤40% vs plain's 75-88% at comparable depth), and it clears by
+  2000. **Safe-threshold ratio firms: eq ≈2000 vs plain ≈4000+ → ≥2×**, both curves now at n≥6.
+- **#10 κ=0.8 C1a treatment (n=8):** winner_v02 **4/8** stable vs **aux0.5+10-d anchor 6/8** —
+  the momentum-complete (10-d) anchor is the BETTER expansive-regime recipe, confirming the
+  non-Markov anchoring hypothesis at full n (was 3/4 vs 2/4 at n=4). **C1a's banked κ=0.8 recipe
+  = aux0.5_v0.3 + 10-d state anchor.** Claim 9 → B (hypothesis now supported at n=8 + a working
+  recipe). δ̂ audits on the stable runs pending (the artifact has them where stable).
+
+## [2026-06-13] T1.2 cliff factor separation## [2026-06-13] T1.2 cliff factor separation — failure is SEED-dominated (init lottery); rank-correlation disclosure now CHARACTERIZED, not just flagged
 
 The cliff factor experiment (plain × {2606,3000,3500} × seed-sweep vs subsample-sweep × n=8,
 free Mac, after the B300 detour): δ̂ variance is **seed-dominated at every N** — seed_var
