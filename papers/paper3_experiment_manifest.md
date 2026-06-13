@@ -81,6 +81,26 @@
 - corpus production / env stepping (Vulkan/physx CPU) → box
 - figure generation, ledger, planning → Mac
 
+## ⚠️ B300 rental post-mortem (2026-06-12) — banked lesson, do not repeat
+
+Rented a B300 (275GB) to accelerate the fleet. **Net result: ~$10-15, 0 completed runs, released.**
+Root cause: the workload is MISMATCHED to a big GPU.
+- **VN (3D) is knn-bound**, not FLOP-bound: knn_graph (cdist+topk on 1024 pts, O(N²)) dominates;
+  single-run GPU util 0-31%, 12-way parallel still only hit 45-74% bursty and NOTHING completed
+  in 16 min (12-way knn contention is self-defeating). A B300 ≈ a 3080 for knn-bound work.
+- **paper2 is audit-bound** (JVP Benettin on pretrained ckpts = CPU) or needs mujoco/e2cnn.
+- **e2cnn won't install on torch 2.8** (the cu128 B300 image) → 2D pixel-eq can't run there.
+- **No Vulkan in the container** → can't generate 3D corpus locally (same class as WSL).
+- **RunPod proxy throttles transfer to 0.4 MB/s**; the fix that DID work: `runpodctl send/receive`
+  (croc P2P, 12 MB/s, 30×). Bulk transfers over the SSH proxy drop ("unexpected end of file");
+  the network volume `/workspace` (MooseFS) breaks rsync temp-rename → use `/root` local disk.
+
+**RULE: before renting a big GPU, confirm the bottleneck is GPU FLOPs.** Ours is knn / data /
+deps — none GPU-FLOP-bound. Small-model + audit-heavy + dependency-constrained research does NOT
+benefit from datacenter GPUs. Run knn-bound 3D on the local 3080 (same speed, free); 2D on the
+Mac (e2cnn works); audits on box+Mac CPU. If a future workload IS FLOP-bound (e.g. a large
+transformer WM), revisit — and transfer data via runpodctl, not the SSH proxy.
+
 ## Discipline (unchanged, non-negotiable)
 Pre-registered gates per experiment; faithful `src/audit/gates.py` only; n≥10 for any claim
 number; runs-not-seeds language + device recorded; every tier ledgered in paper3_record.md
