@@ -126,7 +126,7 @@ def main() -> int:
         time.sleep(30)
     print(f"[wait] done at {(time.time()-T0)/60:.0f} min")
 
-    full = load_shards()
+    full = load_shards(8)   # cap 200 eps for stage-A speed (VN knn-bound; 1000 eps = ~15h/run)
     obs, act, nxt, aux_t = transitions(full[0][:-int(len(full[0]) / 8)], full[1][:-int(len(full[1]) / 8)], full[2][:-int(len(full[2]) / 8)])
     n_ho = max(1, len(full[0]) // 8)
     obs_h, _, _, tcp_h = transitions(full[0][-n_ho:], full[1][-n_ho:], full[2][-n_ho:])
@@ -143,16 +143,18 @@ def main() -> int:
         print(f"  plain r{r}: {c}"); save()
 
     # #6/#7 data-scaling (shard counts -> episode counts)
-    for tag, make in (("vn_datascale", VNJEPA), ("plain_datascale", PlainJEPA)):
+    GRIDS = {"plain_datascale": (PlainJEPA, (3, 6, 9, 11), 4),   # fast (no knn) — full grid
+             "vn_datascale": (VNJEPA, (4, 8), 2)}                # slow (knn) — reduced, last
+    for tag, (make, ks, nrep) in GRIDS.items():
         print(f"[#6/7] {tag} ...")
         art["blocks"][tag] = {}
-        for k in (3, 6, 9, 11):
+        for k in ks:
             cl, ac, tc = load_shards(k)
             nh = max(1, len(cl) // 8)
             o, a, n, x = transitions(cl[:-nh], ac[:-nh], tc[:-nh])
             oh, _, _, th = transitions(cl[-nh:], ac[-nh:], tc[-nh:])
             cells = []
-            for r in range(4):
+            for r in range(nrep):
                 try:
                     c = train_one(make, o, a, n, x, oh, th, r)
                 except Exception as exc:  # noqa: BLE001
