@@ -1,0 +1,53 @@
+{
+ "queue": "#8 finer cliff / #9 eq cliff / #10 kappa=0.8 C1a",
+ "blocks": {
+  "finer_cliff": {
+   "N2400": {
+    "cells": [
+     {
+      "std": 0.9542044997215271,
+      "stable": true,
+      "in_delta": 11.192
+     },
+     {
+      "std": 1.0755934715270996,
+      "stable": true,
+      "in_delta": 3.349
+     },
+     {
+      "std": 1.0843476057052612,
+      "stable": true,
+      "in_delta": 8.225
+     },
+     {
+      "std": 0.8887563943862915,
+      "stable": true,
+      "in_delta": 8.378
+     },
+     {
+      "std": 1.009009599685669,
+      "stable": true,
+      "in_delta": 10.248
+     },
+     {
+      "std": 1.1601943969726562,
+      "stable": true,
+      "in_delta": 3.769
+     },
+     {
+      "std": 0.996779203414917,
+      "stable": true,
+      "in_delta": 6.612
+     },
+     {
+      "std": 0.8195621371269226,
+      "stable": true,
+      "in_delta": 6.869
+     }
+    ],
+    "p_fail": 0.75
+   }
+  }
+ },
+ "elapsed_min": 6.0
+}

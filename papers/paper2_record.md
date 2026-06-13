@@ -1173,3 +1173,12 @@ S₂-等变 WM(置换绑定 float-exact);③ 比例尺教训:桥要有意义需 
 双版已改为区间(仍远紧于 Henon 3.2×,"tight" 主张不动)。step82_n10_merged.json + test_step82_n10 +
 n3 存档。**完备主义批次全部封箱:E2×10、E12(主×20/机制×15/再校准×10/UQ×10/catch-up×20)、监控器 n=100、
 规模梯×100 starts、DROID n=40、step82×10——全文多籽实验 ≥10(规模梯/LeWM 结构性单 ckpt 除外,已披露)。**
+
+## [2026-06-13] step100 满 n=10 终判封账 + 编队清理
+
+v2(LAT=32/HID=128/40k epoch,数据 60→300 集)全 30 格(3 臂×10 籽):**measured med@0.2 全部=1、三臂
+无分离(CI>0:eq 3/dense 4/aug 4,λ1 中位全近零)、G-EQ 最强形式过(eq enc_defect 字面 0,dense/aug ~1)。**
+v1→v2 升级(5×数据/2×潜维/8×epoch)未破水平主导天花板——**INCONCLUSIVE-BY-LEVEL-DOMINANCE 在满 n=10
+确认**,与 Addendum 2 预测一致(λ1≈0.8 反推单步相对误差需 ≲0.05,实测损失 ~0.02–0.05 仍不达)。入账资产
+不变:① walker 严格 S₂ 对称(G-SYM 4.75e-16,可引用);② 首个 dmcontrol 等变 WM(float-exact);③ 比例尺
+教训(桥要 GPU-天)。test_step100(G-SYM + 水平主导双断言)。桥升级决定留九月。step100 不进 paper2 正文。
