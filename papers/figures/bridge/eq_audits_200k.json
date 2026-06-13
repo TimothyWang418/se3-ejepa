@@ -1,0 +1,8 @@
+{"note":"bridge eq audits at 107-200k (br3, mode=reduce-overhead before freeze); checkpoints later overwritten by br4. Bias-dominated across all 5 seeds.",
+ "eq": {"s0":{"lam1":0.2627,"med_0.2":1,"ratio_0.2":0.16,"step":107000},
+        "s1":{"lam1":0.3508,"med_0.2":2,"ratio_0.2":0.44,"step":200000},
+        "s2":{"lam1":0.2462,"med_0.2":3,"ratio_0.2":0.46,"step":200000},
+        "s3":{"lam1":0.2163,"med_0.2":1,"ratio_0.2":0.13,"step":200000},
+        "s4":{"lam1":0.3351,"med_0.2":1,"ratio_0.2":0.21,"step":107000}},
+ "dense_s3_200k":{"lam1":0.2797,"med_0.2":2,"ratio_0.2":0.35},
+ "verdict_eq":"all 5 bias-dominated (ratio 0.13-0.46, none in [2/3,3/2]); lambda1=0.22-0.35 (moderate, TD-MPC2 regime)"}
