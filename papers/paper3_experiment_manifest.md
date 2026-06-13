@@ -107,6 +107,13 @@ the answer was fix my orchestration (kill zombies, don't over-parallelize, watch
 The B300 still didn't help (4x faster forward but transfer/dep friction + my premature give-up),
 but the MECHANISM was memory+contention, not knn or FLOPs. Honest record: I misdiagnosed twice.
 
+**SECOND RENTAL (4090, 2026-06-13) — FAILED differently:** eq forward correct, but eq TRAINING
+diverged on torch 2.8 (std 17 vs stable ~1 on Mac/box torch 2.12). Matching torch was infeasible
+(2.12 not on installable indices; 2.6 broke torchvision). Switching cards wouldn't help — it's
+torch-build, not hardware. **Combined verdict: our stack is too localized for rentals. Two
+attempts, two distinct failures, ~$15 total. Do not rent again** unless FLOP-bound AND exact
+torch installable AND eq TRAINING verified stable. C3 n=30 → free Mac.
+
 **RULE: before renting a big GPU, confirm the bottleneck is GPU FLOPs.** Ours is knn / data /
 deps — none GPU-FLOP-bound. Small-model + audit-heavy + dependency-constrained research does NOT
 benefit from datacenter GPUs. Run knn-bound 3D on the local 3080 (same speed, free); 2D on the

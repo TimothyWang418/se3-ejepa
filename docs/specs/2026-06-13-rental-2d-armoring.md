@@ -1,3 +1,24 @@
+# ⛔ DEPRECATED (2026-06-13, after a 4090 attempt) — DO NOT USE FOR eq TRAINING
+
+**Second rental attempt (RTX 4090) FAILED — different cause than B300.** e2cnn 0.2.3 installed
+and the eq FORWARD was numerically correct (equivariance held, z-norms matched, no NaN). But eq
+TRAINING DIVERGED on the pod's torch 2.8+cu128: champion runs hit latent-std 17 / 0.4 (vs the
+stable ~1 on Mac/box torch 2.12+cu130). Root cause: **e2cnn training numerics are torch-version-
+sensitive, and the Mac/box's torch 2.12+cu130 is NOT installable on a rental** (pytorch cu124
+index maxes at 2.6; torch 2.6 then broke torchvision). Switching GPU cards does NOT help — the
+bottleneck is the torch build, not the hardware.
+
+**THE COMBINED VERDICT (two rentals, two distinct failures):** our research stack — small models
++ e2cnn equivariance + a specific bleeding-edge torch + CPU audits — is HIGHLY LOCALIZED. Cloud
+rentals essentially have NO use case for us: B300 was workload-mismatch (memory/knn, FLOPs
+unused), 4090 was numerics-non-portability (eq training diverges off the exact torch). **Rule:
+do NOT rent again unless (a) the workload is genuinely FLOP-bound AND (b) the EXACT torch+cuda
+build of the reference machine is installable on the rental AND (c) eq TRAINING (not just
+forward) is verified numerically stable there.** C3 n=30 stays on the free Mac (slow but correct
+and comparable). The runbook below is kept only as a record of the (failed) setup.
+
+---
+
 # Rental package — 2D pixel-eq high-n armoring (ready-to-fire; B300 lessons baked in)
 
 *Prepared 2026-06-13. The ONE workload that genuinely benefits from a rental: the 2D pixel-eq
