@@ -1,0 +1,13 @@
+{
+ "recipe": "{'ema_decay': 0.99, 'var_coef': 0.3, 'aux_coef': 0.5}",
+ "arch": "c_vec=32,k=16,w=64",
+ "device": "mps",
+ "runs": [
+  3,
+  4,
+  5
+ ],
+ "cells": {},
+ "n_transitions": 26420,
+ "elapsed_min": 0.0
+}

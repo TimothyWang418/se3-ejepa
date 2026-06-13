@@ -20,6 +20,8 @@ FIG = Path(__file__).resolve().parent.parent / "papers" / "figures"
 
 s74 = json.loads((FIG / "step74_lorenz96_spectrum.json").read_text())
 s85 = json.loads((FIG / "step85_phase1_frontier.json").read_text())
+for _f in sorted(FIG.glob("step85_phase1_frontier_seed*.json")):          # 2026-06-12: n=20 thickening
+    s85["per_seed"].update(json.loads(_f.read_text())["per_seed"])
 s89 = json.loads((FIG / "step89_pretrained_audit.json").read_text())
 
 fig, (a, b, c) = plt.subplots(1, 3, figsize=(15.6, 4.6))
