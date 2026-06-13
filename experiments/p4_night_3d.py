@@ -91,7 +91,7 @@ def probe_r2(z, y):
 def train_one(make_model, obs, act, nxt, aux_t, obs_h, tcp_h, seed):
     torch.manual_seed(seed)
     m = make_model()
-    hist, tgt = train_jepa(m, obs, act, nxt, epochs=20, batch_size=64, device=DEVICE,
+    hist, tgt = train_jepa(m, obs, act, nxt, epochs=20, batch_size=48, device=DEVICE,
                            seed=seed, verbose=False, return_target_encoder=True,
                            refresh_target_cache=True, ema_decay=RECIPE["ema_decay"],
                            var_coef=RECIPE["var_coef"], var_field_size=3,
@@ -131,24 +131,35 @@ def main() -> int:
     n_ho = max(1, len(full[0]) // 8)
     obs_h, _, _, tcp_h = transitions(full[0][-n_ho:], full[1][-n_ho:], full[2][-n_ho:])
 
+    # resume: load prior artifact, skip completed blocks
+    if OUT.exists():
+        prev = json.loads(OUT.read_text())
+        art["blocks"] = prev.get("blocks", {})
+        print(f"[resume] blocks present: {list(art['blocks'])}")
+
     # #5 plain baseline n=6
-    print("[#5] plain baseline ...")
-    art["blocks"]["plain_baseline"] = {"width": PlainJEPA().width, "cells": []}
-    for r in range(6):
-        try:
-            c = train_one(PlainJEPA, obs, act, nxt, aux_t, obs_h, tcp_h, r)
-        except Exception as exc:  # noqa: BLE001
-            c = {"error": str(exc)[:160], "stable": False}
-        art["blocks"]["plain_baseline"]["cells"].append(c)
-        print(f"  plain r{r}: {c}"); save()
+    if "plain_baseline" not in art["blocks"] or len(art["blocks"]["plain_baseline"].get("cells", [])) < 6:
+        print("[#5] plain baseline ...")
+        art["blocks"]["plain_baseline"] = {"width": PlainJEPA().width, "cells": []}
+        for r in range(6):
+            try:
+                c = train_one(PlainJEPA, obs, act, nxt, aux_t, obs_h, tcp_h, r)
+            except Exception as exc:  # noqa: BLE001
+                c = {"error": str(exc)[:160], "stable": False}
+            art["blocks"]["plain_baseline"]["cells"].append(c)
+            print(f"  plain r{r}: {c}"); save()
 
     # #6/#7 data-scaling (shard counts -> episode counts)
     GRIDS = {"plain_datascale": (PlainJEPA, (3, 6, 9, 11), 4),   # fast (no knn) — full grid
              "vn_datascale": (VNJEPA, (4, 8), 2)}                # slow (knn) — reduced, last
     for tag, (make, ks, nrep) in GRIDS.items():
+        if tag in art["blocks"] and all(f"k{k}" in art["blocks"][tag] for k in ks):
+            print(f"[skip] {tag} already complete"); continue
         print(f"[#6/7] {tag} ...")
-        art["blocks"][tag] = {}
+        art["blocks"].setdefault(tag, {})
         for k in ks:
+            if f"k{k}" in art["blocks"][tag]:
+                continue
             cl, ac, tc = load_shards(k)
             nh = max(1, len(cl) // 8)
             o, a, n, x = transitions(cl[:-nh], ac[:-nh], tc[:-nh])
