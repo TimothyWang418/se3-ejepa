@@ -35,7 +35,7 @@ EP_END = int(os.environ.get("P4_EP_END", "200"))
 N_PTS = 1024
 SHARD = 25
 OUT_DIR = ROOT / "data" / "p4_3d"
-META = ROOT / "papers" / "figures" / "p4_3d_corpus_meta.json"
+META = ROOT / "papers" / "figures" / f"p4_3d_corpus_meta_{EP_START}.json"
 
 
 def cloud_of(env, rng: np.random.Generator) -> np.ndarray:
