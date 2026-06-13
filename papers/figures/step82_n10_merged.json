@@ -1,0 +1,157 @@
+{
+ "seed_batches": {
+  "A": [
+   0,
+   1,
+   2
+  ],
+  "B": [
+   3,
+   4,
+   5
+  ],
+  "C": [
+   6,
+   7
+  ],
+  "D": [
+   8,
+   9
+  ]
+ },
+ "n_seeds_total": 10,
+ "per_system": {
+  "CatMap(linear,true)": {
+   "tightness_by_batch": [
+    0.9999999999999998,
+    0.9999999999999998,
+    0.9999999999999998,
+    0.9999999999999998
+   ],
+   "tightness_min": 0.9999999999999998,
+   "tightness_max": 0.9999999999999998,
+   "route": "cone",
+   "sound_by_batch": [
+    null,
+    null,
+    null,
+    null
+   ],
+   "cone_margin": 0.6319212892107698
+  },
+  "CatMap(learned)": {
+   "tightness_by_batch": [
+    1.1729805252839005,
+    1.2133464330578532,
+    1.2561928902726993,
+    1.1956334670007318
+   ],
+   "tightness_min": 1.1729805252839005,
+   "tightness_max": 1.2561928902726993,
+   "route": "cone",
+   "sound_by_batch": [
+    null,
+    null,
+    null,
+    null
+   ],
+   "cone_margin": 0.6319212892107698
+  },
+  "Henon(true)": {
+   "tightness_by_batch": [
+    3.159249699681643,
+    3.174357639269959,
+    3.170802383033814,
+    3.1950945219199376
+   ],
+   "tightness_min": 3.159249699681643,
+   "tightness_max": 3.1950945219199376,
+   "route": "cone",
+   "sound_by_batch": [
+    null,
+    null,
+    null,
+    null
+   ],
+   "cone_margin": -26.909707770448573
+  },
+  "Henon(learned)": {
+   "tightness_by_batch": [
+    1.0308664136673813,
+    1.044182393496242,
+    1.026998577560818,
+    1.0173468725393338
+   ],
+   "tightness_min": 1.0173468725393338,
+   "tightness_max": 1.044182393496242,
+   "route": "bootstrap",
+   "sound_by_batch": [
+    null,
+    null,
+    null,
+    null
+   ],
+   "cone_margin": -26.909707770448573
+  },
+  "Rossler(learned,stretch)": {
+   "tightness_by_batch": [
+    null,
+    null,
+    null,
+    null
+   ],
+   "tightness_min": null,
+   "tightness_max": null,
+   "route": "bootstrap",
+   "sound_by_batch": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "cone_margin": null
+  },
+  "Lorenz(learned,stretch)": {
+   "tightness_by_batch": [
+    null,
+    null,
+    null,
+    null
+   ],
+   "tightness_min": null,
+   "tightness_max": null,
+   "route": "bootstrap",
+   "sound_by_batch": [
+    true,
+    false,
+    true,
+    true
+   ],
+   "cone_margin": null
+  },
+  "Lorenz96(N=20,learned,stretch)": {
+   "tightness_by_batch": [
+    null,
+    null,
+    null,
+    null
+   ],
+   "tightness_min": null,
+   "tightness_max": null,
+   "route": "bootstrap",
+   "sound_by_batch": [
+    false,
+    false,
+    false,
+    false
+   ],
+   "cone_margin": null
+  }
+ },
+ "G2_soundness_coverage_by_batch": {
+  "A": 1.0,
+  "B": 1.0,
+  "C": 1.0,
+  "D": 1.0
+ }
+}

@@ -1,0 +1,45 @@
+{
+ "design": "2x2x3 seed-vs-subsample factor separation",
+ "cells": {
+  "N2606_seed_r0": {
+   "std": 1.0135645866394043,
+   "stable": true,
+   "in_delta": 10.885
+  },
+  "N2606_seed_r1": {
+   "std": 1.5776331424713135,
+   "stable": true,
+   "in_delta": 4.227
+  },
+  "N2606_seed_r2": {
+   "std": 1.2030341625213623,
+   "stable": true,
+   "in_delta": 7.991
+  },
+  "N2606_seed_r3": {
+   "std": 0.9398456811904907,
+   "stable": true,
+   "in_delta": 10.66
+  },
+  "N2606_seed_r4": {
+   "std": 1.1538052558898926,
+   "stable": true,
+   "in_delta": 8.971
+  },
+  "N2606_seed_r5": {
+   "std": 0.8217009902000427,
+   "stable": true,
+   "in_delta": 9.991
+  },
+  "N2606_seed_r6": {
+   "std": 1.4692344665527344,
+   "stable": true,
+   "in_delta": 3.571
+  },
+  "N2606_seed_r7": {
+   "std": 0.5940665006637573,
+   "stable": false
+  }
+ },
+ "elapsed_min": 6.5
+}
