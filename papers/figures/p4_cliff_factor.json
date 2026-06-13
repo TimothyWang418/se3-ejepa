@@ -39,7 +39,228 @@
   "N2606_seed_r7": {
    "std": 0.5940665006637573,
    "stable": false
+  },
+  "N2606_subsample_r0": {
+   "std": 1.0135645866394043,
+   "stable": true,
+   "in_delta": 10.885
+  },
+  "N2606_subsample_r1": {
+   "std": 0.9492652416229248,
+   "stable": true,
+   "in_delta": 10.378
+  },
+  "N2606_subsample_r2": {
+   "std": 1.455242395401001,
+   "stable": true,
+   "in_delta": 5.625
+  },
+  "N2606_subsample_r3": {
+   "std": 0.9398093819618225,
+   "stable": true,
+   "in_delta": 10.305
+  },
+  "N2606_subsample_r4": {
+   "std": 0.8917855024337769,
+   "stable": true,
+   "in_delta": 9.506
+  },
+  "N2606_subsample_r5": {
+   "std": 1.0385916233062744,
+   "stable": true,
+   "in_delta": 8.109
+  },
+  "N2606_subsample_r6": {
+   "std": 0.8530105352401733,
+   "stable": true,
+   "in_delta": 5.932
+  },
+  "N2606_subsample_r7": {
+   "std": 1.059842824935913,
+   "stable": true,
+   "in_delta": 10.108
+  },
+  "N3000_seed_r0": {
+   "std": 0.9486340284347534,
+   "stable": true,
+   "in_delta": 11.171
+  },
+  "N3000_seed_r1": {
+   "std": 1.1920522451400757,
+   "stable": true,
+   "in_delta": 4.114
+  },
+  "N3000_seed_r2": {
+   "std": 1.1150405406951904,
+   "stable": true,
+   "in_delta": 9.528
+  },
+  "N3000_seed_r3": {
+   "std": 1.2173166275024414,
+   "stable": true,
+   "in_delta": 4.634
+  },
+  "N3000_seed_r4": {
+   "std": 1.1169381141662598,
+   "stable": true,
+   "in_delta": 9.998
+  },
+  "N3000_seed_r5": {
+   "std": 0.8105545043945312,
+   "stable": true,
+   "in_delta": 7.809
+  },
+  "N3000_seed_r6": {
+   "std": 1.3628151416778564,
+   "stable": true,
+   "in_delta": 3.166
+  },
+  "N3000_seed_r7": {
+   "std": 0.9343821406364441,
+   "stable": true,
+   "in_delta": 3.258
+  },
+  "N3000_subsample_r0": {
+   "std": 0.9486340284347534,
+   "stable": true,
+   "in_delta": 11.171
+  },
+  "N3000_subsample_r1": {
+   "std": 1.0324089527130127,
+   "stable": true,
+   "in_delta": 9.991
+  },
+  "N3000_subsample_r2": {
+   "std": 1.113209843635559,
+   "stable": true,
+   "in_delta": 9.347
+  },
+  "N3000_subsample_r3": {
+   "std": 0.9755670428276062,
+   "stable": true,
+   "in_delta": 8.25
+  },
+  "N3000_subsample_r4": {
+   "std": 0.961437463760376,
+   "stable": true,
+   "in_delta": 7.845
+  },
+  "N3000_subsample_r5": {
+   "std": 1.0284497737884521,
+   "stable": true,
+   "in_delta": 9.986
+  },
+  "N3000_subsample_r6": {
+   "std": 0.9824698567390442,
+   "stable": true,
+   "in_delta": 9.622
+  },
+  "N3000_subsample_r7": {
+   "std": 0.9589645862579346,
+   "stable": true,
+   "in_delta": 9.459
+  },
+  "N3500_seed_r0": {
+   "std": 1.0149824619293213,
+   "stable": true,
+   "in_delta": 7.926
+  },
+  "N3500_seed_r1": {
+   "std": 1.3661963939666748,
+   "stable": true,
+   "in_delta": 3.184
+  },
+  "N3500_seed_r2": {
+   "std": 1.0082162618637085,
+   "stable": true,
+   "in_delta": 10.384
+  },
+  "N3500_seed_r3": {
+   "std": 1.1660046577453613,
+   "stable": true,
+   "in_delta": 5.243
+  },
+  "N3500_seed_r4": {
+   "std": 0.9823646545410156,
+   "stable": true,
+   "in_delta": 10.17
+  },
+  "N3500_seed_r5": {
+   "std": 1.1132843494415283,
+   "stable": true,
+   "in_delta": 4.836
+  },
+  "N3500_seed_r6": {
+   "std": 0.81495201587677,
+   "stable": true,
+   "in_delta": 5.533
+  },
+  "N3500_seed_r7": {
+   "std": 1.344801902770996,
+   "stable": true,
+   "in_delta": 5.74
+  },
+  "N3500_subsample_r0": {
+   "std": 1.0149824619293213,
+   "stable": true,
+   "in_delta": 7.926
+  },
+  "N3500_subsample_r1": {
+   "std": 1.0338408946990967,
+   "stable": true,
+   "in_delta": 11.028
+  },
+  "N3500_subsample_r2": {
+   "std": 0.918148934841156,
+   "stable": true,
+   "in_delta": 8.476
+  },
+  "N3500_subsample_r3": {
+   "std": 1.3650307655334473,
+   "stable": true,
+   "in_delta": 7.075
+  },
+  "N3500_subsample_r4": {
+   "std": 0.9753894805908203,
+   "stable": true,
+   "in_delta": 9.798
+  },
+  "N3500_subsample_r5": {
+   "std": 0.8765414357185364,
+   "stable": true,
+   "in_delta": 9.069
+  },
+  "N3500_subsample_r6": {
+   "std": 0.8548202514648438,
+   "stable": true,
+   "in_delta": 8.511
+  },
+  "N3500_subsample_r7": {
+   "std": 0.9374048709869385,
+   "stable": true,
+   "in_delta": 9.947
   }
  },
- "elapsed_min": 6.5
+ "elapsed_min": 44.9,
+ "factor_summary": {
+  "2606": {
+   "seed_var": 7.735,
+   "subsample_var": 3.759,
+   "seed_fail": 5,
+   "sub_fail": 6
+  },
+  "3000": {
+   "seed_var": 9.423,
+   "subsample_var": 0.95,
+   "seed_fail": 4,
+   "sub_fail": 8
+  },
+  "3500": {
+   "seed_var": 5.915,
+   "subsample_var": 1.378,
+   "seed_fail": 3,
+   "sub_fail": 8
+  }
+ },
+ "verdict": "see per-N seed_var vs subsample_var (larger = dominant factor)"
 }

@@ -141,7 +141,18 @@ results at 14:51 (commit 1cb3ebb, on origin) — my 16:33 checkout discarded RED
 ABORTS on tracked-modified files and reports, never auto-checkouts; rule added — destructive
 git on the shared tree only for paths matching `p4_*`/paper3 namespaces.
 
-## [2026-06-12] Ladder + G1a final — the resolution lever BACKFIRES (NO-GO all rungs); open-loop conversion FAILS 0/20; the 2D pixel application layer closes, 3D carries it
+## [2026-06-13] T1.2 cliff factor separation — failure is SEED-dominated (init lottery); rank-correlation disclosure now CHARACTERIZED, not just flagged
+
+The cliff factor experiment (plain × {2606,3000,3500} × seed-sweep vs subsample-sweep × n=8,
+free Mac, after the B300 detour): δ̂ variance is **seed-dominated at every N** — seed_var
+7.7/9.4/5.9 vs subsample_var 3.8/0.95/1.4. Nuance: with a FIXED bad seed (0), all subsamples
+fail at N≥3000 (sub_fail 8/8), while varying the seed yields both outcomes (seed_fail 4-5/8) —
+i.e. plain's low-N failure is largely a **training-init lottery**, with the subsample a weaker
+secondary factor. **The rank-correlation disclosure is now a measured result, not a caveat:**
+the cliff P(fail) marginal stands; its structure is "init-driven with a data-coverage modifier".
+Figure-3 caption upgrades from "rank-correlated, independence not assumed" to this mechanism.
+
+## [2026-06-12] Ladder + G1a final## [2026-06-12] Ladder + G1a final — the resolution lever BACKFIRES (NO-GO all rungs); open-loop conversion FAILS 0/20; the 2D pixel application layer closes, 3D carries it
 
 **Resolution ladder (Mac rung after 2 box OOMs; resume from artifact):**
 
