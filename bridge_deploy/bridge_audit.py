@@ -17,12 +17,18 @@ from envs import make_env
 ARM, SEED, CKPT = sys.argv[1], int(sys.argv[2]), sys.argv[3]
 EPS = [0.05, 0.1, 0.2]
 
-# rebuild cfg from the run's hydra output, else minimal walker cfg
-cfg = OmegaConf.create(dict(
-    multitask=False, tasks=['walker-walk'], task_dim=0, obs='state', obs_shape={'state':[24]},
-    action_dim=6, action_dims=[6], num_enc_layers=2, enc_dim=256, latent_dim=512, simnorm_dim=8,
-    mlp_dim=512, num_bins=101, num_q=5, dropout=0.01, episodic=False, log_std_min=-10.0, log_std_max=2.0,
-    tau=0.01, vmin=-10.0, vmax=10.0, num_channels=32, seed=SEED))
+# load a saved hydra config (structural fields identical across runs) + fill the runtime-??? fields
+import glob
+_cfgs = sorted(glob.glob('/root/tdmpc2/tdmpc2/outputs/*/*/.hydra/config.yaml'))
+cfg = OmegaConf.load(_cfgs[-1]) if _cfgs else OmegaConf.create({})
+OmegaConf.set_struct(cfg, False)
+for _k, _v in dict(multitask=False, task='walker-walk', tasks=['walker-walk'], obs='state',
+                   obs_shape={'state': [24]}, action_dim=6, action_dims=[6], task_dim=0,
+                   num_enc_layers=2, enc_dim=256, latent_dim=512, simnorm_dim=8, mlp_dim=512,
+                   num_bins=101, num_q=5, dropout=0.01, episodic=False, log_std_min=-10.0,
+                   log_std_max=2.0, tau=0.01, vmin=-10.0, vmax=10.0, num_channels=32,
+                   checkpoint=None, data_dir=None, model_size=5, model=ARM, seed=SEED).items():
+    cfg[_k] = _v
 cfg.bin_size = (cfg.vmax - cfg.vmin) / (cfg.num_bins - 1)
 dev = 'cuda' if torch.cuda.is_available() else 'cpu'
 WM = make_eq_world_model(WorldModel) if ARM == 'eq' else WorldModel
@@ -36,15 +42,17 @@ def enc(o): return model.encode(torch.as_tensor(o, dtype=torch.float32, device=d
 def g(z):  # policy-prior closed loop
     a, _ = model.pi(z, None); return model.next(z, torch.tanh(a) if a.abs().max()>1 else a, None)
 
-# collect a true episode under the policy for z0 + measured rollouts
-env = make_env(cfg); ts = env.reset(); obs=[ts[0] if isinstance(ts,tuple) else ts]
-o = obs[0]
+# collect a true episode under the policy for z0 + measured rollouts (TensorWrapper: tensor obs/action)
+def _np(x): return np.asarray(x.cpu()) if torch.is_tensor(x) else np.asarray(x)
+env = make_env(cfg); ts = env.reset()
+o = ts[0] if isinstance(ts, tuple) else ts
+obs = [_np(o)]
 for _ in range(420):
     with torch.no_grad():
-        a,_ = model.pi(enc(o), None)
-    step = env.step(a.squeeze(0).cpu().numpy())
-    o = step[0]; obs.append(o)
-obs = np.array([x for x in obs], dtype=np.float32)
+        a, _ = model.pi(enc(_np(o)), None)
+    step = env.step(a.squeeze(0).cpu())          # TensorWrapper wants a torch tensor
+    o = step[0]; obs.append(_np(o))
+obs = np.array(obs, dtype=np.float32)
 Z = torch.cat([enc(o) for o in obs])
 z0 = Z[len(Z)//2:len(Z)//2+1]
 D = z0.shape[1]
