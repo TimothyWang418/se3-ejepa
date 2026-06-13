@@ -121,9 +121,14 @@ class VNDGCNNEncoder(nn.Module):
         super().__init__()
         self.k = k
         self.c_vec = c_vec
-        self.edge1 = nn.Sequential(VNLinear(2, width), VNLeakyReLU(width),
-                                   VNLinear(width, width), VNLeakyReLU(width))
-        self.point1 = nn.Sequential(VNLinear(width, width), VNLeakyReLU(width))
+        # OPTIMIZED (2026-06-13): early-pool DGCNN. Only ONE VN op pair runs at the expensive
+        # (B, W, 3, N, k) edge resolution; the deep MLP runs at (B, W, 3, N) — 16× smaller. The
+        # original "4 VNLinears before pool" peaked 11.1GB (> 3080's 10GB → swap → 20s/batch).
+        # This is a standard DGCNN edge-conv design; equivariance preserved (all VN ops; V-III
+        # re-tested). Function class differs from the pre-06-13 encoder → 3D runs re-baselined.
+        self.edge_conv = nn.Sequential(VNLinear(2, width), VNLeakyReLU(width))
+        self.point1 = nn.Sequential(VNLinear(width, width), VNLeakyReLU(width),
+                                    VNLinear(width, width), VNLeakyReLU(width))
         self.head_vec = VNLinear(width, c_vec)
         self.head_inv = VNInvariant(c_vec)
 
@@ -141,8 +146,8 @@ class VNDGCNNEncoder(nn.Module):
         anchor = x.unsqueeze(2).expand(b, n, self.k, 3)
         e = torch.stack([anchor, nbr - anchor], dim=1)          # (B, 2, N, k, 3)
         e = e.permute(0, 1, 4, 2, 3)                            # (B, 2, 3, N, k)
-        h = self.edge1(e).mean(dim=-1)                          # (B, W, 3, N)
-        h = self.point1(h).mean(dim=-1)                         # (B, W, 3)
+        h = self.edge_conv(e).mean(dim=-1)                      # edge-conv then POOL: (B, W, 3, N)
+        h = self.point1(h).mean(dim=-1)                         # deep MLP at point res: (B, W, 3)
         v = self.head_vec(h)                                    # (B, c_vec, 3)
         return torch.cat([v.flatten(1), self.head_inv(v)], dim=1)
 
