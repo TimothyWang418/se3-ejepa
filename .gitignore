@@ -79,3 +79,4 @@ models/lewm/
 models/tdmpc2_mt/
 data/p4_step1/
 external/
+data/*.npz
