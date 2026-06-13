@@ -135,7 +135,7 @@ def gsym_probe(n_states: int = 200) -> dict:
 
 def collect():
     env, pi = make_env(), load_policy()
-    obs_l, act_l, nxt_l = [], [], []
+    obs_l, act_l, nxt_l, rew_l = [], [], [], []
     for ep in range(N_EP):
         ts = env.reset()
         obs = s89._flat_obs(ts).numpy()
@@ -143,14 +143,16 @@ def collect():
             a = pi(obs)
             ts = env.step(a)
             nxt = s89._flat_obs(ts).numpy()
-            obs_l.append(obs); act_l.append(a); nxt_l.append(nxt)
+            r = float(ts.reward) if ts.reward is not None else 0.0   # walker-walk reward (for the TD-MPC2-style consistency+reward latent, step100c)
+            obs_l.append(obs); act_l.append(a); nxt_l.append(nxt); rew_l.append(r)
             obs = nxt
         print(f"[step100:collect] ep {ep+1}/{N_EP} ({len(obs_l)} transitions)", file=sys.stderr)
     out = ROOT / "data/step100_walker_transitions.npz"
     out.parent.mkdir(exist_ok=True)
     np.savez_compressed(out, obs=np.array(obs_l, dtype=np.float32),
-                        act=np.array(act_l, dtype=np.float32), nxt=np.array(nxt_l, dtype=np.float32))
-    print(f"[step100:collect] wrote {out} ({len(obs_l)} transitions)", file=sys.stderr)
+                        act=np.array(act_l, dtype=np.float32), nxt=np.array(nxt_l, dtype=np.float32),
+                        rew=np.array(rew_l, dtype=np.float32))
+    print(f"[step100:collect] wrote {out} ({len(obs_l)} transitions, with reward)", file=sys.stderr)
 
 
 if __name__ == "__main__":
