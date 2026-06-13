@@ -15,6 +15,7 @@ Run (box): nohup nice -n 10 /home/whb/se3-ejepa/.venv3d/bin/python -u \
 from __future__ import annotations
 
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -29,7 +30,8 @@ from experiments.p4_3d_g1 import (  # noqa: E402
 )
 
 T0 = time.time()
-N_EPS = 200
+EP_START = int(os.environ.get("P4_EP_START", "0"))
+EP_END = int(os.environ.get("P4_EP_END", "200"))
 N_PTS = 1024
 SHARD = 25
 OUT_DIR = ROOT / "data" / "p4_3d"
@@ -64,9 +66,10 @@ def main() -> int:
     rng = np.random.default_rng(0)
 
     shard_c, shard_a, shard_t = [], [], []
-    shard_id = 0
+    shard_id = EP_START // SHARD
     with h5py.File(traj, "r") as f:
-        for k, ep in enumerate(meta["episodes"][:N_EPS]):
+        ep_slice = meta["episodes"][EP_START:EP_END]
+        for k, ep in enumerate(ep_slice):
             tid = f"traj_{ep['episode_id']}"
             states = load_states(f[tid]["env_states"])
             n = len(f[tid]["actions"])
@@ -101,7 +104,7 @@ def main() -> int:
             shard_c.append(np.stack(clouds))
             shard_a.append(np.stack(acts))
             shard_t.append(np.stack(tcps))
-            if len(shard_c) >= SHARD or k == N_EPS - 1:
+            if len(shard_c) >= SHARD or k == len(ep_slice) - 1:
                 pth = OUT_DIR / f"corpus3d_{shard_id:03d}.npz"
                 np.savez_compressed(
                     pth,
