@@ -50,6 +50,7 @@ EPS_MULT = (2, 4, 8, 16)
 BAND = (0.5, 2.0)
 FLOOR = 0.7
 TAG = __import__("os").environ.get("P4_TAG", "")  # CUDA arm: P4_TAG=_cuda
+NRUN = int(__import__("os").environ.get("P4_N", "10"))  # rental: P4_N=30
 # P4_RECIPE: JSON override of the champ recipe (candidate stage-B reuse); default = registered champion.
 # P4_ARMS: comma list, default "champ,plainc" (candidate arms may borrow the registered plainc rows
 # from the same-device registered artifact -- equal-data moat row without re-spending 5h; ledgered).
@@ -111,7 +112,7 @@ def main() -> int:
 
     for name in ARMS:
         print(f"[{name}] n=10 on c2000 ...")
-        for r in range(10):
+        for r in range(NRUN):
             key = f"{name}_r{r}"
             prev = existing.get(key)
             ckp = DATA_DIR / f"ckpt8{TAG}_{name}_r{r}.pt"
@@ -143,7 +144,7 @@ def main() -> int:
 
     verd = {}
     for name in ARMS:
-        cs = [art["cells"].get(f"{name}_r{r}", {}) for r in range(10)]
+        cs = [art["cells"].get(f"{name}_r{r}", {}) for r in range(NRUN)]
         qual = [c for c in cs if c.get("stable")]
 
         def cell_guar(c):
@@ -158,7 +159,7 @@ def main() -> int:
         guar = [c for c in qual if cell_guar(c)]
         cal = [c for c in qual if cell_cal(c)]
         verd[name] = {
-            "stable": f"{len(qual)}/10",
+            "stable": f"{len(qual)}/{NRUN}",
             "C3_guar": ("INCONCLUSIVE-BY-STABILITY" if len(qual) < 5
                         else ("PASS" if len(guar) / len(qual) >= 0.9 else "FAIL")),
             "guar_passing": len(guar),
