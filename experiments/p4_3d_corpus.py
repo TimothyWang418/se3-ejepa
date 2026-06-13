@@ -116,7 +116,7 @@ def main() -> int:
                 meta_art["elapsed_min"] = round((time.time() - T0) / 60, 1)
                 META.write_text(json.dumps(meta_art, indent=1))
                 print(f"[shard {shard_id}] saved {len(shard_c)} eps "
-                      f"({(time.time() - T0) / 60:.0f} min, ep {k + 1}/{N_EPS})")
+                      f"({(time.time() - T0) / 60:.0f} min, ep {EP_START + k + 1}/{EP_END})")
                 shard_c, shard_a, shard_t = [], [], []
                 shard_id += 1
     env.close()
