@@ -8,7 +8,7 @@
 > claims, runs-not-seeds, disclosure). Scale targets are MAXIMA — trim by value if time-boxed.
 
 ## Estimated totals
-- **~520 training runs** (vs ~150 to date). At ~1–3 min/run on B300, **~10–25 GPU-hours**.
+- **~560 training runs** (vs ~150 to date). At ~1–3 min/run on B300, **~10–25 GPU-hours**.
 - **~200 audit passes** (CPU f64, box 24-core + Mac) — the real wall-clock; parallelizable.
 - Corpus production (CPU/env): already in flight (1000 eps); +2D corpora cheap.
 
@@ -42,6 +42,8 @@
 | T1.6 | **More OOD shapes** (all 8 PushT shapes, not 4) + finer wedge (45°/30° grids) | audits | CPU | OOD breadth for the guarantee figure |
 | T1.7 | **Cal-conservatism correction confirm** (λ=1.5 on FRESH runs, registered) | n=10 | B300+CPU | upgrades claim 2 from analysis to confirmed |
 | T1.8 | **θ-probe robustness**: vary probe capacity, held-out splits | existing pairs | CPU | armors claim 5 against probe-design attacks |
+| T1.9 | **192px tuned-recipe re-test** (off-tune caveat closer): recipe sweep AT 192px before re-binding ε_task/δ̂ | n=4 × ~9 cfg | B300+CPU | settles whether resolution backfire survives proper tuning (claim 10) |
+| T1.10 | **C3-cal at high n** (does cal stay FAIL or tighten?) on T1.1 runs | n=30 audits | CPU | claim 2 precision |
 
 ## TIER 2 — robustness, ablations, generality (reviewer pre-emption)
 
