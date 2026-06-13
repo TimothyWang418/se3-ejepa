@@ -1,0 +1,184 @@
+{
+ "queue": "#5 plain baseline / #6 VN data-scale / #7 plain data-scale",
+ "device": "cuda",
+ "blocks": {
+  "plain_baseline": {
+   "width": 256,
+   "cells": [
+    {
+     "std": 4.08,
+     "tcp_r2": 0.119,
+     "final_loss": 0.71905,
+     "stable": true
+    },
+    {
+     "std": 2.347,
+     "tcp_r2": 0.018,
+     "final_loss": 0.5389,
+     "stable": true
+    },
+    {
+     "std": 3.772,
+     "tcp_r2": 0.061,
+     "final_loss": 1.89374,
+     "stable": true
+    },
+    {
+     "std": 1.734,
+     "tcp_r2": 0.037,
+     "final_loss": 0.49622,
+     "stable": true
+    },
+    {
+     "std": 1.899,
+     "tcp_r2": 0.02,
+     "final_loss": 0.34227,
+     "stable": true
+    },
+    {
+     "std": 1.064,
+     "tcp_r2": 0.024,
+     "final_loss": 0.6976,
+     "stable": true
+    }
+   ]
+  },
+  "plain_datascale": {
+   "k3": [
+    {
+     "std": 1.433,
+     "tcp_r2": 0.38,
+     "final_loss": 0.09438,
+     "stable": true
+    },
+    {
+     "std": 1.274,
+     "tcp_r2": 0.811,
+     "final_loss": 0.0789,
+     "stable": true
+    },
+    {
+     "std": 1.115,
+     "tcp_r2": 0.567,
+     "final_loss": 0.0779,
+     "stable": true
+    },
+    {
+     "std": 1.131,
+     "tcp_r2": 0.231,
+     "final_loss": 0.12149,
+     "stable": true
+    }
+   ],
+   "k6": [
+    {
+     "std": 1.593,
+     "tcp_r2": 0.207,
+     "final_loss": 0.18502,
+     "stable": true
+    },
+    {
+     "std": 2.023,
+     "tcp_r2": 0.122,
+     "final_loss": 0.36869,
+     "stable": true
+    },
+    {
+     "std": 1.986,
+     "tcp_r2": 0.123,
+     "final_loss": 0.2452,
+     "stable": true
+    },
+    {
+     "std": 1.673,
+     "tcp_r2": 0.16,
+     "final_loss": 0.22887,
+     "stable": true
+    }
+   ],
+   "k9": [
+    {
+     "std": 18.939,
+     "tcp_r2": 0.001,
+     "final_loss": 25.20857,
+     "stable": true
+    },
+    {
+     "std": 2.595,
+     "tcp_r2": 0.045,
+     "final_loss": 0.58454,
+     "stable": true
+    },
+    {
+     "std": 3.652,
+     "tcp_r2": 0.071,
+     "final_loss": 1.32577,
+     "stable": true
+    },
+    {
+     "std": 0.0,
+     "tcp_r2": 0.0,
+     "final_loss": 0.07025,
+     "stable": false
+    }
+   ],
+   "k11": [
+    {
+     "std": 2.14,
+     "tcp_r2": 0.094,
+     "final_loss": 0.24293,
+     "stable": true
+    },
+    {
+     "std": 3.68,
+     "tcp_r2": 0.133,
+     "final_loss": 8.65855,
+     "stable": true
+    },
+    {
+     "std": 0.0,
+     "tcp_r2": -0.0,
+     "final_loss": 0.0,
+     "stable": false
+    },
+    {
+     "std": 4.46,
+     "tcp_r2": 0.017,
+     "final_loss": 2.87108,
+     "stable": true
+    }
+   ]
+  },
+  "vn_datascale": {
+   "k4": [
+    {
+     "std": 1.41,
+     "tcp_r2": 0.698,
+     "final_loss": 0.2262,
+     "stable": true
+    },
+    {
+     "std": 1.369,
+     "tcp_r2": 0.691,
+     "final_loss": 0.21173,
+     "stable": true
+    }
+   ],
+   "k8": [
+    {
+     "std": 1.239,
+     "tcp_r2": 0.605,
+     "final_loss": 0.17398,
+     "stable": true
+    },
+    {
+     "std": 1.312,
+     "tcp_r2": 0.616,
+     "final_loss": 0.19744,
+     "stable": true
+    }
+   ]
+  }
+ },
+ "elapsed_min": 138.6
+}

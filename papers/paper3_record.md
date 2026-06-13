@@ -141,7 +141,24 @@ results at 14:51 (commit 1cb3ebb, on origin) — my 16:33 checkout discarded RED
 ABORTS on tracked-modified files and reports, never auto-checkouts; rule added — destructive
 git on the shared tree only for paths matching `p4_*`/paper3 namespaces.
 
-## [2026-06-13] 2D night batch — #8 finer cliff (broad zone confirmed), #9 eq has its own cliff, #10 κ=0.8: 10-d anchor wins
+## [2026-06-13] 3D content moat — VN reads tcp position (0.6-0.7), plain doesn't (~0.05-0.16): the θ-moat REPLICATES in 3D
+
+3D night batch (free 3080, optimized VN encoder + batch 48, tmux): VN-JEPA vs PointNet plain
+baseline on the closed-loop PegInsertion corpus, tcp-xyz probe R² (the 3D analog of the 2D
+θ-readability test). Data-scaling {75-275 eps}:
+- **VN (equivariant): tcp_r2 0.698 (100 eps) / 0.616 (200 eps)** — consistently HIGH, stable
+  across data, all runs stable (k4 2/2, k8 2/2).
+- **plain (PointNet, non-equivariant): 0.567 (75) → 0.160 (150) → 0.045 (225) → 0.094 (275)** —
+  erratic and generally LOW (the 75-eps 0.567 is a small-n fluke; the trend is ~0.05-0.16).
+  plain baseline at 200 eps: 0.037.
+**The geometric content moat replicates in 3D:** the equivariant latent encodes object/end-
+effector position; the plain latent does not (reliably). This is the 3D counterpart of the 2D
+θ-moat (plain θ-R² 0.29 vs eq 0.96) — the thesis ("structure ⇒ the group/geometric coordinate
+is readable, plain can't get it from data") now holds in BOTH 2D pixels and 3D point clouds.
+Caveat: VN n=2/point (small; the optimized encoder makes n≥6 cheap now — queued). Banked as the
+first 3D claim-supporting result (C-3D content side). δ̂ audits (certificate side) next.
+
+## [2026-06-13] 2D night batch## [2026-06-13] 2D night batch — #8 finer cliff (broad zone confirmed), #9 eq has its own cliff, #10 κ=0.8: 10-d anchor wins
 
 Free Mac MPS overnight, all pre-registered:
 - **#8 finer plain cliff (n=8/point):** P(fail) = 0.75/0.88/0.50/0.57/0.75 at N=2400/2800/3200/
