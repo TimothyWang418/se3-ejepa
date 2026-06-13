@@ -95,6 +95,18 @@ Root cause: the workload is MISMATCHED to a big GPU.
   (croc P2P, 12 MB/s, 30×). Bulk transfers over the SSH proxy drop ("unexpected end of file");
   the network volume `/workspace` (MooseFS) breaks rsync temp-rename → use `/root` local disk.
 
+**⚠️ CORRECTION (2026-06-13, found by profiling when the user asked "can VN benefit from a
+rental"):** the "knn-bound" diagnosis above was WRONG. Profiling: knn = 7ms (0%); the VN edge
+conv was the cost, AND the real killer was **peak memory 11.1GB > the 3080's 10GB → swap →
+20s/batch**. Worse, the "20s" measurements were CONTENDED (a zombie process + the fleet running
+simultaneously — `setsid` survived `pkill`, needs `kill -9 PID`). **Uncontended, single-stream,
+VN is ~2s/batch = ~19 min/run on the FREE 3080 — totally adequate.** Fixes applied: early-pool
+DGCNN encoder (equivariance preserved, V-III 2.4e-16) + batch 48 (peak under 10GB, no swap) +
+one-at-a-time (no contention). **So neither rental nor optimization-for-FLOPs was the answer —
+the answer was fix my orchestration (kill zombies, don't over-parallelize, watch memory).**
+The B300 still didn't help (4x faster forward but transfer/dep friction + my premature give-up),
+but the MECHANISM was memory+contention, not knn or FLOPs. Honest record: I misdiagnosed twice.
+
 **RULE: before renting a big GPU, confirm the bottleneck is GPU FLOPs.** Ours is knn / data /
 deps — none GPU-FLOP-bound. Small-model + audit-heavy + dependency-constrained research does NOT
 benefit from datacenter GPUs. Run knn-bound 3D on the local 3080 (same speed, free); 2D on the
